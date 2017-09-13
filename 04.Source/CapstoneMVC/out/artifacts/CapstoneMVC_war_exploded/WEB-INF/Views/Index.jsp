@@ -1,18 +1,15 @@
-<div>
-    <table border="1">
-        <thead>
-            <tr>
-                <th>First</th>
-                <th>Second</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Nice</td>
-                <td>Run</td>
-            </tr>
-        </tbody>
-    </table>
-    Getting objects from model ${message}
-    <a href="/next">Second link</a>
+<div class="content-header">
+    <ol class="breadcrumb">
+        <li><a href="#"><i class="fa fa-dashboard"></i> Level</a></li>
+        <li class="active">Here</li>
+    </ol>
+</div>
+<div class="content">
+    <h1>
+        Page Header
+        <small>Optional description</small>
+    </h1>
+    <div class="col-md-12">
+        <a href="/next">Next Page</a>
+    </div>
 </div>
