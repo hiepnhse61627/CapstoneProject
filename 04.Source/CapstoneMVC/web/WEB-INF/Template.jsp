@@ -12,8 +12,15 @@
     <title>${title}</title>
 </head>
 <body>
-        <h1>Header</h1>
+    <%-- HEADER --%>
+    <h1>Header</h1>
+
+    <%-- RENDER BODY HERE --%>
+    <div>
         <dec:body/>
-        <h2>Footer</h2>
+    </div>
+
+    <%-- FOOTER --%>
+    <h2>Footer</h2>
 </body>
 </html>
