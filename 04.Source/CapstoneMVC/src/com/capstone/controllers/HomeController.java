@@ -13,4 +13,9 @@ public class HomeController {
         view.addObject("message", "Welcome!");
         return view;
     }
+
+    @RequestMapping("/next")
+    public String Next() {
+        return "SecondPage";
+    }
 }
