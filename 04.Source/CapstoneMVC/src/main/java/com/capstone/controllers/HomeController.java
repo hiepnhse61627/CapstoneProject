@@ -11,6 +11,7 @@ public class HomeController {
         ModelAndView view = new ModelAndView("Index");
         view.addObject("title", "Main");
         view.addObject("message", "Welcome!");
+
         return view;
     }
 
