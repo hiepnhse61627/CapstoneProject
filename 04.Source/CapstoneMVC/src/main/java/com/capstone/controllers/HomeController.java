@@ -14,9 +14,4 @@ public class HomeController {
 
         return view;
     }
-
-    @RequestMapping("/next")
-    public String Next() {
-        return "SecondPage";
-    }
 }
