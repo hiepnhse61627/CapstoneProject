@@ -10,6 +10,8 @@
         <small>Optional description</small>
     </h1>
     <div class="col-md-12">
-        <a href="/next">Next Page</a>
+        <a href="/next">Next Page</a></br>
+
+        <button type="submit" name="btImport">Import</button>
     </div>
 </div>
