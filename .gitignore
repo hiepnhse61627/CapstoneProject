@@ -1,3 +1,9 @@
 **/.idea/
 **/*.iml
 **/*.iws
+*/.idea/
+*/*.iml
+*/*.iws
+.idea/
+*.iml
+*.iws
