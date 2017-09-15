@@ -7,10 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="Capstone2" />
+        <module name="spring-mvc-quickstart" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="Capstone2" target="1.5" />
+      <module name="spring-mvc-quickstart" target="1.5" />
     </bytecodeTargetLevel>
   </component>
 </project>

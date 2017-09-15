@@ -2,11 +2,12 @@
   <artifact type="exploded-war" name="Capstone2:war exploded">
     <output-path>$PROJECT_DIR$/out/artifacts/Capstone2_war_exploded</output-path>
     <root id="root">
-      <element id="javaee-facet-resources" facet="Capstone2/web/Web" />
       <element id="directory" name="WEB-INF">
         <element id="directory" name="classes">
           <element id="module-output" name="Capstone2" />
           <element id="jpa-descriptors" facet="Capstone2/jpa/JPA" />
+          <element id="jpa-descriptors" facet="spring-mvc-quickstart/jpa/JPA" />
+          <element id="module-output" name="spring-mvc-quickstart" />
         </element>
         <element id="directory" name="lib">
           <element id="library" level="project" name="Maven: org.sitemesh:sitemesh:3.0.0" />
@@ -49,11 +50,13 @@
           <element id="library" level="project" name="Maven: org.apache.httpcomponents:httpcore:4.3.3" />
           <element id="library" level="project" name="Maven: org.bouncycastle:bcprov-jdk15on:1.51" />
           <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.7.5" />
+          <element id="library" level="project" name="aopalliance-1.0" />
         </element>
       </element>
       <element id="directory" name="Resources">
         <element id="dir-copy" path="$PROJECT_DIR$/web/Resources" />
       </element>
+      <element id="javaee-facet-resources" facet="spring-mvc-quickstart/web/Web" />
     </root>
   </artifact>
 </component>
