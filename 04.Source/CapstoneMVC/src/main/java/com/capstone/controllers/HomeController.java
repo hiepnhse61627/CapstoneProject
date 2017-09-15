@@ -4,6 +4,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -22,8 +25,9 @@ public class HomeController {
 
     @RequestMapping("/next")
     public String Next() throws IOException {
-//        ExcelToObject();
-        return "SecondPage";
+        EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapPersistence");
+        EntityManager manager = fac.createEntityManager();
+        return "Search";
     }
 
 //    public void ExcelToObject() throws IOException {
