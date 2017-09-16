@@ -51,6 +51,8 @@
           <element id="library" level="project" name="Maven: org.bouncycastle:bcprov-jdk15on:1.51" />
           <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.7.5" />
           <element id="library" level="project" name="aopalliance-1.0" />
+          <element id="library" level="project" name="Maven: org.codehaus.jackson:jackson-core-asl:1.9.13" />
+          <element id="library" level="project" name="Maven: org.codehaus.jackson:jackson-mapper-asl:1.9.13" />
         </element>
       </element>
       <element id="directory" name="Resources">
