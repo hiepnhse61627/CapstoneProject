@@ -107,7 +107,7 @@
                 <div class="pull-left info">
                     <p>Alexander Pierce</p>
                     <!-- Status -->
-                    <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+                    <a href="#"><i class="fa fa-circle-o text-success"></i> Online</a>
                 </div>
             </div>
 
@@ -116,44 +116,85 @@
                 <%--<li class="header">HEADER</li>--%>
                 <!-- Optionally, you can add icons to the links -->
                 <li class="active">
-                    <a href="#"><i class="fa fa-link"></i> <span>Thống kê</span></a>
+                    <a href="#"><i class="fa fa-dashboard"></i> <span>Thống kê</span></a>
                 </li>
                 <li class="treeview">
                     <a href="#">
-                        <i class="fa fa-link"></i>
-                        <span>Quản lý sinh viên</span>
+                        <i class="fa fa-users"></i> <span>Quản lý sinh viên</span>
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
-                        <li><a href="#">Danh sách sinh viên</a></li>
-                        <li><a href="#">Trạng thái sinh viên</a></li>
-						<li><a href="/create"><i class="fa fa-link"></i> <span>Enroll sinh viên</span></a></li>
+                        <li>
+                            <a href="#">
+                                <i class="fa fa-circle-o"></i> <span>Danh sách sinh viên</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa fa-circle-o"></i> <span>Trạng thái sinh viên</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa fa-circle-o"></i> <span>Enroll sinh viên</span>
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 <li class="treeview">
                     <a href="#">
-                        <i class="fa fa-link"></i>
-                        <span>Nhập dữ liệu</span>
+                        <i class="glyphicon glyphicon-save"></i> <span>Nhập dữ liệu</span>
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
-                        <li><a href="#">Danh sách sinh viên</a></li>
-                        <li><a href="#">Danh sách điểm</a></li>
+                        <li>
+                            <a href="#">
+                                <i class="fa fa-circle-o"></i> <span>Danh sách sinh viên</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa fa-circle-o"></i> <span>Danh sách điểm</span>
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 <li class="treeview">
                     <a href="#">
-                        <i class="fa fa-link"></i>
-                        <span>Xuất dữ liệu</span>
+                        <i class="glyphicon glyphicon-open"></i> <span>Xuất dữ liệu</span>
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
-                        <li><a href="#">Danh sách đi OJT</a></li>
-                        <li><a href="#">Danh sách làm đồ án</a></li>
-                        <li><a href="#">Danh sách tốt nghiệp</a></li>
-                        <li><a href="#">Danh sách đóng học phí</a></li>
-                        <li><a href="#">Danh sách học lại</a></li>
-                        <li><a href="#">Danh sách chậm tiến độ</a></li>
+                        <li>
+                            <a href="#">
+                                <i class="fa fa-circle-o"></i> <span>Danh sách đi OJT</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa fa-circle-o"></i> <span>Danh sách làm đồ án</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa fa-circle-o"></i> <span>Danh sách tốt nghiệp</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa fa-circle-o"></i> <span>Danh sách đóng học phí</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa fa-circle-o"></i> <span>Danh sách học lại</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#">
+                                <i class="fa fa-circle-o"></i> <span>Danh sách chậm tiến độ</span>
+                            </a>
+                        </li>
                     </ul>
                 </li>
             </ul><!-- /.sidebar-menu -->
@@ -166,16 +207,6 @@
         <!-- Content Header (Page header) -->
         <dec:body/>
     </div><!-- /.content-wrapper -->
-
-    <!-- Main Footer -->
-    <footer class="main-footer">
-        <!-- To the right -->
-        <div class="pull-right hidden-xs">
-            Anything you want
-        </div>
-        <!-- Default to the left -->
-        <strong>Copyright &copy; 2015 <a href="#">Company</a>.</strong> All rights reserved.
-    </footer>
 
     <!-- Control Sidebar -->
     <aside class="control-sidebar control-sidebar-dark">

@@ -15,12 +15,12 @@ import java.util.ArrayList;
 @Controller
 public class HomeController {
     @RequestMapping("/")
-    public ModelAndView Index() {
-        ModelAndView view = new ModelAndView("Index");
-        view.addObject("title", "Main");
-        view.addObject("message", "Welcome!");
+    public String Index() {
+//        ModelAndView view = new ModelAndView("Index");
+//        view.addObject("title", "Main");
+//        view.addObject("message", "Welcome!");
 
-        return view;
+        return "Dashboard";
     }
 
     @RequestMapping("/next")
