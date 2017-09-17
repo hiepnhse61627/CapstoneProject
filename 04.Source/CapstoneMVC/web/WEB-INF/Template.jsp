@@ -139,6 +139,7 @@
                     <ul class="treeview-menu">
                         <li><a href="#">Danh sách sinh viên</a></li>
                         <li><a href="#">Danh sách điểm</a></li>
+                        <li><a href="/subject">Danh sách môn học</a></li>
                     </ul>
                 </li>
                 <li class="treeview">
