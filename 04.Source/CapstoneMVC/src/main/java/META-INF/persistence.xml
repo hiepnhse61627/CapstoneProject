@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence" version="2.1">
-
-    <persistence-unit name="NewPersistenceUnit">
+    <persistence-unit name="CapstonePersistence">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <class>com.capstone.entities.CourseEntity</class>
         <class>com.capstone.entities.MarksEntity</class>
@@ -9,6 +8,11 @@
         <class>com.capstone.entities.StudentEntity</class>
         <class>com.capstone.entities.SubjectEntity</class>
         <class>com.capstone.entities.SubjectMarkComponentEntity</class>
+        <class>com.capstone.entities.CurriculumEntity</class>
+        <class>com.capstone.entities.DocTypeEntity</class>
+        <class>com.capstone.entities.DocumentEntity</class>
+        <class>com.capstone.entities.DocumentStudentEntity</class>
+        <class>com.capstone.entities.ProgramEntity</class>
         <properties>
             <property name="eclipselink.jdbc.url" value="jdbc:sqlserver://thecapstoneproject.database.windows.net;database=CapstoneProject"/>
             <property name="eclipselink.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>

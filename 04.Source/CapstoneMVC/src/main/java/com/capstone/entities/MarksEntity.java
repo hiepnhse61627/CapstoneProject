@@ -7,12 +7,13 @@ import javax.persistence.*;
 public class MarksEntity {
     private int id;
     private String subjectId;
-    private String rollNumber;
+    private Integer studentId;
     private Integer semesterId;
     private Integer courseId;
     private Double averageMark;
     private String status;
     private SubjectMarkComponentEntity subjectMarkComponentBySubjectId;
+    private StudentEntity studentByStudentId;
     private RealSemesterEntity realSemesterBySemesterId;
     private CourseEntity courseByCourseId;
 
@@ -37,13 +38,13 @@ public class MarksEntity {
     }
 
     @Basic
-    @Column(name = "RollNumber")
-    public String getRollNumber() {
-        return rollNumber;
+    @Column(name = "StudentId")
+    public Integer getStudentId() {
+        return studentId;
     }
 
-    public void setRollNumber(String rollNumber) {
-        this.rollNumber = rollNumber;
+    public void setStudentId(Integer studentId) {
+        this.studentId = studentId;
     }
 
     @Basic
@@ -95,7 +96,7 @@ public class MarksEntity {
 
         if (id != that.id) return false;
         if (subjectId != null ? !subjectId.equals(that.subjectId) : that.subjectId != null) return false;
-        if (rollNumber != null ? !rollNumber.equals(that.rollNumber) : that.rollNumber != null) return false;
+        if (studentId != null ? !studentId.equals(that.studentId) : that.studentId != null) return false;
         if (semesterId != null ? !semesterId.equals(that.semesterId) : that.semesterId != null) return false;
         if (courseId != null ? !courseId.equals(that.courseId) : that.courseId != null) return false;
         if (averageMark != null ? !averageMark.equals(that.averageMark) : that.averageMark != null) return false;
@@ -108,7 +109,7 @@ public class MarksEntity {
     public int hashCode() {
         int result = id;
         result = 31 * result + (subjectId != null ? subjectId.hashCode() : 0);
-        result = 31 * result + (rollNumber != null ? rollNumber.hashCode() : 0);
+        result = 31 * result + (studentId != null ? studentId.hashCode() : 0);
         result = 31 * result + (semesterId != null ? semesterId.hashCode() : 0);
         result = 31 * result + (courseId != null ? courseId.hashCode() : 0);
         result = 31 * result + (averageMark != null ? averageMark.hashCode() : 0);
@@ -117,7 +118,7 @@ public class MarksEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "SubjectId", referencedColumnName = "SubjectId")
+    @PrimaryKeyJoinColumn(name = "SubjectId", referencedColumnName = "SubjectId")
     public SubjectMarkComponentEntity getSubjectMarkComponentBySubjectId() {
         return subjectMarkComponentBySubjectId;
     }
@@ -127,7 +128,17 @@ public class MarksEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "SemesterId", referencedColumnName = "Id")
+    @PrimaryKeyJoinColumn(name = "StudentId", referencedColumnName = "ID")
+    public StudentEntity getStudentByStudentId() {
+        return studentByStudentId;
+    }
+
+    public void setStudentByStudentId(StudentEntity studentByStudentId) {
+        this.studentByStudentId = studentByStudentId;
+    }
+
+    @ManyToOne
+    @PrimaryKeyJoinColumn(name = "SemesterId", referencedColumnName = "Id")
     public RealSemesterEntity getRealSemesterBySemesterId() {
         return realSemesterBySemesterId;
     }
@@ -137,7 +148,7 @@ public class MarksEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "CourseId", referencedColumnName = "Id")
+    @PrimaryKeyJoinColumn(name = "CourseId", referencedColumnName = "Id")
     public CourseEntity getCourseByCourseId() {
         return courseByCourseId;
     }

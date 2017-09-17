@@ -2,11 +2,8 @@ package com.capstone.controllers;
 
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
-import com.capstone.services.IStudentService;
-import com.capstone.services.StudentServiceImpl;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.util.StringUtil;
+
+
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -27,14 +24,7 @@ import java.util.List;
 @Controller
 public class UploadController {
 
-    IStudentService studentService = new StudentServiceImpl();
-
-    @RequestMapping(value = "/uploadStudentList")
-    public String uploadStudentList() {
-        return "uploadStudentList";
-    }
-
-    @RequestMapping(value = "/uploadStudentList", method = RequestMethod.POST)
+    @RequestMapping(value = "/uploadFile", method = RequestMethod.POST)
     public void uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
         InputStream is = file.getInputStream();
 
@@ -51,8 +41,8 @@ public class UploadController {
             row = spreadsheet.getRow(rowIndex);
             if (row != null) {
                 StudentEntity student = new StudentEntity();
-                Cell rollNumberCell = row.getCell(rollNumberIndex);
-                Cell studentNameCell = row.getCell(studentNameIndex);
+                XSSFCell rollNumberCell = row.getCell(rollNumberIndex);
+                XSSFCell studentNameCell = row.getCell(studentNameIndex);
                 if (rollNumberCell != null) {
                     System.out.println(rollNumberCell.getStringCellValue() + " \t\t ");
                     student.setRollNumber(rollNumberCell.getStringCellValue());
@@ -67,7 +57,7 @@ public class UploadController {
                 }
             }
         }
-        studentService.createStudentList(students);
+        System.out.println("Danh sach sinh vien: " + students.size());
     }
 
     @RequestMapping(value = "/uploadMark", method = RequestMethod.POST)
@@ -107,4 +97,5 @@ public class UploadController {
         }
         System.out.println("Bang Diem: " + markList.size());
     }
+
 }

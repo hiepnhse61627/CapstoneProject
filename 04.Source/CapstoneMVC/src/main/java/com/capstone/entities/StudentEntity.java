@@ -1,6 +1,7 @@
 package com.capstone.entities;
 
 import javax.persistence.*;
+import java.util.Collection;
 
 @Entity
 @Table(name = "Student", schema = "dbo", catalog = "CapstoneProject")
@@ -8,7 +9,8 @@ public class StudentEntity {
     private int id;
     private String rollNumber;
     private String fullName;
-    private MarksEntity marksByRollNumber;
+    private Collection<DocumentStudentEntity> documentStudentsById;
+    private Collection<MarksEntity> marksById;
 
     @Id
     @Column(name = "ID")
@@ -63,13 +65,21 @@ public class StudentEntity {
         return result;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "RollNumber", referencedColumnName = "RollNumber", nullable = false)
-    public MarksEntity getMarksByRollNumber() {
-        return marksByRollNumber;
+    @OneToMany(mappedBy = "studentByStudentId")
+    public Collection<DocumentStudentEntity> getDocumentStudentsById() {
+        return documentStudentsById;
     }
 
-    public void setMarksByRollNumber(MarksEntity marksByRollNumber) {
-        this.marksByRollNumber = marksByRollNumber;
+    public void setDocumentStudentsById(Collection<DocumentStudentEntity> documentStudentsById) {
+        this.documentStudentsById = documentStudentsById;
+    }
+
+    @OneToMany(mappedBy = "studentByStudentId")
+    public Collection<MarksEntity> getMarksById() {
+        return marksById;
+    }
+
+    public void setMarksById(Collection<MarksEntity> marksById) {
+        this.marksById = marksById;
     }
 }
