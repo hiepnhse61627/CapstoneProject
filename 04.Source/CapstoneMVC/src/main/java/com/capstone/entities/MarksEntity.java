@@ -118,7 +118,7 @@ public class MarksEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "SubjectId", referencedColumnName = "SubjectId")
+    @PrimaryKeyJoinColumn(name = "SubjectId", referencedColumnName = "SubjectId")
     public SubjectMarkComponentEntity getSubjectMarkComponentBySubjectId() {
         return subjectMarkComponentBySubjectId;
     }
@@ -128,7 +128,7 @@ public class MarksEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "StudentId", referencedColumnName = "ID")
+    @PrimaryKeyJoinColumn(name = "StudentId", referencedColumnName = "ID")
     public StudentEntity getStudentByStudentId() {
         return studentByStudentId;
     }
@@ -138,7 +138,7 @@ public class MarksEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "SemesterId", referencedColumnName = "Id")
+    @PrimaryKeyJoinColumn(name = "SemesterId", referencedColumnName = "Id")
     public RealSemesterEntity getRealSemesterBySemesterId() {
         return realSemesterBySemesterId;
     }
@@ -148,7 +148,7 @@ public class MarksEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "CourseId", referencedColumnName = "Id")
+    @PrimaryKeyJoinColumn(name = "CourseId", referencedColumnName = "Id")
     public CourseEntity getCourseByCourseId() {
         return courseByCourseId;
     }

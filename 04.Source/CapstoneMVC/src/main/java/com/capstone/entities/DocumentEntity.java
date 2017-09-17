@@ -93,7 +93,7 @@ public class DocumentEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "DocTypeId", referencedColumnName = "Id", nullable = false)
+    @PrimaryKeyJoinColumn(name = "DocTypeId", referencedColumnName = "Id")
     public DocTypeEntity getDocTypeByDocTypeId() {
         return docTypeByDocTypeId;
     }
@@ -103,7 +103,7 @@ public class DocumentEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "DocParentId", referencedColumnName = "Id")
+    @PrimaryKeyJoinColumn(name = "DocParentId", referencedColumnName = "Id")
     public DocumentEntity getDocumentByDocParentId() {
         return documentByDocParentId;
     }
