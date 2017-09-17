@@ -7,7 +7,7 @@ import java.util.Collection;
 @Table(name = "Student", schema = "dbo", catalog = "CapstoneProject")
 public class StudentEntity {
     private int id;
-    private int rollNumber;
+    private String rollNumber;
     private String fullName;
     private Collection<DocumentStudentEntity> documentStudentsById;
     private Collection<MarksEntity> marksById;
@@ -24,11 +24,11 @@ public class StudentEntity {
 
     @Basic
     @Column(name = "RollNumber")
-    public int getRollNumber() {
+    public String getRollNumber() {
         return rollNumber;
     }
 
-    public void setRollNumber(int rollNumber) {
+    public void setRollNumber(String rollNumber) {
         this.rollNumber = rollNumber;
     }
 
@@ -50,7 +50,7 @@ public class StudentEntity {
         StudentEntity that = (StudentEntity) o;
 
         if (id != that.id) return false;
-        if (rollNumber != that.rollNumber) return false;
+        if (rollNumber != null ? !rollNumber.equals(that.rollNumber) : that.rollNumber != null) return false;
         if (fullName != null ? !fullName.equals(that.fullName) : that.fullName != null) return false;
 
         return true;
@@ -59,7 +59,7 @@ public class StudentEntity {
     @Override
     public int hashCode() {
         int result = id;
-        result = 31 * result + rollNumber;
+        result = 31 * result + (rollNumber != null ? rollNumber.hashCode() : 0);
         result = 31 * result + (fullName != null ? fullName.hashCode() : 0);
         return result;
     }
