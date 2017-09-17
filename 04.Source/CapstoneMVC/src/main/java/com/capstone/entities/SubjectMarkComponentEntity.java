@@ -61,7 +61,7 @@ public class SubjectMarkComponentEntity {
         this.marksBySubjectId = marksBySubjectId;
     }
 
-    @OneToOne(mappedBy = "subjectMarkComponentBySubjectId")
+    @OneToOne(mappedBy = "subjectMarkComponentById")
     public SubjectEntity getSubjectBySubjectId() {
         return subjectBySubjectId;
     }

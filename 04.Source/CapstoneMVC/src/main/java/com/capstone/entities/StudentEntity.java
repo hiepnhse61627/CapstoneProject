@@ -1,18 +1,19 @@
 package com.capstone.entities;
 
 import javax.persistence.*;
+import java.util.Collection;
 
 @Entity
 @Table(name = "Student", schema = "dbo", catalog = "CapstoneProject")
 public class StudentEntity {
     private int id;
-    private String rollNumber;
+    private int rollNumber;
     private String fullName;
-    private MarksEntity marksByRollNumber;
+    private Collection<DocumentStudentEntity> documentStudentsById;
+    private Collection<MarksEntity> marksById;
 
     @Id
     @Column(name = "ID")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int getId() {
         return id;
     }
@@ -23,11 +24,11 @@ public class StudentEntity {
 
     @Basic
     @Column(name = "RollNumber")
-    public String getRollNumber() {
+    public int getRollNumber() {
         return rollNumber;
     }
 
-    public void setRollNumber(String rollNumber) {
+    public void setRollNumber(int rollNumber) {
         this.rollNumber = rollNumber;
     }
 
@@ -49,7 +50,7 @@ public class StudentEntity {
         StudentEntity that = (StudentEntity) o;
 
         if (id != that.id) return false;
-        if (rollNumber != null ? !rollNumber.equals(that.rollNumber) : that.rollNumber != null) return false;
+        if (rollNumber != that.rollNumber) return false;
         if (fullName != null ? !fullName.equals(that.fullName) : that.fullName != null) return false;
 
         return true;
@@ -58,18 +59,26 @@ public class StudentEntity {
     @Override
     public int hashCode() {
         int result = id;
-        result = 31 * result + (rollNumber != null ? rollNumber.hashCode() : 0);
+        result = 31 * result + rollNumber;
         result = 31 * result + (fullName != null ? fullName.hashCode() : 0);
         return result;
     }
 
-    @ManyToOne
-    @JoinColumn(name = "RollNumber", referencedColumnName = "RollNumber", nullable = false)
-    public MarksEntity getMarksByRollNumber() {
-        return marksByRollNumber;
+    @OneToMany(mappedBy = "studentByStudentId")
+    public Collection<DocumentStudentEntity> getDocumentStudentsById() {
+        return documentStudentsById;
     }
 
-    public void setMarksByRollNumber(MarksEntity marksByRollNumber) {
-        this.marksByRollNumber = marksByRollNumber;
+    public void setDocumentStudentsById(Collection<DocumentStudentEntity> documentStudentsById) {
+        this.documentStudentsById = documentStudentsById;
+    }
+
+    @OneToMany(mappedBy = "studentByStudentId")
+    public Collection<MarksEntity> getMarksById() {
+        return marksById;
+    }
+
+    public void setMarksById(Collection<MarksEntity> marksById) {
+        this.marksById = marksById;
     }
 }

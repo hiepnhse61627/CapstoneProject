@@ -16,7 +16,7 @@ public class SubjectController {
 
     @RequestMapping(value = "/subject", method = RequestMethod.POST)
     public @ResponseBody String Upload(@RequestParam("file") MultipartFile file) {
-        System.out.println("File uploaded: " + file.getName());
+//        System.out.println("File uploaded: " + file.getName());
         return "{ 'success': true }";
     }
 }
