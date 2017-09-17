@@ -10,5 +10,19 @@
         <property name="applicationName" value="DataGrip" />
       </driver-properties>
     </data-source>
+    <data-source source="LOCAL" name="NewPersistenceUnit/EclipseLink" uuid="7cffae4b-7947-407c-9475-7387c8bfa238">
+      <driver-ref>azure.ms</driver-ref>
+      <imported>true</imported>
+      <remarks>$PROJECT_DIR$/src/main/java/META-INF/persistence.xml</remarks>
+      <jdbc-driver>com.microsoft.sqlserver.jdbc.SQLServerDriver</jdbc-driver>
+      <jdbc-url>jdbc:sqlserver://thecapstoneproject.database.windows.net;database=CapstoneProject</jdbc-url>
+      <driver-properties>
+        <property name="loginTimeout" value="30" />
+        <property name="trustServerCertificate" value="false" />
+        <property name="encrypt" value="true" />
+        <property name="hostNameInCertificate" value="*.database.windows.net" />
+        <property name="applicationName" value="DataGrip" />
+      </driver-properties>
+    </data-source>
   </component>
 </project>
