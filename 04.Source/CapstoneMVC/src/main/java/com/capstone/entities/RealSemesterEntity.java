@@ -1,12 +1,14 @@
 package com.capstone.entities;
 
 import javax.persistence.*;
+import java.util.Collection;
 
 @Entity
 @Table(name = "RealSemester", schema = "dbo", catalog = "CapstoneProject")
 public class RealSemesterEntity {
     private int id;
     private String semester;
+    private Collection<MarksEntity> marksById;
 
     @Id
     @Column(name = "Id")
@@ -46,5 +48,14 @@ public class RealSemesterEntity {
         int result = id;
         result = 31 * result + (semester != null ? semester.hashCode() : 0);
         return result;
+    }
+
+    @OneToMany(mappedBy = "realSemesterBySemesterId")
+    public Collection<MarksEntity> getMarksById() {
+        return marksById;
+    }
+
+    public void setMarksById(Collection<MarksEntity> marksById) {
+        this.marksById = marksById;
     }
 }

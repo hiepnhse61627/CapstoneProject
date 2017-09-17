@@ -11,11 +11,5 @@
       <user-name>projectadmin</user-name>
       <introspection-schemas>CapstoneProject:dbo</introspection-schemas>
     </data-source>
-    <data-source name="CapPersistence/EclipseLink" uuid="50d09760-de1e-4a3f-9d82-691ce90504af">
-      <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" />
-      <secret-storage>master_key</secret-storage>
-      <first-sync>true</first-sync>
-      <user-name>projectadmin</user-name>
-    </data-source>
   </component>
 </project>

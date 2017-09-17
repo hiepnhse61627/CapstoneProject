@@ -12,6 +12,9 @@ public class MarksEntity {
     private Integer courseId;
     private Double averageMark;
     private String status;
+    private SubjectMarkComponentEntity subjectMarkComponentBySubjectId;
+    private RealSemesterEntity realSemesterBySemesterId;
+    private CourseEntity courseByCourseId;
 
     @Id
     @Column(name = "Id")
@@ -111,5 +114,35 @@ public class MarksEntity {
         result = 31 * result + (averageMark != null ? averageMark.hashCode() : 0);
         result = 31 * result + (status != null ? status.hashCode() : 0);
         return result;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "SubjectId", referencedColumnName = "SubjectId")
+    public SubjectMarkComponentEntity getSubjectMarkComponentBySubjectId() {
+        return subjectMarkComponentBySubjectId;
+    }
+
+    public void setSubjectMarkComponentBySubjectId(SubjectMarkComponentEntity subjectMarkComponentBySubjectId) {
+        this.subjectMarkComponentBySubjectId = subjectMarkComponentBySubjectId;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "SemesterId", referencedColumnName = "Id")
+    public RealSemesterEntity getRealSemesterBySemesterId() {
+        return realSemesterBySemesterId;
+    }
+
+    public void setRealSemesterBySemesterId(RealSemesterEntity realSemesterBySemesterId) {
+        this.realSemesterBySemesterId = realSemesterBySemesterId;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "CourseId", referencedColumnName = "Id")
+    public CourseEntity getCourseByCourseId() {
+        return courseByCourseId;
+    }
+
+    public void setCourseByCourseId(CourseEntity courseByCourseId) {
+        this.courseByCourseId = courseByCourseId;
     }
 }

@@ -25,8 +25,6 @@ public class HomeController {
 
     @RequestMapping("/next")
     public String Next() throws IOException {
-        EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapPersistence");
-        EntityManager manager = fac.createEntityManager();
         return "Search";
     }
 

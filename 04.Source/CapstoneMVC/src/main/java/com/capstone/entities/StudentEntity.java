@@ -8,6 +8,7 @@ public class StudentEntity {
     private int id;
     private String rollNumber;
     private String fullName;
+    private MarksEntity marksByRollNumber;
 
     @Id
     @Column(name = "ID")
@@ -60,5 +61,15 @@ public class StudentEntity {
         result = 31 * result + (rollNumber != null ? rollNumber.hashCode() : 0);
         result = 31 * result + (fullName != null ? fullName.hashCode() : 0);
         return result;
+    }
+
+    @ManyToOne
+    @JoinColumn(name = "RollNumber", referencedColumnName = "RollNumber", nullable = false)
+    public MarksEntity getMarksByRollNumber() {
+        return marksByRollNumber;
+    }
+
+    public void setMarksByRollNumber(MarksEntity marksByRollNumber) {
+        this.marksByRollNumber = marksByRollNumber;
     }
 }
