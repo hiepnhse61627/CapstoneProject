@@ -127,6 +127,7 @@
                     <ul class="treeview-menu">
                         <li><a href="#">Danh sách sinh viên</a></li>
                         <li><a href="#">Trạng thái sinh viên</a></li>
+						<li><a href="/create"><i class="fa fa-link"></i> <span>Enroll sinh viên</span></a></li>
                     </ul>
                 </li>
                 <li class="treeview">
@@ -245,6 +246,7 @@
 
 <!-- jQuery 2.1.4 -->
 <script src="/Resources/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+<script src="/Resources/plugins/serializeToJson/jquery.serializejson.min.js"></script>
 <!-- Bootstrap 3.3.5 -->
 <script src="/Resources/bootstrap/js/bootstrap.min.js"></script>
 <!-- AdminLTE App -->
