@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+<<<<<<< HEAD
     <data-source source="LOCAL" name="CapstoneProject@thecapstoneproject.database.windows.net" uuid="99cadad5-5c74-49fa-b1c6-2e54eb78db0a">
       <driver-ref>sqlserver.ms</driver-ref>
       <synchronize>true</synchronize>

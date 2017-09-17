@@ -66,7 +66,7 @@ public class SubjectController {
             }
             is.close();
 
-            EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstoneProject");
+            EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager manager = fac.createEntityManager();
             TypedQuery<SubjectEntity> query = manager.createQuery("SELECT c FROM SubjectEntity c", SubjectEntity.class);
             List<SubjectEntity> cur = query.getResultList();
