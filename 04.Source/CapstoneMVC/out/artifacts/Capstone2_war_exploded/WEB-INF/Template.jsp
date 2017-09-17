@@ -221,7 +221,7 @@
                 <li class="header">HEADER</li>
                 <!-- Optionally, you can add icons to the links -->
                 <li class="active"><a href="#"><i class="fa fa-link"></i> <span>Link</span></a></li>
-                <li><a href="/search"><i class="fa fa-link"></i> <span>Search</span></a></li>
+                <li><a href="/create"><i class="fa fa-link"></i> <span>Add student</span></a></li>
                 <li class="treeview">
                     <a href="#"><i class="fa fa-link"></i> <span>Multilevel</span> <i
                             class="fa fa-angle-left pull-right"></i></a>
@@ -320,6 +320,7 @@
 
 <!-- jQuery 2.1.4 -->
 <script src="/Resources/plugins/jQuery/jQuery-2.1.4.min.js"></script>
+<script src="/Resources/plugins/serializeToJson/jquery.serializejson.min.js"></script>
 <!-- Bootstrap 3.3.5 -->
 <script src="/Resources/bootstrap/js/bootstrap.min.js"></script>
 <!-- AdminLTE App -->

@@ -46,6 +46,8 @@
           <element id="library" level="project" name="Maven: com.google.code.gson:gson:2.2.4" />
           <element id="library" level="project" name="Maven: org.slf4j:slf4j-api:1.7.5" />
           <element id="library" level="project" name="aopalliance-1.0" />
+          <element id="library" level="project" name="Maven: org.codehaus.jackson:jackson-core-asl:1.9.13" />
+          <element id="library" level="project" name="Maven: org.codehaus.jackson:jackson-mapper-asl:1.9.13" />
         </element>
       </element>
       <element id="javaee-facet-resources" facet="spring-mvc-quickstart/web/Web" />
