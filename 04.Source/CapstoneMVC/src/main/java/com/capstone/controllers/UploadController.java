@@ -1,10 +1,9 @@
-package com.capstone.controller;
+package com.capstone.controllers;
 
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.util.StringUtil;
+
+
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -42,8 +41,8 @@ public class UploadController {
             row = spreadsheet.getRow(rowIndex);
             if (row != null) {
                 StudentEntity student = new StudentEntity();
-                Cell rollNumberCell = row.getCell(rollNumberIndex);
-                Cell studentNameCell = row.getCell(studentNameIndex);
+                XSSFCell rollNumberCell = row.getCell(rollNumberIndex);
+                XSSFCell studentNameCell = row.getCell(studentNameIndex);
                 if (rollNumberCell != null) {
                     System.out.println(rollNumberCell.getStringCellValue() + " \t\t ");
                     student.setRollNumber(rollNumberCell.getStringCellValue());
@@ -98,4 +97,5 @@ public class UploadController {
         }
         System.out.println("Bang Diem: " + markList.size());
     }
+
 }
