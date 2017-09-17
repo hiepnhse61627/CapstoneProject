@@ -58,4 +58,40 @@ public class UploadController {
         }
         System.out.println("Danh sach sinh vien: " + students.size());
     }
+
+    @RequestMapping(value = "/uploadMark", method = RequestMethod.POST)
+    public void uploadMark(@RequestParam("file") MultipartFile file) throws IOException {
+        InputStream is = file.getInputStream();
+
+        XSSFWorkbook workbook = new XSSFWorkbook(is);
+        XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+        XSSFRow row;
+        int rollNumberIndex = 1;
+        int studentNameIndex = 2;
+        int excelDataIndex = 3;
+        List<StudentEntity> students = new ArrayList<StudentEntity>();
+
+        for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+            row = spreadsheet.getRow(rowIndex);
+            if (row != null) {
+                StudentEntity student = new StudentEntity();
+                Cell rollNumberCell = row.getCell(rollNumberIndex);
+                Cell studentNameCell = row.getCell(studentNameIndex);
+                if (rollNumberCell != null) {
+                    System.out.println(rollNumberCell.getStringCellValue() + " \t\t ");
+                    student.setRollNumber(rollNumberCell.getStringCellValue());
+                }
+                if (studentNameCell != null) {
+                    System.out.println(studentNameCell.getStringCellValue());
+                    student.setFullName(studentNameCell.getStringCellValue());
+                }
+
+                if (student.getRollNumber() != null) {
+                    students.add(student);
+                }
+            }
+        }
+        System.out.println("Danh sach sinh vien: " + students.size());
+    }
 }
