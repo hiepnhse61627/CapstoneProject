@@ -65,7 +65,7 @@ public class CurriculumEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "ProgramId", referencedColumnName = "Id", nullable = false)
+    @PrimaryKeyJoinColumn(name = "ProgramId", referencedColumnName = "Id")
     public ProgramEntity getProgramByProgramId() {
         return programByProgramId;
     }

@@ -87,7 +87,7 @@ public class SubjectEntity {
     }
 
     @OneToOne
-    @JoinColumn(name = "Id", referencedColumnName = "SubjectId", nullable = false)
+    @PrimaryKeyJoinColumn(name = "Id", referencedColumnName = "SubjectId")
     public SubjectMarkComponentEntity getSubjectMarkComponentById() {
         return subjectMarkComponentById;
     }

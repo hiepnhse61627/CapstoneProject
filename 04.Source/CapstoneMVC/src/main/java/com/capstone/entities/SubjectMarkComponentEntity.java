@@ -62,6 +62,7 @@ public class SubjectMarkComponentEntity {
     }
 
     @OneToOne(mappedBy = "subjectMarkComponentById")
+    @MapsId
     public SubjectEntity getSubjectBySubjectId() {
         return subjectBySubjectId;
     }

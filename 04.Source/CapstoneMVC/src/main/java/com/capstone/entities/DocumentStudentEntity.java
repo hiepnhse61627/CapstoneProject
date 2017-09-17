@@ -78,7 +78,7 @@ public class DocumentStudentEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "DocumentId", referencedColumnName = "Id", nullable = false)
+    @PrimaryKeyJoinColumn(name = "DocumentId", referencedColumnName = "Id")
     public DocumentEntity getDocumentByDocumentId() {
         return documentByDocumentId;
     }
@@ -88,7 +88,7 @@ public class DocumentStudentEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "StudentId", referencedColumnName = "ID", nullable = false)
+    @PrimaryKeyJoinColumn(name = "StudentId", referencedColumnName = "ID")
     public StudentEntity getStudentByStudentId() {
         return studentByStudentId;
     }
@@ -98,7 +98,7 @@ public class DocumentStudentEntity {
     }
 
     @ManyToOne
-    @JoinColumn(name = "CurriculumId", referencedColumnName = "Id", nullable = false)
+    @PrimaryKeyJoinColumn(name = "CurriculumId", referencedColumnName = "Id")
     public CurriculumEntity getCurriculumByCurriculumId() {
         return curriculumByCurriculumId;
     }
