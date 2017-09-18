@@ -52,16 +52,20 @@ public class SubjectController {
                         } else if (cell.getColumnIndex() == 4) {
                             en.setCredits((int) cell.getNumericCellValue());
                         } else if (cell.getColumnIndex() == 5) {
-                            String tmp = cell.getStringCellValue().trim();
-                            if (tmp == null || tmp.isEmpty()) {
-                                en.setPrequisiteId(null);
-                            } else {
-                                en.setPrequisiteId(tmp.split("/")[0]);
-                            }
+//                            String tmp = cell.getStringCellValue().trim();
+//                            if (tmp != null && !tmp.isEmpty()) {
+//                                tmp = tmp.split("/")[0];
+//                            } else {
+//                                tmp = null;
+//                            }
+
+//                             INSERT WITH PREQUISITE ERRORS A LOT
+                            en.setPrequisiteId(null);
                         }
                     }
                 }
-                if (en.getName() != null && !en.getName().isEmpty() && !columndata.contains(en)) {
+
+                if (en.getName() != null && !en.getName().isEmpty() && !columndata.stream().anyMatch(c -> c.getId().equals(en.getId()))) {
                     columndata.add(en);
                 }
             }
