@@ -24,15 +24,35 @@
         var form = new FormData();
         form.append('file', $('#file')[0].files[0]);
 //        console.log(form);
-        $.ajax({
-            type: "POST",
-            url: "/subject",
-            processData: false,
-            contentType: false,
-            data: form,
-            success: function(result) {
-                console.log(result);
-            }
+
+
+        swal({
+            title: 'Đang xử lý',
+            text: 'Tiến trình có thể kéo dài vài phút!',
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                $.ajax({
+                    type: "POST",
+                    url: "/subject",
+                    processData: false,
+                    contentType: false,
+                    data: form,
+                    success: function(result) {
+                        console.log(result);
+                        if (result.success) {
+                            swal(
+                                'Thành công!',
+                                'Đã import các môn học!',
+                                'success'
+                            );
+                        } else {
+                            swal('Đã xảy ra lỗi!', result.message, 'error');
+                        }
+                    }
+                });
+            },
+            allowOutsideClick: false
         });
     }
 </script>

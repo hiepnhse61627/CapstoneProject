@@ -27,7 +27,7 @@ public class SubjectController {
 
     @RequestMapping(value = "/subject", method = RequestMethod.POST)
     @ResponseBody
-    public List<SubjectEntity> Upload(@RequestParam("file") MultipartFile file) {
+    public String Upload(@RequestParam("file") MultipartFile file) {
         List<SubjectEntity> columndata = null;
         try {
             InputStream is = file.getInputStream();
@@ -75,7 +75,9 @@ public class SubjectController {
             service.insertSubjectList(columndata);
         } catch (Exception e) {
             e.printStackTrace();
+            return "{ \"success\" : \"false\", \"message\" : \"" + e.getMessage() + "\" }";
         }
-        return columndata;
+
+        return "{ \"success\" : \"true\" }";
     }
 }

@@ -37,6 +37,8 @@ public class ExSubjectEntityJpaController extends StudentEntityJpaController {
 
                 manager.persist(en);
                 manager.persist(entity);
+            } else {
+                System.out.println(en.getId() + " has exist!");
             }
         }
 

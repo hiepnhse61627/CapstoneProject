@@ -21,6 +21,9 @@
     <link rel="stylesheet" href="/Resources/ionicons-2.0.1/css/ionicons.min.css"/>
     <link rel="stylesheet" href="/Resources/dist/css/AdminLTE.min.css"/>
     <link rel="stylesheet" href="/Resources/dist/css/skins/skin-custom.css"/>
+    <link rel="stylesheet" href="/Resources/dist/css/skins/skin-custom.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/sweetalert2/sweetalert2.min.css"/>
+
 
     <style>
         .logo-mini img {
@@ -251,5 +254,6 @@
 <script src="/Resources/bootstrap/js/bootstrap.min.js"></script>
 <!-- AdminLTE App -->
 <script src="/Resources/dist/js/app.min.js"></script>
+<script src="/Resources/plugins/sweetalert2/sweetalert2.min.js"></script>
 
 </html>
