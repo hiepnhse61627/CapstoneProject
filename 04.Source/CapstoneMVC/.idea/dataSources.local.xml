@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="dataSourceStorageLocal">
-    <data-source name="CapstoneProject@thecapstoneproject.database.windows.net" uuid="bbd12e21-9c7c-4ff5-869e-7daf26653e46">
+    <data-source name="CapstonePersistence/EclipseLink" uuid="43056399-1f60-4a56-a426-4c75ea0b9210">
       <database-info product="Microsoft SQL Server" version="12.00.900" jdbc-version="4.2" driver-name="Microsoft JDBC Driver 6.0 for SQL Server" driver-version="6.0.8112.100">
         <extra-name-characters>$#@</extra-name-characters>
         <identifier-quote-string>&quot;</identifier-quote-string>
       </database-info>
       <case-sensitivity plain-identifiers="mixed" quoted-identifiers="mixed" />
-      <secret-storage>master_key</secret-storage>
       <user-name>projectadmin</user-name>
       <introspection-schemas>CapstoneProject:dbo</introspection-schemas>
     </data-source>

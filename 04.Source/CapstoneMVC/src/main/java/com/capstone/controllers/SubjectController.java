@@ -1,12 +1,11 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.SubjectEntity;
+import com.capstone.services.SubjectServiceImpl;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -44,25 +42,33 @@ public class SubjectController {
                 SubjectEntity en = new SubjectEntity();
                 while (cellIterator.hasNext()) {
                     Cell cell = cellIterator.next();
-                    if(row.getRowNum() > 3){ //To filter column headings
-                        if(cell.getColumnIndex() == 1){// To match column index
+                    if (row.getRowNum() > 3) { //To filter column headings
+                        if (cell.getColumnIndex() == 1) {// To match column index
                             en.setId(cell.getStringCellValue());
                         } else if (cell.getColumnIndex() == 2) {
-                            en.setName(cell.getStringCellValue());
+                            en.setName(cell.getStringCellValue().trim());
                         } else if (cell.getColumnIndex() == 3) {
-                            en.setAbbreviation(cell.getStringCellValue());
+                            en.setAbbreviation(cell.getStringCellValue().trim());
                         } else if (cell.getColumnIndex() == 4) {
-                            en.setCredits((int)cell.getNumericCellValue());
+                            en.setCredits((int) cell.getNumericCellValue());
                         } else if (cell.getColumnIndex() == 5) {
-                            en.setPrequisiteId(cell.getStringCellValue());
+                            String tmp = cell.getStringCellValue().trim();
+                            if (tmp == null || tmp.isEmpty()) {
+                                en.setPrequisiteId(null);
+                            } else {
+                                en.setPrequisiteId(tmp.split("/")[0]);
+                            }
                         }
                     }
                 }
-                if (en.getName() != null && !en.getName().isEmpty()) {
+                if (en.getName() != null && !en.getName().isEmpty() && !columndata.contains(en)) {
                     columndata.add(en);
                 }
             }
             is.close();
+
+            SubjectServiceImpl service = new SubjectServiceImpl();
+            service.insertSubjectList(columndata);
         } catch (Exception e) {
             e.printStackTrace();
         }

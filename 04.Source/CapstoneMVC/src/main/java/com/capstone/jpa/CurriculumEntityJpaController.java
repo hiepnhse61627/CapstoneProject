@@ -5,19 +5,20 @@
  */
 package com.capstone.jpa;
 
-import com.capstone.entities.CurriculumEntity;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.capstone.entities.ProgramEntity;
-import com.capstone.entities.DocumentStudentEntity;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+
+import com.capstone.entities.CurriculumEntity;
+import com.capstone.entities.DocumentStudentEntity;
+import com.capstone.entities.ProgramEntity;
 import com.capstone.jpa.exceptions.IllegalOrphanException;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
