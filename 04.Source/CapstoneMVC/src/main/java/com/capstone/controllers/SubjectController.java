@@ -1,7 +1,7 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.SubjectEntity;
-import com.capstone.entities.SubjectMarkComponentEntity;
+import com.capstone.services.SubjectServiceImpl;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -13,10 +13,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.TypedQuery;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -50,50 +46,29 @@ public class SubjectController {
                         if (cell.getColumnIndex() == 1) {// To match column index
                             en.setId(cell.getStringCellValue());
                         } else if (cell.getColumnIndex() == 2) {
-                            en.setName(cell.getStringCellValue());
+                            en.setName(cell.getStringCellValue().trim());
                         } else if (cell.getColumnIndex() == 3) {
-                            en.setAbbreviation(cell.getStringCellValue());
+                            en.setAbbreviation(cell.getStringCellValue().trim());
                         } else if (cell.getColumnIndex() == 4) {
                             en.setCredits((int) cell.getNumericCellValue());
                         } else if (cell.getColumnIndex() == 5) {
-                            en.setPrequisiteId(cell.getStringCellValue());
+                            String tmp = cell.getStringCellValue().trim();
+                            if (tmp == null || tmp.isEmpty()) {
+                                en.setPrequisiteId(null);
+                            } else {
+                                en.setPrequisiteId(tmp.split("/")[0]);
+                            }
                         }
                     }
                 }
-                if (en.getName() != null && !en.getName().isEmpty()) {
+                if (en.getName() != null && !en.getName().isEmpty() && !columndata.contains(en)) {
                     columndata.add(en);
                 }
             }
             is.close();
 
-            EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
-            EntityManager manager = fac.createEntityManager();
-            TypedQuery<SubjectEntity> query = manager.createQuery("SELECT c FROM SubjectEntity c", SubjectEntity.class);
-            List<SubjectEntity> cur = query.getResultList();
-
-
-            manager.getTransaction().begin();
-            for (SubjectEntity en : columndata) {
-                try {
-                    if (!cur.contains(en)) {
-//                        SubjectMarkComponentEntity entity = new SubjectMarkComponentEntity();
-//                        entity.setSubjectId(en.getId());
-//                        entity.setComponentPercent(0);
-//
-//                        entity.setSubjectBySubjectId(en);
-//                        en.setSubjectMarkComponentById(entity);
-
-                        manager.persist(en);
-//                        manager.persist(entity);
-//                        manager.flush();
-//                        manager.clear();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            manager.getTransaction().commit();
-
+            SubjectServiceImpl service = new SubjectServiceImpl();
+            service.insertSubjectList(columndata);
         } catch (Exception e) {
             e.printStackTrace();
         }

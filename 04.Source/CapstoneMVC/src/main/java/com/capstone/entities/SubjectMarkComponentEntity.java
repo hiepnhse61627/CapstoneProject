@@ -36,10 +36,10 @@ public class SubjectMarkComponentEntity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        SubjectMarkComponentEntity that = (SubjectMarkComponentEntity) o;
+        SubjectMarkComponentEntity entity = (SubjectMarkComponentEntity) o;
 
-        if (subjectId != null ? !subjectId.equals(that.subjectId) : that.subjectId != null) return false;
-        if (componentPercent != null ? !componentPercent.equals(that.componentPercent) : that.componentPercent != null)
+        if (subjectId != null ? !subjectId.equals(entity.subjectId) : entity.subjectId != null) return false;
+        if (componentPercent != null ? !componentPercent.equals(entity.componentPercent) : entity.componentPercent != null)
             return false;
 
         return true;
@@ -61,8 +61,7 @@ public class SubjectMarkComponentEntity {
         this.marksBySubjectId = marksBySubjectId;
     }
 
-    @OneToOne(mappedBy = "subjectMarkComponentById")
-    @MapsId
+    @OneToOne(mappedBy = "subjectMarkComponentById", cascade = CascadeType.ALL)
     public SubjectEntity getSubjectBySubjectId() {
         return subjectBySubjectId;
     }

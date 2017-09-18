@@ -1,6 +1,7 @@
 package com.capstone.entities;
 
 import javax.persistence.*;
+import java.util.Collection;
 
 @Entity
 @Table(name = "Subject", schema = "dbo", catalog = "CapstoneProject")
@@ -11,10 +12,14 @@ public class SubjectEntity {
     private String prequisiteId;
     private Integer credits;
     private SubjectMarkComponentEntity subjectMarkComponentById;
+    private SubjectEntity subjectByPrequisiteId;
+    private Collection<SubjectEntity> subjectsById;
 
     @Id
     @Column(name = "Id")
-    public String getId() { return id; }
+    public String getId() {
+        return id;
+    }
 
     public void setId(String id) {
         this.id = id;
@@ -94,5 +99,24 @@ public class SubjectEntity {
 
     public void setSubjectMarkComponentById(SubjectMarkComponentEntity subjectMarkComponentById) {
         this.subjectMarkComponentById = subjectMarkComponentById;
+    }
+
+    @ManyToOne(cascade = CascadeType.ALL)
+    @PrimaryKeyJoinColumn(name = "PrequisiteId", referencedColumnName = "Id")
+    public SubjectEntity getSubjectByPrequisiteId() {
+        return subjectByPrequisiteId;
+    }
+
+    public void setSubjectByPrequisiteId(SubjectEntity subjectByPrequisiteId) {
+        this.subjectByPrequisiteId = subjectByPrequisiteId;
+    }
+
+    @OneToMany(mappedBy = "subjectByPrequisiteId")
+    public Collection<SubjectEntity> getSubjectsById() {
+        return subjectsById;
+    }
+
+    public void setSubjectsById(Collection<SubjectEntity> subjectsById) {
+        this.subjectsById = subjectsById;
     }
 }
