@@ -15,6 +15,11 @@
             <div class="form-group">
                 <label for="file">File</label>
                 <input type="file" accept=".xls" id="file" name="file" placeholder="Roll Number"/>
+            </div>
+            <div class="form-group">
+                Bấm vào <a class="link" href="/Resources/FileTemplates/SubjectList_Upload_Template.xls">Template</a> để tải về bản mẫu
+            </div>
+            <div class="form-group">
                 <button type="button" onclick="Add()" class="btn btn-success">Upload</button>
             </div>
         </div>
