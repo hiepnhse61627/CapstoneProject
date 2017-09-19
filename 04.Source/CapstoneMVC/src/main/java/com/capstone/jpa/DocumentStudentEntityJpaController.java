@@ -10,12 +10,15 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.util.List;
-import com.capstone.entities.*;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
+import com.capstone.entities.CurriculumEntity;
+import com.capstone.entities.DocumentEntity;
+import com.capstone.entities.DocumentStudentEntity;
+import com.capstone.entities.StudentEntity;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
@@ -37,33 +40,33 @@ public class DocumentStudentEntityJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            DocumentEntity documentByDocumentId = documentStudentEntity.getDocumentByDocumentId();
-            if (documentByDocumentId != null) {
-                documentByDocumentId = em.getReference(documentByDocumentId.getClass(), documentByDocumentId.getId());
-                documentStudentEntity.setDocumentByDocumentId(documentByDocumentId);
+            CurriculumEntity curriculumId = documentStudentEntity.getCurriculumId();
+            if (curriculumId != null) {
+                curriculumId = em.getReference(curriculumId.getClass(), curriculumId.getId());
+                documentStudentEntity.setCurriculumId(curriculumId);
             }
-            StudentEntity studentByStudentId = documentStudentEntity.getStudentByStudentId();
-            if (studentByStudentId != null) {
-                studentByStudentId = em.getReference(studentByStudentId.getClass(), studentByStudentId.getId());
-                documentStudentEntity.setStudentByStudentId(studentByStudentId);
+            DocumentEntity documentId = documentStudentEntity.getDocumentId();
+            if (documentId != null) {
+                documentId = em.getReference(documentId.getClass(), documentId.getId());
+                documentStudentEntity.setDocumentId(documentId);
             }
-            CurriculumEntity curriculumByCurriculumId = documentStudentEntity.getCurriculumByCurriculumId();
-            if (curriculumByCurriculumId != null) {
-                curriculumByCurriculumId = em.getReference(curriculumByCurriculumId.getClass(), curriculumByCurriculumId.getId());
-                documentStudentEntity.setCurriculumByCurriculumId(curriculumByCurriculumId);
+            StudentEntity studentId = documentStudentEntity.getStudentId();
+            if (studentId != null) {
+                studentId = em.getReference(studentId.getClass(), studentId.getId());
+                documentStudentEntity.setStudentId(studentId);
             }
             em.persist(documentStudentEntity);
-            if (documentByDocumentId != null) {
-                documentByDocumentId.getDocumentStudentsById().add(documentStudentEntity);
-                documentByDocumentId = em.merge(documentByDocumentId);
+            if (curriculumId != null) {
+                curriculumId.getDocumentStudentList().add(documentStudentEntity);
+                curriculumId = em.merge(curriculumId);
             }
-            if (studentByStudentId != null) {
-                studentByStudentId.getDocumentStudentsById().add(documentStudentEntity);
-                studentByStudentId = em.merge(studentByStudentId);
+            if (documentId != null) {
+                documentId.getDocumentStudentList().add(documentStudentEntity);
+                documentId = em.merge(documentId);
             }
-            if (curriculumByCurriculumId != null) {
-                curriculumByCurriculumId.getDocumentStudentsById().add(documentStudentEntity);
-                curriculumByCurriculumId = em.merge(curriculumByCurriculumId);
+            if (studentId != null) {
+                studentId.getDocumentStudentList().add(documentStudentEntity);
+                studentId = em.merge(studentId);
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -84,54 +87,54 @@ public class DocumentStudentEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             DocumentStudentEntity persistentDocumentStudentEntity = em.find(DocumentStudentEntity.class, documentStudentEntity.getId());
-            DocumentEntity documentByDocumentIdOld = persistentDocumentStudentEntity.getDocumentByDocumentId();
-            DocumentEntity documentByDocumentIdNew = documentStudentEntity.getDocumentByDocumentId();
-            StudentEntity studentByStudentIdOld = persistentDocumentStudentEntity.getStudentByStudentId();
-            StudentEntity studentByStudentIdNew = documentStudentEntity.getStudentByStudentId();
-            CurriculumEntity curriculumByCurriculumIdOld = persistentDocumentStudentEntity.getCurriculumByCurriculumId();
-            CurriculumEntity curriculumByCurriculumIdNew = documentStudentEntity.getCurriculumByCurriculumId();
-            if (documentByDocumentIdNew != null) {
-                documentByDocumentIdNew = em.getReference(documentByDocumentIdNew.getClass(), documentByDocumentIdNew.getId());
-                documentStudentEntity.setDocumentByDocumentId(documentByDocumentIdNew);
+            CurriculumEntity curriculumIdOld = persistentDocumentStudentEntity.getCurriculumId();
+            CurriculumEntity curriculumIdNew = documentStudentEntity.getCurriculumId();
+            DocumentEntity documentIdOld = persistentDocumentStudentEntity.getDocumentId();
+            DocumentEntity documentIdNew = documentStudentEntity.getDocumentId();
+            StudentEntity studentIdOld = persistentDocumentStudentEntity.getStudentId();
+            StudentEntity studentIdNew = documentStudentEntity.getStudentId();
+            if (curriculumIdNew != null) {
+                curriculumIdNew = em.getReference(curriculumIdNew.getClass(), curriculumIdNew.getId());
+                documentStudentEntity.setCurriculumId(curriculumIdNew);
             }
-            if (studentByStudentIdNew != null) {
-                studentByStudentIdNew = em.getReference(studentByStudentIdNew.getClass(), studentByStudentIdNew.getId());
-                documentStudentEntity.setStudentByStudentId(studentByStudentIdNew);
+            if (documentIdNew != null) {
+                documentIdNew = em.getReference(documentIdNew.getClass(), documentIdNew.getId());
+                documentStudentEntity.setDocumentId(documentIdNew);
             }
-            if (curriculumByCurriculumIdNew != null) {
-                curriculumByCurriculumIdNew = em.getReference(curriculumByCurriculumIdNew.getClass(), curriculumByCurriculumIdNew.getId());
-                documentStudentEntity.setCurriculumByCurriculumId(curriculumByCurriculumIdNew);
+            if (studentIdNew != null) {
+                studentIdNew = em.getReference(studentIdNew.getClass(), studentIdNew.getId());
+                documentStudentEntity.setStudentId(studentIdNew);
             }
             documentStudentEntity = em.merge(documentStudentEntity);
-            if (documentByDocumentIdOld != null && !documentByDocumentIdOld.equals(documentByDocumentIdNew)) {
-                documentByDocumentIdOld.getDocumentStudentsById().remove(documentStudentEntity);
-                documentByDocumentIdOld = em.merge(documentByDocumentIdOld);
+            if (curriculumIdOld != null && !curriculumIdOld.equals(curriculumIdNew)) {
+                curriculumIdOld.getDocumentStudentList().remove(documentStudentEntity);
+                curriculumIdOld = em.merge(curriculumIdOld);
             }
-            if (documentByDocumentIdNew != null && !documentByDocumentIdNew.equals(documentByDocumentIdOld)) {
-                documentByDocumentIdNew.getDocumentStudentsById().add(documentStudentEntity);
-                documentByDocumentIdNew = em.merge(documentByDocumentIdNew);
+            if (curriculumIdNew != null && !curriculumIdNew.equals(curriculumIdOld)) {
+                curriculumIdNew.getDocumentStudentList().add(documentStudentEntity);
+                curriculumIdNew = em.merge(curriculumIdNew);
             }
-            if (studentByStudentIdOld != null && !studentByStudentIdOld.equals(studentByStudentIdNew)) {
-                studentByStudentIdOld.getDocumentStudentsById().remove(documentStudentEntity);
-                studentByStudentIdOld = em.merge(studentByStudentIdOld);
+            if (documentIdOld != null && !documentIdOld.equals(documentIdNew)) {
+                documentIdOld.getDocumentStudentList().remove(documentStudentEntity);
+                documentIdOld = em.merge(documentIdOld);
             }
-            if (studentByStudentIdNew != null && !studentByStudentIdNew.equals(studentByStudentIdOld)) {
-                studentByStudentIdNew.getDocumentStudentsById().add(documentStudentEntity);
-                studentByStudentIdNew = em.merge(studentByStudentIdNew);
+            if (documentIdNew != null && !documentIdNew.equals(documentIdOld)) {
+                documentIdNew.getDocumentStudentList().add(documentStudentEntity);
+                documentIdNew = em.merge(documentIdNew);
             }
-            if (curriculumByCurriculumIdOld != null && !curriculumByCurriculumIdOld.equals(curriculumByCurriculumIdNew)) {
-                curriculumByCurriculumIdOld.getDocumentStudentsById().remove(documentStudentEntity);
-                curriculumByCurriculumIdOld = em.merge(curriculumByCurriculumIdOld);
+            if (studentIdOld != null && !studentIdOld.equals(studentIdNew)) {
+                studentIdOld.getDocumentStudentList().remove(documentStudentEntity);
+                studentIdOld = em.merge(studentIdOld);
             }
-            if (curriculumByCurriculumIdNew != null && !curriculumByCurriculumIdNew.equals(curriculumByCurriculumIdOld)) {
-                curriculumByCurriculumIdNew.getDocumentStudentsById().add(documentStudentEntity);
-                curriculumByCurriculumIdNew = em.merge(curriculumByCurriculumIdNew);
+            if (studentIdNew != null && !studentIdNew.equals(studentIdOld)) {
+                studentIdNew.getDocumentStudentList().add(documentStudentEntity);
+                studentIdNew = em.merge(studentIdNew);
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
-                int id = documentStudentEntity.getId();
+                Integer id = documentStudentEntity.getId();
                 if (findDocumentStudentEntity(id) == null) {
                     throw new NonexistentEntityException("The documentStudentEntity with id " + id + " no longer exists.");
                 }
@@ -144,7 +147,7 @@ public class DocumentStudentEntityJpaController implements Serializable {
         }
     }
 
-    public void destroy(int id) throws NonexistentEntityException {
+    public void destroy(Integer id) throws NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -156,20 +159,20 @@ public class DocumentStudentEntityJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The documentStudentEntity with id " + id + " no longer exists.", enfe);
             }
-            DocumentEntity documentByDocumentId = documentStudentEntity.getDocumentByDocumentId();
-            if (documentByDocumentId != null) {
-                documentByDocumentId.getDocumentStudentsById().remove(documentStudentEntity);
-                documentByDocumentId = em.merge(documentByDocumentId);
+            CurriculumEntity curriculumId = documentStudentEntity.getCurriculumId();
+            if (curriculumId != null) {
+                curriculumId.getDocumentStudentList().remove(documentStudentEntity);
+                curriculumId = em.merge(curriculumId);
             }
-            StudentEntity studentByStudentId = documentStudentEntity.getStudentByStudentId();
-            if (studentByStudentId != null) {
-                studentByStudentId.getDocumentStudentsById().remove(documentStudentEntity);
-                studentByStudentId = em.merge(studentByStudentId);
+            DocumentEntity documentId = documentStudentEntity.getDocumentId();
+            if (documentId != null) {
+                documentId.getDocumentStudentList().remove(documentStudentEntity);
+                documentId = em.merge(documentId);
             }
-            CurriculumEntity curriculumByCurriculumId = documentStudentEntity.getCurriculumByCurriculumId();
-            if (curriculumByCurriculumId != null) {
-                curriculumByCurriculumId.getDocumentStudentsById().remove(documentStudentEntity);
-                curriculumByCurriculumId = em.merge(curriculumByCurriculumId);
+            StudentEntity studentId = documentStudentEntity.getStudentId();
+            if (studentId != null) {
+                studentId.getDocumentStudentList().remove(documentStudentEntity);
+                studentId = em.merge(studentId);
             }
             em.remove(documentStudentEntity);
             em.getTransaction().commit();
@@ -204,7 +207,7 @@ public class DocumentStudentEntityJpaController implements Serializable {
         }
     }
 
-    public DocumentStudentEntity findDocumentStudentEntity(int id) {
+    public DocumentStudentEntity findDocumentStudentEntity(Integer id) {
         EntityManager em = getEntityManager();
         try {
             return em.find(DocumentStudentEntity.class, id);

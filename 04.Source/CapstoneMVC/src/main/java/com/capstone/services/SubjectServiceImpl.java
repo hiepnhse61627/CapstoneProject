@@ -1,6 +1,7 @@
 package com.capstone.services;
 
 import com.capstone.entities.SubjectEntity;
+import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.jpa.exJpa.ExSubjectEntityJpaController;
 
 import javax.persistence.EntityManagerFactory;
@@ -13,7 +14,17 @@ public class SubjectServiceImpl implements ISubjectService {
     ExSubjectEntityJpaController controller = new ExSubjectEntityJpaController(emf);
 
     @Override
+    public void createSubjects(List<SubjectEntity> subjectEntities) {
+        controller.createSubjects(subjectEntities);
+    }
+
+    @Override
     public void insertSubjectList(List<SubjectEntity> list) {
         controller.insertSubjectList(list);
+    }
+
+    @Override
+    public SubjectEntity findSubjectbyId(String id) {
+        return controller.findSubjectEntity(id);
     }
 }

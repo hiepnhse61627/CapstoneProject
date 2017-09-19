@@ -2,15 +2,16 @@ package com.capstone.jpa.exJpa;
 
 import com.capstone.entities.SubjectEntity;
 import com.capstone.entities.SubjectMarkComponentEntity;
-import com.capstone.jpa.StudentEntityJpaController;
+import com.capstone.jpa.SubjectEntityJpaController;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ExSubjectEntityJpaController extends StudentEntityJpaController {
+public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 
     public ExSubjectEntityJpaController(EntityManagerFactory emf) {
         super(emf);
@@ -32,8 +33,8 @@ public class ExSubjectEntityJpaController extends StudentEntityJpaController {
                 SubjectMarkComponentEntity entity = new SubjectMarkComponentEntity();
                 entity.setSubjectId(en.getId());
 
-                en.setSubjectMarkComponentById(entity);
-                entity.setSubjectBySubjectId(en);
+                en.setSubjectMarkComponent(entity);
+                entity.setSubject(en);
 
                 manager.persist(en);
                 manager.persist(entity);
@@ -66,5 +67,34 @@ public class ExSubjectEntityJpaController extends StudentEntityJpaController {
 //        }
 //
 //        manager.getTransaction().commit();
+    }
+
+    public void createSubjects(List<SubjectEntity> subjectEntities) {
+        EntityManager em = null;
+        try {
+            em = getEntityManager();
+            // Insert subjects
+
+            for (SubjectEntity subjectEntity : subjectEntities) {
+                em.getTransaction().begin();
+                SubjectMarkComponentEntity subjectMarkComponentEntity = new SubjectMarkComponentEntity();
+                subjectMarkComponentEntity.setSubjectId(subjectEntity.getId());
+
+                subjectEntity.setSubjectMarkComponent(subjectMarkComponentEntity);
+
+                em.persist(subjectEntity);
+                em.getTransaction().commit();
+            }
+        } catch (Exception ex) {
+            if (em != null) {
+                em.getTransaction().rollback();
+            } else{
+                // Do nothing
+            }
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
     }
 }

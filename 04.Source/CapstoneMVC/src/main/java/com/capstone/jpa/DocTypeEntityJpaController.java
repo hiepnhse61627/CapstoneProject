@@ -5,22 +5,20 @@
  */
 package com.capstone.jpa;
 
+import com.capstone.entities.DocTypeEntity;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-
-import com.capstone.entities.DocTypeEntity;
 import com.capstone.entities.DocumentEntity;
 import com.capstone.jpa.exceptions.IllegalOrphanException;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
@@ -38,27 +36,27 @@ public class DocTypeEntityJpaController implements Serializable {
     }
 
     public void create(DocTypeEntity docTypeEntity) throws PreexistingEntityException, Exception {
-        if (docTypeEntity.getDocumentsById() == null) {
-            docTypeEntity.setDocumentsById(new ArrayList<DocumentEntity>());
+        if (docTypeEntity.getDocumentList() == null) {
+            docTypeEntity.setDocumentList(new ArrayList<DocumentEntity>());
         }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            Collection<DocumentEntity> attachedDocumentsById = new ArrayList<DocumentEntity>();
-            for (DocumentEntity documentsByIdDocumentEntityToAttach : docTypeEntity.getDocumentsById()) {
-                documentsByIdDocumentEntityToAttach = em.getReference(documentsByIdDocumentEntityToAttach.getClass(), documentsByIdDocumentEntityToAttach.getId());
-                attachedDocumentsById.add(documentsByIdDocumentEntityToAttach);
+            List<DocumentEntity> attachedDocumentList = new ArrayList<DocumentEntity>();
+            for (DocumentEntity documentListDocumentEntityToAttach : docTypeEntity.getDocumentList()) {
+                documentListDocumentEntityToAttach = em.getReference(documentListDocumentEntityToAttach.getClass(), documentListDocumentEntityToAttach.getId());
+                attachedDocumentList.add(documentListDocumentEntityToAttach);
             }
-            docTypeEntity.setDocumentsById(attachedDocumentsById);
+            docTypeEntity.setDocumentList(attachedDocumentList);
             em.persist(docTypeEntity);
-            for (DocumentEntity documentsByIdDocumentEntity : docTypeEntity.getDocumentsById()) {
-                DocTypeEntity oldDocTypeByDocTypeIdOfDocumentsByIdDocumentEntity = documentsByIdDocumentEntity.getDocTypeByDocTypeId();
-                documentsByIdDocumentEntity.setDocTypeByDocTypeId(docTypeEntity);
-                documentsByIdDocumentEntity = em.merge(documentsByIdDocumentEntity);
-                if (oldDocTypeByDocTypeIdOfDocumentsByIdDocumentEntity != null) {
-                    oldDocTypeByDocTypeIdOfDocumentsByIdDocumentEntity.getDocumentsById().remove(documentsByIdDocumentEntity);
-                    oldDocTypeByDocTypeIdOfDocumentsByIdDocumentEntity = em.merge(oldDocTypeByDocTypeIdOfDocumentsByIdDocumentEntity);
+            for (DocumentEntity documentListDocumentEntity : docTypeEntity.getDocumentList()) {
+                DocTypeEntity oldDocTypeIdOfDocumentListDocumentEntity = documentListDocumentEntity.getDocTypeId();
+                documentListDocumentEntity.setDocTypeId(docTypeEntity);
+                documentListDocumentEntity = em.merge(documentListDocumentEntity);
+                if (oldDocTypeIdOfDocumentListDocumentEntity != null) {
+                    oldDocTypeIdOfDocumentListDocumentEntity.getDocumentList().remove(documentListDocumentEntity);
+                    oldDocTypeIdOfDocumentListDocumentEntity = em.merge(oldDocTypeIdOfDocumentListDocumentEntity);
                 }
             }
             em.getTransaction().commit();
@@ -80,36 +78,36 @@ public class DocTypeEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             DocTypeEntity persistentDocTypeEntity = em.find(DocTypeEntity.class, docTypeEntity.getId());
-            Collection<DocumentEntity> documentsByIdOld = persistentDocTypeEntity.getDocumentsById();
-            Collection<DocumentEntity> documentsByIdNew = docTypeEntity.getDocumentsById();
+            List<DocumentEntity> documentListOld = persistentDocTypeEntity.getDocumentList();
+            List<DocumentEntity> documentListNew = docTypeEntity.getDocumentList();
             List<String> illegalOrphanMessages = null;
-            for (DocumentEntity documentsByIdOldDocumentEntity : documentsByIdOld) {
-                if (!documentsByIdNew.contains(documentsByIdOldDocumentEntity)) {
+            for (DocumentEntity documentListOldDocumentEntity : documentListOld) {
+                if (!documentListNew.contains(documentListOldDocumentEntity)) {
                     if (illegalOrphanMessages == null) {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
-                    illegalOrphanMessages.add("You must retain DocumentEntity " + documentsByIdOldDocumentEntity + " since its docTypeByDocTypeId field is not nullable.");
+                    illegalOrphanMessages.add("You must retain DocumentEntity " + documentListOldDocumentEntity + " since its docTypeId field is not nullable.");
                 }
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            Collection<DocumentEntity> attachedDocumentsByIdNew = new ArrayList<DocumentEntity>();
-            for (DocumentEntity documentsByIdNewDocumentEntityToAttach : documentsByIdNew) {
-                documentsByIdNewDocumentEntityToAttach = em.getReference(documentsByIdNewDocumentEntityToAttach.getClass(), documentsByIdNewDocumentEntityToAttach.getId());
-                attachedDocumentsByIdNew.add(documentsByIdNewDocumentEntityToAttach);
+            List<DocumentEntity> attachedDocumentListNew = new ArrayList<DocumentEntity>();
+            for (DocumentEntity documentListNewDocumentEntityToAttach : documentListNew) {
+                documentListNewDocumentEntityToAttach = em.getReference(documentListNewDocumentEntityToAttach.getClass(), documentListNewDocumentEntityToAttach.getId());
+                attachedDocumentListNew.add(documentListNewDocumentEntityToAttach);
             }
-            documentsByIdNew = attachedDocumentsByIdNew;
-            docTypeEntity.setDocumentsById(documentsByIdNew);
+            documentListNew = attachedDocumentListNew;
+            docTypeEntity.setDocumentList(documentListNew);
             docTypeEntity = em.merge(docTypeEntity);
-            for (DocumentEntity documentsByIdNewDocumentEntity : documentsByIdNew) {
-                if (!documentsByIdOld.contains(documentsByIdNewDocumentEntity)) {
-                    DocTypeEntity oldDocTypeByDocTypeIdOfDocumentsByIdNewDocumentEntity = documentsByIdNewDocumentEntity.getDocTypeByDocTypeId();
-                    documentsByIdNewDocumentEntity.setDocTypeByDocTypeId(docTypeEntity);
-                    documentsByIdNewDocumentEntity = em.merge(documentsByIdNewDocumentEntity);
-                    if (oldDocTypeByDocTypeIdOfDocumentsByIdNewDocumentEntity != null && !oldDocTypeByDocTypeIdOfDocumentsByIdNewDocumentEntity.equals(docTypeEntity)) {
-                        oldDocTypeByDocTypeIdOfDocumentsByIdNewDocumentEntity.getDocumentsById().remove(documentsByIdNewDocumentEntity);
-                        oldDocTypeByDocTypeIdOfDocumentsByIdNewDocumentEntity = em.merge(oldDocTypeByDocTypeIdOfDocumentsByIdNewDocumentEntity);
+            for (DocumentEntity documentListNewDocumentEntity : documentListNew) {
+                if (!documentListOld.contains(documentListNewDocumentEntity)) {
+                    DocTypeEntity oldDocTypeIdOfDocumentListNewDocumentEntity = documentListNewDocumentEntity.getDocTypeId();
+                    documentListNewDocumentEntity.setDocTypeId(docTypeEntity);
+                    documentListNewDocumentEntity = em.merge(documentListNewDocumentEntity);
+                    if (oldDocTypeIdOfDocumentListNewDocumentEntity != null && !oldDocTypeIdOfDocumentListNewDocumentEntity.equals(docTypeEntity)) {
+                        oldDocTypeIdOfDocumentListNewDocumentEntity.getDocumentList().remove(documentListNewDocumentEntity);
+                        oldDocTypeIdOfDocumentListNewDocumentEntity = em.merge(oldDocTypeIdOfDocumentListNewDocumentEntity);
                     }
                 }
             }
@@ -117,7 +115,7 @@ public class DocTypeEntityJpaController implements Serializable {
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
-                int id = docTypeEntity.getId();
+                Integer id = docTypeEntity.getId();
                 if (findDocTypeEntity(id) == null) {
                     throw new NonexistentEntityException("The docTypeEntity with id " + id + " no longer exists.");
                 }
@@ -130,7 +128,7 @@ public class DocTypeEntityJpaController implements Serializable {
         }
     }
 
-    public void destroy(int id) throws IllegalOrphanException, NonexistentEntityException {
+    public void destroy(Integer id) throws IllegalOrphanException, NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -143,12 +141,12 @@ public class DocTypeEntityJpaController implements Serializable {
                 throw new NonexistentEntityException("The docTypeEntity with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
-            Collection<DocumentEntity> documentsByIdOrphanCheck = docTypeEntity.getDocumentsById();
-            for (DocumentEntity documentsByIdOrphanCheckDocumentEntity : documentsByIdOrphanCheck) {
+            List<DocumentEntity> documentListOrphanCheck = docTypeEntity.getDocumentList();
+            for (DocumentEntity documentListOrphanCheckDocumentEntity : documentListOrphanCheck) {
                 if (illegalOrphanMessages == null) {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
-                illegalOrphanMessages.add("This DocTypeEntity (" + docTypeEntity + ") cannot be destroyed since the DocumentEntity " + documentsByIdOrphanCheckDocumentEntity + " in its documentsById field has a non-nullable docTypeByDocTypeId field.");
+                illegalOrphanMessages.add("This DocTypeEntity (" + docTypeEntity + ") cannot be destroyed since the DocumentEntity " + documentListOrphanCheckDocumentEntity + " in its documentList field has a non-nullable docTypeId field.");
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
@@ -186,7 +184,7 @@ public class DocTypeEntityJpaController implements Serializable {
         }
     }
 
-    public DocTypeEntity findDocTypeEntity(int id) {
+    public DocTypeEntity findDocTypeEntity(Integer id) {
         EntityManager em = getEntityManager();
         try {
             return em.find(DocTypeEntity.class, id);

@@ -23,4 +23,9 @@ public class StudentServiceImpl implements IStudentService {
     public void createStudentList(List<StudentEntity> studentEntityList) {
         studentEntityJpaController.createStudentList(studentEntityList);
     }
+
+    @Override
+    public StudentEntity findStudentByRollNumber(String rollNumber) {
+        return studentEntityJpaController.findStudentByRollNumber(rollNumber);
+    }
 }

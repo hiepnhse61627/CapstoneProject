@@ -10,12 +10,16 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.util.List;
-import com.capstone.entities.*;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
+import com.capstone.entities.CourseEntity;
+import com.capstone.entities.MarksEntity;
+import com.capstone.entities.RealSemesterEntity;
+import com.capstone.entities.StudentEntity;
+import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
@@ -37,42 +41,42 @@ public class MarksEntityJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            SubjectMarkComponentEntity subjectMarkComponentBySubjectId = marksEntity.getSubjectMarkComponentBySubjectId();
-            if (subjectMarkComponentBySubjectId != null) {
-                subjectMarkComponentBySubjectId = em.getReference(subjectMarkComponentBySubjectId.getClass(), subjectMarkComponentBySubjectId.getSubjectId());
-                marksEntity.setSubjectMarkComponentBySubjectId(subjectMarkComponentBySubjectId);
+            CourseEntity courseId = marksEntity.getCourseId();
+            if (courseId != null) {
+                courseId = em.getReference(courseId.getClass(), courseId.getId());
+                marksEntity.setCourseId(courseId);
             }
-            StudentEntity studentByStudentId = marksEntity.getStudentByStudentId();
-            if (studentByStudentId != null) {
-                studentByStudentId = em.getReference(studentByStudentId.getClass(), studentByStudentId.getId());
-                marksEntity.setStudentByStudentId(studentByStudentId);
+            RealSemesterEntity semesterId = marksEntity.getSemesterId();
+            if (semesterId != null) {
+                semesterId = em.getReference(semesterId.getClass(), semesterId.getId());
+                marksEntity.setSemesterId(semesterId);
             }
-            RealSemesterEntity realSemesterBySemesterId = marksEntity.getRealSemesterBySemesterId();
-            if (realSemesterBySemesterId != null) {
-                realSemesterBySemesterId = em.getReference(realSemesterBySemesterId.getClass(), realSemesterBySemesterId.getId());
-                marksEntity.setRealSemesterBySemesterId(realSemesterBySemesterId);
+            StudentEntity studentId = marksEntity.getStudentId();
+            if (studentId != null) {
+                studentId = em.getReference(studentId.getClass(), studentId.getId());
+                marksEntity.setStudentId(studentId);
             }
-            CourseEntity courseByCourseId = marksEntity.getCourseByCourseId();
-            if (courseByCourseId != null) {
-                courseByCourseId = em.getReference(courseByCourseId.getClass(), courseByCourseId.getId());
-                marksEntity.setCourseByCourseId(courseByCourseId);
+            SubjectMarkComponentEntity subjectId = marksEntity.getSubjectId();
+            if (subjectId != null) {
+                subjectId = em.getReference(subjectId.getClass(), subjectId.getSubjectId());
+                marksEntity.setSubjectId(subjectId);
             }
             em.persist(marksEntity);
-            if (subjectMarkComponentBySubjectId != null) {
-                subjectMarkComponentBySubjectId.getMarksBySubjectId().add(marksEntity);
-                subjectMarkComponentBySubjectId = em.merge(subjectMarkComponentBySubjectId);
+            if (courseId != null) {
+                courseId.getMarksList().add(marksEntity);
+                courseId = em.merge(courseId);
             }
-            if (studentByStudentId != null) {
-                studentByStudentId.getMarksById().add(marksEntity);
-                studentByStudentId = em.merge(studentByStudentId);
+            if (semesterId != null) {
+                semesterId.getMarksList().add(marksEntity);
+                semesterId = em.merge(semesterId);
             }
-            if (realSemesterBySemesterId != null) {
-                realSemesterBySemesterId.getMarksById().add(marksEntity);
-                realSemesterBySemesterId = em.merge(realSemesterBySemesterId);
+            if (studentId != null) {
+                studentId.getMarksList().add(marksEntity);
+                studentId = em.merge(studentId);
             }
-            if (courseByCourseId != null) {
-                courseByCourseId.getMarksById().add(marksEntity);
-                courseByCourseId = em.merge(courseByCourseId);
+            if (subjectId != null) {
+                subjectId.getMarksList().add(marksEntity);
+                subjectId = em.merge(subjectId);
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -93,68 +97,68 @@ public class MarksEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             MarksEntity persistentMarksEntity = em.find(MarksEntity.class, marksEntity.getId());
-            SubjectMarkComponentEntity subjectMarkComponentBySubjectIdOld = persistentMarksEntity.getSubjectMarkComponentBySubjectId();
-            SubjectMarkComponentEntity subjectMarkComponentBySubjectIdNew = marksEntity.getSubjectMarkComponentBySubjectId();
-            StudentEntity studentByStudentIdOld = persistentMarksEntity.getStudentByStudentId();
-            StudentEntity studentByStudentIdNew = marksEntity.getStudentByStudentId();
-            RealSemesterEntity realSemesterBySemesterIdOld = persistentMarksEntity.getRealSemesterBySemesterId();
-            RealSemesterEntity realSemesterBySemesterIdNew = marksEntity.getRealSemesterBySemesterId();
-            CourseEntity courseByCourseIdOld = persistentMarksEntity.getCourseByCourseId();
-            CourseEntity courseByCourseIdNew = marksEntity.getCourseByCourseId();
-            if (subjectMarkComponentBySubjectIdNew != null) {
-                subjectMarkComponentBySubjectIdNew = em.getReference(subjectMarkComponentBySubjectIdNew.getClass(), subjectMarkComponentBySubjectIdNew.getSubjectId());
-                marksEntity.setSubjectMarkComponentBySubjectId(subjectMarkComponentBySubjectIdNew);
+            CourseEntity courseIdOld = persistentMarksEntity.getCourseId();
+            CourseEntity courseIdNew = marksEntity.getCourseId();
+            RealSemesterEntity semesterIdOld = persistentMarksEntity.getSemesterId();
+            RealSemesterEntity semesterIdNew = marksEntity.getSemesterId();
+            StudentEntity studentIdOld = persistentMarksEntity.getStudentId();
+            StudentEntity studentIdNew = marksEntity.getStudentId();
+            SubjectMarkComponentEntity subjectIdOld = persistentMarksEntity.getSubjectId();
+            SubjectMarkComponentEntity subjectIdNew = marksEntity.getSubjectId();
+            if (courseIdNew != null) {
+                courseIdNew = em.getReference(courseIdNew.getClass(), courseIdNew.getId());
+                marksEntity.setCourseId(courseIdNew);
             }
-            if (studentByStudentIdNew != null) {
-                studentByStudentIdNew = em.getReference(studentByStudentIdNew.getClass(), studentByStudentIdNew.getId());
-                marksEntity.setStudentByStudentId(studentByStudentIdNew);
+            if (semesterIdNew != null) {
+                semesterIdNew = em.getReference(semesterIdNew.getClass(), semesterIdNew.getId());
+                marksEntity.setSemesterId(semesterIdNew);
             }
-            if (realSemesterBySemesterIdNew != null) {
-                realSemesterBySemesterIdNew = em.getReference(realSemesterBySemesterIdNew.getClass(), realSemesterBySemesterIdNew.getId());
-                marksEntity.setRealSemesterBySemesterId(realSemesterBySemesterIdNew);
+            if (studentIdNew != null) {
+                studentIdNew = em.getReference(studentIdNew.getClass(), studentIdNew.getId());
+                marksEntity.setStudentId(studentIdNew);
             }
-            if (courseByCourseIdNew != null) {
-                courseByCourseIdNew = em.getReference(courseByCourseIdNew.getClass(), courseByCourseIdNew.getId());
-                marksEntity.setCourseByCourseId(courseByCourseIdNew);
+            if (subjectIdNew != null) {
+                subjectIdNew = em.getReference(subjectIdNew.getClass(), subjectIdNew.getSubjectId());
+                marksEntity.setSubjectId(subjectIdNew);
             }
             marksEntity = em.merge(marksEntity);
-            if (subjectMarkComponentBySubjectIdOld != null && !subjectMarkComponentBySubjectIdOld.equals(subjectMarkComponentBySubjectIdNew)) {
-                subjectMarkComponentBySubjectIdOld.getMarksBySubjectId().remove(marksEntity);
-                subjectMarkComponentBySubjectIdOld = em.merge(subjectMarkComponentBySubjectIdOld);
+            if (courseIdOld != null && !courseIdOld.equals(courseIdNew)) {
+                courseIdOld.getMarksList().remove(marksEntity);
+                courseIdOld = em.merge(courseIdOld);
             }
-            if (subjectMarkComponentBySubjectIdNew != null && !subjectMarkComponentBySubjectIdNew.equals(subjectMarkComponentBySubjectIdOld)) {
-                subjectMarkComponentBySubjectIdNew.getMarksBySubjectId().add(marksEntity);
-                subjectMarkComponentBySubjectIdNew = em.merge(subjectMarkComponentBySubjectIdNew);
+            if (courseIdNew != null && !courseIdNew.equals(courseIdOld)) {
+                courseIdNew.getMarksList().add(marksEntity);
+                courseIdNew = em.merge(courseIdNew);
             }
-            if (studentByStudentIdOld != null && !studentByStudentIdOld.equals(studentByStudentIdNew)) {
-                studentByStudentIdOld.getMarksById().remove(marksEntity);
-                studentByStudentIdOld = em.merge(studentByStudentIdOld);
+            if (semesterIdOld != null && !semesterIdOld.equals(semesterIdNew)) {
+                semesterIdOld.getMarksList().remove(marksEntity);
+                semesterIdOld = em.merge(semesterIdOld);
             }
-            if (studentByStudentIdNew != null && !studentByStudentIdNew.equals(studentByStudentIdOld)) {
-                studentByStudentIdNew.getMarksById().add(marksEntity);
-                studentByStudentIdNew = em.merge(studentByStudentIdNew);
+            if (semesterIdNew != null && !semesterIdNew.equals(semesterIdOld)) {
+                semesterIdNew.getMarksList().add(marksEntity);
+                semesterIdNew = em.merge(semesterIdNew);
             }
-            if (realSemesterBySemesterIdOld != null && !realSemesterBySemesterIdOld.equals(realSemesterBySemesterIdNew)) {
-                realSemesterBySemesterIdOld.getMarksById().remove(marksEntity);
-                realSemesterBySemesterIdOld = em.merge(realSemesterBySemesterIdOld);
+            if (studentIdOld != null && !studentIdOld.equals(studentIdNew)) {
+                studentIdOld.getMarksList().remove(marksEntity);
+                studentIdOld = em.merge(studentIdOld);
             }
-            if (realSemesterBySemesterIdNew != null && !realSemesterBySemesterIdNew.equals(realSemesterBySemesterIdOld)) {
-                realSemesterBySemesterIdNew.getMarksById().add(marksEntity);
-                realSemesterBySemesterIdNew = em.merge(realSemesterBySemesterIdNew);
+            if (studentIdNew != null && !studentIdNew.equals(studentIdOld)) {
+                studentIdNew.getMarksList().add(marksEntity);
+                studentIdNew = em.merge(studentIdNew);
             }
-            if (courseByCourseIdOld != null && !courseByCourseIdOld.equals(courseByCourseIdNew)) {
-                courseByCourseIdOld.getMarksById().remove(marksEntity);
-                courseByCourseIdOld = em.merge(courseByCourseIdOld);
+            if (subjectIdOld != null && !subjectIdOld.equals(subjectIdNew)) {
+                subjectIdOld.getMarksList().remove(marksEntity);
+                subjectIdOld = em.merge(subjectIdOld);
             }
-            if (courseByCourseIdNew != null && !courseByCourseIdNew.equals(courseByCourseIdOld)) {
-                courseByCourseIdNew.getMarksById().add(marksEntity);
-                courseByCourseIdNew = em.merge(courseByCourseIdNew);
+            if (subjectIdNew != null && !subjectIdNew.equals(subjectIdOld)) {
+                subjectIdNew.getMarksList().add(marksEntity);
+                subjectIdNew = em.merge(subjectIdNew);
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
-                int id = marksEntity.getId();
+                Integer id = marksEntity.getId();
                 if (findMarksEntity(id) == null) {
                     throw new NonexistentEntityException("The marksEntity with id " + id + " no longer exists.");
                 }
@@ -167,7 +171,7 @@ public class MarksEntityJpaController implements Serializable {
         }
     }
 
-    public void destroy(int id) throws NonexistentEntityException {
+    public void destroy(Integer id) throws NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -179,25 +183,25 @@ public class MarksEntityJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The marksEntity with id " + id + " no longer exists.", enfe);
             }
-            SubjectMarkComponentEntity subjectMarkComponentBySubjectId = marksEntity.getSubjectMarkComponentBySubjectId();
-            if (subjectMarkComponentBySubjectId != null) {
-                subjectMarkComponentBySubjectId.getMarksBySubjectId().remove(marksEntity);
-                subjectMarkComponentBySubjectId = em.merge(subjectMarkComponentBySubjectId);
+            CourseEntity courseId = marksEntity.getCourseId();
+            if (courseId != null) {
+                courseId.getMarksList().remove(marksEntity);
+                courseId = em.merge(courseId);
             }
-            StudentEntity studentByStudentId = marksEntity.getStudentByStudentId();
-            if (studentByStudentId != null) {
-                studentByStudentId.getMarksById().remove(marksEntity);
-                studentByStudentId = em.merge(studentByStudentId);
+            RealSemesterEntity semesterId = marksEntity.getSemesterId();
+            if (semesterId != null) {
+                semesterId.getMarksList().remove(marksEntity);
+                semesterId = em.merge(semesterId);
             }
-            RealSemesterEntity realSemesterBySemesterId = marksEntity.getRealSemesterBySemesterId();
-            if (realSemesterBySemesterId != null) {
-                realSemesterBySemesterId.getMarksById().remove(marksEntity);
-                realSemesterBySemesterId = em.merge(realSemesterBySemesterId);
+            StudentEntity studentId = marksEntity.getStudentId();
+            if (studentId != null) {
+                studentId.getMarksList().remove(marksEntity);
+                studentId = em.merge(studentId);
             }
-            CourseEntity courseByCourseId = marksEntity.getCourseByCourseId();
-            if (courseByCourseId != null) {
-                courseByCourseId.getMarksById().remove(marksEntity);
-                courseByCourseId = em.merge(courseByCourseId);
+            SubjectMarkComponentEntity subjectId = marksEntity.getSubjectId();
+            if (subjectId != null) {
+                subjectId.getMarksList().remove(marksEntity);
+                subjectId = em.merge(subjectId);
             }
             em.remove(marksEntity);
             em.getTransaction().commit();
@@ -232,7 +236,7 @@ public class MarksEntityJpaController implements Serializable {
         }
     }
 
-    public MarksEntity findMarksEntity(int id) {
+    public MarksEntity findMarksEntity(Integer id) {
         EntityManager em = getEntityManager();
         try {
             return em.find(MarksEntity.class, id);

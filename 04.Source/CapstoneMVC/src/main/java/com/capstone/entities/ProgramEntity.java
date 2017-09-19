@@ -1,27 +1,60 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package com.capstone.entities;
 
-import javax.persistence.*;
-import java.util.Collection;
+import java.io.Serializable;
+import java.util.List;
+import javax.persistence.Basic;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
+/**
+ *
+ * @author hiepnhse61627
+ */
 @Entity
-@Table(name = "Program", schema = "dbo", catalog = "CapstoneProject")
-public class ProgramEntity {
-    private int id;
-    private String name;
-    private Collection<CurriculumEntity> curriculaById;
+@Table(name = "Program", catalog = "CapstoneProject", schema = "dbo")
+public class ProgramEntity implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "Id")
-    public int getId() {
-        return id;
+    @Column(name = "Id", nullable = false)
+    private Integer id;
+    @Basic(optional = false)
+    @Column(name = "Name", nullable = false, length = 10)
+    private String name;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "programId")
+    private List<CurriculumEntity> curriculumList;
+
+    public ProgramEntity() {
     }
 
-    public void setId(int id) {
+    public ProgramEntity(Integer id) {
         this.id = id;
     }
 
-    @Basic
-    @Column(name = "Name")
+    public ProgramEntity(Integer id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
@@ -30,32 +63,37 @@ public class ProgramEntity {
         this.name = name;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public List<CurriculumEntity> getCurriculumList() {
+        return curriculumList;
+    }
 
-        ProgramEntity that = (ProgramEntity) o;
-
-        if (id != that.id) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-
-        return true;
+    public void setCurriculumList(List<CurriculumEntity> curriculumList) {
+        this.curriculumList = curriculumList;
     }
 
     @Override
     public int hashCode() {
-        int result = id;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
     }
 
-    @OneToMany(mappedBy = "programByProgramId")
-    public Collection<CurriculumEntity> getCurriculaById() {
-        return curriculaById;
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof ProgramEntity)) {
+            return false;
+        }
+        ProgramEntity other = (ProgramEntity) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
     }
 
-    public void setCurriculaById(Collection<CurriculumEntity> curriculaById) {
-        this.curriculaById = curriculaById;
+    @Override
+    public String toString() {
+        return "entities.Program[ id=" + id + " ]";
     }
+    
 }

@@ -5,6 +5,8 @@ import com.capstone.jpa.StudentEntityJpaController;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
+import javax.persistence.Query;
 import java.util.List;
 
 public class ExStudentEntityJpaController extends StudentEntityJpaController {
@@ -22,6 +24,26 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
                 em.persist(student);
             }
             em.getTransaction().commit();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    public StudentEntity findStudentByRollNumber(String rollNumber) {
+        EntityManager em = getEntityManager();
+        StudentEntity studentEntity = new StudentEntity();
+        try {
+            String sqlString = "SELECT s FROM StudentEntity s WHERE s.rollNumber = :rollNumber";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("rollNumber", rollNumber);
+
+            studentEntity = (StudentEntity) query.getSingleResult();
+
+            return studentEntity;
+        } catch (NoResultException nrEx) {
+            return null;
         } finally {
             if (em != null) {
                 em.close();

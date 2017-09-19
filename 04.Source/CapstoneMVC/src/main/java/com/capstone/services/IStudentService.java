@@ -7,4 +7,5 @@ import java.util.List;
 public interface IStudentService {
     void createStudent(StudentEntity studentEntity);
     void createStudentList(List<StudentEntity> studentEntityList);
+    StudentEntity findStudentByRollNumber(String rollNumber);
 }

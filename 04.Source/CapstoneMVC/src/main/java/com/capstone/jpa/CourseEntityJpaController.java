@@ -5,21 +5,19 @@
  */
 package com.capstone.jpa;
 
+import com.capstone.entities.CourseEntity;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-
-import com.capstone.entities.CourseEntity;
 import com.capstone.entities.MarksEntity;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
@@ -37,27 +35,27 @@ public class CourseEntityJpaController implements Serializable {
     }
 
     public void create(CourseEntity courseEntity) throws PreexistingEntityException, Exception {
-        if (courseEntity.getMarksById() == null) {
-            courseEntity.setMarksById(new ArrayList<MarksEntity>());
+        if (courseEntity.getMarksList() == null) {
+            courseEntity.setMarksList(new ArrayList<MarksEntity>());
         }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            Collection<MarksEntity> attachedMarksById = new ArrayList<MarksEntity>();
-            for (MarksEntity marksByIdMarksEntityToAttach : courseEntity.getMarksById()) {
-                marksByIdMarksEntityToAttach = em.getReference(marksByIdMarksEntityToAttach.getClass(), marksByIdMarksEntityToAttach.getId());
-                attachedMarksById.add(marksByIdMarksEntityToAttach);
+            List<MarksEntity> attachedMarksList = new ArrayList<MarksEntity>();
+            for (MarksEntity marksListMarksEntityToAttach : courseEntity.getMarksList()) {
+                marksListMarksEntityToAttach = em.getReference(marksListMarksEntityToAttach.getClass(), marksListMarksEntityToAttach.getId());
+                attachedMarksList.add(marksListMarksEntityToAttach);
             }
-            courseEntity.setMarksById(attachedMarksById);
+            courseEntity.setMarksList(attachedMarksList);
             em.persist(courseEntity);
-            for (MarksEntity marksByIdMarksEntity : courseEntity.getMarksById()) {
-                CourseEntity oldCourseByCourseIdOfMarksByIdMarksEntity = marksByIdMarksEntity.getCourseByCourseId();
-                marksByIdMarksEntity.setCourseByCourseId(courseEntity);
-                marksByIdMarksEntity = em.merge(marksByIdMarksEntity);
-                if (oldCourseByCourseIdOfMarksByIdMarksEntity != null) {
-                    oldCourseByCourseIdOfMarksByIdMarksEntity.getMarksById().remove(marksByIdMarksEntity);
-                    oldCourseByCourseIdOfMarksByIdMarksEntity = em.merge(oldCourseByCourseIdOfMarksByIdMarksEntity);
+            for (MarksEntity marksListMarksEntity : courseEntity.getMarksList()) {
+                CourseEntity oldCourseIdOfMarksListMarksEntity = marksListMarksEntity.getCourseId();
+                marksListMarksEntity.setCourseId(courseEntity);
+                marksListMarksEntity = em.merge(marksListMarksEntity);
+                if (oldCourseIdOfMarksListMarksEntity != null) {
+                    oldCourseIdOfMarksListMarksEntity.getMarksList().remove(marksListMarksEntity);
+                    oldCourseIdOfMarksListMarksEntity = em.merge(oldCourseIdOfMarksListMarksEntity);
                 }
             }
             em.getTransaction().commit();
@@ -79,30 +77,30 @@ public class CourseEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             CourseEntity persistentCourseEntity = em.find(CourseEntity.class, courseEntity.getId());
-            Collection<MarksEntity> marksByIdOld = persistentCourseEntity.getMarksById();
-            Collection<MarksEntity> marksByIdNew = courseEntity.getMarksById();
-            Collection<MarksEntity> attachedMarksByIdNew = new ArrayList<MarksEntity>();
-            for (MarksEntity marksByIdNewMarksEntityToAttach : marksByIdNew) {
-                marksByIdNewMarksEntityToAttach = em.getReference(marksByIdNewMarksEntityToAttach.getClass(), marksByIdNewMarksEntityToAttach.getId());
-                attachedMarksByIdNew.add(marksByIdNewMarksEntityToAttach);
+            List<MarksEntity> marksListOld = persistentCourseEntity.getMarksList();
+            List<MarksEntity> marksListNew = courseEntity.getMarksList();
+            List<MarksEntity> attachedMarksListNew = new ArrayList<MarksEntity>();
+            for (MarksEntity marksListNewMarksEntityToAttach : marksListNew) {
+                marksListNewMarksEntityToAttach = em.getReference(marksListNewMarksEntityToAttach.getClass(), marksListNewMarksEntityToAttach.getId());
+                attachedMarksListNew.add(marksListNewMarksEntityToAttach);
             }
-            marksByIdNew = attachedMarksByIdNew;
-            courseEntity.setMarksById(marksByIdNew);
+            marksListNew = attachedMarksListNew;
+            courseEntity.setMarksList(marksListNew);
             courseEntity = em.merge(courseEntity);
-            for (MarksEntity marksByIdOldMarksEntity : marksByIdOld) {
-                if (!marksByIdNew.contains(marksByIdOldMarksEntity)) {
-                    marksByIdOldMarksEntity.setCourseByCourseId(null);
-                    marksByIdOldMarksEntity = em.merge(marksByIdOldMarksEntity);
+            for (MarksEntity marksListOldMarksEntity : marksListOld) {
+                if (!marksListNew.contains(marksListOldMarksEntity)) {
+                    marksListOldMarksEntity.setCourseId(null);
+                    marksListOldMarksEntity = em.merge(marksListOldMarksEntity);
                 }
             }
-            for (MarksEntity marksByIdNewMarksEntity : marksByIdNew) {
-                if (!marksByIdOld.contains(marksByIdNewMarksEntity)) {
-                    CourseEntity oldCourseByCourseIdOfMarksByIdNewMarksEntity = marksByIdNewMarksEntity.getCourseByCourseId();
-                    marksByIdNewMarksEntity.setCourseByCourseId(courseEntity);
-                    marksByIdNewMarksEntity = em.merge(marksByIdNewMarksEntity);
-                    if (oldCourseByCourseIdOfMarksByIdNewMarksEntity != null && !oldCourseByCourseIdOfMarksByIdNewMarksEntity.equals(courseEntity)) {
-                        oldCourseByCourseIdOfMarksByIdNewMarksEntity.getMarksById().remove(marksByIdNewMarksEntity);
-                        oldCourseByCourseIdOfMarksByIdNewMarksEntity = em.merge(oldCourseByCourseIdOfMarksByIdNewMarksEntity);
+            for (MarksEntity marksListNewMarksEntity : marksListNew) {
+                if (!marksListOld.contains(marksListNewMarksEntity)) {
+                    CourseEntity oldCourseIdOfMarksListNewMarksEntity = marksListNewMarksEntity.getCourseId();
+                    marksListNewMarksEntity.setCourseId(courseEntity);
+                    marksListNewMarksEntity = em.merge(marksListNewMarksEntity);
+                    if (oldCourseIdOfMarksListNewMarksEntity != null && !oldCourseIdOfMarksListNewMarksEntity.equals(courseEntity)) {
+                        oldCourseIdOfMarksListNewMarksEntity.getMarksList().remove(marksListNewMarksEntity);
+                        oldCourseIdOfMarksListNewMarksEntity = em.merge(oldCourseIdOfMarksListNewMarksEntity);
                     }
                 }
             }
@@ -110,7 +108,7 @@ public class CourseEntityJpaController implements Serializable {
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
-                int id = courseEntity.getId();
+                Integer id = courseEntity.getId();
                 if (findCourseEntity(id) == null) {
                     throw new NonexistentEntityException("The courseEntity with id " + id + " no longer exists.");
                 }
@@ -123,7 +121,7 @@ public class CourseEntityJpaController implements Serializable {
         }
     }
 
-    public void destroy(int id) throws NonexistentEntityException {
+    public void destroy(Integer id) throws NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -135,10 +133,10 @@ public class CourseEntityJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The courseEntity with id " + id + " no longer exists.", enfe);
             }
-            Collection<MarksEntity> marksById = courseEntity.getMarksById();
-            for (MarksEntity marksByIdMarksEntity : marksById) {
-                marksByIdMarksEntity.setCourseByCourseId(null);
-                marksByIdMarksEntity = em.merge(marksByIdMarksEntity);
+            List<MarksEntity> marksList = courseEntity.getMarksList();
+            for (MarksEntity marksListMarksEntity : marksList) {
+                marksListMarksEntity.setCourseId(null);
+                marksListMarksEntity = em.merge(marksListMarksEntity);
             }
             em.remove(courseEntity);
             em.getTransaction().commit();
@@ -173,7 +171,7 @@ public class CourseEntityJpaController implements Serializable {
         }
     }
 
-    public CourseEntity findCourseEntity(int id) {
+    public CourseEntity findCourseEntity(Integer id) {
         EntityManager em = getEntityManager();
         try {
             return em.find(CourseEntity.class, id);

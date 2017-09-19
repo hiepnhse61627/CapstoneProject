@@ -1,39 +1,65 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package com.capstone.entities;
 
-import javax.persistence.*;
-import java.util.Collection;
+import java.io.Serializable;
+import java.util.List;
+import javax.persistence.Basic;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
+/**
+ *
+ * @author hiepnhse61627
+ */
 @Entity
-@Table(name = "Curriculum", schema = "dbo", catalog = "CapstoneProject")
-public class CurriculumEntity {
-    private int id;
-    private int programId;
-    private String name;
-    private ProgramEntity programByProgramId;
-    private Collection<DocumentStudentEntity> documentStudentsById;
+@Table(name = "Curriculum", catalog = "CapstoneProject", schema = "dbo")
+public class CurriculumEntity implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "Id")
-    public int getId() {
-        return id;
+    @Column(name = "Id", nullable = false)
+    private Integer id;
+    @Basic(optional = false)
+    @Column(name = "Name", nullable = false, length = 10)
+    private String name;
+    @JoinColumn(name = "ProgramId", referencedColumnName = "Id", nullable = false)
+    @ManyToOne(optional = false)
+    private ProgramEntity programId;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "curriculumId")
+    private List<DocumentStudentEntity> documentStudentList;
+
+    public CurriculumEntity() {
     }
 
-    public void setId(int id) {
+    public CurriculumEntity(Integer id) {
         this.id = id;
     }
 
-    @Basic
-    @Column(name = "ProgramId")
-    public int getProgramId() {
-        return programId;
+    public CurriculumEntity(Integer id, String name) {
+        this.id = id;
+        this.name = name;
     }
 
-    public void setProgramId(int programId) {
-        this.programId = programId;
+    public Integer getId() {
+        return id;
     }
 
-    @Basic
-    @Column(name = "Name")
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
@@ -42,44 +68,45 @@ public class CurriculumEntity {
         this.name = name;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public ProgramEntity getProgramId() {
+        return programId;
+    }
 
-        CurriculumEntity that = (CurriculumEntity) o;
+    public void setProgramId(ProgramEntity programId) {
+        this.programId = programId;
+    }
 
-        if (id != that.id) return false;
-        if (programId != that.programId) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+    public List<DocumentStudentEntity> getDocumentStudentList() {
+        return documentStudentList;
+    }
 
-        return true;
+    public void setDocumentStudentList(List<DocumentStudentEntity> documentStudentList) {
+        this.documentStudentList = documentStudentList;
     }
 
     @Override
     public int hashCode() {
-        int result = id;
-        result = 31 * result + programId;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
     }
 
-    @ManyToOne
-    @PrimaryKeyJoinColumn(name = "ProgramId", referencedColumnName = "Id")
-    public ProgramEntity getProgramByProgramId() {
-        return programByProgramId;
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof CurriculumEntity)) {
+            return false;
+        }
+        CurriculumEntity other = (CurriculumEntity) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
     }
 
-    public void setProgramByProgramId(ProgramEntity programByProgramId) {
-        this.programByProgramId = programByProgramId;
+    @Override
+    public String toString() {
+        return "entities.Curriculum[ id=" + id + " ]";
     }
-
-    @OneToMany(mappedBy = "curriculumByCurriculumId")
-    public Collection<DocumentStudentEntity> getDocumentStudentsById() {
-        return documentStudentsById;
-    }
-
-    public void setDocumentStudentsById(Collection<DocumentStudentEntity> documentStudentsById) {
-        this.documentStudentsById = documentStudentsById;
-    }
+    
 }
