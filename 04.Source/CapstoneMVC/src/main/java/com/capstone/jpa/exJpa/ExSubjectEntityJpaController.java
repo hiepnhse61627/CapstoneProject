@@ -9,6 +9,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
@@ -17,7 +18,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         super(emf);
     }
 
-    public void insertSubjectList(List<SubjectEntity> list) {
+    public void insertSubjectList(List<SubjectEntity> list, Map<String, String> prerequisiteList) {
         EntityManager manager = getEntityManager();
         TypedQuery<SubjectEntity> query = manager.createQuery("SELECT c FROM SubjectEntity c", SubjectEntity.class);
         List<SubjectEntity> cur = query.getResultList();
@@ -26,7 +27,6 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 //        List<SubjectEntity> list2 = list.stream().filter(c -> c.getPrequisiteId() != null).collect(Collectors.toList());
 
         manager.getTransaction().begin();
-
         for (SubjectEntity en : list) {
             if (!cur.stream().anyMatch(c -> c.getId().equals(en.getId()))) {
 
@@ -42,7 +42,14 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
                 System.out.println(en.getId() + " has exist!");
             }
         }
+        manager.getTransaction().commit();
 
+        manager.getTransaction().begin();
+        for (String subjectCode : prerequisiteList.keySet()) {
+            SubjectEntity subject = manager.find(SubjectEntity.class, subjectCode);
+            subject.setPrequisiteId(prerequisiteList.get(subjectCode));
+            manager.merge(subject);
+        }
         manager.getTransaction().commit();
 
 //        manager.getTransaction().begin();
