@@ -1,12 +1,11 @@
 package com.capstone.services;
 
 import com.capstone.entities.SubjectEntity;
-import com.capstone.entities.SubjectMarkComponentEntity;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ISubjectService {
-    void createSubjects(List<SubjectEntity> subjectEntities);
-    void insertSubjectList(List<SubjectEntity> list);
-    SubjectEntity findSubjectbyId(String id);
+	void insertSubjectList(List<SubjectEntity> list, Map<String, String> prerequisiteList);
+    List<SubjectEntity> getAllSubjects();
 }

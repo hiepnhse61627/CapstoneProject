@@ -1,12 +1,12 @@
 package com.capstone.services;
 
 import com.capstone.entities.SubjectEntity;
-import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.jpa.exJpa.ExSubjectEntityJpaController;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import java.util.List;
+import java.util.Map;
 
 public class SubjectServiceImpl implements ISubjectService {
 
@@ -14,17 +14,12 @@ public class SubjectServiceImpl implements ISubjectService {
     ExSubjectEntityJpaController controller = new ExSubjectEntityJpaController(emf);
 
     @Override
-    public void createSubjects(List<SubjectEntity> subjectEntities) {
-        controller.createSubjects(subjectEntities);
+    public void insertSubjectList(List<SubjectEntity> list, Map<String, String> prerequisiteList) {
+        controller.insertSubjectList(list, prerequisiteList);
     }
 
     @Override
-    public void insertSubjectList(List<SubjectEntity> list) {
-        controller.insertSubjectList(list);
-    }
-
-    @Override
-    public SubjectEntity findSubjectbyId(String id) {
-        return controller.findSubjectEntity(id);
+    public List<SubjectEntity> getAllSubjects() {
+        return controller.findSubjectEntityEntities();
     }
 }

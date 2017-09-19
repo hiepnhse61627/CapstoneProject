@@ -1,49 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.capstone.entities;
 
-import java.io.Serializable;
-import java.util.List;
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.Collection;
 
-/**
- *
- * @author hiepnhse61627
- */
 @Entity
-@Table(name = "Subject_MarkComponent", catalog = "CapstoneProject", schema = "dbo")
-public class SubjectMarkComponentEntity implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-    @Id
-    @Column(name = "SubjectId", nullable = false, length = 50)
+@Table(name = "Subject_MarkComponent", schema = "dbo", catalog = "CapstoneProject")
+public class SubjectMarkComponentEntity {
     private String subjectId;
-    @Column(name = "ComponentPercent")
     private Integer componentPercent;
-    @OneToMany(mappedBy = "subjectId")
-    private List<MarksEntity> marksList;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "subjectMarkComponent")
-    private SubjectEntity subject;
+    private Collection<MarksEntity> marksBySubjectId;
+    private SubjectEntity subjectBySubjectId;
 
-    public SubjectMarkComponentEntity() {
-    }
-
-    public SubjectMarkComponentEntity(String subjectId) {
-        this.subjectId = subjectId;
-    }
-
+    @Id
+    @Column(name = "SubjectId")
     public String getSubjectId() {
         return subjectId;
     }
@@ -52,6 +21,8 @@ public class SubjectMarkComponentEntity implements Serializable {
         this.subjectId = subjectId;
     }
 
+    @Basic
+    @Column(name = "ComponentPercent")
     public Integer getComponentPercent() {
         return componentPercent;
     }
@@ -60,45 +31,42 @@ public class SubjectMarkComponentEntity implements Serializable {
         this.componentPercent = componentPercent;
     }
 
-    public List<MarksEntity> getMarksList() {
-        return marksList;
-    }
-
-    public void setMarksList(List<MarksEntity> marksList) {
-        this.marksList = marksList;
-    }
-
-    public SubjectEntity getSubject() {
-        return subject;
-    }
-
-    public void setSubject(SubjectEntity subject) {
-        this.subject = subject;
-    }
-
     @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (subjectId != null ? subjectId.hashCode() : 0);
-        return hash;
-    }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-    @Override
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof SubjectMarkComponentEntity)) {
+        SubjectMarkComponentEntity entity = (SubjectMarkComponentEntity) o;
+
+        if (subjectId != null ? !subjectId.equals(entity.subjectId) : entity.subjectId != null) return false;
+        if (componentPercent != null ? !componentPercent.equals(entity.componentPercent) : entity.componentPercent != null)
             return false;
-        }
-        SubjectMarkComponentEntity other = (SubjectMarkComponentEntity) object;
-        if ((this.subjectId == null && other.subjectId != null) || (this.subjectId != null && !this.subjectId.equals(other.subjectId))) {
-            return false;
-        }
+
         return true;
     }
 
     @Override
-    public String toString() {
-        return "entities.SubjectMarkComponent[ subjectId=" + subjectId + " ]";
+    public int hashCode() {
+        int result = subjectId != null ? subjectId.hashCode() : 0;
+        result = 31 * result + (componentPercent != null ? componentPercent.hashCode() : 0);
+        return result;
     }
-    
+
+    @OneToMany(mappedBy = "subjectMarkComponentBySubjectId")
+    public Collection<MarksEntity> getMarksBySubjectId() {
+        return marksBySubjectId;
+    }
+
+    public void setMarksBySubjectId(Collection<MarksEntity> marksBySubjectId) {
+        this.marksBySubjectId = marksBySubjectId;
+    }
+
+    @OneToOne(mappedBy = "subjectMarkComponentById", cascade = CascadeType.ALL)
+    public SubjectEntity getSubjectBySubjectId() {
+        return subjectBySubjectId;
+    }
+
+    public void setSubjectBySubjectId(SubjectEntity subjectBySubjectId) {
+        this.subjectBySubjectId = subjectBySubjectId;
+    }
 }
