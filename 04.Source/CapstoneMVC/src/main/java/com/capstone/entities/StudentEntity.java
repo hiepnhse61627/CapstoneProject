@@ -1,29 +1,58 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package com.capstone.entities;
 
+import java.io.Serializable;
+import java.util.List;
 import javax.persistence.*;
-import java.util.Collection;
 
+/**
+ *
+ * @author hiepnhse61627
+ */
 @Entity
-@Table(name = "Student", schema = "dbo", catalog = "CapstoneProject")
-public class StudentEntity {
-    private int id;
-    private String rollNumber;
-    private String fullName;
-    private Collection<DocumentStudentEntity> documentStudentsById;
-    private Collection<MarksEntity> marksById;
+@Table(name = "Student", catalog = "CapstoneProject", schema = "dbo", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"RollNumber"})})
+public class StudentEntity implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "ID")
-    public int getId() {
-        return id;
+    @Column(name = "ID", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    @Basic(optional = false)
+    @Column(name = "RollNumber", nullable = false, length = 50)
+    private String rollNumber;
+    @Column(name = "FullName", length = 150)
+    private String fullName;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
+    private List<DocumentStudentEntity> documentStudentList;
+    @OneToMany(mappedBy = "studentId")
+    private List<MarksEntity> marksList;
+
+    public StudentEntity() {
     }
 
-    public void setId(int id) {
+    public StudentEntity(Integer id) {
         this.id = id;
     }
 
-    @Basic
-    @Column(name = "RollNumber")
+    public StudentEntity(Integer id, String rollNumber) {
+        this.id = id;
+        this.rollNumber = rollNumber;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
     public String getRollNumber() {
         return rollNumber;
     }
@@ -32,8 +61,6 @@ public class StudentEntity {
         this.rollNumber = rollNumber;
     }
 
-    @Basic
-    @Column(name = "FullName")
     public String getFullName() {
         return fullName;
     }
@@ -42,43 +69,45 @@ public class StudentEntity {
         this.fullName = fullName;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public List<DocumentStudentEntity> getDocumentStudentList() {
+        return documentStudentList;
+    }
 
-        StudentEntity that = (StudentEntity) o;
+    public void setDocumentStudentList(List<DocumentStudentEntity> documentStudentList) {
+        this.documentStudentList = documentStudentList;
+    }
 
-        if (id != that.id) return false;
-        if (rollNumber != null ? !rollNumber.equals(that.rollNumber) : that.rollNumber != null) return false;
-        if (fullName != null ? !fullName.equals(that.fullName) : that.fullName != null) return false;
+    public List<MarksEntity> getMarksList() {
+        return marksList;
+    }
 
-        return true;
+    public void setMarksList(List<MarksEntity> marksList) {
+        this.marksList = marksList;
     }
 
     @Override
     public int hashCode() {
-        int result = id;
-        result = 31 * result + (rollNumber != null ? rollNumber.hashCode() : 0);
-        result = 31 * result + (fullName != null ? fullName.hashCode() : 0);
-        return result;
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
     }
 
-    @OneToMany(mappedBy = "studentByStudentId")
-    public Collection<DocumentStudentEntity> getDocumentStudentsById() {
-        return documentStudentsById;
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof StudentEntity)) {
+            return false;
+        }
+        StudentEntity other = (StudentEntity) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
     }
 
-    public void setDocumentStudentsById(Collection<DocumentStudentEntity> documentStudentsById) {
-        this.documentStudentsById = documentStudentsById;
+    @Override
+    public String toString() {
+        return "entities.Student[ id=" + id + " ]";
     }
-
-    @OneToMany(mappedBy = "studentByStudentId")
-    public Collection<MarksEntity> getMarksById() {
-        return marksById;
-    }
-
-    public void setMarksById(Collection<MarksEntity> marksById) {
-        this.marksById = marksById;
-    }
+    
 }

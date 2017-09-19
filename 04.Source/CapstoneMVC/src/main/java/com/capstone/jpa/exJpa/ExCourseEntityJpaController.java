@@ -1,29 +1,29 @@
 package com.capstone.jpa.exJpa;
 
-import com.capstone.entities.RealSemesterEntity;
-import com.capstone.jpa.RealSemesterEntityJpaController;
+import com.capstone.entities.CourseEntity;
+import com.capstone.jpa.CourseEntityJpaController;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 
-public class ExRealSemesterEntityJpaController extends RealSemesterEntityJpaController {
-    public ExRealSemesterEntityJpaController(EntityManagerFactory emf) {
+public class ExCourseEntityJpaController extends CourseEntityJpaController {
+    public ExCourseEntityJpaController(EntityManagerFactory emf) {
         super(emf);
     }
 
-    public RealSemesterEntity findRealSemesterByName(String semesterName) {
+    public CourseEntity findCourseByClass(String className) {
         EntityManager em = getEntityManager();
-        RealSemesterEntity realSemesterEntity = new RealSemesterEntity();
+        CourseEntity courseEntity = new CourseEntity();
         try {
-            String sqlString = "SELECT r FROM RealSemesterEntity r WHERE r.semester = :semester";
+            String sqlString = "SELECT c FROM CourseEntity c WHERE c.class1 = :class1";
             Query query = em.createQuery(sqlString);
-            query.setParameter("semester", semesterName);
+            query.setParameter("class1", className);
 
-            realSemesterEntity = (RealSemesterEntity) query.getSingleResult();
+            courseEntity = (CourseEntity) query.getSingleResult();
 
-            return realSemesterEntity;
+            return  courseEntity;
         } catch (NoResultException nrEx) {
             return null;
         } finally {
@@ -33,10 +33,10 @@ public class ExRealSemesterEntityJpaController extends RealSemesterEntityJpaCont
         }
     }
 
-    public RealSemesterEntity createRealSemester(RealSemesterEntity entity) {
+    public CourseEntity createCourse(CourseEntity entity) {
         EntityManager em = null;
         try {
-            em= getEntityManager();
+            em = getEntityManager();
             em.getTransaction().begin();
             em.persist(entity);
             em.flush();

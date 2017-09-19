@@ -10,14 +10,14 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import com.capstone.entities.*;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
+import com.capstone.entities.MarksEntity;
+import com.capstone.entities.RealSemesterEntity;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
@@ -35,27 +35,27 @@ public class RealSemesterEntityJpaController implements Serializable {
     }
 
     public void create(RealSemesterEntity realSemesterEntity) throws PreexistingEntityException, Exception {
-        if (realSemesterEntity.getMarksById() == null) {
-            realSemesterEntity.setMarksById(new ArrayList<MarksEntity>());
+        if (realSemesterEntity.getMarksList() == null) {
+            realSemesterEntity.setMarksList(new ArrayList<MarksEntity>());
         }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            Collection<MarksEntity> attachedMarksById = new ArrayList<MarksEntity>();
-            for (MarksEntity marksByIdMarksEntityToAttach : realSemesterEntity.getMarksById()) {
-                marksByIdMarksEntityToAttach = em.getReference(marksByIdMarksEntityToAttach.getClass(), marksByIdMarksEntityToAttach.getId());
-                attachedMarksById.add(marksByIdMarksEntityToAttach);
+            List<MarksEntity> attachedMarksList = new ArrayList<MarksEntity>();
+            for (MarksEntity marksListMarksEntityToAttach : realSemesterEntity.getMarksList()) {
+                marksListMarksEntityToAttach = em.getReference(marksListMarksEntityToAttach.getClass(), marksListMarksEntityToAttach.getId());
+                attachedMarksList.add(marksListMarksEntityToAttach);
             }
-            realSemesterEntity.setMarksById(attachedMarksById);
+            realSemesterEntity.setMarksList(attachedMarksList);
             em.persist(realSemesterEntity);
-            for (MarksEntity marksByIdMarksEntity : realSemesterEntity.getMarksById()) {
-                RealSemesterEntity oldRealSemesterBySemesterIdOfMarksByIdMarksEntity = marksByIdMarksEntity.getRealSemesterBySemesterId();
-                marksByIdMarksEntity.setRealSemesterBySemesterId(realSemesterEntity);
-                marksByIdMarksEntity = em.merge(marksByIdMarksEntity);
-                if (oldRealSemesterBySemesterIdOfMarksByIdMarksEntity != null) {
-                    oldRealSemesterBySemesterIdOfMarksByIdMarksEntity.getMarksById().remove(marksByIdMarksEntity);
-                    oldRealSemesterBySemesterIdOfMarksByIdMarksEntity = em.merge(oldRealSemesterBySemesterIdOfMarksByIdMarksEntity);
+            for (MarksEntity marksListMarksEntity : realSemesterEntity.getMarksList()) {
+                RealSemesterEntity oldSemesterIdOfMarksListMarksEntity = marksListMarksEntity.getSemesterId();
+                marksListMarksEntity.setSemesterId(realSemesterEntity);
+                marksListMarksEntity = em.merge(marksListMarksEntity);
+                if (oldSemesterIdOfMarksListMarksEntity != null) {
+                    oldSemesterIdOfMarksListMarksEntity.getMarksList().remove(marksListMarksEntity);
+                    oldSemesterIdOfMarksListMarksEntity = em.merge(oldSemesterIdOfMarksListMarksEntity);
                 }
             }
             em.getTransaction().commit();
@@ -77,30 +77,30 @@ public class RealSemesterEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             RealSemesterEntity persistentRealSemesterEntity = em.find(RealSemesterEntity.class, realSemesterEntity.getId());
-            Collection<MarksEntity> marksByIdOld = persistentRealSemesterEntity.getMarksById();
-            Collection<MarksEntity> marksByIdNew = realSemesterEntity.getMarksById();
-            Collection<MarksEntity> attachedMarksByIdNew = new ArrayList<MarksEntity>();
-            for (MarksEntity marksByIdNewMarksEntityToAttach : marksByIdNew) {
-                marksByIdNewMarksEntityToAttach = em.getReference(marksByIdNewMarksEntityToAttach.getClass(), marksByIdNewMarksEntityToAttach.getId());
-                attachedMarksByIdNew.add(marksByIdNewMarksEntityToAttach);
+            List<MarksEntity> marksListOld = persistentRealSemesterEntity.getMarksList();
+            List<MarksEntity> marksListNew = realSemesterEntity.getMarksList();
+            List<MarksEntity> attachedMarksListNew = new ArrayList<MarksEntity>();
+            for (MarksEntity marksListNewMarksEntityToAttach : marksListNew) {
+                marksListNewMarksEntityToAttach = em.getReference(marksListNewMarksEntityToAttach.getClass(), marksListNewMarksEntityToAttach.getId());
+                attachedMarksListNew.add(marksListNewMarksEntityToAttach);
             }
-            marksByIdNew = attachedMarksByIdNew;
-            realSemesterEntity.setMarksById(marksByIdNew);
+            marksListNew = attachedMarksListNew;
+            realSemesterEntity.setMarksList(marksListNew);
             realSemesterEntity = em.merge(realSemesterEntity);
-            for (MarksEntity marksByIdOldMarksEntity : marksByIdOld) {
-                if (!marksByIdNew.contains(marksByIdOldMarksEntity)) {
-                    marksByIdOldMarksEntity.setRealSemesterBySemesterId(null);
-                    marksByIdOldMarksEntity = em.merge(marksByIdOldMarksEntity);
+            for (MarksEntity marksListOldMarksEntity : marksListOld) {
+                if (!marksListNew.contains(marksListOldMarksEntity)) {
+                    marksListOldMarksEntity.setSemesterId(null);
+                    marksListOldMarksEntity = em.merge(marksListOldMarksEntity);
                 }
             }
-            for (MarksEntity marksByIdNewMarksEntity : marksByIdNew) {
-                if (!marksByIdOld.contains(marksByIdNewMarksEntity)) {
-                    RealSemesterEntity oldRealSemesterBySemesterIdOfMarksByIdNewMarksEntity = marksByIdNewMarksEntity.getRealSemesterBySemesterId();
-                    marksByIdNewMarksEntity.setRealSemesterBySemesterId(realSemesterEntity);
-                    marksByIdNewMarksEntity = em.merge(marksByIdNewMarksEntity);
-                    if (oldRealSemesterBySemesterIdOfMarksByIdNewMarksEntity != null && !oldRealSemesterBySemesterIdOfMarksByIdNewMarksEntity.equals(realSemesterEntity)) {
-                        oldRealSemesterBySemesterIdOfMarksByIdNewMarksEntity.getMarksById().remove(marksByIdNewMarksEntity);
-                        oldRealSemesterBySemesterIdOfMarksByIdNewMarksEntity = em.merge(oldRealSemesterBySemesterIdOfMarksByIdNewMarksEntity);
+            for (MarksEntity marksListNewMarksEntity : marksListNew) {
+                if (!marksListOld.contains(marksListNewMarksEntity)) {
+                    RealSemesterEntity oldSemesterIdOfMarksListNewMarksEntity = marksListNewMarksEntity.getSemesterId();
+                    marksListNewMarksEntity.setSemesterId(realSemesterEntity);
+                    marksListNewMarksEntity = em.merge(marksListNewMarksEntity);
+                    if (oldSemesterIdOfMarksListNewMarksEntity != null && !oldSemesterIdOfMarksListNewMarksEntity.equals(realSemesterEntity)) {
+                        oldSemesterIdOfMarksListNewMarksEntity.getMarksList().remove(marksListNewMarksEntity);
+                        oldSemesterIdOfMarksListNewMarksEntity = em.merge(oldSemesterIdOfMarksListNewMarksEntity);
                     }
                 }
             }
@@ -108,7 +108,7 @@ public class RealSemesterEntityJpaController implements Serializable {
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
-                int id = realSemesterEntity.getId();
+                Integer id = realSemesterEntity.getId();
                 if (findRealSemesterEntity(id) == null) {
                     throw new NonexistentEntityException("The realSemesterEntity with id " + id + " no longer exists.");
                 }
@@ -121,7 +121,7 @@ public class RealSemesterEntityJpaController implements Serializable {
         }
     }
 
-    public void destroy(int id) throws NonexistentEntityException {
+    public void destroy(Integer id) throws NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -133,10 +133,10 @@ public class RealSemesterEntityJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The realSemesterEntity with id " + id + " no longer exists.", enfe);
             }
-            Collection<MarksEntity> marksById = realSemesterEntity.getMarksById();
-            for (MarksEntity marksByIdMarksEntity : marksById) {
-                marksByIdMarksEntity.setRealSemesterBySemesterId(null);
-                marksByIdMarksEntity = em.merge(marksByIdMarksEntity);
+            List<MarksEntity> marksList = realSemesterEntity.getMarksList();
+            for (MarksEntity marksListMarksEntity : marksList) {
+                marksListMarksEntity.setSemesterId(null);
+                marksListMarksEntity = em.merge(marksListMarksEntity);
             }
             em.remove(realSemesterEntity);
             em.getTransaction().commit();
@@ -171,7 +171,7 @@ public class RealSemesterEntityJpaController implements Serializable {
         }
     }
 
-    public RealSemesterEntity findRealSemesterEntity(int id) {
+    public RealSemesterEntity findRealSemesterEntity(Integer id) {
         EntityManager em = getEntityManager();
         try {
             return em.find(RealSemesterEntity.class, id);
