@@ -57,7 +57,7 @@ public class SubjectEntityJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            SubjectEntity prequisiteId = subjectEntity.getSubjectByPrequisiteId();
+            SubjectEntity prequisiteId = subjectEntity.getPrequisiteId();
             if (prequisiteId != null) {
                 prequisiteId = em.getReference(prequisiteId.getClass(), prequisiteId.getId());
                 subjectEntity.setPrequisiteId(prequisiteId);
