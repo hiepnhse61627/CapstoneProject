@@ -16,14 +16,14 @@
 
     <title>${title}</title>
 
-    <link rel="stylesheet" href="/Resources/bootstrap/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="/Resources/font-awesome-4.7.0/css/font-awesome.min.css"/>
-    <link rel="stylesheet" href="/Resources/ionicons-2.0.1/css/ionicons.min.css"/>
-    <link rel="stylesheet" href="/Resources/dist/css/AdminLTE.min.css"/>
-    <link rel="stylesheet" href="/Resources/dist/css/skins/skin-custom.css"/>
-    <link rel="stylesheet" href="/Resources/dist/css/skins/skin-custom.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/bootstrap/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/font-awesome-4.7.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/ionicons-2.0.1/css/ionicons.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dist/css/AdminLTE.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dist/css/skins/skin-custom.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dist/css/skins/skin-custom.css"/>
     <link rel="stylesheet" href="/Resources/plugins/sweetalert2/sweetalert2.min.css"/>
-    <link rel="stylesheet" href="/Resources/DataTables/datatables.min.css"/>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/Resources/plugins/DataTables/datatables.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/select2/select2.min.css"/>
 
     <!-- REQUIRED JS SCRIPTS -->
@@ -32,11 +32,11 @@
     <script src="/Resources/plugins/jQuery/jquery-1.12.4.min.js"></script>
     <script src="/Resources/plugins/serializeToJson/jquery.serializejson.min.js"></script>
     <!-- Bootstrap 3.3.5 -->
-    <script src="/Resources/bootstrap/js/bootstrap.min.js"></script>
+    <script src="/Resources/plugins/bootstrap/js/bootstrap.min.js"></script>
     <!-- AdminLTE App -->
-    <script src="/Resources/dist/js/app.min.js"></script>
+    <script src="/Resources/plugins/dist/js/app.min.js"></script>
     <script src="/Resources/plugins/sweetalert2/sweetalert2.min.js"></script>
-    <script src="/Resources/DataTables/datatables.min.js"></script>
+    <script src="${pageContext.request.contextPath}/Resources/plugins/DataTables/datatables.min.js"></script>
     <script src="/Resources/plugins/select2/select2.min.js"></script>
 
     <style>
@@ -68,11 +68,11 @@
 
         /*.main-header .logo .logo-mini {*/
             /*margin: 0px !important;*/
-            /*background-image: url('/Resources/dist/img/logo/logo-fpt-2.png');*/
+            /*background-image: url('/Resources/plugins/dist/img/logo/logo-fpt-2.png');*/
         /*}*/
 
         /*.main-header .logo .logo-lg {*/
-            /*background-image: url('/Resources/dist/img/logo/logo-fpt-1.png');*/
+            /*background-image: url('/Resources/plugins/dist/img/logo/logo-fpt-1.png');*/
         /*}*/
 
         /*.main-header > .navbar {*/
@@ -94,11 +94,11 @@
         <a href="#" class="logo">
             <!-- mini logo for sidebar mini 50x50 pixels -->
             <div class="logo-mini">
-                <img src="/Resources/dist/img/logo/logo-fpt-2.png">
+                <img src="/Resources/plugins/dist/img/logo/logo-fpt-2.png">
             </div>
             <!-- logo for regular state and mobile devices -->
             <div class="logo-lg">
-                <img src="/Resources/dist/img/logo/logo-fpt-1.png">
+                <img src="/Resources/plugins/dist/img/logo/logo-fpt-1.png">
             </div>
         </a>
 
@@ -119,7 +119,7 @@
             <!-- Sidebar user panel (optional) -->
             <div class="user-panel">
                 <div class="pull-left image">
-                    <img src="/Resources/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image">
+                    <img src="/Resources/plugins/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image">
                 </div>
                 <div class="pull-left info">
                     <p>Alexander Pierce</p>
