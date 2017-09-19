@@ -2,6 +2,7 @@ package com.capstone.controllers;
 
 import com.capstone.entities.SubjectEntity;
 import com.capstone.services.SubjectServiceImpl;
+import com.google.gson.JsonObject;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -25,9 +26,10 @@ public class SubjectController {
 
     @RequestMapping(value = "/subject", method = RequestMethod.POST)
     @ResponseBody
-    public String Upload(@RequestParam("file") MultipartFile file) {
+    public JsonObject Upload(@RequestParam("file") MultipartFile file) {
         List<SubjectEntity> columndata = null;
         Map<String, String> prerequisiteList = null;
+        JsonObject obj = new JsonObject();
 
         try {
             prerequisiteList = new HashMap<>();
@@ -76,9 +78,12 @@ public class SubjectController {
             service.insertSubjectList(columndata, prerequisiteList);
         } catch (Exception e) {
             e.printStackTrace();
-            return "{ \"success\" : \"false\", \"message\" : \"" + e.getMessage() + "\" }";
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
+            return obj ;
         }
 
-        return "{ \"success\" : \"true\" }";
+        obj.addProperty("success", true);
+        return obj;
     }
 }
