@@ -1,4 +1,14 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
+
+<style>
+    table.formatHTML5 tr.selectedRow {
+        background-color: #e92929 !important;
+        color:#fff;
+        vertical-align: middle;
+        padding: 1.5em;
+    }
+</style>
 
 <section class="content-header">
     <ol class="breadcrumb">
@@ -12,6 +22,14 @@
     </h1>
     <form id="form" enctype=”multipart/form-data”>
         <div class="col-md-12">
+            <c:if test="${not empty files}">
+                <h4>Các file đã sử dựng</h4>
+                <table id="table" class="table">
+                    <c:forEach var="file" items="${files}">
+                        <tr><td>${file.name}</td></tr>
+                    </c:forEach>
+                </table>
+            </c:if>
             <div class="form-group">
                 <label for="file">File</label>
                 <input type="file" accept=".xls" id="file" name="file" placeholder="Roll Number"/>
@@ -27,6 +45,17 @@
 </section>
 
 <script>
+    $(document).ready(function() {
+        $("#table tbody tr").click(function () {
+            $('.selectedRow').removeClass('selectedRow');
+            $(this).addClass("selectedRow");
+//            var product = $('.p',this).html();
+            var file = $(this).html();
+//            var note =$('.n',this).html();
+            alert(file);
+        });
+    });
+
     function Add() {
         var form = new FormData();
         form.append('file', $('#file')[0].files[0]);
