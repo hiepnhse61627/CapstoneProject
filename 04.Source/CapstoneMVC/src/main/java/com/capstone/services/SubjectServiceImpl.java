@@ -16,4 +16,9 @@ public class SubjectServiceImpl implements ISubjectService {
     public void insertSubjectList(List<SubjectEntity> list) {
         controller.insertSubjectList(list);
     }
+
+    @Override
+    public List<SubjectEntity> getAllSubjects() {
+        return controller.findSubjectEntityEntities();
+    }
 }

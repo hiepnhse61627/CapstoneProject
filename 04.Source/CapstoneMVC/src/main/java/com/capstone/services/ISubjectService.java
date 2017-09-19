@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface ISubjectService {
     void insertSubjectList(List<SubjectEntity> list);
+    List<SubjectEntity> getAllSubjects();
 }

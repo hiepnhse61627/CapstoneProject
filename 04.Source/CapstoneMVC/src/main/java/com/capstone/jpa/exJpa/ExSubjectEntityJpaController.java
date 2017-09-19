@@ -3,6 +3,7 @@ package com.capstone.jpa.exJpa;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.jpa.StudentEntityJpaController;
+import com.capstone.jpa.SubjectEntityJpaController;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -10,7 +11,7 @@ import javax.persistence.TypedQuery;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ExSubjectEntityJpaController extends StudentEntityJpaController {
+public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 
     public ExSubjectEntityJpaController(EntityManagerFactory emf) {
         super(emf);
