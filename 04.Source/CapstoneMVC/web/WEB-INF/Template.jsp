@@ -23,7 +23,21 @@
     <link rel="stylesheet" href="/Resources/dist/css/skins/skin-custom.css"/>
     <link rel="stylesheet" href="/Resources/dist/css/skins/skin-custom.css"/>
     <link rel="stylesheet" href="/Resources/plugins/sweetalert2/sweetalert2.min.css"/>
+    <link rel="stylesheet" href="/Resources/DataTables/datatables.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/select2/select2.min.css"/>
 
+    <!-- REQUIRED JS SCRIPTS -->
+
+    <!-- jQuery 2.1.4 -->
+    <script src="/Resources/plugins/jQuery/jquery-1.12.4.min.js"></script>
+    <script src="/Resources/plugins/serializeToJson/jquery.serializejson.min.js"></script>
+    <!-- Bootstrap 3.3.5 -->
+    <script src="/Resources/bootstrap/js/bootstrap.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="/Resources/dist/js/app.min.js"></script>
+    <script src="/Resources/plugins/sweetalert2/sweetalert2.min.js"></script>
+    <script src="/Resources/DataTables/datatables.min.js"></script>
+    <script src="/Resources/plugins/select2/select2.min.js"></script>
 
     <style>
         .logo-mini img {
@@ -128,8 +142,8 @@
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
-                        <li><a href="#">Danh sách sinh viên</a></li>
-                        <li><a href="#">Trạng thái sinh viên</a></li>
+                        <li><a href="#"><i class="fa fa-link"></i> Danh sách sinh viên</a></li>
+                        <li><a href="#"><i class="fa fa-link"></i> Trạng thái sinh viên</a></li>
 						<li><a href="/create"><i class="fa fa-link"></i> <span>Enroll sinh viên</span></a></li>
                     </ul>
                 </li>
@@ -140,9 +154,9 @@
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
-                        <li><a href="/goUploadStudentList">Danh sách sinh viên</a></li>
-                        <li><a href="/goUploadSubjects">Môn học</a></li>
-                        <li><a href="/goUploadStudentMarks">Danh sách điểm</a></li>
+                        <li><a href="#">Danh sách sinh viên</a></li>
+                        <li><a href="#">Danh sách điểm</a></li>
+                        <li><a href="/subject">Danh sách môn học</a></li>
                     </ul>
                 </li>
                 <li class="treeview">
@@ -156,7 +170,7 @@
                         <li><a href="#">Danh sách làm đồ án</a></li>
                         <li><a href="#">Danh sách tốt nghiệp</a></li>
                         <li><a href="#">Danh sách đóng học phí</a></li>
-                        <li><a href="#">Danh sách học lại</a></li>
+                        <li><a href="/display">Danh sách học lại</a></li>
                         <li><a href="#">Danh sách chậm tiến độ</a></li>
                     </ul>
                 </li>
@@ -245,16 +259,5 @@
     <div class="control-sidebar-bg"></div>
 </div><!-- ./wrapper -->
 </body>
-
-<!-- REQUIRED JS SCRIPTS -->
-
-<!-- jQuery 2.1.4 -->
-<script src="/Resources/plugins/jQuery/jQuery-2.1.4.min.js"></script>
-<script src="/Resources/plugins/serializeToJson/jquery.serializejson.min.js"></script>
-<!-- Bootstrap 3.3.5 -->
-<script src="/Resources/bootstrap/js/bootstrap.min.js"></script>
-<!-- AdminLTE App -->
-<script src="/Resources/dist/js/app.min.js"></script>
-<script src="/Resources/plugins/sweetalert2/sweetalert2.min.js"></script>
 
 </html>

@@ -2,6 +2,7 @@ package com.capstone.controllers;
 
 import com.capstone.entities.SubjectEntity;
 import com.capstone.services.SubjectServiceImpl;
+import com.google.gson.JsonObject;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
@@ -14,9 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 @Controller
 public class SubjectController {
@@ -27,14 +26,19 @@ public class SubjectController {
 
     @RequestMapping(value = "/subject", method = RequestMethod.POST)
     @ResponseBody
-    public String Upload(@RequestParam("file") MultipartFile file) {
+    public JsonObject Upload(@RequestParam("file") MultipartFile file) {
         List<SubjectEntity> columndata = null;
+        Map<String, String> prerequisiteList = null;
+        JsonObject obj = new JsonObject();
+
         try {
+            prerequisiteList = new HashMap<>();
+            columndata = new ArrayList<SubjectEntity>();
+
             InputStream is = file.getInputStream();
             HSSFWorkbook workbook = new HSSFWorkbook(is);
             HSSFSheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
-            columndata = new ArrayList<SubjectEntity>();
 
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
@@ -43,24 +47,23 @@ public class SubjectController {
                 while (cellIterator.hasNext()) {
                     Cell cell = cellIterator.next();
                     if (row.getRowNum() > 3) { //To filter column headings
-                        if (cell.getColumnIndex() == 1) {// To match column index
-                            en.setId(cell.getStringCellValue());
-                        } else if (cell.getColumnIndex() == 2) {
-                            en.setName(cell.getStringCellValue().trim());
-                        } else if (cell.getColumnIndex() == 3) {
+                        if (cell.getColumnIndex() == 1) { // Subject code
+                            en.setId(cell.getStringCellValue().trim());
+                        } else if (cell.getColumnIndex() == 2) { // Abbreviation
                             en.setAbbreviation(cell.getStringCellValue().trim());
-                        } else if (cell.getColumnIndex() == 4) {
+                        } else if (cell.getColumnIndex() == 3) { // Subject name
+                            en.setName(cell.getStringCellValue().trim());
+                        } else if (cell.getColumnIndex() == 4) { // No. of credits
                             en.setCredits((int) cell.getNumericCellValue());
-                        } else if (cell.getColumnIndex() == 5) {
-//                            String tmp = cell.getStringCellValue().trim();
-//                            if (tmp != null && !tmp.isEmpty()) {
-//                                tmp = tmp.split("/")[0];
-//                            } else {
-//                                tmp = null;
-//                            }
+                        } else if (cell.getColumnIndex() == 5) { // Prerequisite
+                            String preCode = cell.getStringCellValue().trim();
+                            if (!preCode.isEmpty()) {
+                                if (preCode.contains("/")) {
+                                    preCode = preCode.split("/")[0];
+                                }
 
-//                             INSERT WITH PREQUISITE ERRORS A LOT
-                            en.setPrequisiteId(null);
+                                prerequisiteList.put(en.getId(), preCode);
+                            }
                         }
                     }
                 }
@@ -72,12 +75,15 @@ public class SubjectController {
             is.close();
 
             SubjectServiceImpl service = new SubjectServiceImpl();
-            service.insertSubjectList(columndata);
+            service.insertSubjectList(columndata, prerequisiteList);
         } catch (Exception e) {
             e.printStackTrace();
-            return "{ \"success\" : \"false\", \"message\" : \"" + e.getMessage() + "\" }";
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
+            return obj ;
         }
 
-        return "{ \"success\" : \"true\" }";
+        obj.addProperty("success", true);
+        return obj;
     }
 }
