@@ -14,11 +14,6 @@ public class SubjectServiceImpl implements ISubjectService {
     ExSubjectEntityJpaController controller = new ExSubjectEntityJpaController(emf);
 
     @Override
-    public void createSubjects(List<SubjectEntity> subjectEntities) {
-        controller.createSubjects(subjectEntities);
-    }
-
-    @Override
     public void insertSubjectList(List<SubjectEntity> list) {
         controller.insertSubjectList(list);
     }

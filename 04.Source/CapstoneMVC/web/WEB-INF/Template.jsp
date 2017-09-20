@@ -154,8 +154,8 @@
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
-                        <li><a href="#">Danh sách sinh viên</a></li>
-                        <li><a href="#">Danh sách điểm</a></li>
+                        <li><a href="/goUploadStudentList">Danh sách sinh viên</a></li>
+                        <li><a href="/goUploadStudentMarks">Danh sách điểm</a></li>
                         <li><a href="/subject">Danh sách môn học</a></li>
                     </ul>
                 </li>

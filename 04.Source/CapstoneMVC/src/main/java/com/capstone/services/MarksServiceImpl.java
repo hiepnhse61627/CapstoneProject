@@ -24,8 +24,10 @@ public class MarksServiceImpl implements IMarksService {
 
     @Override
     public void createMarks(List<MarksEntity> marksEntities) {
-        for (MarksEntity entity : marksEntities) {
-            createMark(entity);
+        try {
+            marksEntityJpaController.createMarks(marksEntities);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

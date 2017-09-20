@@ -37,9 +37,9 @@ public class StudentController {
         ModelAndView view = new ModelAndView("DisplayStudentPassFail");
 
         IRealSemesterService service = new RealSemesterServiceImpl();
-        view.addObject("semesters", service.getAllSemester());
+//        view.addObject("semesters", service.getAllSemester());
         ISubjectService service2 = new SubjectServiceImpl();
-        view.addObject("subjects", service2.getAllSubjects());
+//        view.addObject("subjects", service2.getAllSubjects());
 
         return view;
     }
@@ -62,19 +62,19 @@ public class StudentController {
 
             String search = params.get("sSearch");
             if (search != null && !search.isEmpty()) {
-                set = set.stream().filter(c ->
-                        c.getStudentByStudentId().getFullName().toLowerCase().contains(search) ||
-                        c.getStudentByStudentId().getRollNumber().toLowerCase().contains(search) ||
-                        c.getCourseByCourseId().getClazz().toLowerCase().contains(search))
-                .collect(Collectors.toList());
+//                set = set.stream().filter(c ->
+//                        c.getStudentByStudentId().getFullName().toLowerCase().contains(search) ||
+//                        c.getStudentByStudentId().getRollNumber().toLowerCase().contains(search) ||
+//                        c.getCourseByCourseId().getClazz().toLowerCase().contains(search))
+//                .collect(Collectors.toList());
             };
 
             ArrayList<ArrayList<String>> parent = new ArrayList<>();
             if (!set.isEmpty()) {
                 set.forEach(m -> {
                     ArrayList<String> tmp = new ArrayList<>();
-                    tmp.add(m.getStudentByStudentId().getRollNumber());
-                    tmp.add(m.getStudentByStudentId().getFullName());
+//                    tmp.add(m.getStudentByStudentId().getRollNumber());
+//                    tmp.add(m.getStudentByStudentId().getFullName());
                     tmp.add(String.valueOf(m.getAverageMark()));
                     tmp.add(m.getStatus());
                     parent.add(tmp);
