@@ -3,10 +3,7 @@ package com.capstone.jpa.exJpa;
 import com.capstone.entities.StudentEntity;
 import com.capstone.jpa.StudentEntityJpaController;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
+import javax.persistence.*;
 import java.util.List;
 
 public class ExStudentEntityJpaController extends StudentEntityJpaController {
@@ -21,7 +18,11 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
             em = getEntityManager();
             em.getTransaction().begin();
             for (StudentEntity student : students) {
-                em.persist(student);
+                TypedQuery<StudentEntity> single = em.createQuery("SELECT c FROM StudentEntity c WHERE c.rollNumber = :roll", StudentEntity.class);
+                single.setParameter("roll", student.getRollNumber());
+                if (single.getResultList().size() == 0) {
+                    em.persist(student);
+                }
             }
             em.getTransaction().commit();
         } finally {

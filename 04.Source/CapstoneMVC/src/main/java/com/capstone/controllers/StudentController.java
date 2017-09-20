@@ -37,9 +37,9 @@ public class StudentController {
         ModelAndView view = new ModelAndView("DisplayStudentPassFail");
 
         IRealSemesterService service = new RealSemesterServiceImpl();
-//        view.addObject("semesters", service.getAllSemester());
+        view.addObject("semesters", service.getAllSemester());
         ISubjectService service2 = new SubjectServiceImpl();
-//        view.addObject("subjects", service2.getAllSubjects());
+        view.addObject("subjects", service2.getAllSubjects());
 
         return view;
     }
@@ -53,7 +53,7 @@ public class StudentController {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager manager = emf.createEntityManager();
 
-            TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.semesterId = :cid AND c.subjectId = :sid", MarksEntity.class);
+            TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.semesterId.id = :cid AND c.subjectId.subjectId = :sid", MarksEntity.class);
             query.setParameter("cid", Integer.parseInt(params.get("semesterId")));
             query.setParameter("sid", params.get("subjectId"));
             query.setFirstResult(Integer.parseInt(params.get("iDisplayStart")));
@@ -69,8 +69,8 @@ public class StudentController {
             if (!set.isEmpty()) {
                 set.forEach(m -> {
                     ArrayList<String> tmp = new ArrayList<>();
-//                    tmp.add(m.getStudentByStudentId().getRollNumber());
-//                    tmp.add(m.getStudentByStudentId().getFullName());
+                    tmp.add(m.getStudentId().getRollNumber());
+                    tmp.add(m.getStudentId().getFullName());
                     tmp.add(String.valueOf(m.getAverageMark()));
                     tmp.add(m.getStatus());
                     parent.add(tmp);
