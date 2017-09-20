@@ -1,4 +1,6 @@
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <section class="content-header">
     <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-dashboard"></i> Level</a></li>
@@ -11,20 +13,54 @@
         <small>Optional description</small>
     </h1>
     <div class="col-md-12">
-        <form action="/search" method="post">
-            <div class="form-group">
-                <label for="ss">Search</label>
-                <input type="text" id="ss" name="txtSearch" placeholder="Enter student rollnumber"/>
-                <button type="submit">Search</button>
-            </div>
-        </form>
-    </div>
-    <div class="col-md-12">
-        <c:if test="${not empty student and not empty student.firstName}">
-            <h2>Student information</h2>
-            <div class="text text-primary">
-                ${student.firstName}
-            </div>
-        </c:if>
+        <button type="button" onclick="test()">Click</button>
     </div>
 </section>
+
+<script>
+    var isRunning = true;
+
+    function test() {
+        swal({
+            title: 'Đang xử lý',
+            html: "<div id='progress'>Progress</div>",
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                isRunning = true;
+                $.ajax({
+                    type: "GET",
+                    url: "/runstatus",
+                    processData: false,
+                    contentType: false,
+                    success: function (result) {
+                        isRunning = false;
+                        swal(
+                            'Thành công!',
+                            'Đã import các môn học!',
+                            'success'
+                        );
+                    }
+                });
+                waitForTaskFinish(isRunning);
+            },
+            allowOutsideClick: false
+        });
+    }
+
+    function waitForTaskFinish(running) {
+        $.ajax({
+            type: "GET",
+            url: "/status",
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                $('#progress').html("<div>" + result +"</div>");
+                console.log("task running");
+                if (running) {
+                    setTimeout("waitForTaskFinish(isRunning)", 50);
+                }
+            }
+        });
+    }
+</script>

@@ -1,27 +1,68 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package com.capstone.entities;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.persistence.*;
 
+/**
+ *
+ * @author hiepnhse61627
+ */
 @Entity
-@Table(name = "Subject", schema = "dbo", catalog = "CapstoneProject")
-public class SubjectEntity {
-    private String id;
-    private String name;
-    private String abbreviation;
-    private String prequisiteId;
-    private Integer credits;
-    private SubjectMarkComponentEntity subjectMarkComponentById;
+@Table(name = "Subject", catalog = "CapstoneProject", schema = "dbo")
+public class SubjectEntity implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "Id")
-    public String getId() { return id; }
+    @Column(name = "Id", nullable = false, length = 50)
+    private String id;
+    @Column(name = "Name", length = 255)
+    private String name;
+    @Column(name = "Abbreviation", length = 255)
+    private String abbreviation;
+    @Column(name = "Credits")
+    private Integer credits;
+    @OneToMany(mappedBy = "prequisiteId")
+    private List<SubjectEntity> subjectList;
+    @JoinColumn(name = "PrequisiteId", referencedColumnName = "Id")
+    @ManyToOne(cascade = CascadeType.ALL)
+    private SubjectEntity prequisiteId;
+    @JoinColumn(name = "Id", referencedColumnName = "SubjectId", nullable = false, insertable = false, updatable = false)
+    @OneToOne(optional = false)
+    private SubjectMarkComponentEntity subjectMarkComponent;
+
+    @Transient
+    private String prerequisiteCode;
+
+    public String getPrerequisiteCode() {
+        return this.prerequisiteCode;
+    }
+
+    public void setPrerequisiteCode(String prerequisiteCode) {
+        this.prerequisiteCode = prerequisiteCode;
+    }
+
+    public SubjectEntity() {
+    }
+
+    public SubjectEntity(String id) {
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
+    }
 
     public void setId(String id) {
         this.id = id;
     }
 
-    @Basic
-    @Column(name = "Name")
     public String getName() {
         return name;
     }
@@ -30,8 +71,6 @@ public class SubjectEntity {
         this.name = name;
     }
 
-    @Basic
-    @Column(name = "Abbreviation")
     public String getAbbreviation() {
         return abbreviation;
     }
@@ -40,18 +79,6 @@ public class SubjectEntity {
         this.abbreviation = abbreviation;
     }
 
-    @Basic
-    @Column(name = "PrequisiteId")
-    public String getPrequisiteId() {
-        return prequisiteId;
-    }
-
-    public void setPrequisiteId(String prequisiteId) {
-        this.prequisiteId = prequisiteId;
-    }
-
-    @Basic
-    @Column(name = "Credits")
     public Integer getCredits() {
         return credits;
     }
@@ -60,39 +87,60 @@ public class SubjectEntity {
         this.credits = credits;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public List<SubjectEntity> getSubjectList() {
+        return subjectList;
+    }
 
-        SubjectEntity that = (SubjectEntity) o;
+    public void setSubjectList(List<SubjectEntity> subjectList) {
+        this.subjectList = subjectList;
+    }
 
-        if (id != null ? !id.equals(that.id) : that.id != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (abbreviation != null ? !abbreviation.equals(that.abbreviation) : that.abbreviation != null) return false;
-        if (prequisiteId != null ? !prequisiteId.equals(that.prequisiteId) : that.prequisiteId != null) return false;
-        if (credits != null ? !credits.equals(that.credits) : that.credits != null) return false;
+    public SubjectEntity getPrequisiteId() {
+        return prequisiteId;
+    }
 
-        return true;
+    public void setPrequisiteId(SubjectEntity prequisiteId) {
+        this.prequisiteId = prequisiteId;
+    }
+
+    public SubjectMarkComponentEntity getSubjectMarkComponent() {
+        return subjectMarkComponent;
+    }
+
+    public void setSubjectMarkComponent(SubjectMarkComponentEntity subjectMarkComponent) {
+        this.subjectMarkComponent = subjectMarkComponent;
+    }
+
+    public void addChildSubject(SubjectEntity subject) {
+        if (this.subjectList == null) {
+            this.subjectList = new ArrayList<>();
+        }
+        this.subjectList.add(subject);
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (abbreviation != null ? abbreviation.hashCode() : 0);
-        result = 31 * result + (prequisiteId != null ? prequisiteId.hashCode() : 0);
-        result = 31 * result + (credits != null ? credits.hashCode() : 0);
-        return result;
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
     }
 
-    @OneToOne
-    @PrimaryKeyJoinColumn(name = "Id", referencedColumnName = "SubjectId")
-    public SubjectMarkComponentEntity getSubjectMarkComponentById() {
-        return subjectMarkComponentById;
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof SubjectEntity)) {
+            return false;
+        }
+        SubjectEntity other = (SubjectEntity) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
     }
 
-    public void setSubjectMarkComponentById(SubjectMarkComponentEntity subjectMarkComponentById) {
-        this.subjectMarkComponentById = subjectMarkComponentById;
+    @Override
+    public String toString() {
+        return "entities.Subject[ id=" + id + " ]";
     }
+    
 }

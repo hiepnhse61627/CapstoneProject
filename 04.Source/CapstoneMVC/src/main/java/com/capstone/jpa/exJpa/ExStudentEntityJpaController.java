@@ -3,8 +3,7 @@ package com.capstone.jpa.exJpa;
 import com.capstone.entities.StudentEntity;
 import com.capstone.jpa.StudentEntityJpaController;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
+import javax.persistence.*;
 import java.util.List;
 
 public class ExStudentEntityJpaController extends StudentEntityJpaController {
@@ -13,15 +12,73 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
         super(emf);
     }
 
+    private int currentLine = 0;
+    private int totalLine = 0;
+
+    public int getCurrentLine() {
+        return currentLine;
+    }
+
+    public int getTotalLine() {
+        return totalLine;
+    }
+
     public void createStudentList(List<StudentEntity> students) {
+        totalLine = students.size();
+        currentLine = 0;
+
         EntityManager em = null;
         try {
             em = getEntityManager();
-            em.getTransaction().begin();
             for (StudentEntity student : students) {
-                em.persist(student);
+                try {
+                    em.getTransaction().begin();
+
+                    TypedQuery<StudentEntity> single = em.createQuery("SELECT c FROM StudentEntity c WHERE c.rollNumber = :roll", StudentEntity.class);
+                    single.setParameter("roll", student.getRollNumber());
+
+                    List<StudentEntity> stus = single.getResultList();
+                    if (stus.size() == 0) {
+                        em.persist(student);
+                    } else {
+                        StudentEntity stu = stus.get(0);
+                        stu.setRollNumber(student.getRollNumber());
+                        stu.setFullName(student.getFullName());
+                        em.merge(stu);
+                    }
+
+                    em.getTransaction().commit();
+                } catch (Exception e) {
+                    System.out.println("Student " + student.getRollNumber() + "caused " + e.getMessage());
+                }
+
+                currentLine++;
+
+                System.out.println(currentLine + "-" + totalLine);
             }
-            em.getTransaction().commit();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        totalLine = 0;
+        currentLine = 0;
+    }
+
+    public StudentEntity findStudentByRollNumber(String rollNumber) {
+        EntityManager em = getEntityManager();
+        StudentEntity studentEntity = new StudentEntity();
+        try {
+            String sqlString = "SELECT s FROM StudentEntity s WHERE s.rollNumber = :rollNumber";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("rollNumber", rollNumber);
+
+            studentEntity = (StudentEntity) query.getSingleResult();
+
+            return studentEntity;
+        } catch (NoResultException nrEx) {
+            return null;
         } finally {
             if (em != null) {
                 em.close();
