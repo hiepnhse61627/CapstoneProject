@@ -28,7 +28,7 @@
     </h1>
     <div class="col-md-12">
         <c:if test="${not empty files}">
-            <h4>Các file đã sử dựng</h4>
+            <h4>Các file gần đây</h4>
             <div class="form-group">
                 <table id="table" class="table">
                     <c:forEach var="file" items="${files}">
@@ -57,6 +57,9 @@
 </section>
 
 <script>
+    // global variables
+    var isRunning = true;
+
     $(document).ready(function () {
         $("#table tbody tr").click(function () {
             $('.selectedRow').removeClass('selectedRow');
@@ -68,10 +71,46 @@
     });
 
     function UseFile() {
-        alert($('#selected td').html());
-    }
+        if ($('#selected td').length == 0) {
+            swal('', 'Hãy chọn file trước', 'error');
+        } else {
+            var form = new FormData();
+            form.append('file', $('#selected td').html());
 
-    var isRunning = true;
+            swal({
+                title: 'Đang xử lý',
+                html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+                type: 'info',
+                onOpen: function () {
+                    swal.showLoading();
+                    isRunning = true;
+                    $.ajax({
+                        type: "POST",
+                        url: "/uploadStudentExistFile",
+                        processData: false,
+                        contentType: false,
+                        data: form,
+                        success: function (result) {
+                            isRunning = false;
+                            if (result.success) {
+                                swal({
+                                    title: 'Thành công',
+                                    text: "Đã import các sinh viên!",
+                                    type: 'success'
+                                }).then(function () {
+                                    location.reload();
+                                });
+                            } else {
+                                swal('Đã xảy ra lỗi!', result.message, 'error');
+                            }
+                        }
+                    });
+                    waitForTaskFinish(isRunning);
+                },
+                allowOutsideClick: false
+            });
+        }
+    }
 
     function Add() {
         var form = new FormData();
@@ -93,11 +132,13 @@
                     success: function (result) {
                         isRunning = false;
                         if (result.success) {
-                            swal(
-                                'Thành công!',
-                                'Đã import các sinh viên!',
-                                'success'
-                            );
+                            swal({
+                                title: 'Thành công',
+                                text: "Đã import các sinh viên!",
+                                type: 'success'
+                            }).then(function () {
+                                location.reload();
+                            });
                         } else {
                             swal('Đã xảy ra lỗi!', result.message, 'error');
                         }

@@ -7,7 +7,9 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Comparator;
 
 public class ReadAndSaveFileToServer {
     public void saveFile(ServletContext context, MultipartFile file, String folder) {
@@ -22,16 +24,27 @@ public class ReadAndSaveFileToServer {
                 }
 
                 File[] files = dir.listFiles();
-                if (files.length > 5) {
+                Arrays.sort(files, Comparator.comparingLong(File::lastModified));
+                if (files.length > 4) {
                     files[0].delete();
+                    System.out.println(files[0].getName() + " deleted!");
                 }
 
                 File serverFile = new File(dir.getAbsolutePath()
                         + File.separator + file.getOriginalFilename());
                 if (serverFile.exists()) {
-                    SimpleDateFormat df = new SimpleDateFormat("_yyyy-MM-dd-HH-mm-ss");
+                    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
                     String suffix = df.format(Calendar.getInstance().getTime());
-                    serverFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename() + suffix);
+
+                    String name = file.getOriginalFilename();
+                    if (name.contains(".")) {
+                        String filename = name.substring(0, name.lastIndexOf("."));
+                        String extension = name.substring(name.lastIndexOf("."), name.length());
+                        name = filename + "_" + suffix + extension;
+                        serverFile = new File(dir.getAbsolutePath() + File.separator + name);
+                    } else {
+                        serverFile = new File(dir.getAbsolutePath() + File.separator + name + suffix);
+                    }
                 }
 
                 BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
@@ -50,6 +63,7 @@ public class ReadAndSaveFileToServer {
         File dir = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/");
         if (dir.isDirectory()) {
             files = dir.listFiles();
+            Arrays.sort(files, Comparator.comparingLong(File::lastModified));
         }
         return files;
     }
