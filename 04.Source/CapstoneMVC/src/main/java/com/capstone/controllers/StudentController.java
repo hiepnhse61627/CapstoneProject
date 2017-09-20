@@ -62,11 +62,7 @@ public class StudentController {
 
             String search = params.get("sSearch");
             if (search != null && !search.isEmpty()) {
-//                set = set.stream().filter(c ->
-//                        c.getStudentByStudentId().getFullName().toLowerCase().contains(search) ||
-//                        c.getStudentByStudentId().getRollNumber().toLowerCase().contains(search) ||
-//                        c.getCourseByCourseId().getClazz().toLowerCase().contains(search))
-//                .collect(Collectors.toList());
+
             };
 
             ArrayList<ArrayList<String>> parent = new ArrayList<>();

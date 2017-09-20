@@ -21,7 +21,7 @@
     <link rel="stylesheet" href="/Resources/plugins/ionicons-2.0.1/css/ionicons.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/dist/css/AdminLTE.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/dist/css/skins/skin-custom.css"/>
-    <link rel="stylesheet" href="/Resources/plugins/dist/css/skins/skin-custom.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dist/css/skins/_all-skins.css"/>
     <link rel="stylesheet" href="/Resources/plugins/sweetalert2/sweetalert2.min.css"/>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/Resources/plugins/DataTables/datatables.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/select2/select2.min.css"/>
@@ -56,35 +56,39 @@
             padding: 0px;
         }
 
+        .main-sidebar {
+            background: linear-gradient(to bottom, white, white, white, white, white, orange);
+        }
+
         /*.main-header .logo .logo-mini,*/
         /*.main-header .logo .logo-lg {*/
-            /*width: 100%;*/
-            /*height: 100%;*/
+        /*width: 100%;*/
+        /*height: 100%;*/
 
-            /*background-size: cover;*/
-            /*background-repeat: no-repeat;*/
-            /*background-position: center center;*/
+        /*background-size: cover;*/
+        /*background-repeat: no-repeat;*/
+        /*background-position: center center;*/
         /*}*/
 
         /*.main-header .logo .logo-mini {*/
-            /*margin: 0px !important;*/
-            /*background-image: url('/Resources/plugins/dist/img/logo/logo-fpt-2.png');*/
+        /*margin: 0px !important;*/
+        /*background-image: url('/Resources/plugins/dist/img/logo/logo-fpt-2.png');*/
         /*}*/
 
         /*.main-header .logo .logo-lg {*/
-            /*background-image: url('/Resources/plugins/dist/img/logo/logo-fpt-1.png');*/
+        /*background-image: url('/Resources/plugins/dist/img/logo/logo-fpt-1.png');*/
         /*}*/
 
         /*.main-header > .navbar {*/
-            /*margin-left: 231px;*/
+        /*margin-left: 231px;*/
         /*}*/
 
         /*.sidebar-mini.sidebar-collapse .main-header .navbar {*/
-            /*margin-left: 51px;*/
+        /*margin-left: 51px;*/
         /*}*/
     </style>
 </head>
-<body class="hold-transition skin-custom sidebar-mini">
+<body class="hold-transition skin-black-light sidebar-mini">
 <div class="wrapper">
 
     <!-- Main Header -->
@@ -133,45 +137,45 @@
                 <%--<li class="header">HEADER</li>--%>
                 <!-- Optionally, you can add icons to the links -->
                 <li class="active">
-                    <a href="#"><i class="fa fa-link"></i> <span>Thống kê</span></a>
+                    <a href="#"><i class="fa fa-dashboard"></i> <span>Thống kê</span></a>
                 </li>
                 <li class="treeview">
                     <a href="#">
-                        <i class="fa fa-link"></i>
+                        <i class="fa fa-users"></i>
                         <span>Quản lý sinh viên</span>
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
-                        <li><a href="#"><i class="fa fa-link"></i> Danh sách sinh viên</a></li>
-                        <li><a href="#"><i class="fa fa-link"></i> Trạng thái sinh viên</a></li>
-						<li><a href="/create"><i class="fa fa-link"></i> <span>Enroll sinh viên</span></a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách sinh viên</a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Trạng thái sinh viên</a></li>
+                        <li><a href="/create"><i class="fa fa-circle-o"></i> <span>Enroll sinh viên</span></a></li>
                     </ul>
                 </li>
                 <li class="treeview">
                     <a href="#">
-                        <i class="fa fa-link"></i>
+                        <i class="glyphicon glyphicon-save"></i>
                         <span>Nhập dữ liệu</span>
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
-                        <li><a href="#">Danh sách sinh viên</a></li>
-                        <li><a href="#">Danh sách điểm</a></li>
-                        <li><a href="/subject">Danh sách môn học</a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách sinh viên</a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách điểm</a></li>
+                        <li><a href="/subject"> <i class="fa fa-circle-o"></i> Danh sách môn học</a></li>
                     </ul>
                 </li>
                 <li class="treeview">
                     <a href="#">
-                        <i class="fa fa-link"></i>
+                        <i class="glyphicon glyphicon-open"></i>
                         <span>Xuất dữ liệu</span>
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
-                        <li><a href="#">Danh sách đi OJT</a></li>
-                        <li><a href="#">Danh sách làm đồ án</a></li>
-                        <li><a href="#">Danh sách tốt nghiệp</a></li>
-                        <li><a href="#">Danh sách đóng học phí</a></li>
-                        <li><a href="/display">Danh sách học lại</a></li>
-                        <li><a href="#">Danh sách chậm tiến độ</a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách đi OJT</a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách làm đồ án</a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách tốt nghiệp</a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách đóng học phí</a></li>
+                        <li><a href="/display"><i class="fa fa-circle-o"></i> Danh sách học lại</a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách chậm tiến độ</a></li>
                     </ul>
                 </li>
             </ul><!-- /.sidebar-menu -->
@@ -185,15 +189,6 @@
         <dec:body/>
     </div><!-- /.content-wrapper -->
 
-    <!-- Main Footer -->
-    <footer class="main-footer">
-        <!-- To the right -->
-        <div class="pull-right hidden-xs">
-            Anything you want
-        </div>
-        <!-- Default to the left -->
-        <strong>Copyright &copy; 2015 <a href="#">Company</a>.</strong> All rights reserved.
-    </footer>
 
     <!-- Control Sidebar -->
     <aside class="control-sidebar control-sidebar-dark">

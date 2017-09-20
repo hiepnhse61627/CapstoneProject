@@ -80,7 +80,8 @@ public class SubjectController {
                                     preCode = preCode.split("/")[0];
                                 }
 
-                                prerequisiteList.put(en.getId(), preCode);
+//                                prerequisiteList.put(en.getId(), preCode);
+                                en.setPrerequisiteCode(preCode);
                             }
                         }
                     }
@@ -92,8 +93,18 @@ public class SubjectController {
             }
             is.close();
 
+            for (SubjectEntity subject : columndata) {
+                for (SubjectEntity preSubject : columndata) {
+                    if (subject.getPrerequisiteCode() != null
+                            && subject.getPrerequisiteCode().equals(preSubject.getPrerequisiteCode())) {
+                        subject.setPrequisiteId(preSubject);
+                        preSubject.addChildSubject(subject);
+                    }
+                }
+            }
+
             SubjectServiceImpl service = new SubjectServiceImpl();
-//            service.insertSubjectList(columndata, prerequisiteList);
+            service.insertSubjectList(columndata);
         } catch (Exception e) {
             e.printStackTrace();
             obj.addProperty("success", false);
