@@ -6,6 +6,7 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.*;
 
@@ -35,6 +36,17 @@ public class SubjectEntity implements Serializable {
     @JoinColumn(name = "Id", referencedColumnName = "SubjectId", nullable = false, insertable = false, updatable = false)
     @OneToOne(optional = false)
     private SubjectMarkComponentEntity subjectMarkComponent;
+
+    @Transient
+    private String prerequisiteCode;
+
+    public String getPrerequisiteCode() {
+        return this.prerequisiteCode;
+    }
+
+    public void setPrerequisiteCode(String prerequisiteCode) {
+        this.prerequisiteCode = prerequisiteCode;
+    }
 
     public SubjectEntity() {
     }
@@ -97,6 +109,13 @@ public class SubjectEntity implements Serializable {
 
     public void setSubjectMarkComponent(SubjectMarkComponentEntity subjectMarkComponent) {
         this.subjectMarkComponent = subjectMarkComponent;
+    }
+
+    public void addChildSubject(SubjectEntity subject) {
+        if (this.subjectList == null) {
+            this.subjectList = new ArrayList<>();
+        }
+        this.subjectList.add(subject);
     }
 
     @Override
