@@ -1,6 +1,7 @@
 package com.capstone.controllers;
 
 import com.capstone.services.*;
+import com.google.gson.JsonObject;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -13,6 +14,7 @@ import com.capstone.entities.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -37,40 +39,61 @@ public class UploadController {
         return "uploadStudentList";
     }
 
+    @RequestMapping("/getlinestatus")
+    @ResponseBody
+    public JsonObject getCurrentLine() {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("current", studentService.getCurrentLine());
+        obj.addProperty("total", studentService.getTotalLine());
+        return obj;
+    }
+
     @RequestMapping(value = "/uploadStudentList", method = RequestMethod.POST)
-    public void uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
-        InputStream is = file.getInputStream();
+    @ResponseBody
+    public JsonObject uploadFile(@RequestParam("file") MultipartFile file){
+        JsonObject obj = new JsonObject();
 
-        XSSFWorkbook workbook = new XSSFWorkbook(is);
-        XSSFSheet spreadsheet = workbook.getSheetAt(0);
+        try {
+            InputStream is = file.getInputStream();
 
-        XSSFRow row;
-        int rollNumberIndex = 1;
-        int studentNameIndex = 2;
-        int excelDataIndex = 3;
-        List<StudentEntity> students = new ArrayList<StudentEntity>();
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
 
-        for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
-            row = spreadsheet.getRow(rowIndex);
-            if (row != null) {
-                StudentEntity student = new StudentEntity();
-                Cell rollNumberCell = row.getCell(rollNumberIndex);
-                Cell studentNameCell = row.getCell(studentNameIndex);
-                if (rollNumberCell != null) {
-                    System.out.println(rollNumberCell.getStringCellValue() + " \t\t ");
-                    student.setRollNumber(rollNumberCell.getStringCellValue());
-                }
-                if (studentNameCell != null) {
-                    System.out.println(studentNameCell.getStringCellValue());
-                    student.setFullName(studentNameCell.getStringCellValue());
-                }
+            XSSFRow row;
+            int rollNumberIndex = 1;
+            int studentNameIndex = 2;
+            int excelDataIndex = 3;
+            List<StudentEntity> students = new ArrayList<StudentEntity>();
 
-                if (student.getRollNumber() != null) {
-                    students.add(student);
+            for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+                if (row != null) {
+                    StudentEntity student = new StudentEntity();
+                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    Cell studentNameCell = row.getCell(studentNameIndex);
+                    if (rollNumberCell != null) {
+                        System.out.println(rollNumberCell.getStringCellValue() + " \t\t ");
+                        student.setRollNumber(rollNumberCell.getStringCellValue());
+                    }
+                    if (studentNameCell != null) {
+                        System.out.println(studentNameCell.getStringCellValue());
+                        student.setFullName(studentNameCell.getStringCellValue());
+                    }
+
+                    if (student.getRollNumber() != null) {
+                        students.add(student);
+                    }
                 }
             }
+            studentService.createStudentList(students);
+        } catch (Exception e) {
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
+            return obj;
         }
-        studentService.createStudentList(students);
+
+        obj.addProperty("success", true);
+        return obj;
     }
 
     @RequestMapping(value = "/goUploadStudentMarks")

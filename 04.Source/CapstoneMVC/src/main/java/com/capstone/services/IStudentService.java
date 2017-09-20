@@ -5,7 +5,8 @@ import com.capstone.entities.StudentEntity;
 import java.util.List;
 
 public interface IStudentService {
-    void createStudent(StudentEntity studentEntity);
+    int getCurrentLine();
+    int getTotalLine();
     void createStudentList(List<StudentEntity> studentEntityList);
     StudentEntity findStudentByRollNumber(String rollNumber);
 }
