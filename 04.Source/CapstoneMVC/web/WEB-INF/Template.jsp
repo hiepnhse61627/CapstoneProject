@@ -60,6 +60,23 @@
             background: linear-gradient(to bottom, white, white, white, white, white, orange);
         }
 
+        .content-header > h1 {
+            font-weight: 600;
+        }
+
+        .box {
+            border: none;
+            padding: 0px 15px 20px 15px;
+        }
+
+        .box-header {
+            padding: 10px 0px;
+        }
+
+        .box-header .box-title {
+            font-weight: 600;
+        }
+
         /*.main-header .logo .logo-mini,*/
         /*.main-header .logo .logo-lg {*/
         /*width: 100%;*/

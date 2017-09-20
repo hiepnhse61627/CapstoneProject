@@ -1,6 +1,7 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.SubjectEntity;
+import com.capstone.services.ISubjectService;
 import com.capstone.services.SubjectServiceImpl;
 import com.google.gson.JsonObject;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -23,6 +24,7 @@ import java.util.*;
 
 @Controller
 public class SubjectController {
+    ISubjectService subjectService = new SubjectServiceImpl();
 
     @Autowired
     ServletContext context;
@@ -32,6 +34,7 @@ public class SubjectController {
         ModelAndView view = new ModelAndView("UploadSubject");
 
         File dir = new File(context.getRealPath("/") + "UploadedFiles/UploadedSubjectTemplate/");
+        System.out.println(context.getRealPath("/"));
         if (dir.isDirectory()) {
             File[] listOfFiles = dir.listFiles();
             view.addObject("files", listOfFiles);
@@ -44,13 +47,11 @@ public class SubjectController {
     @ResponseBody
     public JsonObject Upload(@RequestParam("file") MultipartFile file) {
         List<SubjectEntity> columndata = null;
-        Map<String, String> prerequisiteList = null;
         JsonObject obj = new JsonObject();
 
         SaveFileToServer(file);
 
         try {
-            prerequisiteList = new HashMap<>();
             columndata = new ArrayList<SubjectEntity>();
 
             InputStream is = file.getInputStream();
@@ -80,7 +81,6 @@ public class SubjectController {
                                     preCode = preCode.split("/")[0];
                                 }
 
-//                                prerequisiteList.put(en.getId(), preCode);
                                 en.setPrerequisiteCode(preCode);
                             }
                         }
@@ -103,8 +103,7 @@ public class SubjectController {
                 }
             }
 
-            SubjectServiceImpl service = new SubjectServiceImpl();
-            service.insertSubjectList(columndata);
+            subjectService.insertSubjectList(columndata);
         } catch (Exception e) {
             e.printStackTrace();
             obj.addProperty("success", false);
@@ -113,6 +112,15 @@ public class SubjectController {
         }
 
         obj.addProperty("success", true);
+        return obj;
+    }
+
+    @RequestMapping("/subject/getlinestatus")
+    @ResponseBody
+    public JsonObject GetLineStatus() {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("currentLine", subjectService.getCurrentLine());
+        obj.addProperty("totalLine", subjectService.getTotalLine());
         return obj;
     }
 
