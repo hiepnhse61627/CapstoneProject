@@ -22,4 +22,9 @@ public class SubjectServiceImpl implements ISubjectService {
     public SubjectEntity findSubjectbyId(String id) {
         return controller.findSubjectEntity(id);
     }
+
+    @Override
+    public List<SubjectEntity> getAllSubjects() {
+        return controller.findSubjectEntityEntities();
+    }
 }

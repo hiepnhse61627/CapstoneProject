@@ -1,7 +1,9 @@
 package com.capstone.controllers;
 
+import com.google.gson.JsonObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.EntityManager;
@@ -14,12 +16,11 @@ import java.util.ArrayList;
 
 @Controller
 public class HomeController {
+
+    private int progress = 0;
+
     @RequestMapping("/")
     public String Index() {
-//        ModelAndView view = new ModelAndView("Index");
-//        view.addObject("title", "Main");
-//        view.addObject("message", "Welcome!");
-
         return "Dashboard";
     }
 
@@ -28,39 +29,38 @@ public class HomeController {
         return "Search";
     }
 
-//    public void ExcelToObject() throws IOException {
-//        FileInputStream file = new FileInputStream(new File("C:\\Users\\THIENPHSE61426\\Desktop\\CapstoneProject.git\\trunk\\04.Source\\Export Mark_13.9.xlsx"));
-//
-//        //Create Workbook instance holding reference to .xlsx file
-//        XSSFWorkbook workbook = new XSSFWorkbook(file);
-//
-//        //Get first/desired sheet from the workbook
-//        XSSFSheet sheet = workbook.getSheetAt(0);
-//
-//        ArrayList<Marks> marksList = new ArrayList();
-//        //I've Header and I'm ignoring header for that I've +1 in loop
-//        for (int i = sheet.getFirstRowNum() + 1; i <= sheet.getLastRowNum(); i++) {
-//            Marks m = new Marks();
-//            Row ro = sheet.getRow(i);
-//            for (int j = ro.getFirstCellNum(); j <= ro.getLastCellNum(); j++) {
-//                Cell ce = ro.getCell(j);
-////                if (j == 0) {
-////                    //If you have Header in text It'll throw exception because it won't get NumericValue
-////                    m.setSemesterName(ce.getStringCellValue());
-////                }
-////                if (j == 1) {
-////                    m.setRollNumber(ce.getStringCellValue());
-////                }
-////                if (j == 2) {
-////                    m.setSubjectCode(ce.getStringCellValue());
-////                }
-//            }
-//            marksList.add(m);
-//        }
-////        for (NewEmployee emp : employeeList) {
-////            System.out.println("ID:" + emp.getId() + " firstName:" + emp.getFirstName());
-////        }
-//        System.out.println("List : " + marksList.toString());
-//        file.close();
-//    }
+    @RequestMapping("/status")
+    @ResponseBody
+    public int getProgress() {
+        int tmp = progress;
+        if (tmp > 100) tmp = 0;
+        return tmp;
+    }
+
+    @RequestMapping("/runstatus")
+    @ResponseBody
+    public JsonObject Run() {
+        try {
+            Thread t = new Thread(() -> {
+                progress = 0;
+                while(progress < 100) {
+                    try {
+                        progress++;
+                        System.out.println(progress);
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            t.start();
+            t.join();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        JsonObject obj = new JsonObject();
+        obj.addProperty("success", "true");
+        return obj;
+    }
 }

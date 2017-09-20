@@ -22,7 +22,7 @@ public class CourseEntity implements Serializable {
     @Column(name = "Id", nullable = false)
     @GeneratedValue (strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name = "Class", length = 250)
+    @Column(name = "Class")
     private String class1;
     @OneToMany(mappedBy = "courseId")
     private List<MarksEntity> marksList;

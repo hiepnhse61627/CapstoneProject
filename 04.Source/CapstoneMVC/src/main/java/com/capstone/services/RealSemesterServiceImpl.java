@@ -6,6 +6,7 @@ import com.capstone.jpa.exJpa.ExStudentEntityJpaController;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.util.List;
 
 public class RealSemesterServiceImpl implements IRealSemesterService {
 
@@ -20,5 +21,10 @@ public class RealSemesterServiceImpl implements IRealSemesterService {
     @Override
     public RealSemesterEntity createRealSemester(RealSemesterEntity entity) {
         return realSemesterEntityJpaController.createRealSemester(entity);
+    }
+
+    @Override
+    public List<RealSemesterEntity> getAllSemester() {
+        return realSemesterEntityJpaController.findRealSemesterEntityEntities();
     }
 }

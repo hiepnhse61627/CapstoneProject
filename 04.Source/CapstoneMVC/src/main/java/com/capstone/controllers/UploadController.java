@@ -134,12 +134,14 @@ public class UploadController {
                     }
 
                     if (classNameCell != null) {
-                        CourseEntity courseEntity = courseService.findCourseByClass(classNameCell.getStringCellValue().toUpperCase());
+                        String cla = classNameCell.getStringCellValue();
+                        cla = cla.substring(0, cla.indexOf("_") < 0 ? cla.length() - 1 : cla.indexOf("_") - 1);
+                        CourseEntity courseEntity = courseService.findCourseByClass(cla.toUpperCase());
                         if (courseEntity != null) {
                             marksEntity.setCourseId(courseEntity);
                         } else {
                             courseEntity = new CourseEntity();
-                            courseEntity.setClass1(classNameCell.getStringCellValue().toUpperCase());
+                            courseEntity.setClass1(cla.toUpperCase());
                             courseEntity = courseService.createCourse(courseEntity);
 
                             marksEntity.setCourseId(courseEntity);
