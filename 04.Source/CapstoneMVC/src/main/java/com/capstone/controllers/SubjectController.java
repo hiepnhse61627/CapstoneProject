@@ -93,7 +93,7 @@ public class SubjectController {
             is.close();
 
             SubjectServiceImpl service = new SubjectServiceImpl();
-            service.insertSubjectList(columndata, prerequisiteList);
+//            service.insertSubjectList(columndata, prerequisiteList);
         } catch (Exception e) {
             e.printStackTrace();
             obj.addProperty("success", false);
