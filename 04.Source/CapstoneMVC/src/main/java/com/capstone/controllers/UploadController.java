@@ -1,5 +1,6 @@
 package com.capstone.controllers;
 
+import com.capstone.models.ReadAndSaveFileToServer;
 import com.capstone.services.*;
 import com.google.gson.JsonObject;
 import org.apache.poi.hssf.usermodel.HSSFRow;
@@ -9,6 +10,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import com.capstone.entities.*;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +18,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.ServletContext;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Array;
@@ -27,6 +32,11 @@ import java.util.List;
 @Controller
 public class UploadController {
 
+    private final String folder = "DSSV-StudentsList";
+
+    @Autowired
+    ServletContext context;
+
     IStudentService studentService = new StudentServiceImpl();
     ISubjectService subjectService = new SubjectServiceImpl();
     IRealSemesterService realSemesterService = new RealSemesterServiceImpl();
@@ -35,8 +45,13 @@ public class UploadController {
     IMarksService marksService = new MarksServiceImpl();
 
     @RequestMapping(value = "/goUploadStudentList")
-    public String goUploadStudentListPage() {
-        return "uploadStudentList";
+    public ModelAndView goUploadStudentListPage() {
+        ModelAndView view = new ModelAndView("uploadStudentList");
+
+        ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+        File[] list = read.readFiles(context, folder);
+        view.addObject("files", list);
+        return view;
     }
 
     @RequestMapping("/getlinestatus")
@@ -85,6 +100,10 @@ public class UploadController {
                     }
                 }
             }
+
+            ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+            read.saveFile(context, file, folder);
+
             studentService.createStudentList(students);
         } catch (Exception e) {
             obj.addProperty("success", false);
@@ -114,8 +133,6 @@ public class UploadController {
         int classNameIndex = 3;
         int averageMarkIndex = 4;
         int statusIndex = 5;
-
-        int count = 0;
 
         List<MarksEntity> marksEntities = new ArrayList<MarksEntity>();
 

@@ -47,7 +47,7 @@ public class SubjectController {
         Map<String, String> prerequisiteList = null;
         JsonObject obj = new JsonObject();
 
-        SaveFileToServer(file);
+//        SaveFileToServer(file);
 
         try {
             prerequisiteList = new HashMap<>();
@@ -114,34 +114,5 @@ public class SubjectController {
 
         obj.addProperty("success", true);
         return obj;
-    }
-
-    public void SaveFileToServer(MultipartFile file) {
-        if (!file.isEmpty()) {
-            try {
-                byte[] bytes = file.getBytes();
-
-                File dir = new File(context.getRealPath("/") + "UploadedFiles/UploadedSubjectTemplate/");
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
-
-                File serverFile = new File(dir.getAbsolutePath()
-                        + File.separator + file.getOriginalFilename());
-                if (serverFile.exists()) {
-                    SimpleDateFormat df = new SimpleDateFormat("_yyyy-MM-dd-HH-mm-ss");
-                    String suffix = df.format(Calendar.getInstance().getTime());
-                    serverFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename() + suffix);
-                }
-
-                BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
-                stream.write(bytes);
-                stream.close();
-
-                System.out.println(("Server File Location = " + serverFile.getAbsolutePath()));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
     }
 }

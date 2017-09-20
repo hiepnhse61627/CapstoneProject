@@ -9,16 +9,12 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
-<%--<html>--%>
-<%--<body>--%>
-<%--<div class="col-md-12">--%>
-<%--<form:form id="uploadStudentList" action="/uploadStudentList" enctype="multipart/form-data">--%>
-<%--<input type="file" name="file"/><br/>--%>
-<%--<input type="submit" value="Upload File"/>--%>
-<%--</form:form>--%>
-<%--</div>--%>
-<%--</body>--%>
-<%--</html>--%>
+<style>
+    .selectedRow {
+        background-color: #e92929;
+        color: #fff;
+    }
+</style>
 
 <section class="content-header">
     <ol class="breadcrumb">
@@ -31,21 +27,21 @@
         Nhập danh sách sinh viên
     </h1>
     <div class="col-md-12">
-        <%--<c:if test="${not empty files}">--%>
-        <%--<h4>Các file đã sử dựng</h4>--%>
-        <%--<div class="form-group">--%>
-        <%--<table id="table" class="table">--%>
-        <%--<c:forEach var="file" items="${files}">--%>
-        <%--<tr>--%>
-        <%--<td>${file.name}</td>--%>
-        <%--</tr>--%>
-        <%--</c:forEach>--%>
-        <%--</table>--%>
-        <%--</div>--%>
-        <%--<div class="form-group">--%>
-        <%--<button type="button" class="btn btn-info" onclick="UseFile()">Sử dụng</button>--%>
-        <%--</div>--%>
-        <%--</c:if>--%>
+        <c:if test="${not empty files}">
+            <h4>Các file đã sử dựng</h4>
+            <div class="form-group">
+                <table id="table" class="table">
+                    <c:forEach var="file" items="${files}">
+                        <tr>
+                            <td>${file.name}</td>
+                        </tr>
+                    </c:forEach>
+                </table>
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn btn-info" onclick="UseFile()">Sử dụng</button>
+            </div>
+        </c:if>
         <div class="form-group">
             <label for="file">File</label>
             <input type="file" accept=".xlsx, .xls" id="file" name="file" placeholder="DS Sinh viên"/>
@@ -61,19 +57,19 @@
 </section>
 
 <script>
-    //    $(document).ready(function () {
-    //        $("#table tbody tr").click(function () {
-    //            $('.selectedRow').removeClass('selectedRow');
-    //            $('#selected').removeAttr('id', 'selected');
-    //            $(this).addClass("selectedRow");
-    //            $('.selectedRow').attr('id', 'selected');
-    ////            var file = $('td', this).html();
-    //        });
-    //    });
+    $(document).ready(function () {
+        $("#table tbody tr").click(function () {
+            $('.selectedRow').removeClass('selectedRow');
+            $('#selected').removeAttr('id', 'selected');
+            $(this).addClass("selectedRow");
+            $('.selectedRow').attr('id', 'selected');
+            //            var file = $('td', this).html();
+        });
+    });
 
-    //    function UseFile() {
-    //        alert($('#selected td').html());
-    //    }
+    function UseFile() {
+        alert($('#selected td').html());
+    }
 
     var isRunning = true;
 
