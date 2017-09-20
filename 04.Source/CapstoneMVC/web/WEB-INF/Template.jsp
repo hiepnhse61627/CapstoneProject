@@ -36,7 +36,8 @@
     <!-- AdminLTE App -->
     <script src="/Resources/plugins/dist/js/app.min.js"></script>
     <script src="/Resources/plugins/sweetalert2/sweetalert2.min.js"></script>
-    <script src="${pageContext.request.contextPath}/Resources/plugins/DataTables/datatables.min.js"></script>
+    <script src="/Resources/plugins/DataTables/datatables.min.js"></script>
+    <script src="/Resources/plugins/DataTables/fnSetFilteringDelay.js"></script>
     <script src="/Resources/plugins/select2/select2.min.js"></script>
 
     <style>

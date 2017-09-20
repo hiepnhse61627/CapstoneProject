@@ -17,6 +17,7 @@
             <div class="form-group">
                 <label for="semester">Học kỳ</label>
                 <select id="semester" class="select form-control">
+                    <option value="0">All</option>
                     <c:forEach var="semester" items="${semesters}">
                         <option value="${semester.id}">${semester.semester}</option>
                     </c:forEach>
@@ -25,6 +26,7 @@
             <div class="form-group">
                 <label for="subject">Môn học</label>
                 <select id="subject" class="select form-control">
+                    <option value="0">All</option>
                     <c:forEach var="sub" items="${subjects}">
                         <option value="${sub.id}">${sub.id} - ${sub.name} - ${sub.abbreviation}</option>
                     </c:forEach>
@@ -39,6 +41,8 @@
                 <tr>
                     <th>MSSV</th>
                     <th>Tên SV</th>
+                    <th>Môn học</th>
+                    <th>Lớp</th>
                     <th>Điểm TB</th>
                     <th>Status</th>
                 </tr>
@@ -49,6 +53,39 @@
 
 <script>
     var table = null;
+
+    jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
+        var _that = this;
+
+        if (iDelay === undefined) {
+            iDelay = 250;
+        }
+
+        this.each(function (i) {
+            $.fn.dataTableExt.iApiIndex = i;
+            var
+                $this = this,
+                oTimerId = null,
+                sPreviousSearch = null,
+                anControl = $('input', _that.fnSettings().aanFeatures.f);
+
+            anControl.off('keyup search input').on('keyup search input', function () {
+                var $$this = $this;
+
+                if ( (anControl.val().length == 0 || anControl.val().length >= 3) && (sPreviousSearch === null || sPreviousSearch != anControl.val()) ){
+                    window.clearTimeout(oTimerId);
+                    sPreviousSearch = anControl.val();
+                    oTimerId = window.setTimeout(function () {
+                        $.fn.dataTableExt.iApiIndex = i;
+                        _that.fnFilter(anControl.val());
+                    }, iDelay);
+                }
+            });
+
+            return this;
+        });
+        return this;
+    };
 
     $(document).ready(function () {
         $('.select').select2();
@@ -66,12 +103,12 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3],
+                    "aTargets": [0, 1, 2, 3, 4, 5],
                     "bSortable": false,
                 },
             ],
             "bAutoWidth": false,
-        });
+        }).fnSetFilteringDelay(1000);
     });
 
     function RefreshTable() {
