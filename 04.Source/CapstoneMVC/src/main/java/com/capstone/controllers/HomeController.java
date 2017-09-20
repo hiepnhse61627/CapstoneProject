@@ -32,9 +32,7 @@ public class HomeController {
     @RequestMapping("/status")
     @ResponseBody
     public int getProgress() {
-        int tmp = progress;
-        if (tmp > 100) tmp = 0;
-        return tmp;
+        return progress;
     }
 
     @RequestMapping("/runstatus")
@@ -46,7 +44,7 @@ public class HomeController {
                 while(progress < 100) {
                     try {
                         progress++;
-                        System.out.println(progress);
+                        System.out.print(progress + ",");
                         Thread.sleep(100);
                     } catch (InterruptedException e) {
                         e.printStackTrace();

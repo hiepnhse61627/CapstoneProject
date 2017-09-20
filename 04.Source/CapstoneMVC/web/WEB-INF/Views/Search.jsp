@@ -18,6 +18,8 @@
 </section>
 
 <script>
+    var isRunning = true;
+
     function test() {
         swal({
             title: 'Đang xử lý',
@@ -25,12 +27,14 @@
             type: 'info',
             onOpen: function () {
                 swal.showLoading();
+                isRunning = true;
                 $.ajax({
                     type: "GET",
                     url: "/runstatus",
                     processData: false,
                     contentType: false,
                     success: function (result) {
+                        isRunning = false;
                         swal(
                             'Thành công!',
                             'Đã import các môn học!',
@@ -38,13 +42,13 @@
                         );
                     }
                 });
-                waitForTaskFinish();
+                waitForTaskFinish(isRunning);
             },
             allowOutsideClick: false
         });
     }
 
-    function waitForTaskFinish() {
+    function waitForTaskFinish(running) {
         $.ajax({
             type: "GET",
             url: "/status",
@@ -53,8 +57,8 @@
             success: function (result) {
                 $('#progress').html("<div>" + result +"</div>");
                 console.log("task running");
-                if (parseInt(result) < 100) {
-                    setTimeout("waitForTaskFinish()", 10);
+                if (running) {
+                    setTimeout("waitForTaskFinish(isRunning)", 50);
                 }
             }
         });
