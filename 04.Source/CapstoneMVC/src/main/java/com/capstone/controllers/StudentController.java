@@ -37,9 +37,9 @@ public class StudentController {
         ModelAndView view = new ModelAndView("DisplayStudentPassFail");
 
         IRealSemesterService service = new RealSemesterServiceImpl();
-        view.addObject("semesters", service.getAllSemester());
+//        view.addObject("semesters", service.getAllSemester());
         ISubjectService service2 = new SubjectServiceImpl();
-        view.addObject("subjects", service2.getAllSubjects());
+//        view.addObject("subjects", service2.getAllSubjects());
 
         return view;
     }
@@ -56,6 +56,7 @@ public class StudentController {
             String search = params.get("sSearch");
             TypedQuery<MarksEntity> query = null;
             if (search != null && !search.isEmpty()) {
+
                 String cid = params.get("semesterId");
                 String sid = params.get("subjectId");
                 if (cid.equals("0") && !sid.equals("0")) {

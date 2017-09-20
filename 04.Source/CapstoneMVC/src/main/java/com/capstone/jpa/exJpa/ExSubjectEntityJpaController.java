@@ -68,33 +68,4 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 //
 //        manager.getTransaction().commit();
     }
-
-    public void createSubjects(List<SubjectEntity> subjectEntities) {
-        EntityManager em = null;
-        try {
-            em = getEntityManager();
-            // Insert subjects
-
-            for (SubjectEntity subjectEntity : subjectEntities) {
-                em.getTransaction().begin();
-                SubjectMarkComponentEntity subjectMarkComponentEntity = new SubjectMarkComponentEntity();
-                subjectMarkComponentEntity.setSubjectId(subjectEntity.getId());
-
-                subjectEntity.setSubjectMarkComponent(subjectMarkComponentEntity);
-
-                em.persist(subjectEntity);
-                em.getTransaction().commit();
-            }
-        } catch (Exception ex) {
-            if (em != null) {
-                em.getTransaction().rollback();
-            } else{
-                // Do nothing
-            }
-        } finally {
-            if (em != null) {
-                em.close();
-            }
-        }
-    }
 }
