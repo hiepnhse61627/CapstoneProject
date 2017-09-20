@@ -49,7 +49,7 @@ public class SubjectController {
         List<SubjectEntity> columndata = null;
         JsonObject obj = new JsonObject();
 
-        SaveFileToServer(file);
+//        SaveFileToServer(file);
 
         try {
             columndata = new ArrayList<SubjectEntity>();

@@ -9,16 +9,12 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
-<%--<html>--%>
-<%--<body>--%>
-<%--<div class="col-md-12">--%>
-<%--<form:form id="uploadStudentList" action="/uploadStudentList" enctype="multipart/form-data">--%>
-<%--<input type="file" name="file"/><br/>--%>
-<%--<input type="submit" value="Upload File"/>--%>
-<%--</form:form>--%>
-<%--</div>--%>
-<%--</body>--%>
-<%--</html>--%>
+<style>
+    .selectedRow {
+        background-color: #e92929;
+        color: #fff;
+    }
+</style>
 
 <section class="content-header">
     <ol class="breadcrumb">
@@ -31,21 +27,21 @@
         Nhập danh sách sinh viên
     </h1>
     <div class="col-md-12">
-        <%--<c:if test="${not empty files}">--%>
-        <%--<h4>Các file đã sử dựng</h4>--%>
-        <%--<div class="form-group">--%>
-        <%--<table id="table" class="table">--%>
-        <%--<c:forEach var="file" items="${files}">--%>
-        <%--<tr>--%>
-        <%--<td>${file.name}</td>--%>
-        <%--</tr>--%>
-        <%--</c:forEach>--%>
-        <%--</table>--%>
-        <%--</div>--%>
-        <%--<div class="form-group">--%>
-        <%--<button type="button" class="btn btn-info" onclick="UseFile()">Sử dụng</button>--%>
-        <%--</div>--%>
-        <%--</c:if>--%>
+        <c:if test="${not empty files}">
+            <h4>Các file gần đây</h4>
+            <div class="form-group">
+                <table id="table" class="table">
+                    <c:forEach var="file" items="${files}">
+                        <tr>
+                            <td>${file.name}</td>
+                        </tr>
+                    </c:forEach>
+                </table>
+            </div>
+            <div class="form-group">
+                <button type="button" class="btn btn-info" onclick="UseFile()">Sử dụng</button>
+            </div>
+        </c:if>
         <div class="form-group">
             <label for="file">File</label>
             <input type="file" accept=".xlsx, .xls" id="file" name="file" placeholder="DS Sinh viên"/>
@@ -61,21 +57,60 @@
 </section>
 
 <script>
-    //    $(document).ready(function () {
-    //        $("#table tbody tr").click(function () {
-    //            $('.selectedRow').removeClass('selectedRow');
-    //            $('#selected').removeAttr('id', 'selected');
-    //            $(this).addClass("selectedRow");
-    //            $('.selectedRow').attr('id', 'selected');
-    ////            var file = $('td', this).html();
-    //        });
-    //    });
-
-    //    function UseFile() {
-    //        alert($('#selected td').html());
-    //    }
-
+    // global variables
     var isRunning = true;
+
+    $(document).ready(function () {
+        $("#table tbody tr").click(function () {
+            $('.selectedRow').removeClass('selectedRow');
+            $('#selected').removeAttr('id', 'selected');
+            $(this).addClass("selectedRow");
+            $('.selectedRow').attr('id', 'selected');
+            //            var file = $('td', this).html();
+        });
+    });
+
+    function UseFile() {
+        if ($('#selected td').length == 0) {
+            swal('', 'Hãy chọn file trước', 'error');
+        } else {
+            var form = new FormData();
+            form.append('file', $('#selected td').html());
+
+            swal({
+                title: 'Đang xử lý',
+                html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+                type: 'info',
+                onOpen: function () {
+                    swal.showLoading();
+                    isRunning = true;
+                    $.ajax({
+                        type: "POST",
+                        url: "/uploadStudentExistFile",
+                        processData: false,
+                        contentType: false,
+                        data: form,
+                        success: function (result) {
+                            isRunning = false;
+                            if (result.success) {
+                                swal({
+                                    title: 'Thành công',
+                                    text: "Đã import các sinh viên!",
+                                    type: 'success'
+                                }).then(function () {
+                                    location.reload();
+                                });
+                            } else {
+                                swal('Đã xảy ra lỗi!', result.message, 'error');
+                            }
+                        }
+                    });
+                    waitForTaskFinish(isRunning);
+                },
+                allowOutsideClick: false
+            });
+        }
+    }
 
     function Add() {
         var form = new FormData();
@@ -97,11 +132,13 @@
                     success: function (result) {
                         isRunning = false;
                         if (result.success) {
-                            swal(
-                                'Thành công!',
-                                'Đã import các sinh viên!',
-                                'success'
-                            );
+                            swal({
+                                title: 'Thành công',
+                                text: "Đã import các sinh viên!",
+                                type: 'success'
+                            }).then(function () {
+                                location.reload();
+                            });
                         } else {
                             swal('Đã xảy ra lỗi!', result.message, 'error');
                         }

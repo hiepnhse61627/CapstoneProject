@@ -1,7 +1,9 @@
 package com.capstone.controllers;
 
+import com.capstone.models.ReadAndSaveFileToServer;
 import com.capstone.services.*;
 import com.google.gson.JsonObject;
+import org.apache.commons.io.IOUtils;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -9,6 +11,8 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Controller;
 import com.capstone.entities.*;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,9 +20,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
-import java.io.IOException;
-import java.io.InputStream;
+import javax.servlet.ServletContext;
+import java.io.*;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +31,11 @@ import java.util.List;
 
 @Controller
 public class UploadController {
+
+    private final String folder = "DSSV-StudentsList";
+
+    @Autowired
+    ServletContext context;
 
     IStudentService studentService = new StudentServiceImpl();
     ISubjectService subjectService = new SubjectServiceImpl();
@@ -35,8 +45,13 @@ public class UploadController {
     IMarksService marksService = new MarksServiceImpl();
 
     @RequestMapping(value = "/goUploadStudentList")
-    public String goUploadStudentListPage() {
-        return "uploadStudentList";
+    public ModelAndView goUploadStudentListPage() {
+        ModelAndView view = new ModelAndView("uploadStudentList");
+
+        ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+        File[] list = read.readFiles(context, folder);
+        view.addObject("files", list);
+        return view;
     }
 
     @RequestMapping("/getlinestatus")
@@ -48,13 +63,45 @@ public class UploadController {
         return obj;
     }
 
+    @RequestMapping(value = "/uploadStudentExistFile", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject chooseExistFile(@RequestParam("file") String file){
+        JsonObject obj = new JsonObject();
+        try {
+            File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
+            obj = ReadFile(null, f, false);
+        } catch (Exception e) {
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
+            return obj;
+        }
+
+        return obj;
+    }
+
     @RequestMapping(value = "/uploadStudentList", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject uploadFile(@RequestParam("file") MultipartFile file){
+        JsonObject obj = ReadFile(file, null, true);
+        if (obj.get("success").getAsBoolean()) {
+            ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+            read.saveFile(context, file, folder);
+        }
+
+        return obj;
+    }
+
+    private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile) {
         JsonObject obj = new JsonObject();
 
         try {
-            InputStream is = file.getInputStream();
+            InputStream is;
+            if (isNewFile) {
+                is = file.getInputStream();
+            }
+            else {
+                is = new FileInputStream(file2);
+            }
 
             XSSFWorkbook workbook = new XSSFWorkbook(is);
             XSSFSheet spreadsheet = workbook.getSheetAt(0);
@@ -63,7 +110,7 @@ public class UploadController {
             int rollNumberIndex = 1;
             int studentNameIndex = 2;
             int excelDataIndex = 3;
-            List<StudentEntity> students = new ArrayList<StudentEntity>();
+            List<StudentEntity> students = new ArrayList<>();
 
             for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
@@ -85,6 +132,7 @@ public class UploadController {
                     }
                 }
             }
+
             studentService.createStudentList(students);
         } catch (Exception e) {
             obj.addProperty("success", false);
@@ -114,8 +162,6 @@ public class UploadController {
         int classNameIndex = 3;
         int averageMarkIndex = 4;
         int statusIndex = 5;
-
-        int count = 0;
 
         List<MarksEntity> marksEntities = new ArrayList<MarksEntity>();
 
