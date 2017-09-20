@@ -7,21 +7,37 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
-import java.io.InputStream;
+import javax.servlet.ServletContext;
+import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Controller
 public class SubjectController {
+
+    @Autowired
+    ServletContext context;
+
     @RequestMapping("/subject")
-    public String Index() {
-        return "UploadSubject";
+    public ModelAndView Index() {
+        ModelAndView view = new ModelAndView("UploadSubject");
+
+        File dir = new File(context.getRealPath("/") + "UploadedFiles/UploadedSubjectTemplate/");
+        if (dir.isDirectory()) {
+            File[] listOfFiles = dir.listFiles();
+            view.addObject("files", listOfFiles);
+        }
+
+        return view;
     }
 
     @RequestMapping(value = "/subject", method = RequestMethod.POST)
@@ -30,6 +46,8 @@ public class SubjectController {
         List<SubjectEntity> columndata = null;
         Map<String, String> prerequisiteList = null;
         JsonObject obj = new JsonObject();
+
+        SaveFileToServer(file);
 
         try {
             prerequisiteList = new HashMap<>();
@@ -85,5 +103,34 @@ public class SubjectController {
 
         obj.addProperty("success", true);
         return obj;
+    }
+
+    public void SaveFileToServer(MultipartFile file) {
+        if (!file.isEmpty()) {
+            try {
+                byte[] bytes = file.getBytes();
+
+                File dir = new File(context.getRealPath("/") + "UploadedFiles/UploadedSubjectTemplate/");
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+
+                File serverFile = new File(dir.getAbsolutePath()
+                        + File.separator + file.getOriginalFilename());
+                if (serverFile.exists()) {
+                    SimpleDateFormat df = new SimpleDateFormat("_yyyy-MM-dd-HH-mm-ss");
+                    String suffix = df.format(Calendar.getInstance().getTime());
+                    serverFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename() + suffix);
+                }
+
+                BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
+                stream.write(bytes);
+                stream.close();
+
+                System.out.println(("Server File Location = " + serverFile.getAbsolutePath()));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
