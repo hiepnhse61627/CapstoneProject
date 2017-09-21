@@ -71,41 +71,52 @@
         if ($('#selected td').length == 0) {
             swal('', 'Hãy chọn file trước', 'error');
         } else {
-            var form = new FormData();
-            form.append('file', $('#selected td').html());
-
             swal({
-                title: 'Đang xử lý',
-                html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
-                type: 'info',
-                onOpen: function () {
-                    swal.showLoading();
-                    isRunning = true;
-                    $.ajax({
-                        type: "POST",
-                        url: "/uploadStudentExistFile",
-                        processData: false,
-                        contentType: false,
-                        data: form,
-                        success: function (result) {
-                            isRunning = false;
-                            if (result.success) {
-                                swal({
-                                    title: 'Thành công',
-                                    text: "Đã import các sinh viên!",
-                                    type: 'success'
-                                }).then(function () {
-                                    location.reload();
-                                });
-                            } else {
-                                swal('Đã xảy ra lỗi!', result.message, 'error');
+                title: 'Bạn có chắc là sử dụng file này?',
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Tiếp tục',
+                cancelButtonText: 'Đóng'
+            }).then(function () {
+                var form = new FormData();
+                form.append('file', $('#selected td').html());
+
+                swal({
+                    title: 'Đang xử lý',
+                    html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+                    type: 'info',
+                    onOpen: function () {
+                        swal.showLoading();
+                        isRunning = true;
+                        $.ajax({
+                            type: "POST",
+                            url: "/uploadStudentExistFile",
+                            processData: false,
+                            contentType: false,
+                            data: form,
+                            success: function (result) {
+                                isRunning = false;
+                                if (result.success) {
+                                    swal({
+                                        title: 'Thành công',
+                                        text: "Đã import các sinh viên!",
+                                        type: 'success'
+                                    }).then(function () {
+                                        location.reload();
+                                    });
+                                } else {
+                                    swal('Đã xảy ra lỗi!', result.message, 'error');
+                                }
                             }
-                        }
-                    });
-                    waitForTaskFinish(isRunning);
-                },
-                allowOutsideClick: false
+                        });
+                        waitForTaskFinish(isRunning);
+                    },
+                    allowOutsideClick: false
+                });
             });
+
         }
     }
 

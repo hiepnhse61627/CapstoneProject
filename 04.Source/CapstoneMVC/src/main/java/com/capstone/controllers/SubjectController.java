@@ -1,6 +1,7 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.SubjectEntity;
+import com.capstone.models.ReadAndSaveFileToServer;
 import com.capstone.services.ISubjectService;
 import com.capstone.services.SubjectServiceImpl;
 import com.google.gson.JsonObject;
@@ -24,6 +25,7 @@ import java.util.*;
 
 @Controller
 public class SubjectController {
+    private final String folder = "UploadedSubjectTemplate";
     ISubjectService subjectService = new SubjectServiceImpl();
 
     @Autowired
@@ -43,18 +45,46 @@ public class SubjectController {
         return view;
     }
 
-    @RequestMapping(value = "/subject", method = RequestMethod.POST)
+    @RequestMapping(value = "/subject/upload-exist-file", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject UploadExistFile(@RequestParam("file") String fileName) {
+        JsonObject result;
+        try {
+            File file = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + fileName);
+            result = this.ReadFile(null, file, false);
+        } catch (Exception e) {
+            result = new JsonObject();
+            result.addProperty("success", false);
+            result.addProperty("message", e.getMessage());
+        }
+
+        return result;
+    }
+
+    @RequestMapping(value = "/subject/upload", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject Upload(@RequestParam("file") MultipartFile file) {
-        List<SubjectEntity> columndata = null;
-        JsonObject obj = new JsonObject();
+        JsonObject result = this.ReadFile(file, null, true);
+        if (result.get("success").getAsBoolean()) {
+            ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+            read.saveFile(context, file, folder);
+        }
 
-//        SaveFileToServer(file);
+        return result;
+    }
+
+    private JsonObject ReadFile(MultipartFile file1, File file2, boolean isNewFile) {
+        List<SubjectEntity> columndata = new ArrayList<SubjectEntity>();;
+        JsonObject obj = new JsonObject();
+        InputStream is = null;
 
         try {
-            columndata = new ArrayList<SubjectEntity>();
+            if (isNewFile) {
+                is = file1.getInputStream();
+            } else {
+                is = new FileInputStream(file2);
+            }
 
-            InputStream is = file.getInputStream();
             HSSFWorkbook workbook = new HSSFWorkbook(is);
             HSSFSheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
@@ -108,7 +138,7 @@ public class SubjectController {
             e.printStackTrace();
             obj.addProperty("success", false);
             obj.addProperty("message", e.getMessage());
-            return obj ;
+            return obj;
         }
 
         obj.addProperty("success", true);
@@ -152,4 +182,5 @@ public class SubjectController {
             }
         }
     }
+
 }
