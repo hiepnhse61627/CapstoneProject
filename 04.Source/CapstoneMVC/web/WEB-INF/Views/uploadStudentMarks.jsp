@@ -8,15 +8,31 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<link rel="stylesheet" href="/Resources/plugins/dist/css/upload-page.css">
 
 <section class="content-header">
-    <h1>Import danh sách điểm</h1>
+    <h1>Nhập danh sách điểm</h1>
 </section>
 
 <section class="content">
     <div class="row">
         <div class="col-md-12">
             <div class="box">
+                <c:if test="${not empty files}">
+                    <div class="box-header">
+                        <h4 class="box-title">Các file đã sử dụng</h4>
+                    </div>
+                    <div class="form-group">
+                        <table id="table" class="table">
+                            <c:forEach var="file" items="${files}">
+                                <tr class="table-row">
+                                    <td>${file.name}</td>
+                                </tr>
+                            </c:forEach>
+                        </table>
+                        <button type="button" class="btn btn-primary" onclick="UseFile()">Sử dụng</button>
+                    </div>
+                </c:if>
                 <div class="form-group">
                     <div class="box-header">
                         <h4 class="box-title">Chọn file</h4>
@@ -33,6 +49,20 @@
 </section>
 
 <script>
+
+    $(document).ready(function () {
+        $("#table tbody tr").click(function () {
+            $('.selectedRow').removeClass('selectedRow');
+            $('#selected').removeAttr('id', 'selected');
+            $(this).addClass("selectedRow");
+            $('.selectedRow').attr('id', 'selected');
+        });
+    });
+
+    function UseFile() {
+        alert($('#selected td').html());
+    }
+
     // Import file process
     function Add() {
         var form = new FormData();
@@ -42,25 +72,25 @@
             title: 'Đang xử lý',
             html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div><div id="progress" class="form-group"></div>',
             type: info,
-            onOpen: function() {
+            onOpen: function () {
                 swal.showLoading();
                 $.ajax({
-                   type: 'POST',
-                   url: '/uploadStudentMarks',
-                   processData: false,
-                   contentType: false,
-                   data: form,
-                   success: function (result) {
-                       if (result.success) {
-                           swal(
-                               'Thành công!',
-                               'Đã import các môn học!',
-                               'success'
-                           );
-                       } else {
-                           swal('Đã xảy ra lỗi!', result.message, 'error');
-                       }
-                   }
+                    type: 'POST',
+                    url: '/uploadStudentMarks',
+                    processData: false,
+                    contentType: false,
+                    data: form,
+                    success: function (result) {
+                        if (result.success) {
+                            swal(
+                                'Thành công!',
+                                'Đã import các môn học!',
+                                'success'
+                            );
+                        } else {
+                            swal('Đã xảy ra lỗi!', result.message, 'error');
+                        }
+                    }
                 });
             },
             allowOutsideClick: false
@@ -71,10 +101,10 @@
 <%--<html>--%>
 <%--<body>--%>
 <%--<div class="col-md-12">--%>
-    <%--<form:form id="uploadStudentMarks" action="/uploadStudentMarks" enctype="multipart/form-data">--%>
-        <%--<input type="file" name="file"/><br/>--%>
-        <%--<input type="submit" value="Upload File"/>--%>
-    <%--</form:form>--%>
+<%--<form:form id="uploadStudentMarks" action="/uploadStudentMarks" enctype="multipart/form-data">--%>
+<%--<input type="file" name="file"/><br/>--%>
+<%--<input type="submit" value="Upload File"/>--%>
+<%--</form:form>--%>
 <%--</div>--%>
 <%--</body>--%>
 <%--</html>--%>

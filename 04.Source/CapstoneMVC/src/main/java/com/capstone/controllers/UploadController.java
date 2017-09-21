@@ -66,14 +66,14 @@ public class UploadController {
     @RequestMapping(value = "/uploadStudentExistFile", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject chooseExistFile(@RequestParam("file") String file){
-        JsonObject obj = new JsonObject();
+        JsonObject obj;
         try {
             File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
             obj = ReadFile(null, f, false);
         } catch (Exception e) {
+            obj = new JsonObject();
             obj.addProperty("success", false);
             obj.addProperty("message", e.getMessage());
-            return obj;
         }
 
         return obj;
