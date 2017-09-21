@@ -1,41 +1,10 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 
-<style>
-
-    #table {
-        width: 60%;
-        margin-bottom: 7px;
-    }
-
-    @media only screen and (max-width: 768px) {
-        #table {
-            width: 100%;
-        }
-    }
-
-    #table tr td {
-        border-radius: 5px;
-    }
-
-    .table-row {
-        cursor: pointer;
-    }
-
-    .table-row:hover:not(.selectedRow) {
-        /*background-color: #c8ecff;*/
-        background-color: #f4f4f5;
-    }
-
-    .selectedRow {
-        background-color: #f4b745;
-        color: white;
-    }
-
-</style>
+<link rel="stylesheet" href="/Resources/plugins/dist/css/upload-page.css" >
 
 <section class="content-header">
-    <h1>Import Subjects</h1>
+    <h1>Nhập môn học</h1>
 </section>
 <section class="content">
     <div class="row">
