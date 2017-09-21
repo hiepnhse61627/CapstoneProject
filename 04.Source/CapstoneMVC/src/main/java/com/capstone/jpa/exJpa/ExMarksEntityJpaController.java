@@ -11,6 +11,14 @@ import javax.persistence.Query;
 import java.util.List;
 
 public class ExMarksEntityJpaController extends MarksEntityJpaController {
+
+    private int totalExistStudent;
+    private int successSavedStudent;
+
+    public int getTotalExistMarks() {return totalExistStudent;}
+
+    public int getSuccessSavedMark() {return successSavedStudent;}
+
     public ExMarksEntityJpaController(EntityManagerFactory emf) {
         super(emf);
     }
@@ -38,6 +46,8 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
     public void createMarks(List<MarksEntity> marks) throws PreexistingEntityException, Exception {
         EntityManager em = null;
+        this.totalExistStudent = marks.size();
+        this.successSavedStudent = 0;
         try {
             em = getEntityManager();
 
@@ -95,6 +105,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
                 }
                 em.getTransaction().commit();
+                ++this.successSavedStudent;
             }
         } catch (Exception ex) {
             throw ex;
