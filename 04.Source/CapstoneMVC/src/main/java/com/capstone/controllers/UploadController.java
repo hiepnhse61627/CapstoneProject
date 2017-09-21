@@ -210,7 +210,7 @@ public class UploadController {
 
                         if (classNameCell != null) {
                             String cla = classNameCell.getStringCellValue();
-                            cla = cla.substring(0, cla.indexOf("_") < 0 ? cla.length() - 1 : cla.indexOf("_") - 1);
+                            cla = cla.substring(0, cla.indexOf("_") < 0 ? cla.length() : cla.indexOf("_"));
                             CourseEntity courseEntity = courseService.findCourseByClass(cla.toUpperCase());
                             if (courseEntity != null) {
                                 marksEntity.setCourseId(courseEntity);
