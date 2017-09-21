@@ -1,7 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 
-<link rel="stylesheet" href="/Resources/plugins/dist/css/upload-page.css" >
+<link rel="stylesheet" href="/Resources/plugins/dist/css/upload-page.css">
 
 <section class="content-header">
     <h1>Nhập môn học</h1>
@@ -54,12 +54,59 @@
             $('#selected').removeAttr('id', 'selected');
             $(this).addClass("selectedRow");
             $('.selectedRow').attr('id', 'selected');
-//            var file = $('td', this).html();
         });
     });
 
     function UseFile() {
-        alert($('#selected td').html());
+        if ($('#selected td').length == 0) {
+            swal('', 'Hãy chọn file trước', 'error');
+        } else {
+            swal({
+                title: 'Bạn có chắc là sử dụng file này?',
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Tiếp tục',
+                cancelButtonText: 'Đóng'
+            }).then(function () {
+                var form = new FormData();
+                form.append('file', $('#selected td').html());
+
+                swal({
+                    title: 'Đang xử lý',
+                    html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+                    type: 'info',
+                    onOpen: function () {
+                        swal.showLoading();
+                        isRunning = true;
+                        $.ajax({
+                            type: "POST",
+                            url: "/subject/upload-exist-file",
+                            processData: false,
+                            contentType: false,
+                            data: form,
+                            success: function (result) {
+                                isRunning = false;
+                                if (result.success) {
+                                    swal({
+                                        title: 'Thành công',
+                                        text: "Đã import các sinh viên!",
+                                        type: 'success'
+                                    }).then(function () {
+                                        location.reload();
+                                    });
+                                } else {
+                                    swal('Đã xảy ra lỗi!', result.message, 'error');
+                                }
+                            }
+                        });
+                        updateLineStatus(isRunning);
+                    },
+                    allowOutsideClick: false
+                });
+            });
+        }
     }
 
     function Add() {
@@ -76,7 +123,7 @@
                 swal.showLoading();
                 $.ajax({
                     type: "POST",
-                    url: "/subject",
+                    url: "/subject/upload",
                     processData: false,
                     contentType: false,
                     data: form,
