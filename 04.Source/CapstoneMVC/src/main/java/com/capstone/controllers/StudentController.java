@@ -37,9 +37,9 @@ public class StudentController {
         ModelAndView view = new ModelAndView("DisplayStudentPassFail");
 
         IRealSemesterService service = new RealSemesterServiceImpl();
-//        view.addObject("semesters", service.getAllSemester());
+        view.addObject("semesters", service.getAllSemester());
         ISubjectService service2 = new SubjectServiceImpl();
-//        view.addObject("subjects", service2.getAllSubjects());
+        view.addObject("subjects", service2.getAllSubjects());
 
         return view;
     }

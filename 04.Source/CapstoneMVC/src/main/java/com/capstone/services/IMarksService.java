@@ -7,4 +7,6 @@ import java.util.List;
 public interface IMarksService {
     void createMark(MarksEntity entity);
     void createMarks(List<MarksEntity> marksEntities);
+    int getTotalExistMarks();
+    int getSuccessSavedMark();
 }

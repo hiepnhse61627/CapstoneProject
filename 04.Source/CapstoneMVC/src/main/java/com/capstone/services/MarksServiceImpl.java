@@ -30,4 +30,14 @@ public class MarksServiceImpl implements IMarksService {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public int getTotalExistMarks() {
+        return marksEntityJpaController.getTotalExistMarks();
+    }
+
+    @Override
+    public int getSuccessSavedMark() {
+        return marksEntityJpaController.getSuccessSavedMark();
+    }
 }

@@ -49,6 +49,7 @@
 </section>
 
 <script>
+    var isrunning = false;
 
     $(document).ready(function () {
         $("#table tbody tr").click(function () {
@@ -67,33 +68,52 @@
     function Add() {
         var form = new FormData();
         form.append('file', $('#file')[0].files[0]);
+        isrunning = true;
 
         swal({
             title: 'Đang xử lý',
             html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div><div id="progress" class="form-group"></div>',
-            type: info,
-            onOpen: function () {
+            type: 'info',
+            onOpen: function() {
                 swal.showLoading();
                 $.ajax({
-                    type: 'POST',
-                    url: '/uploadStudentMarks',
-                    processData: false,
-                    contentType: false,
-                    data: form,
-                    success: function (result) {
-                        if (result.success) {
-                            swal(
-                                'Thành công!',
-                                'Đã import các môn học!',
-                                'success'
-                            );
-                        } else {
-                            swal('Đã xảy ra lỗi!', result.message, 'error');
-                        }
-                    }
+                   type: 'POST',
+                   url: '/uploadStudentMarks',
+                   processData: false,
+                   contentType: false,
+                   data: form,
+                   success: function (result) {
+                       if (result.success) {
+                           isrunning = false;
+                           swal(
+                               'Thành công!',
+                               'Đã import các môn học!',
+                               'success'
+                           );
+                       } else {
+                           swal('Đã xảy ra lỗi!', result.message, 'error');
+                       }
+                   }
                 });
+                updateSuccessSavedMarks(isrunning);
             },
             allowOutsideClick: false
+        });
+    }
+
+    function updateSuccessSavedMarks(running) {
+        $.ajax({
+            type: "GET",
+            url: "/marks/getStatus",
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                $('#progress').html("<div>Tổng số dòng trong file excel: " + result.totalLine + "</div>" +
+                                    "<div>(" + result.successSavedMark + "/" + result.totalExistMarks + ")</div>");
+                if (running) {
+                    setTimeout("updateSuccessSavedMarks(isrunning)", 50);
+                }
+            }
         });
     }
 </script>
