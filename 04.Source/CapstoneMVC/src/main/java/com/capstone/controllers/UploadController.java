@@ -1,110 +1,234 @@
 package com.capstone.controllers;
 
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.StudentEntity;
-import com.capstone.services.IStudentService;
-import com.capstone.services.StudentServiceImpl;
+import com.capstone.models.ReadAndSaveFileToServer;
+import com.capstone.services.*;
+import com.google.gson.JsonObject;
+import org.apache.commons.io.IOUtils;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.util.StringUtil;
-import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Controller;
+import com.capstone.entities.*;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
-import java.io.IOException;
-import java.io.InputStream;
+import javax.servlet.ServletContext;
+import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
 public class UploadController {
 
-    IStudentService studentService = new StudentServiceImpl();
+    private final String folder = "DSSV-StudentsList";
 
-    @RequestMapping(value = "/uploadStudentList")
-    public String uploadStudentList() {
-        return "uploadStudentList";
+    @Autowired
+    ServletContext context;
+
+    IStudentService studentService = new StudentServiceImpl();
+    ISubjectService subjectService = new SubjectServiceImpl();
+    IRealSemesterService realSemesterService = new RealSemesterServiceImpl();
+    ISubjectMarkComponentService subjectMarkComponentService = new SubjectMarkComponentServiceImpl();
+    ICourseService courseService = new CourseServiceImpl();
+    IMarksService marksService = new MarksServiceImpl();
+
+    @RequestMapping(value = "/goUploadStudentList")
+    public ModelAndView goUploadStudentListPage() {
+        ModelAndView view = new ModelAndView("uploadStudentList");
+
+        ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+        File[] list = read.readFiles(context, folder);
+        view.addObject("files", list);
+        return view;
+    }
+
+    @RequestMapping("/getlinestatus")
+    @ResponseBody
+    public JsonObject getCurrentLine() {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("current", studentService.getCurrentLine());
+        obj.addProperty("total", studentService.getTotalLine());
+        return obj;
+    }
+
+    @RequestMapping(value = "/uploadStudentExistFile", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject chooseExistFile(@RequestParam("file") String file){
+        JsonObject obj = new JsonObject();
+        try {
+            File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
+            obj = ReadFile(null, f, false);
+        } catch (Exception e) {
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
+            return obj;
+        }
+
+        return obj;
     }
 
     @RequestMapping(value = "/uploadStudentList", method = RequestMethod.POST)
-    public void uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
+    @ResponseBody
+    public JsonObject uploadFile(@RequestParam("file") MultipartFile file){
+        JsonObject obj = ReadFile(file, null, true);
+        if (obj.get("success").getAsBoolean()) {
+            ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+            read.saveFile(context, file, folder);
+        }
+
+        return obj;
+    }
+
+    private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile) {
+        JsonObject obj = new JsonObject();
+
+        try {
+            InputStream is;
+            if (isNewFile) {
+                is = file.getInputStream();
+            }
+            else {
+                is = new FileInputStream(file2);
+            }
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+            int rollNumberIndex = 1;
+            int studentNameIndex = 2;
+            int excelDataIndex = 3;
+            List<StudentEntity> students = new ArrayList<>();
+
+            for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+                if (row != null) {
+                    StudentEntity student = new StudentEntity();
+                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    Cell studentNameCell = row.getCell(studentNameIndex);
+                    if (rollNumberCell != null) {
+                        System.out.println(rollNumberCell.getStringCellValue() + " \t\t ");
+                        student.setRollNumber(rollNumberCell.getStringCellValue());
+                    }
+                    if (studentNameCell != null) {
+                        System.out.println(studentNameCell.getStringCellValue());
+                        student.setFullName(studentNameCell.getStringCellValue());
+                    }
+
+                    if (student.getRollNumber() != null) {
+                        students.add(student);
+                    }
+                }
+            }
+
+            studentService.createStudentList(students);
+        } catch (Exception e) {
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
+            return obj;
+        }
+
+        obj.addProperty("success", true);
+        return obj;
+    }
+
+    @RequestMapping(value = "/goUploadStudentMarks")
+    public String goUploadStudentMarksPage() {return "uploadStudentMarks";}
+
+    @RequestMapping(value = "/uploadStudentMarks")
+    public void uploadStudentMarks(@RequestParam("file") MultipartFile file) throws IOException {
         InputStream is = file.getInputStream();
 
         XSSFWorkbook workbook = new XSSFWorkbook(is);
         XSSFSheet spreadsheet = workbook.getSheetAt(0);
 
         XSSFRow row;
+        int excelDataIndex = 1;
+        int semesterNameIndex = 0;
         int rollNumberIndex = 1;
-        int studentNameIndex = 2;
-        int excelDataIndex = 3;
-        List<StudentEntity> students = new ArrayList<StudentEntity>();
+        int subjectCodeIndex = 2;
+        int classNameIndex = 3;
+        int averageMarkIndex = 4;
+        int statusIndex = 5;
 
-        for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+        List<MarksEntity> marksEntities = new ArrayList<MarksEntity>();
+
+        for (int rowIndex = excelDataIndex; rowIndex < spreadsheet.getLastRowNum(); rowIndex++) {
             row = spreadsheet.getRow(rowIndex);
-            if (row != null) {
-                StudentEntity student = new StudentEntity();
-                Cell rollNumberCell = row.getCell(rollNumberIndex);
-                Cell studentNameCell = row.getCell(studentNameIndex);
-                if (rollNumberCell != null) {
-                    System.out.println(rollNumberCell.getStringCellValue() + " \t\t ");
-                    student.setRollNumber(rollNumberCell.getStringCellValue());
-                }
-                if (studentNameCell != null) {
-                    System.out.println(studentNameCell.getStringCellValue());
-                    student.setFullName(studentNameCell.getStringCellValue());
-                }
 
-                if (student.getRollNumber() != null) {
-                    students.add(student);
-                }
-            }
-        }
-        studentService.createStudentList(students);
-    }
+            Cell rollNumberCell = row.getCell(rollNumberIndex);
+            if (rollNumberCell != null) {
+                StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumberCell.getStringCellValue());
+                if (studentEntity != null) {
+                    MarksEntity marksEntity = new MarksEntity();
+                    marksEntity.setStudentId(studentEntity);
 
-    @RequestMapping(value = "/uploadMark", method = RequestMethod.POST)
-    public void uploadMark(@RequestParam("file") MultipartFile file) throws IOException {
-        InputStream is = file.getInputStream();
+                    Cell semesterNameCell = row.getCell(semesterNameIndex);
+                    Cell subjectCodeCell = row.getCell(subjectCodeIndex);
+                    Cell classNameCell = row.getCell(classNameIndex);
+                    Cell averageMarkCell = row.getCell(averageMarkIndex);
+                    Cell statusCell = row.getCell(statusIndex);
 
-        XSSFWorkbook workbook = new XSSFWorkbook(is);
+                    if (semesterNameCell != null) {
+                        RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(semesterNameCell.getStringCellValue().toUpperCase());
+                        if (realSemesterEntity != null) {
+                            marksEntity.setSemesterId(realSemesterEntity);
+                        } else {
+                            realSemesterEntity = new RealSemesterEntity();
+                            realSemesterEntity.setSemester(semesterNameCell.getStringCellValue().toUpperCase());
+                            realSemesterEntity = realSemesterService.createRealSemester(realSemesterEntity);
 
-        XSSFSheet sheet = workbook.getSheetAt(0);
-        List<MarksEntity> markList = new ArrayList<MarksEntity>();
-
-        for (int i = sheet.getFirstRowNum() + 1; i <= sheet.getLastRowNum(); i++) {
-            MarksEntity e = new MarksEntity();
-            XSSFRow ro = sheet.getRow(i);
-            for (int j = ro.getFirstCellNum(); j <= ro.getLastCellNum(); j++) {
-                XSSFCell ce = ro.getCell(j);
-                if (j == 0) {
-                    //If you have Header in text It'll throw exception because it won't get NumericValue
-                    if (e.getRealSemesterBySemesterId() != null){
-                        e.setRealSemesterBySemesterId(e.getRealSemesterBySemesterId());
+                            marksEntity.setSemesterId(realSemesterEntity);
+                        }
                     }
-                }
-                if(j == 1){
-                    e.setRollNumber(ce.getStringCellValue());
-                }
-                if(j == 2){
-                    e.setSubjectId(ce.getStringCellValue());
-                }
-                if(j == 4){
-                    e.setAverageMark(ce.getNumericCellValue());
-                }
-                if(j == 5){
-                    e.setStatus(ce.getStringCellValue());
+
+                    if (subjectCodeCell != null) {
+                        SubjectMarkComponentEntity subjectMarkComponentEntity =
+                                subjectMarkComponentService.findSubjectMarkComponentById(subjectCodeCell.getStringCellValue().toUpperCase());
+                        if (subjectMarkComponentEntity != null) {
+                            marksEntity.setSubjectId(subjectMarkComponentEntity);
+                        }
+                    }
+
+                    if (classNameCell != null) {
+                        String cla = classNameCell.getStringCellValue();
+                        cla = cla.substring(0, cla.indexOf("_") < 0 ? cla.length() - 1 : cla.indexOf("_") - 1);
+                        CourseEntity courseEntity = courseService.findCourseByClass(cla.toUpperCase());
+                        if (courseEntity != null) {
+                            marksEntity.setCourseId(courseEntity);
+                        } else {
+                            courseEntity = new CourseEntity();
+                            courseEntity.setClass1(cla.toUpperCase());
+                            courseEntity = courseService.createCourse(courseEntity);
+
+                            marksEntity.setCourseId(courseEntity);
+                        }
+                    }
+
+                    if (averageMarkCell != null) {
+                        marksEntity.setAverageMark(averageMarkCell.getNumericCellValue());
+                    }
+
+                    if (statusCell != null) {
+                        marksEntity.setStatus(statusCell.getStringCellValue());
+                    }
+
+                    marksEntities.add(marksEntity);
                 }
             }
-            markList.add(e);
         }
-        System.out.println("Bang Diem: " + markList.size());
+        marksService.createMarks(marksEntities);
     }
 }

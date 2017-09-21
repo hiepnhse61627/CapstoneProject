@@ -16,11 +16,28 @@
 
     <title>${title}</title>
 
-    <link rel="stylesheet" href="/Resources/bootstrap/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="/Resources/font-awesome-4.7.0/css/font-awesome.min.css"/>
-    <link rel="stylesheet" href="/Resources/ionicons-2.0.1/css/ionicons.min.css"/>
-    <link rel="stylesheet" href="/Resources/dist/css/AdminLTE.min.css"/>
-    <link rel="stylesheet" href="/Resources/dist/css/skins/skin-custom.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/bootstrap/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/font-awesome-4.7.0/css/font-awesome.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/ionicons-2.0.1/css/ionicons.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dist/css/AdminLTE.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dist/css/skins/skin-custom.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dist/css/skins/_all-skins.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/sweetalert2/sweetalert2.min.css"/>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/Resources/plugins/DataTables/datatables.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/select2/select2.min.css"/>
+
+    <!-- REQUIRED JS SCRIPTS -->
+
+    <!-- jQuery 2.1.4 -->
+    <script src="/Resources/plugins/jQuery/jquery-1.12.4.min.js"></script>
+    <script src="/Resources/plugins/serializeToJson/jquery.serializejson.min.js"></script>
+    <!-- Bootstrap 3.3.5 -->
+    <script src="/Resources/plugins/bootstrap/js/bootstrap.min.js"></script>
+    <!-- AdminLTE App -->
+    <script src="/Resources/plugins/dist/js/app.min.js"></script>
+    <script src="/Resources/plugins/sweetalert2/sweetalert2.min.js"></script>
+    <script src="/Resources/plugins/DataTables/datatables.min.js"></script>
+    <script src="/Resources/plugins/select2/select2.min.js"></script>
 
     <style>
         .logo-mini img {
@@ -39,35 +56,56 @@
             padding: 0px;
         }
 
+        .main-sidebar {
+            background: linear-gradient(to bottom, white, white, white, white, white, orange);
+        }
+
+        .content-header > h1 {
+            font-weight: 600;
+        }
+
+        .box {
+            border: none;
+            padding: 0px 15px 20px 15px;
+        }
+
+        .box-header {
+            padding: 10px 0px;
+        }
+
+        .box-header .box-title {
+            font-weight: 600;
+        }
+
         /*.main-header .logo .logo-mini,*/
         /*.main-header .logo .logo-lg {*/
-            /*width: 100%;*/
-            /*height: 100%;*/
+        /*width: 100%;*/
+        /*height: 100%;*/
 
-            /*background-size: cover;*/
-            /*background-repeat: no-repeat;*/
-            /*background-position: center center;*/
+        /*background-size: cover;*/
+        /*background-repeat: no-repeat;*/
+        /*background-position: center center;*/
         /*}*/
 
         /*.main-header .logo .logo-mini {*/
-            /*margin: 0px !important;*/
-            /*background-image: url('/Resources/dist/img/logo/logo-fpt-2.png');*/
+        /*margin: 0px !important;*/
+        /*background-image: url('/Resources/plugins/dist/img/logo/logo-fpt-2.png');*/
         /*}*/
 
         /*.main-header .logo .logo-lg {*/
-            /*background-image: url('/Resources/dist/img/logo/logo-fpt-1.png');*/
+        /*background-image: url('/Resources/plugins/dist/img/logo/logo-fpt-1.png');*/
         /*}*/
 
         /*.main-header > .navbar {*/
-            /*margin-left: 231px;*/
+        /*margin-left: 231px;*/
         /*}*/
 
         /*.sidebar-mini.sidebar-collapse .main-header .navbar {*/
-            /*margin-left: 51px;*/
+        /*margin-left: 51px;*/
         /*}*/
     </style>
 </head>
-<body class="hold-transition skin-custom sidebar-mini">
+<body class="hold-transition skin-black-light sidebar-mini">
 <div class="wrapper">
 
     <!-- Main Header -->
@@ -77,11 +115,11 @@
         <a href="#" class="logo">
             <!-- mini logo for sidebar mini 50x50 pixels -->
             <div class="logo-mini">
-                <img src="/Resources/dist/img/logo/logo-fpt-2.png">
+                <img src="/Resources/plugins/dist/img/logo/logo-fpt-2.png">
             </div>
             <!-- logo for regular state and mobile devices -->
             <div class="logo-lg">
-                <img src="/Resources/dist/img/logo/logo-fpt-1.png">
+                <img src="/Resources/plugins/dist/img/logo/logo-fpt-1.png">
             </div>
         </a>
 
@@ -102,7 +140,7 @@
             <!-- Sidebar user panel (optional) -->
             <div class="user-panel">
                 <div class="pull-left image">
-                    <img src="/Resources/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image">
+                    <img src="/Resources/plugins/dist/img/user2-160x160.jpg" class="img-circle" alt="User Image">
                 </div>
                 <div class="pull-left info">
                     <p>Alexander Pierce</p>
@@ -116,44 +154,45 @@
                 <%--<li class="header">HEADER</li>--%>
                 <!-- Optionally, you can add icons to the links -->
                 <li class="active">
-                    <a href="#"><i class="fa fa-link"></i> <span>Thống kê</span></a>
+                    <a href="#"><i class="fa fa-dashboard"></i> <span>Thống kê</span></a>
                 </li>
                 <li class="treeview">
                     <a href="#">
-                        <i class="fa fa-link"></i>
+                        <i class="fa fa-users"></i>
                         <span>Quản lý sinh viên</span>
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
-                        <li><a href="#">Danh sách sinh viên</a></li>
-                        <li><a href="#">Trạng thái sinh viên</a></li>
-						<li><a href="/create"><i class="fa fa-link"></i> <span>Enroll sinh viên</span></a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách sinh viên</a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Trạng thái sinh viên</a></li>
+                        <li><a href="/create"><i class="fa fa-circle-o"></i> <span>Enroll sinh viên</span></a></li>
                     </ul>
                 </li>
                 <li class="treeview">
                     <a href="#">
-                        <i class="fa fa-link"></i>
+                        <i class="glyphicon glyphicon-save"></i>
                         <span>Nhập dữ liệu</span>
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
-                        <li><a href="/uploadStudentList">Danh sách sinh viên</a></li>
-                        <li><a href="#">Danh sách điểm</a></li>
+                        <li><a href="/goUploadStudentList"><i class="fa fa-circle-o"></i> Danh sách sinh viên</a></li>
+                        <li><a href="/goUploadStudentMarks"><i class="fa fa-circle-o"></i> Danh sách điểm</a></li>
+                        <li><a href="/subject"> <i class="fa fa-circle-o"></i> Danh sách môn học</a></li>
                     </ul>
                 </li>
                 <li class="treeview">
                     <a href="#">
-                        <i class="fa fa-link"></i>
+                        <i class="glyphicon glyphicon-open"></i>
                         <span>Xuất dữ liệu</span>
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
-                        <li><a href="#">Danh sách đi OJT</a></li>
-                        <li><a href="#">Danh sách làm đồ án</a></li>
-                        <li><a href="#">Danh sách tốt nghiệp</a></li>
-                        <li><a href="#">Danh sách đóng học phí</a></li>
-                        <li><a href="#">Danh sách học lại</a></li>
-                        <li><a href="#">Danh sách chậm tiến độ</a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách đi OJT</a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách làm đồ án</a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách tốt nghiệp</a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách đóng học phí</a></li>
+                        <li><a href="/display"><i class="fa fa-circle-o"></i> Danh sách học lại</a></li>
+                        <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách chậm tiến độ</a></li>
                     </ul>
                 </li>
             </ul><!-- /.sidebar-menu -->
@@ -167,15 +206,6 @@
         <dec:body/>
     </div><!-- /.content-wrapper -->
 
-    <!-- Main Footer -->
-    <footer class="main-footer">
-        <!-- To the right -->
-        <div class="pull-right hidden-xs">
-            Anything you want
-        </div>
-        <!-- Default to the left -->
-        <strong>Copyright &copy; 2015 <a href="#">Company</a>.</strong> All rights reserved.
-    </footer>
 
     <!-- Control Sidebar -->
     <aside class="control-sidebar control-sidebar-dark">
@@ -241,15 +271,5 @@
     <div class="control-sidebar-bg"></div>
 </div><!-- ./wrapper -->
 </body>
-
-<!-- REQUIRED JS SCRIPTS -->
-
-<!-- jQuery 2.1.4 -->
-<script src="/Resources/plugins/jQuery/jQuery-2.1.4.min.js"></script>
-<script src="/Resources/plugins/serializeToJson/jquery.serializejson.min.js"></script>
-<!-- Bootstrap 3.3.5 -->
-<script src="/Resources/bootstrap/js/bootstrap.min.js"></script>
-<!-- AdminLTE App -->
-<script src="/Resources/dist/js/app.min.js"></script>
 
 </html>

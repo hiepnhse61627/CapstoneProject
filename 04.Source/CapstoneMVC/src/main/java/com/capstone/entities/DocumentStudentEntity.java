@@ -1,109 +1,105 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package com.capstone.entities;
 
-import javax.persistence.*;
+import java.io.Serializable;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 
+/**
+ *
+ * @author hiepnhse61627
+ */
 @Entity
-@Table(name = "Document_Student", schema = "dbo", catalog = "CapstoneProject")
-public class DocumentStudentEntity {
-    private int id;
-    private int documentId;
-    private int studentId;
-    private int curriculumId;
-    private DocumentEntity documentByDocumentId;
-    private StudentEntity studentByStudentId;
-    private CurriculumEntity curriculumByCurriculumId;
+@Table(name = "Document_Student", catalog = "CapstoneProject", schema = "dbo")
+public class DocumentStudentEntity implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "Id")
-    public int getId() {
-        return id;
+    @Column(name = "Id", nullable = false)
+    private Integer id;
+    @JoinColumn(name = "CurriculumId", referencedColumnName = "Id", nullable = false)
+    @ManyToOne(optional = false)
+    private CurriculumEntity curriculumId;
+    @JoinColumn(name = "DocumentId", referencedColumnName = "Id", nullable = false)
+    @ManyToOne(optional = false)
+    private DocumentEntity documentId;
+    @JoinColumn(name = "StudentId", referencedColumnName = "ID", nullable = false)
+    @ManyToOne(optional = false)
+    private StudentEntity studentId;
+
+    public DocumentStudentEntity() {
     }
 
-    public void setId(int id) {
+    public DocumentStudentEntity(Integer id) {
         this.id = id;
     }
 
-    @Basic
-    @Column(name = "DocumentId")
-    public int getDocumentId() {
-        return documentId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setDocumentId(int documentId) {
-        this.documentId = documentId;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    @Basic
-    @Column(name = "StudentId")
-    public int getStudentId() {
-        return studentId;
-    }
-
-    public void setStudentId(int studentId) {
-        this.studentId = studentId;
-    }
-
-    @Basic
-    @Column(name = "CurriculumId")
-    public int getCurriculumId() {
+    public CurriculumEntity getCurriculumId() {
         return curriculumId;
     }
 
-    public void setCurriculumId(int curriculumId) {
+    public void setCurriculumId(CurriculumEntity curriculumId) {
         this.curriculumId = curriculumId;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public DocumentEntity getDocumentId() {
+        return documentId;
+    }
 
-        DocumentStudentEntity that = (DocumentStudentEntity) o;
+    public void setDocumentId(DocumentEntity documentId) {
+        this.documentId = documentId;
+    }
 
-        if (id != that.id) return false;
-        if (documentId != that.documentId) return false;
-        if (studentId != that.studentId) return false;
-        if (curriculumId != that.curriculumId) return false;
+    public StudentEntity getStudentId() {
+        return studentId;
+    }
 
-        return true;
+    public void setStudentId(StudentEntity studentId) {
+        this.studentId = studentId;
     }
 
     @Override
     public int hashCode() {
-        int result = id;
-        result = 31 * result + documentId;
-        result = 31 * result + studentId;
-        result = 31 * result + curriculumId;
-        return result;
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
     }
 
-    @ManyToOne
-    @PrimaryKeyJoinColumn(name = "DocumentId", referencedColumnName = "Id")
-    public DocumentEntity getDocumentByDocumentId() {
-        return documentByDocumentId;
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof DocumentStudentEntity)) {
+            return false;
+        }
+        DocumentStudentEntity other = (DocumentStudentEntity) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
     }
 
-    public void setDocumentByDocumentId(DocumentEntity documentByDocumentId) {
-        this.documentByDocumentId = documentByDocumentId;
+    @Override
+    public String toString() {
+        return "entities.DocumentStudent[ id=" + id + " ]";
     }
-
-    @ManyToOne
-    @PrimaryKeyJoinColumn(name = "StudentId", referencedColumnName = "ID")
-    public StudentEntity getStudentByStudentId() {
-        return studentByStudentId;
-    }
-
-    public void setStudentByStudentId(StudentEntity studentByStudentId) {
-        this.studentByStudentId = studentByStudentId;
-    }
-
-    @ManyToOne
-    @PrimaryKeyJoinColumn(name = "CurriculumId", referencedColumnName = "Id")
-    public CurriculumEntity getCurriculumByCurriculumId() {
-        return curriculumByCurriculumId;
-    }
-
-    public void setCurriculumByCurriculumId(CurriculumEntity curriculumByCurriculumId) {
-        this.curriculumByCurriculumId = curriculumByCurriculumId;
-    }
+    
 }

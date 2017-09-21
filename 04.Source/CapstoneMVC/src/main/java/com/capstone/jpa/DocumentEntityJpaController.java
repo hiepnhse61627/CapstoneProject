@@ -12,15 +12,14 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import com.capstone.entities.DocTypeEntity;
 import com.capstone.entities.DocumentEntity;
-import java.util.ArrayList;
-import java.util.Collection;
 import com.capstone.entities.DocumentStudentEntity;
-import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import com.capstone.jpa.exceptions.IllegalOrphanException;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
@@ -38,68 +37,63 @@ public class DocumentEntityJpaController implements Serializable {
     }
 
     public void create(DocumentEntity documentEntity) throws PreexistingEntityException, Exception {
-        if (documentEntity.getDocumentsById() == null) {
-            documentEntity.setDocumentsById(new ArrayList<DocumentEntity>());
+        if (documentEntity.getDocumentStudentList() == null) {
+            documentEntity.setDocumentStudentList(new ArrayList<DocumentStudentEntity>());
         }
-        if (documentEntity.getDocumentStudentsById() == null) {
-            documentEntity.setDocumentStudentsById(new ArrayList<DocumentStudentEntity>());
+        if (documentEntity.getDocumentList() == null) {
+            documentEntity.setDocumentList(new ArrayList<DocumentEntity>());
         }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            DocTypeEntity docTypeByDocTypeId = documentEntity.getDocTypeByDocTypeId();
-            if (docTypeByDocTypeId != null) {
-                docTypeByDocTypeId = em.getReference(docTypeByDocTypeId.getClass(), docTypeByDocTypeId.getId());
-                documentEntity.setDocTypeByDocTypeId(docTypeByDocTypeId);
+            DocTypeEntity docTypeId = documentEntity.getDocTypeId();
+            if (docTypeId != null) {
+                docTypeId = em.getReference(docTypeId.getClass(), docTypeId.getId());
+                documentEntity.setDocTypeId(docTypeId);
             }
-            DocumentEntity documentByDocParentId = documentEntity.getDocumentByDocParentId();
-            if (documentByDocParentId != null) {
-                documentByDocParentId = em.getReference(documentByDocParentId.getClass(), documentByDocParentId.getId());
-                documentEntity.setDocumentByDocParentId(documentByDocParentId);
+            DocumentEntity docParentId = documentEntity.getDocParentId();
+            if (docParentId != null) {
+                docParentId = em.getReference(docParentId.getClass(), docParentId.getId());
+                documentEntity.setDocParentId(docParentId);
             }
-            Collection<DocumentEntity> attachedDocumentsById = new ArrayList<DocumentEntity>();
-            for (DocumentEntity documentsByIdDocumentEntityToAttach : documentEntity.getDocumentsById()) {
-                documentsByIdDocumentEntityToAttach = em.getReference(documentsByIdDocumentEntityToAttach.getClass(), documentsByIdDocumentEntityToAttach.getId());
-                attachedDocumentsById.add(documentsByIdDocumentEntityToAttach);
+            List<DocumentStudentEntity> attachedDocumentStudentList = new ArrayList<DocumentStudentEntity>();
+            for (DocumentStudentEntity documentStudentListDocumentStudentEntityToAttach : documentEntity.getDocumentStudentList()) {
+                documentStudentListDocumentStudentEntityToAttach = em.getReference(documentStudentListDocumentStudentEntityToAttach.getClass(), documentStudentListDocumentStudentEntityToAttach.getId());
+                attachedDocumentStudentList.add(documentStudentListDocumentStudentEntityToAttach);
             }
-            documentEntity.setDocumentsById(attachedDocumentsById);
-            Collection<DocumentStudentEntity> attachedDocumentStudentsById = new ArrayList<DocumentStudentEntity>();
-            for (DocumentStudentEntity documentStudentsByIdDocumentStudentEntityToAttach : documentEntity.getDocumentStudentsById()) {
-                documentStudentsByIdDocumentStudentEntityToAttach = em.getReference(documentStudentsByIdDocumentStudentEntityToAttach.getClass(), documentStudentsByIdDocumentStudentEntityToAttach.getId());
-                attachedDocumentStudentsById.add(documentStudentsByIdDocumentStudentEntityToAttach);
+            documentEntity.setDocumentStudentList(attachedDocumentStudentList);
+            List<DocumentEntity> attachedDocumentList = new ArrayList<DocumentEntity>();
+            for (DocumentEntity documentListDocumentEntityToAttach : documentEntity.getDocumentList()) {
+                documentListDocumentEntityToAttach = em.getReference(documentListDocumentEntityToAttach.getClass(), documentListDocumentEntityToAttach.getId());
+                attachedDocumentList.add(documentListDocumentEntityToAttach);
             }
-            documentEntity.setDocumentStudentsById(attachedDocumentStudentsById);
+            documentEntity.setDocumentList(attachedDocumentList);
             em.persist(documentEntity);
-            if (docTypeByDocTypeId != null) {
-                docTypeByDocTypeId.getDocumentsById().add(documentEntity);
-                docTypeByDocTypeId = em.merge(docTypeByDocTypeId);
+            if (docTypeId != null) {
+                docTypeId.getDocumentList().add(documentEntity);
+                docTypeId = em.merge(docTypeId);
             }
-            if (documentByDocParentId != null) {
-                DocumentEntity oldDocumentByDocParentIdOfDocumentByDocParentId = documentByDocParentId.getDocumentByDocParentId();
-                if (oldDocumentByDocParentIdOfDocumentByDocParentId != null) {
-                    oldDocumentByDocParentIdOfDocumentByDocParentId.setDocumentByDocParentId(null);
-                    oldDocumentByDocParentIdOfDocumentByDocParentId = em.merge(oldDocumentByDocParentIdOfDocumentByDocParentId);
-                }
-                documentByDocParentId.setDocumentByDocParentId(documentEntity);
-                documentByDocParentId = em.merge(documentByDocParentId);
+            if (docParentId != null) {
+                docParentId.getDocumentList().add(documentEntity);
+                docParentId = em.merge(docParentId);
             }
-            for (DocumentEntity documentsByIdDocumentEntity : documentEntity.getDocumentsById()) {
-                DocumentEntity oldDocumentByDocParentIdOfDocumentsByIdDocumentEntity = documentsByIdDocumentEntity.getDocumentByDocParentId();
-                documentsByIdDocumentEntity.setDocumentByDocParentId(documentEntity);
-                documentsByIdDocumentEntity = em.merge(documentsByIdDocumentEntity);
-                if (oldDocumentByDocParentIdOfDocumentsByIdDocumentEntity != null) {
-                    oldDocumentByDocParentIdOfDocumentsByIdDocumentEntity.getDocumentsById().remove(documentsByIdDocumentEntity);
-                    oldDocumentByDocParentIdOfDocumentsByIdDocumentEntity = em.merge(oldDocumentByDocParentIdOfDocumentsByIdDocumentEntity);
+            for (DocumentStudentEntity documentStudentListDocumentStudentEntity : documentEntity.getDocumentStudentList()) {
+                DocumentEntity oldDocumentIdOfDocumentStudentListDocumentStudentEntity = documentStudentListDocumentStudentEntity.getDocumentId();
+                documentStudentListDocumentStudentEntity.setDocumentId(documentEntity);
+                documentStudentListDocumentStudentEntity = em.merge(documentStudentListDocumentStudentEntity);
+                if (oldDocumentIdOfDocumentStudentListDocumentStudentEntity != null) {
+                    oldDocumentIdOfDocumentStudentListDocumentStudentEntity.getDocumentStudentList().remove(documentStudentListDocumentStudentEntity);
+                    oldDocumentIdOfDocumentStudentListDocumentStudentEntity = em.merge(oldDocumentIdOfDocumentStudentListDocumentStudentEntity);
                 }
             }
-            for (DocumentStudentEntity documentStudentsByIdDocumentStudentEntity : documentEntity.getDocumentStudentsById()) {
-                DocumentEntity oldDocumentByDocumentIdOfDocumentStudentsByIdDocumentStudentEntity = documentStudentsByIdDocumentStudentEntity.getDocumentByDocumentId();
-                documentStudentsByIdDocumentStudentEntity.setDocumentByDocumentId(documentEntity);
-                documentStudentsByIdDocumentStudentEntity = em.merge(documentStudentsByIdDocumentStudentEntity);
-                if (oldDocumentByDocumentIdOfDocumentStudentsByIdDocumentStudentEntity != null) {
-                    oldDocumentByDocumentIdOfDocumentStudentsByIdDocumentStudentEntity.getDocumentStudentsById().remove(documentStudentsByIdDocumentStudentEntity);
-                    oldDocumentByDocumentIdOfDocumentStudentsByIdDocumentStudentEntity = em.merge(oldDocumentByDocumentIdOfDocumentStudentsByIdDocumentStudentEntity);
+            for (DocumentEntity documentListDocumentEntity : documentEntity.getDocumentList()) {
+                DocumentEntity oldDocParentIdOfDocumentListDocumentEntity = documentListDocumentEntity.getDocParentId();
+                documentListDocumentEntity.setDocParentId(documentEntity);
+                documentListDocumentEntity = em.merge(documentListDocumentEntity);
+                if (oldDocParentIdOfDocumentListDocumentEntity != null) {
+                    oldDocParentIdOfDocumentListDocumentEntity.getDocumentList().remove(documentListDocumentEntity);
+                    oldDocParentIdOfDocumentListDocumentEntity = em.merge(oldDocParentIdOfDocumentListDocumentEntity);
                 }
             }
             em.getTransaction().commit();
@@ -121,95 +115,90 @@ public class DocumentEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             DocumentEntity persistentDocumentEntity = em.find(DocumentEntity.class, documentEntity.getId());
-            DocTypeEntity docTypeByDocTypeIdOld = persistentDocumentEntity.getDocTypeByDocTypeId();
-            DocTypeEntity docTypeByDocTypeIdNew = documentEntity.getDocTypeByDocTypeId();
-            DocumentEntity documentByDocParentIdOld = persistentDocumentEntity.getDocumentByDocParentId();
-            DocumentEntity documentByDocParentIdNew = documentEntity.getDocumentByDocParentId();
-            Collection<DocumentEntity> documentsByIdOld = persistentDocumentEntity.getDocumentsById();
-            Collection<DocumentEntity> documentsByIdNew = documentEntity.getDocumentsById();
-            Collection<DocumentStudentEntity> documentStudentsByIdOld = persistentDocumentEntity.getDocumentStudentsById();
-            Collection<DocumentStudentEntity> documentStudentsByIdNew = documentEntity.getDocumentStudentsById();
+            DocTypeEntity docTypeIdOld = persistentDocumentEntity.getDocTypeId();
+            DocTypeEntity docTypeIdNew = documentEntity.getDocTypeId();
+            DocumentEntity docParentIdOld = persistentDocumentEntity.getDocParentId();
+            DocumentEntity docParentIdNew = documentEntity.getDocParentId();
+            List<DocumentStudentEntity> documentStudentListOld = persistentDocumentEntity.getDocumentStudentList();
+            List<DocumentStudentEntity> documentStudentListNew = documentEntity.getDocumentStudentList();
+            List<DocumentEntity> documentListOld = persistentDocumentEntity.getDocumentList();
+            List<DocumentEntity> documentListNew = documentEntity.getDocumentList();
             List<String> illegalOrphanMessages = null;
-            for (DocumentStudentEntity documentStudentsByIdOldDocumentStudentEntity : documentStudentsByIdOld) {
-                if (!documentStudentsByIdNew.contains(documentStudentsByIdOldDocumentStudentEntity)) {
+            for (DocumentStudentEntity documentStudentListOldDocumentStudentEntity : documentStudentListOld) {
+                if (!documentStudentListNew.contains(documentStudentListOldDocumentStudentEntity)) {
                     if (illegalOrphanMessages == null) {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
-                    illegalOrphanMessages.add("You must retain DocumentStudentEntity " + documentStudentsByIdOldDocumentStudentEntity + " since its documentByDocumentId field is not nullable.");
+                    illegalOrphanMessages.add("You must retain DocumentStudentEntity " + documentStudentListOldDocumentStudentEntity + " since its documentId field is not nullable.");
                 }
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            if (docTypeByDocTypeIdNew != null) {
-                docTypeByDocTypeIdNew = em.getReference(docTypeByDocTypeIdNew.getClass(), docTypeByDocTypeIdNew.getId());
-                documentEntity.setDocTypeByDocTypeId(docTypeByDocTypeIdNew);
+            if (docTypeIdNew != null) {
+                docTypeIdNew = em.getReference(docTypeIdNew.getClass(), docTypeIdNew.getId());
+                documentEntity.setDocTypeId(docTypeIdNew);
             }
-            if (documentByDocParentIdNew != null) {
-                documentByDocParentIdNew = em.getReference(documentByDocParentIdNew.getClass(), documentByDocParentIdNew.getId());
-                documentEntity.setDocumentByDocParentId(documentByDocParentIdNew);
+            if (docParentIdNew != null) {
+                docParentIdNew = em.getReference(docParentIdNew.getClass(), docParentIdNew.getId());
+                documentEntity.setDocParentId(docParentIdNew);
             }
-            Collection<DocumentEntity> attachedDocumentsByIdNew = new ArrayList<DocumentEntity>();
-            for (DocumentEntity documentsByIdNewDocumentEntityToAttach : documentsByIdNew) {
-                documentsByIdNewDocumentEntityToAttach = em.getReference(documentsByIdNewDocumentEntityToAttach.getClass(), documentsByIdNewDocumentEntityToAttach.getId());
-                attachedDocumentsByIdNew.add(documentsByIdNewDocumentEntityToAttach);
+            List<DocumentStudentEntity> attachedDocumentStudentListNew = new ArrayList<DocumentStudentEntity>();
+            for (DocumentStudentEntity documentStudentListNewDocumentStudentEntityToAttach : documentStudentListNew) {
+                documentStudentListNewDocumentStudentEntityToAttach = em.getReference(documentStudentListNewDocumentStudentEntityToAttach.getClass(), documentStudentListNewDocumentStudentEntityToAttach.getId());
+                attachedDocumentStudentListNew.add(documentStudentListNewDocumentStudentEntityToAttach);
             }
-            documentsByIdNew = attachedDocumentsByIdNew;
-            documentEntity.setDocumentsById(documentsByIdNew);
-            Collection<DocumentStudentEntity> attachedDocumentStudentsByIdNew = new ArrayList<DocumentStudentEntity>();
-            for (DocumentStudentEntity documentStudentsByIdNewDocumentStudentEntityToAttach : documentStudentsByIdNew) {
-                documentStudentsByIdNewDocumentStudentEntityToAttach = em.getReference(documentStudentsByIdNewDocumentStudentEntityToAttach.getClass(), documentStudentsByIdNewDocumentStudentEntityToAttach.getId());
-                attachedDocumentStudentsByIdNew.add(documentStudentsByIdNewDocumentStudentEntityToAttach);
+            documentStudentListNew = attachedDocumentStudentListNew;
+            documentEntity.setDocumentStudentList(documentStudentListNew);
+            List<DocumentEntity> attachedDocumentListNew = new ArrayList<DocumentEntity>();
+            for (DocumentEntity documentListNewDocumentEntityToAttach : documentListNew) {
+                documentListNewDocumentEntityToAttach = em.getReference(documentListNewDocumentEntityToAttach.getClass(), documentListNewDocumentEntityToAttach.getId());
+                attachedDocumentListNew.add(documentListNewDocumentEntityToAttach);
             }
-            documentStudentsByIdNew = attachedDocumentStudentsByIdNew;
-            documentEntity.setDocumentStudentsById(documentStudentsByIdNew);
+            documentListNew = attachedDocumentListNew;
+            documentEntity.setDocumentList(documentListNew);
             documentEntity = em.merge(documentEntity);
-            if (docTypeByDocTypeIdOld != null && !docTypeByDocTypeIdOld.equals(docTypeByDocTypeIdNew)) {
-                docTypeByDocTypeIdOld.getDocumentsById().remove(documentEntity);
-                docTypeByDocTypeIdOld = em.merge(docTypeByDocTypeIdOld);
+            if (docTypeIdOld != null && !docTypeIdOld.equals(docTypeIdNew)) {
+                docTypeIdOld.getDocumentList().remove(documentEntity);
+                docTypeIdOld = em.merge(docTypeIdOld);
             }
-            if (docTypeByDocTypeIdNew != null && !docTypeByDocTypeIdNew.equals(docTypeByDocTypeIdOld)) {
-                docTypeByDocTypeIdNew.getDocumentsById().add(documentEntity);
-                docTypeByDocTypeIdNew = em.merge(docTypeByDocTypeIdNew);
+            if (docTypeIdNew != null && !docTypeIdNew.equals(docTypeIdOld)) {
+                docTypeIdNew.getDocumentList().add(documentEntity);
+                docTypeIdNew = em.merge(docTypeIdNew);
             }
-            if (documentByDocParentIdOld != null && !documentByDocParentIdOld.equals(documentByDocParentIdNew)) {
-                documentByDocParentIdOld.setDocumentByDocParentId(null);
-                documentByDocParentIdOld = em.merge(documentByDocParentIdOld);
+            if (docParentIdOld != null && !docParentIdOld.equals(docParentIdNew)) {
+                docParentIdOld.getDocumentList().remove(documentEntity);
+                docParentIdOld = em.merge(docParentIdOld);
             }
-            if (documentByDocParentIdNew != null && !documentByDocParentIdNew.equals(documentByDocParentIdOld)) {
-                DocumentEntity oldDocumentByDocParentIdOfDocumentByDocParentId = documentByDocParentIdNew.getDocumentByDocParentId();
-                if (oldDocumentByDocParentIdOfDocumentByDocParentId != null) {
-                    oldDocumentByDocParentIdOfDocumentByDocParentId.setDocumentByDocParentId(null);
-                    oldDocumentByDocParentIdOfDocumentByDocParentId = em.merge(oldDocumentByDocParentIdOfDocumentByDocParentId);
-                }
-                documentByDocParentIdNew.setDocumentByDocParentId(documentEntity);
-                documentByDocParentIdNew = em.merge(documentByDocParentIdNew);
+            if (docParentIdNew != null && !docParentIdNew.equals(docParentIdOld)) {
+                docParentIdNew.getDocumentList().add(documentEntity);
+                docParentIdNew = em.merge(docParentIdNew);
             }
-            for (DocumentEntity documentsByIdOldDocumentEntity : documentsByIdOld) {
-                if (!documentsByIdNew.contains(documentsByIdOldDocumentEntity)) {
-                    documentsByIdOldDocumentEntity.setDocumentByDocParentId(null);
-                    documentsByIdOldDocumentEntity = em.merge(documentsByIdOldDocumentEntity);
-                }
-            }
-            for (DocumentEntity documentsByIdNewDocumentEntity : documentsByIdNew) {
-                if (!documentsByIdOld.contains(documentsByIdNewDocumentEntity)) {
-                    DocumentEntity oldDocumentByDocParentIdOfDocumentsByIdNewDocumentEntity = documentsByIdNewDocumentEntity.getDocumentByDocParentId();
-                    documentsByIdNewDocumentEntity.setDocumentByDocParentId(documentEntity);
-                    documentsByIdNewDocumentEntity = em.merge(documentsByIdNewDocumentEntity);
-                    if (oldDocumentByDocParentIdOfDocumentsByIdNewDocumentEntity != null && !oldDocumentByDocParentIdOfDocumentsByIdNewDocumentEntity.equals(documentEntity)) {
-                        oldDocumentByDocParentIdOfDocumentsByIdNewDocumentEntity.getDocumentsById().remove(documentsByIdNewDocumentEntity);
-                        oldDocumentByDocParentIdOfDocumentsByIdNewDocumentEntity = em.merge(oldDocumentByDocParentIdOfDocumentsByIdNewDocumentEntity);
+            for (DocumentStudentEntity documentStudentListNewDocumentStudentEntity : documentStudentListNew) {
+                if (!documentStudentListOld.contains(documentStudentListNewDocumentStudentEntity)) {
+                    DocumentEntity oldDocumentIdOfDocumentStudentListNewDocumentStudentEntity = documentStudentListNewDocumentStudentEntity.getDocumentId();
+                    documentStudentListNewDocumentStudentEntity.setDocumentId(documentEntity);
+                    documentStudentListNewDocumentStudentEntity = em.merge(documentStudentListNewDocumentStudentEntity);
+                    if (oldDocumentIdOfDocumentStudentListNewDocumentStudentEntity != null && !oldDocumentIdOfDocumentStudentListNewDocumentStudentEntity.equals(documentEntity)) {
+                        oldDocumentIdOfDocumentStudentListNewDocumentStudentEntity.getDocumentStudentList().remove(documentStudentListNewDocumentStudentEntity);
+                        oldDocumentIdOfDocumentStudentListNewDocumentStudentEntity = em.merge(oldDocumentIdOfDocumentStudentListNewDocumentStudentEntity);
                     }
                 }
             }
-            for (DocumentStudentEntity documentStudentsByIdNewDocumentStudentEntity : documentStudentsByIdNew) {
-                if (!documentStudentsByIdOld.contains(documentStudentsByIdNewDocumentStudentEntity)) {
-                    DocumentEntity oldDocumentByDocumentIdOfDocumentStudentsByIdNewDocumentStudentEntity = documentStudentsByIdNewDocumentStudentEntity.getDocumentByDocumentId();
-                    documentStudentsByIdNewDocumentStudentEntity.setDocumentByDocumentId(documentEntity);
-                    documentStudentsByIdNewDocumentStudentEntity = em.merge(documentStudentsByIdNewDocumentStudentEntity);
-                    if (oldDocumentByDocumentIdOfDocumentStudentsByIdNewDocumentStudentEntity != null && !oldDocumentByDocumentIdOfDocumentStudentsByIdNewDocumentStudentEntity.equals(documentEntity)) {
-                        oldDocumentByDocumentIdOfDocumentStudentsByIdNewDocumentStudentEntity.getDocumentStudentsById().remove(documentStudentsByIdNewDocumentStudentEntity);
-                        oldDocumentByDocumentIdOfDocumentStudentsByIdNewDocumentStudentEntity = em.merge(oldDocumentByDocumentIdOfDocumentStudentsByIdNewDocumentStudentEntity);
+            for (DocumentEntity documentListOldDocumentEntity : documentListOld) {
+                if (!documentListNew.contains(documentListOldDocumentEntity)) {
+                    documentListOldDocumentEntity.setDocParentId(null);
+                    documentListOldDocumentEntity = em.merge(documentListOldDocumentEntity);
+                }
+            }
+            for (DocumentEntity documentListNewDocumentEntity : documentListNew) {
+                if (!documentListOld.contains(documentListNewDocumentEntity)) {
+                    DocumentEntity oldDocParentIdOfDocumentListNewDocumentEntity = documentListNewDocumentEntity.getDocParentId();
+                    documentListNewDocumentEntity.setDocParentId(documentEntity);
+                    documentListNewDocumentEntity = em.merge(documentListNewDocumentEntity);
+                    if (oldDocParentIdOfDocumentListNewDocumentEntity != null && !oldDocParentIdOfDocumentListNewDocumentEntity.equals(documentEntity)) {
+                        oldDocParentIdOfDocumentListNewDocumentEntity.getDocumentList().remove(documentListNewDocumentEntity);
+                        oldDocParentIdOfDocumentListNewDocumentEntity = em.merge(oldDocParentIdOfDocumentListNewDocumentEntity);
                     }
                 }
             }
@@ -217,7 +206,7 @@ public class DocumentEntityJpaController implements Serializable {
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
-                int id = documentEntity.getId();
+                Integer id = documentEntity.getId();
                 if (findDocumentEntity(id) == null) {
                     throw new NonexistentEntityException("The documentEntity with id " + id + " no longer exists.");
                 }
@@ -230,7 +219,7 @@ public class DocumentEntityJpaController implements Serializable {
         }
     }
 
-    public void destroy(int id) throws IllegalOrphanException, NonexistentEntityException {
+    public void destroy(Integer id) throws IllegalOrphanException, NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -243,30 +232,30 @@ public class DocumentEntityJpaController implements Serializable {
                 throw new NonexistentEntityException("The documentEntity with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
-            Collection<DocumentStudentEntity> documentStudentsByIdOrphanCheck = documentEntity.getDocumentStudentsById();
-            for (DocumentStudentEntity documentStudentsByIdOrphanCheckDocumentStudentEntity : documentStudentsByIdOrphanCheck) {
+            List<DocumentStudentEntity> documentStudentListOrphanCheck = documentEntity.getDocumentStudentList();
+            for (DocumentStudentEntity documentStudentListOrphanCheckDocumentStudentEntity : documentStudentListOrphanCheck) {
                 if (illegalOrphanMessages == null) {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
-                illegalOrphanMessages.add("This DocumentEntity (" + documentEntity + ") cannot be destroyed since the DocumentStudentEntity " + documentStudentsByIdOrphanCheckDocumentStudentEntity + " in its documentStudentsById field has a non-nullable documentByDocumentId field.");
+                illegalOrphanMessages.add("This DocumentEntity (" + documentEntity + ") cannot be destroyed since the DocumentStudentEntity " + documentStudentListOrphanCheckDocumentStudentEntity + " in its documentStudentList field has a non-nullable documentId field.");
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            DocTypeEntity docTypeByDocTypeId = documentEntity.getDocTypeByDocTypeId();
-            if (docTypeByDocTypeId != null) {
-                docTypeByDocTypeId.getDocumentsById().remove(documentEntity);
-                docTypeByDocTypeId = em.merge(docTypeByDocTypeId);
+            DocTypeEntity docTypeId = documentEntity.getDocTypeId();
+            if (docTypeId != null) {
+                docTypeId.getDocumentList().remove(documentEntity);
+                docTypeId = em.merge(docTypeId);
             }
-            DocumentEntity documentByDocParentId = documentEntity.getDocumentByDocParentId();
-            if (documentByDocParentId != null) {
-                documentByDocParentId.setDocumentByDocParentId(null);
-                documentByDocParentId = em.merge(documentByDocParentId);
+            DocumentEntity docParentId = documentEntity.getDocParentId();
+            if (docParentId != null) {
+                docParentId.getDocumentList().remove(documentEntity);
+                docParentId = em.merge(docParentId);
             }
-            Collection<DocumentEntity> documentsById = documentEntity.getDocumentsById();
-            for (DocumentEntity documentsByIdDocumentEntity : documentsById) {
-                documentsByIdDocumentEntity.setDocumentByDocParentId(null);
-                documentsByIdDocumentEntity = em.merge(documentsByIdDocumentEntity);
+            List<DocumentEntity> documentList = documentEntity.getDocumentList();
+            for (DocumentEntity documentListDocumentEntity : documentList) {
+                documentListDocumentEntity.setDocParentId(null);
+                documentListDocumentEntity = em.merge(documentListDocumentEntity);
             }
             em.remove(documentEntity);
             em.getTransaction().commit();
@@ -301,7 +290,7 @@ public class DocumentEntityJpaController implements Serializable {
         }
     }
 
-    public DocumentEntity findDocumentEntity(int id) {
+    public DocumentEntity findDocumentEntity(Integer id) {
         EntityManager em = getEntityManager();
         try {
             return em.find(DocumentEntity.class, id);

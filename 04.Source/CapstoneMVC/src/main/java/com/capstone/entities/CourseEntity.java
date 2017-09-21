@@ -1,61 +1,86 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package com.capstone.entities;
 
+import java.io.Serializable;
+import java.util.List;
 import javax.persistence.*;
-import java.util.Collection;
 
+/**
+ *
+ * @author hiepnhse61627
+ */
 @Entity
-@Table(name = "Course", schema = "dbo", catalog = "CapstoneProject")
-public class CourseEntity {
-    private int id;
-    private String clazz;
-    private Collection<MarksEntity> marksById;
+@Table(name = "Course", catalog = "CapstoneProject", schema = "dbo")
+public class CourseEntity implements Serializable {
 
+    private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "Id")
-    public int getId() {
-        return id;
+    @Column(name = "Id", nullable = false)
+    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    private Integer id;
+    @Column(name = "Class")
+    private String class1;
+    @OneToMany(mappedBy = "courseId")
+    private List<MarksEntity> marksList;
+
+    public CourseEntity() {
     }
 
-    public void setId(int id) {
+    public CourseEntity(Integer id) {
         this.id = id;
     }
 
-    @Basic
-    @Column(name = "Class")
-    public String getClazz() {
-        return clazz;
+    public Integer getId() {
+        return id;
     }
 
-    public void setClazz(String clazz) {
-        this.clazz = clazz;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+    public String getClass1() {
+        return class1;
+    }
 
-        CourseEntity that = (CourseEntity) o;
+    public void setClass1(String class1) {
+        this.class1 = class1;
+    }
 
-        if (id != that.id) return false;
-        if (clazz != null ? !clazz.equals(that.clazz) : that.clazz != null) return false;
+    public List<MarksEntity> getMarksList() {
+        return marksList;
+    }
 
-        return true;
+    public void setMarksList(List<MarksEntity> marksList) {
+        this.marksList = marksList;
     }
 
     @Override
     public int hashCode() {
-        int result = id;
-        result = 31 * result + (clazz != null ? clazz.hashCode() : 0);
-        return result;
+        int hash = 0;
+        hash += (id != null ? id.hashCode() : 0);
+        return hash;
     }
 
-    @OneToMany(mappedBy = "courseByCourseId")
-    public Collection<MarksEntity> getMarksById() {
-        return marksById;
+    @Override
+    public boolean equals(Object object) {
+        // TODO: Warning - this method won't work in the case the id fields are not set
+        if (!(object instanceof CourseEntity)) {
+            return false;
+        }
+        CourseEntity other = (CourseEntity) object;
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+            return false;
+        }
+        return true;
     }
 
-    public void setMarksById(Collection<MarksEntity> marksById) {
-        this.marksById = marksById;
+    @Override
+    public String toString() {
+        return "entities.Course[ id=" + id + " ]";
     }
+    
 }

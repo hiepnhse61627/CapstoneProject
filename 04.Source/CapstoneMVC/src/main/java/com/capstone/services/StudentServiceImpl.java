@@ -12,15 +12,23 @@ public class StudentServiceImpl implements IStudentService {
     private EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
     ExStudentEntityJpaController studentEntityJpaController = new ExStudentEntityJpaController(emf);
 
-    public void createStudent(StudentEntity studentEntity) {
-        try {
-            studentEntityJpaController.create(studentEntity);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
+    @Override
     public void createStudentList(List<StudentEntity> studentEntityList) {
         studentEntityJpaController.createStudentList(studentEntityList);
+    }
+
+    @Override
+    public StudentEntity findStudentByRollNumber(String rollNumber) {
+        return studentEntityJpaController.findStudentByRollNumber(rollNumber);
+    }
+
+    @Override
+    public int getCurrentLine() {
+        return studentEntityJpaController.getCurrentLine();
+    }
+
+    @Override
+    public int getTotalLine() {
+        return studentEntityJpaController.getTotalLine();
     }
 }
