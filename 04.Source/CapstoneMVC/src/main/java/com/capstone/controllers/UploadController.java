@@ -33,7 +33,9 @@ import java.util.List;
 public class UploadController {
 
     private final String folder = "DSSV-StudentsList";
+    private final String marksFolder = "Marks-StudentMarks";
     private int totalLine;
+    private int currentLine;
 
     @Autowired
     ServletContext context;
@@ -45,6 +47,7 @@ public class UploadController {
     ICourseService courseService = new CourseServiceImpl();
     IMarksService marksService = new MarksServiceImpl();
 
+    /** --------------STUDENTS------------ **/
     @RequestMapping(value = "/goUploadStudentList")
     public ModelAndView goUploadStudentListPage() {
         ModelAndView view = new ModelAndView("uploadStudentList");
@@ -145,17 +148,57 @@ public class UploadController {
         return obj;
     }
 
+    /** --------------MARKS------------ **/
     @RequestMapping(value = "/goUploadStudentMarks")
-    public String goUploadStudentMarksPage() {return "uploadStudentMarks";}
+    public ModelAndView goUploadStudentMarksPage() {
+        ModelAndView view = new ModelAndView("uploadStudentMarks");
+
+        ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+        File[] list = read.readFiles(context, marksFolder);
+        view.addObject("files", list);
+        return view;
+    }
+
+    @RequestMapping(value = "/upload-exist-marks-file", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject chooseExistMarkFile(@RequestParam("file") String file) {
+        JsonObject jsonObject;
+        try {
+            File f = new File(context.getRealPath("/") + "UploadedFiles/" + marksFolder + "/" + file);
+            jsonObject = readMarkFile(null, f, false);
+        } catch (Exception ex) {
+            jsonObject = new JsonObject();
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+        return jsonObject;
+    }
 
     @RequestMapping(value = "/uploadStudentMarks", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject uploadStudentMarks(@RequestParam("file") MultipartFile file) throws IOException {
+        JsonObject jsonObject = readMarkFile(file, null, true);
+        if (jsonObject.get("success").getAsBoolean()) {
+            ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+            read.saveFile(context, file, marksFolder);
+        }
+
+        return jsonObject;
+    }
+
+    private JsonObject readMarkFile(MultipartFile file, File file2, boolean isNewFile) {
         JsonObject jsonObject = new JsonObject();
         List<MarksEntity> marksEntities = new ArrayList<MarksEntity>();
 
         try {
-            InputStream is = file.getInputStream();
+            InputStream is;
+            if (isNewFile) {
+                is = file.getInputStream();
+            }
+            else {
+                is = new FileInputStream(file2);
+            }
 
             XSSFWorkbook workbook = new XSSFWorkbook(is);
             XSSFSheet spreadsheet = workbook.getSheetAt(0);
@@ -171,6 +214,7 @@ public class UploadController {
             int averageMarkIndex = 4;
             int statusIndex = 5;
 
+            this.currentLine = excelDataIndex;
             for (int rowIndex = excelDataIndex; rowIndex < spreadsheet.getLastRowNum(); rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
 
@@ -234,6 +278,7 @@ public class UploadController {
                         marksEntities.add(marksEntity);
                     }
                 }
+                ++this.currentLine;
             }
             is.close();
             marksService.createMarks(marksEntities);
@@ -253,6 +298,7 @@ public class UploadController {
     public JsonObject GetLineStatus() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("totalLine", this.totalLine);
+        jsonObject.addProperty("currentLine", this.currentLine);
         jsonObject.addProperty("totalExistMarks", marksService.getTotalExistMarks());
         jsonObject.addProperty("successSavedMark", marksService.getSuccessSavedMark());
         return jsonObject;
