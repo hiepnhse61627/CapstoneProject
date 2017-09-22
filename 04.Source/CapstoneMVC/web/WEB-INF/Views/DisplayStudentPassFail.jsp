@@ -10,7 +10,6 @@
 <section class="content">
     <h1>
         Danh sách sinh viên nợ môn
-        <small>theo từng học kỳ</small>
     </h1>
     <div class="col-md-12">
         <form id="form">
