@@ -5,6 +5,9 @@
  */
 package com.capstone.jpa;
 
+import com.capstone.jpa.exceptions.IllegalOrphanException;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
@@ -12,9 +15,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import com.capstone.entities.CurriculumEntity;
 import com.capstone.entities.ProgramEntity;
-import com.capstone.jpa.exceptions.IllegalOrphanException;
-import com.capstone.jpa.exceptions.NonexistentEntityException;
-import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -22,7 +22,7 @@ import javax.persistence.EntityManagerFactory;
 
 /**
  *
- * @author hiepnhse61627
+ * @author Rem
  */
 public class ProgramEntityJpaController implements Serializable {
 
@@ -36,27 +36,27 @@ public class ProgramEntityJpaController implements Serializable {
     }
 
     public void create(ProgramEntity programEntity) throws PreexistingEntityException, Exception {
-        if (programEntity.getCurriculumList() == null) {
-            programEntity.setCurriculumList(new ArrayList<CurriculumEntity>());
+        if (programEntity.getCurriculumEntityList() == null) {
+            programEntity.setCurriculumEntityList(new ArrayList<CurriculumEntity>());
         }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            List<CurriculumEntity> attachedCurriculumList = new ArrayList<CurriculumEntity>();
-            for (CurriculumEntity curriculumListCurriculumEntityToAttach : programEntity.getCurriculumList()) {
-                curriculumListCurriculumEntityToAttach = em.getReference(curriculumListCurriculumEntityToAttach.getClass(), curriculumListCurriculumEntityToAttach.getId());
-                attachedCurriculumList.add(curriculumListCurriculumEntityToAttach);
+            List<CurriculumEntity> attachedCurriculumEntityList = new ArrayList<CurriculumEntity>();
+            for (CurriculumEntity curriculumEntityListCurriculumEntityToAttach : programEntity.getCurriculumEntityList()) {
+                curriculumEntityListCurriculumEntityToAttach = em.getReference(curriculumEntityListCurriculumEntityToAttach.getClass(), curriculumEntityListCurriculumEntityToAttach.getId());
+                attachedCurriculumEntityList.add(curriculumEntityListCurriculumEntityToAttach);
             }
-            programEntity.setCurriculumList(attachedCurriculumList);
+            programEntity.setCurriculumEntityList(attachedCurriculumEntityList);
             em.persist(programEntity);
-            for (CurriculumEntity curriculumListCurriculumEntity : programEntity.getCurriculumList()) {
-                ProgramEntity oldProgramIdOfCurriculumListCurriculumEntity = curriculumListCurriculumEntity.getProgramId();
-                curriculumListCurriculumEntity.setProgramId(programEntity);
-                curriculumListCurriculumEntity = em.merge(curriculumListCurriculumEntity);
-                if (oldProgramIdOfCurriculumListCurriculumEntity != null) {
-                    oldProgramIdOfCurriculumListCurriculumEntity.getCurriculumList().remove(curriculumListCurriculumEntity);
-                    oldProgramIdOfCurriculumListCurriculumEntity = em.merge(oldProgramIdOfCurriculumListCurriculumEntity);
+            for (CurriculumEntity curriculumEntityListCurriculumEntity : programEntity.getCurriculumEntityList()) {
+                ProgramEntity oldProgramIdOfCurriculumEntityListCurriculumEntity = curriculumEntityListCurriculumEntity.getProgramId();
+                curriculumEntityListCurriculumEntity.setProgramId(programEntity);
+                curriculumEntityListCurriculumEntity = em.merge(curriculumEntityListCurriculumEntity);
+                if (oldProgramIdOfCurriculumEntityListCurriculumEntity != null) {
+                    oldProgramIdOfCurriculumEntityListCurriculumEntity.getCurriculumEntityList().remove(curriculumEntityListCurriculumEntity);
+                    oldProgramIdOfCurriculumEntityListCurriculumEntity = em.merge(oldProgramIdOfCurriculumEntityListCurriculumEntity);
                 }
             }
             em.getTransaction().commit();
@@ -78,36 +78,36 @@ public class ProgramEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             ProgramEntity persistentProgramEntity = em.find(ProgramEntity.class, programEntity.getId());
-            List<CurriculumEntity> curriculumListOld = persistentProgramEntity.getCurriculumList();
-            List<CurriculumEntity> curriculumListNew = programEntity.getCurriculumList();
+            List<CurriculumEntity> curriculumEntityListOld = persistentProgramEntity.getCurriculumEntityList();
+            List<CurriculumEntity> curriculumEntityListNew = programEntity.getCurriculumEntityList();
             List<String> illegalOrphanMessages = null;
-            for (CurriculumEntity curriculumListOldCurriculumEntity : curriculumListOld) {
-                if (!curriculumListNew.contains(curriculumListOldCurriculumEntity)) {
+            for (CurriculumEntity curriculumEntityListOldCurriculumEntity : curriculumEntityListOld) {
+                if (!curriculumEntityListNew.contains(curriculumEntityListOldCurriculumEntity)) {
                     if (illegalOrphanMessages == null) {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
-                    illegalOrphanMessages.add("You must retain CurriculumEntity " + curriculumListOldCurriculumEntity + " since its programId field is not nullable.");
+                    illegalOrphanMessages.add("You must retain CurriculumEntity " + curriculumEntityListOldCurriculumEntity + " since its programId field is not nullable.");
                 }
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            List<CurriculumEntity> attachedCurriculumListNew = new ArrayList<CurriculumEntity>();
-            for (CurriculumEntity curriculumListNewCurriculumEntityToAttach : curriculumListNew) {
-                curriculumListNewCurriculumEntityToAttach = em.getReference(curriculumListNewCurriculumEntityToAttach.getClass(), curriculumListNewCurriculumEntityToAttach.getId());
-                attachedCurriculumListNew.add(curriculumListNewCurriculumEntityToAttach);
+            List<CurriculumEntity> attachedCurriculumEntityListNew = new ArrayList<CurriculumEntity>();
+            for (CurriculumEntity curriculumEntityListNewCurriculumEntityToAttach : curriculumEntityListNew) {
+                curriculumEntityListNewCurriculumEntityToAttach = em.getReference(curriculumEntityListNewCurriculumEntityToAttach.getClass(), curriculumEntityListNewCurriculumEntityToAttach.getId());
+                attachedCurriculumEntityListNew.add(curriculumEntityListNewCurriculumEntityToAttach);
             }
-            curriculumListNew = attachedCurriculumListNew;
-            programEntity.setCurriculumList(curriculumListNew);
+            curriculumEntityListNew = attachedCurriculumEntityListNew;
+            programEntity.setCurriculumEntityList(curriculumEntityListNew);
             programEntity = em.merge(programEntity);
-            for (CurriculumEntity curriculumListNewCurriculumEntity : curriculumListNew) {
-                if (!curriculumListOld.contains(curriculumListNewCurriculumEntity)) {
-                    ProgramEntity oldProgramIdOfCurriculumListNewCurriculumEntity = curriculumListNewCurriculumEntity.getProgramId();
-                    curriculumListNewCurriculumEntity.setProgramId(programEntity);
-                    curriculumListNewCurriculumEntity = em.merge(curriculumListNewCurriculumEntity);
-                    if (oldProgramIdOfCurriculumListNewCurriculumEntity != null && !oldProgramIdOfCurriculumListNewCurriculumEntity.equals(programEntity)) {
-                        oldProgramIdOfCurriculumListNewCurriculumEntity.getCurriculumList().remove(curriculumListNewCurriculumEntity);
-                        oldProgramIdOfCurriculumListNewCurriculumEntity = em.merge(oldProgramIdOfCurriculumListNewCurriculumEntity);
+            for (CurriculumEntity curriculumEntityListNewCurriculumEntity : curriculumEntityListNew) {
+                if (!curriculumEntityListOld.contains(curriculumEntityListNewCurriculumEntity)) {
+                    ProgramEntity oldProgramIdOfCurriculumEntityListNewCurriculumEntity = curriculumEntityListNewCurriculumEntity.getProgramId();
+                    curriculumEntityListNewCurriculumEntity.setProgramId(programEntity);
+                    curriculumEntityListNewCurriculumEntity = em.merge(curriculumEntityListNewCurriculumEntity);
+                    if (oldProgramIdOfCurriculumEntityListNewCurriculumEntity != null && !oldProgramIdOfCurriculumEntityListNewCurriculumEntity.equals(programEntity)) {
+                        oldProgramIdOfCurriculumEntityListNewCurriculumEntity.getCurriculumEntityList().remove(curriculumEntityListNewCurriculumEntity);
+                        oldProgramIdOfCurriculumEntityListNewCurriculumEntity = em.merge(oldProgramIdOfCurriculumEntityListNewCurriculumEntity);
                     }
                 }
             }
@@ -141,12 +141,12 @@ public class ProgramEntityJpaController implements Serializable {
                 throw new NonexistentEntityException("The programEntity with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
-            List<CurriculumEntity> curriculumListOrphanCheck = programEntity.getCurriculumList();
-            for (CurriculumEntity curriculumListOrphanCheckCurriculumEntity : curriculumListOrphanCheck) {
+            List<CurriculumEntity> curriculumEntityListOrphanCheck = programEntity.getCurriculumEntityList();
+            for (CurriculumEntity curriculumEntityListOrphanCheckCurriculumEntity : curriculumEntityListOrphanCheck) {
                 if (illegalOrphanMessages == null) {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
-                illegalOrphanMessages.add("This ProgramEntity (" + programEntity + ") cannot be destroyed since the CurriculumEntity " + curriculumListOrphanCheckCurriculumEntity + " in its curriculumList field has a non-nullable programId field.");
+                illegalOrphanMessages.add("This ProgramEntity (" + programEntity + ") cannot be destroyed since the CurriculumEntity " + curriculumEntityListOrphanCheckCurriculumEntity + " in its curriculumEntityList field has a non-nullable programId field.");
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);

@@ -21,24 +21,27 @@ import javax.persistence.Table;
 
 /**
  *
- * @author hiepnhse61627
+ * @author Rem
  */
 @Entity
-@Table(name = "Curriculum", catalog = "CapstoneProject", schema = "dbo")
+@Table(name = "Curriculum")
+@NamedQueries({
+    @NamedQuery(name = "CurriculumEntity.findAll", query = "SELECT c FROM CurriculumEntity c")})
 public class CurriculumEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "Id", nullable = false)
+    @Basic(optional = false)
+    @Column(name = "Id")
     private Integer id;
     @Basic(optional = false)
-    @Column(name = "Name", nullable = false, length = 10)
+    @Column(name = "Name")
     private String name;
-    @JoinColumn(name = "ProgramId", referencedColumnName = "Id", nullable = false)
+    @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
     @ManyToOne(optional = false)
     private ProgramEntity programId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "curriculumId")
-    private List<DocumentStudentEntity> documentStudentList;
+    private List<DocumentStudentEntity> documentStudentEntityList;
 
     public CurriculumEntity() {
     }
@@ -76,12 +79,12 @@ public class CurriculumEntity implements Serializable {
         this.programId = programId;
     }
 
-    public List<DocumentStudentEntity> getDocumentStudentList() {
-        return documentStudentList;
+    public List<DocumentStudentEntity> getDocumentStudentEntityList() {
+        return documentStudentEntityList;
     }
 
-    public void setDocumentStudentList(List<DocumentStudentEntity> documentStudentList) {
-        this.documentStudentList = documentStudentList;
+    public void setDocumentStudentEntityList(List<DocumentStudentEntity> documentStudentEntityList) {
+        this.documentStudentEntityList = documentStudentEntityList;
     }
 
     @Override
@@ -106,7 +109,7 @@ public class CurriculumEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.Curriculum[ id=" + id + " ]";
+        return "entities.CurriculumEntity[ id=" + id + " ]";
     }
     
 }

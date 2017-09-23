@@ -18,23 +18,26 @@ import javax.persistence.Table;
 
 /**
  *
- * @author hiepnhse61627
+ * @author Rem
  */
 @Entity
-@Table(name = "Document_Student", catalog = "CapstoneProject", schema = "dbo")
+@Table(name = "Document_Student")
+@NamedQueries({
+    @NamedQuery(name = "DocumentStudentEntity.findAll", query = "SELECT d FROM DocumentStudentEntity d")})
 public class DocumentStudentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "Id", nullable = false)
+    @Basic(optional = false)
+    @Column(name = "Id")
     private Integer id;
-    @JoinColumn(name = "CurriculumId", referencedColumnName = "Id", nullable = false)
+    @JoinColumn(name = "CurriculumId", referencedColumnName = "Id")
     @ManyToOne(optional = false)
     private CurriculumEntity curriculumId;
-    @JoinColumn(name = "DocumentId", referencedColumnName = "Id", nullable = false)
+    @JoinColumn(name = "DocumentId", referencedColumnName = "Id")
     @ManyToOne(optional = false)
     private DocumentEntity documentId;
-    @JoinColumn(name = "StudentId", referencedColumnName = "ID", nullable = false)
+    @JoinColumn(name = "StudentId", referencedColumnName = "ID")
     @ManyToOne(optional = false)
     private StudentEntity studentId;
 
@@ -99,7 +102,7 @@ public class DocumentStudentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.DocumentStudent[ id=" + id + " ]";
+        return "entities.DocumentStudentEntity[ id=" + id + " ]";
     }
     
 }

@@ -5,6 +5,9 @@
  */
 package com.capstone.jpa;
 
+import com.capstone.jpa.exceptions.IllegalOrphanException;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
 import com.capstone.entities.CurriculumEntity;
 import java.io.Serializable;
 import javax.persistence.Query;
@@ -13,9 +16,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import com.capstone.entities.ProgramEntity;
 import com.capstone.entities.DocumentStudentEntity;
-import com.capstone.jpa.exceptions.IllegalOrphanException;
-import com.capstone.jpa.exceptions.NonexistentEntityException;
-import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -23,7 +23,7 @@ import javax.persistence.EntityManagerFactory;
 
 /**
  *
- * @author hiepnhse61627
+ * @author Rem
  */
 public class CurriculumEntityJpaController implements Serializable {
 
@@ -37,8 +37,8 @@ public class CurriculumEntityJpaController implements Serializable {
     }
 
     public void create(CurriculumEntity curriculumEntity) throws PreexistingEntityException, Exception {
-        if (curriculumEntity.getDocumentStudentList() == null) {
-            curriculumEntity.setDocumentStudentList(new ArrayList<DocumentStudentEntity>());
+        if (curriculumEntity.getDocumentStudentEntityList() == null) {
+            curriculumEntity.setDocumentStudentEntityList(new ArrayList<DocumentStudentEntity>());
         }
         EntityManager em = null;
         try {
@@ -49,24 +49,24 @@ public class CurriculumEntityJpaController implements Serializable {
                 programId = em.getReference(programId.getClass(), programId.getId());
                 curriculumEntity.setProgramId(programId);
             }
-            List<DocumentStudentEntity> attachedDocumentStudentList = new ArrayList<DocumentStudentEntity>();
-            for (DocumentStudentEntity documentStudentListDocumentStudentEntityToAttach : curriculumEntity.getDocumentStudentList()) {
-                documentStudentListDocumentStudentEntityToAttach = em.getReference(documentStudentListDocumentStudentEntityToAttach.getClass(), documentStudentListDocumentStudentEntityToAttach.getId());
-                attachedDocumentStudentList.add(documentStudentListDocumentStudentEntityToAttach);
+            List<DocumentStudentEntity> attachedDocumentStudentEntityList = new ArrayList<DocumentStudentEntity>();
+            for (DocumentStudentEntity documentStudentEntityListDocumentStudentEntityToAttach : curriculumEntity.getDocumentStudentEntityList()) {
+                documentStudentEntityListDocumentStudentEntityToAttach = em.getReference(documentStudentEntityListDocumentStudentEntityToAttach.getClass(), documentStudentEntityListDocumentStudentEntityToAttach.getId());
+                attachedDocumentStudentEntityList.add(documentStudentEntityListDocumentStudentEntityToAttach);
             }
-            curriculumEntity.setDocumentStudentList(attachedDocumentStudentList);
+            curriculumEntity.setDocumentStudentEntityList(attachedDocumentStudentEntityList);
             em.persist(curriculumEntity);
             if (programId != null) {
-                programId.getCurriculumList().add(curriculumEntity);
+                programId.getCurriculumEntityList().add(curriculumEntity);
                 programId = em.merge(programId);
             }
-            for (DocumentStudentEntity documentStudentListDocumentStudentEntity : curriculumEntity.getDocumentStudentList()) {
-                CurriculumEntity oldCurriculumIdOfDocumentStudentListDocumentStudentEntity = documentStudentListDocumentStudentEntity.getCurriculumId();
-                documentStudentListDocumentStudentEntity.setCurriculumId(curriculumEntity);
-                documentStudentListDocumentStudentEntity = em.merge(documentStudentListDocumentStudentEntity);
-                if (oldCurriculumIdOfDocumentStudentListDocumentStudentEntity != null) {
-                    oldCurriculumIdOfDocumentStudentListDocumentStudentEntity.getDocumentStudentList().remove(documentStudentListDocumentStudentEntity);
-                    oldCurriculumIdOfDocumentStudentListDocumentStudentEntity = em.merge(oldCurriculumIdOfDocumentStudentListDocumentStudentEntity);
+            for (DocumentStudentEntity documentStudentEntityListDocumentStudentEntity : curriculumEntity.getDocumentStudentEntityList()) {
+                CurriculumEntity oldCurriculumIdOfDocumentStudentEntityListDocumentStudentEntity = documentStudentEntityListDocumentStudentEntity.getCurriculumId();
+                documentStudentEntityListDocumentStudentEntity.setCurriculumId(curriculumEntity);
+                documentStudentEntityListDocumentStudentEntity = em.merge(documentStudentEntityListDocumentStudentEntity);
+                if (oldCurriculumIdOfDocumentStudentEntityListDocumentStudentEntity != null) {
+                    oldCurriculumIdOfDocumentStudentEntityListDocumentStudentEntity.getDocumentStudentEntityList().remove(documentStudentEntityListDocumentStudentEntity);
+                    oldCurriculumIdOfDocumentStudentEntityListDocumentStudentEntity = em.merge(oldCurriculumIdOfDocumentStudentEntityListDocumentStudentEntity);
                 }
             }
             em.getTransaction().commit();
@@ -90,15 +90,15 @@ public class CurriculumEntityJpaController implements Serializable {
             CurriculumEntity persistentCurriculumEntity = em.find(CurriculumEntity.class, curriculumEntity.getId());
             ProgramEntity programIdOld = persistentCurriculumEntity.getProgramId();
             ProgramEntity programIdNew = curriculumEntity.getProgramId();
-            List<DocumentStudentEntity> documentStudentListOld = persistentCurriculumEntity.getDocumentStudentList();
-            List<DocumentStudentEntity> documentStudentListNew = curriculumEntity.getDocumentStudentList();
+            List<DocumentStudentEntity> documentStudentEntityListOld = persistentCurriculumEntity.getDocumentStudentEntityList();
+            List<DocumentStudentEntity> documentStudentEntityListNew = curriculumEntity.getDocumentStudentEntityList();
             List<String> illegalOrphanMessages = null;
-            for (DocumentStudentEntity documentStudentListOldDocumentStudentEntity : documentStudentListOld) {
-                if (!documentStudentListNew.contains(documentStudentListOldDocumentStudentEntity)) {
+            for (DocumentStudentEntity documentStudentEntityListOldDocumentStudentEntity : documentStudentEntityListOld) {
+                if (!documentStudentEntityListNew.contains(documentStudentEntityListOldDocumentStudentEntity)) {
                     if (illegalOrphanMessages == null) {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
-                    illegalOrphanMessages.add("You must retain DocumentStudentEntity " + documentStudentListOldDocumentStudentEntity + " since its curriculumId field is not nullable.");
+                    illegalOrphanMessages.add("You must retain DocumentStudentEntity " + documentStudentEntityListOldDocumentStudentEntity + " since its curriculumId field is not nullable.");
                 }
             }
             if (illegalOrphanMessages != null) {
@@ -108,30 +108,30 @@ public class CurriculumEntityJpaController implements Serializable {
                 programIdNew = em.getReference(programIdNew.getClass(), programIdNew.getId());
                 curriculumEntity.setProgramId(programIdNew);
             }
-            List<DocumentStudentEntity> attachedDocumentStudentListNew = new ArrayList<DocumentStudentEntity>();
-            for (DocumentStudentEntity documentStudentListNewDocumentStudentEntityToAttach : documentStudentListNew) {
-                documentStudentListNewDocumentStudentEntityToAttach = em.getReference(documentStudentListNewDocumentStudentEntityToAttach.getClass(), documentStudentListNewDocumentStudentEntityToAttach.getId());
-                attachedDocumentStudentListNew.add(documentStudentListNewDocumentStudentEntityToAttach);
+            List<DocumentStudentEntity> attachedDocumentStudentEntityListNew = new ArrayList<DocumentStudentEntity>();
+            for (DocumentStudentEntity documentStudentEntityListNewDocumentStudentEntityToAttach : documentStudentEntityListNew) {
+                documentStudentEntityListNewDocumentStudentEntityToAttach = em.getReference(documentStudentEntityListNewDocumentStudentEntityToAttach.getClass(), documentStudentEntityListNewDocumentStudentEntityToAttach.getId());
+                attachedDocumentStudentEntityListNew.add(documentStudentEntityListNewDocumentStudentEntityToAttach);
             }
-            documentStudentListNew = attachedDocumentStudentListNew;
-            curriculumEntity.setDocumentStudentList(documentStudentListNew);
+            documentStudentEntityListNew = attachedDocumentStudentEntityListNew;
+            curriculumEntity.setDocumentStudentEntityList(documentStudentEntityListNew);
             curriculumEntity = em.merge(curriculumEntity);
             if (programIdOld != null && !programIdOld.equals(programIdNew)) {
-                programIdOld.getCurriculumList().remove(curriculumEntity);
+                programIdOld.getCurriculumEntityList().remove(curriculumEntity);
                 programIdOld = em.merge(programIdOld);
             }
             if (programIdNew != null && !programIdNew.equals(programIdOld)) {
-                programIdNew.getCurriculumList().add(curriculumEntity);
+                programIdNew.getCurriculumEntityList().add(curriculumEntity);
                 programIdNew = em.merge(programIdNew);
             }
-            for (DocumentStudentEntity documentStudentListNewDocumentStudentEntity : documentStudentListNew) {
-                if (!documentStudentListOld.contains(documentStudentListNewDocumentStudentEntity)) {
-                    CurriculumEntity oldCurriculumIdOfDocumentStudentListNewDocumentStudentEntity = documentStudentListNewDocumentStudentEntity.getCurriculumId();
-                    documentStudentListNewDocumentStudentEntity.setCurriculumId(curriculumEntity);
-                    documentStudentListNewDocumentStudentEntity = em.merge(documentStudentListNewDocumentStudentEntity);
-                    if (oldCurriculumIdOfDocumentStudentListNewDocumentStudentEntity != null && !oldCurriculumIdOfDocumentStudentListNewDocumentStudentEntity.equals(curriculumEntity)) {
-                        oldCurriculumIdOfDocumentStudentListNewDocumentStudentEntity.getDocumentStudentList().remove(documentStudentListNewDocumentStudentEntity);
-                        oldCurriculumIdOfDocumentStudentListNewDocumentStudentEntity = em.merge(oldCurriculumIdOfDocumentStudentListNewDocumentStudentEntity);
+            for (DocumentStudentEntity documentStudentEntityListNewDocumentStudentEntity : documentStudentEntityListNew) {
+                if (!documentStudentEntityListOld.contains(documentStudentEntityListNewDocumentStudentEntity)) {
+                    CurriculumEntity oldCurriculumIdOfDocumentStudentEntityListNewDocumentStudentEntity = documentStudentEntityListNewDocumentStudentEntity.getCurriculumId();
+                    documentStudentEntityListNewDocumentStudentEntity.setCurriculumId(curriculumEntity);
+                    documentStudentEntityListNewDocumentStudentEntity = em.merge(documentStudentEntityListNewDocumentStudentEntity);
+                    if (oldCurriculumIdOfDocumentStudentEntityListNewDocumentStudentEntity != null && !oldCurriculumIdOfDocumentStudentEntityListNewDocumentStudentEntity.equals(curriculumEntity)) {
+                        oldCurriculumIdOfDocumentStudentEntityListNewDocumentStudentEntity.getDocumentStudentEntityList().remove(documentStudentEntityListNewDocumentStudentEntity);
+                        oldCurriculumIdOfDocumentStudentEntityListNewDocumentStudentEntity = em.merge(oldCurriculumIdOfDocumentStudentEntityListNewDocumentStudentEntity);
                     }
                 }
             }
@@ -165,19 +165,19 @@ public class CurriculumEntityJpaController implements Serializable {
                 throw new NonexistentEntityException("The curriculumEntity with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
-            List<DocumentStudentEntity> documentStudentListOrphanCheck = curriculumEntity.getDocumentStudentList();
-            for (DocumentStudentEntity documentStudentListOrphanCheckDocumentStudentEntity : documentStudentListOrphanCheck) {
+            List<DocumentStudentEntity> documentStudentEntityListOrphanCheck = curriculumEntity.getDocumentStudentEntityList();
+            for (DocumentStudentEntity documentStudentEntityListOrphanCheckDocumentStudentEntity : documentStudentEntityListOrphanCheck) {
                 if (illegalOrphanMessages == null) {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
-                illegalOrphanMessages.add("This CurriculumEntity (" + curriculumEntity + ") cannot be destroyed since the DocumentStudentEntity " + documentStudentListOrphanCheckDocumentStudentEntity + " in its documentStudentList field has a non-nullable curriculumId field.");
+                illegalOrphanMessages.add("This CurriculumEntity (" + curriculumEntity + ") cannot be destroyed since the DocumentStudentEntity " + documentStudentEntityListOrphanCheckDocumentStudentEntity + " in its documentStudentEntityList field has a non-nullable curriculumId field.");
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
             ProgramEntity programId = curriculumEntity.getProgramId();
             if (programId != null) {
-                programId.getCurriculumList().remove(curriculumEntity);
+                programId.getCurriculumEntityList().remove(curriculumEntity);
                 programId = em.merge(programId);
             }
             em.remove(curriculumEntity);

@@ -19,20 +19,23 @@ import javax.persistence.Table;
 
 /**
  *
- * @author hiepnhse61627
+ * @author Rem
  */
 @Entity
-@Table(name = "DocType", catalog = "CapstoneProject", schema = "dbo")
+@Table(name = "DocType")
+@NamedQueries({
+    @NamedQuery(name = "DocTypeEntity.findAll", query = "SELECT d FROM DocTypeEntity d")})
 public class DocTypeEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "Id", nullable = false)
+    @Basic(optional = false)
+    @Column(name = "Id")
     private Integer id;
-    @Column(name = "Name", length = 50)
+    @Column(name = "Name")
     private String name;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "docTypeId")
-    private List<DocumentEntity> documentList;
+    private List<DocumentEntity> documentEntityList;
 
     public DocTypeEntity() {
     }
@@ -57,12 +60,12 @@ public class DocTypeEntity implements Serializable {
         this.name = name;
     }
 
-    public List<DocumentEntity> getDocumentList() {
-        return documentList;
+    public List<DocumentEntity> getDocumentEntityList() {
+        return documentEntityList;
     }
 
-    public void setDocumentList(List<DocumentEntity> documentList) {
-        this.documentList = documentList;
+    public void setDocumentEntityList(List<DocumentEntity> documentEntityList) {
+        this.documentEntityList = documentEntityList;
     }
 
     @Override
@@ -87,7 +90,7 @@ public class DocTypeEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.DocType[ id=" + id + " ]";
+        return "entities.DocTypeEntity[ id=" + id + " ]";
     }
     
 }

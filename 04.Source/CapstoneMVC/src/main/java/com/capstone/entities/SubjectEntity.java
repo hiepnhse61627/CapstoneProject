@@ -6,47 +6,50 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 /**
  *
- * @author hiepnhse61627
+ * @author Rem
  */
 @Entity
-@Table(name = "Subject", catalog = "CapstoneProject", schema = "dbo")
+@Table(name = "Subject")
+@NamedQueries({
+    @NamedQuery(name = "SubjectEntity.findAll", query = "SELECT s FROM SubjectEntity s")})
 public class SubjectEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "Id", nullable = false, length = 50)
+    @Basic(optional = false)
+    @Column(name = "Id")
     private String id;
-    @Column(name = "Name", length = 255)
+    @Column(name = "Name")
     private String name;
-    @Column(name = "Abbreviation", length = 255)
+    @Column(name = "Abbreviation")
     private String abbreviation;
     @Column(name = "Credits")
     private Integer credits;
-    @OneToMany(mappedBy = "prequisiteId")
-    private List<SubjectEntity> subjectList;
-    @JoinColumn(name = "PrequisiteId", referencedColumnName = "Id")
-    @ManyToOne(cascade = CascadeType.ALL)
-    private SubjectEntity prequisiteId;
-    @JoinColumn(name = "Id", referencedColumnName = "SubjectId", nullable = false, insertable = false, updatable = false)
+    @JoinTable(name = "Prequisite", joinColumns = {
+        @JoinColumn(name = "SubId", referencedColumnName = "Id")}, inverseJoinColumns = {
+        @JoinColumn(name = "PrequisiteSubId", referencedColumnName = "Id")})
+    @ManyToMany
+    private List<SubjectEntity> subjectEntityList;
+    @ManyToMany(mappedBy = "subjectEntityList")
+    private List<SubjectEntity> subjectEntityList1;
+    @JoinColumn(name = "Id", referencedColumnName = "SubjectId", insertable = false, updatable = false)
     @OneToOne(optional = false)
-    private SubjectMarkComponentEntity subjectMarkComponent;
-
-    @Transient
-    private String prerequisiteCode;
-
-    public String getPrerequisiteCode() {
-        return this.prerequisiteCode;
-    }
-
-    public void setPrerequisiteCode(String prerequisiteCode) {
-        this.prerequisiteCode = prerequisiteCode;
-    }
+    private SubjectMarkComponentEntity subjectMarkComponentEntity;
 
     public SubjectEntity() {
     }
@@ -87,35 +90,28 @@ public class SubjectEntity implements Serializable {
         this.credits = credits;
     }
 
-    public List<SubjectEntity> getSubjectList() {
-        return subjectList;
+    public List<SubjectEntity> getSubjectEntityList() {
+        return subjectEntityList;
     }
 
-    public void setSubjectList(List<SubjectEntity> subjectList) {
-        this.subjectList = subjectList;
+    public void setSubjectEntityList(List<SubjectEntity> subjectEntityList) {
+        this.subjectEntityList = subjectEntityList;
     }
 
-    public SubjectEntity getPrequisiteId() {
-        return prequisiteId;
+    public List<SubjectEntity> getSubjectEntityList1() {
+        return subjectEntityList1;
     }
 
-    public void setPrequisiteId(SubjectEntity prequisiteId) {
-        this.prequisiteId = prequisiteId;
+    public void setSubjectEntityList1(List<SubjectEntity> subjectEntityList1) {
+        this.subjectEntityList1 = subjectEntityList1;
     }
 
-    public SubjectMarkComponentEntity getSubjectMarkComponent() {
-        return subjectMarkComponent;
+    public SubjectMarkComponentEntity getSubjectMarkComponentEntity() {
+        return subjectMarkComponentEntity;
     }
 
-    public void setSubjectMarkComponent(SubjectMarkComponentEntity subjectMarkComponent) {
-        this.subjectMarkComponent = subjectMarkComponent;
-    }
-
-    public void addChildSubject(SubjectEntity subject) {
-        if (this.subjectList == null) {
-            this.subjectList = new ArrayList<>();
-        }
-        this.subjectList.add(subject);
+    public void setSubjectMarkComponentEntity(SubjectMarkComponentEntity subjectMarkComponentEntity) {
+        this.subjectMarkComponentEntity = subjectMarkComponentEntity;
     }
 
     @Override
@@ -140,7 +136,7 @@ public class SubjectEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.Subject[ id=" + id + " ]";
+        return "entities.SubjectEntity[ id=" + id + " ]";
     }
     
 }

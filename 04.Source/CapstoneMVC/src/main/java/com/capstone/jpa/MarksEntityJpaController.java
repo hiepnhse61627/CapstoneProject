@@ -5,6 +5,8 @@
  */
 package com.capstone.jpa;
 
+import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
@@ -15,15 +17,13 @@ import com.capstone.entities.MarksEntity;
 import com.capstone.entities.RealSemesterEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.entities.SubjectMarkComponentEntity;
-import com.capstone.jpa.exceptions.NonexistentEntityException;
-import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 /**
  *
- * @author hiepnhse61627
+ * @author Rem
  */
 public class MarksEntityJpaController implements Serializable {
 
@@ -63,19 +63,19 @@ public class MarksEntityJpaController implements Serializable {
             }
             em.persist(marksEntity);
             if (courseId != null) {
-                courseId.getMarksList().add(marksEntity);
+                courseId.getMarksEntityList().add(marksEntity);
                 courseId = em.merge(courseId);
             }
             if (semesterId != null) {
-                semesterId.getMarksList().add(marksEntity);
+                semesterId.getMarksEntityList().add(marksEntity);
                 semesterId = em.merge(semesterId);
             }
             if (studentId != null) {
-                studentId.getMarksList().add(marksEntity);
+                studentId.getMarksEntityList().add(marksEntity);
                 studentId = em.merge(studentId);
             }
             if (subjectId != null) {
-                subjectId.getMarksList().add(marksEntity);
+                subjectId.getMarksEntityList().add(marksEntity);
                 subjectId = em.merge(subjectId);
             }
             em.getTransaction().commit();
@@ -123,35 +123,35 @@ public class MarksEntityJpaController implements Serializable {
             }
             marksEntity = em.merge(marksEntity);
             if (courseIdOld != null && !courseIdOld.equals(courseIdNew)) {
-                courseIdOld.getMarksList().remove(marksEntity);
+                courseIdOld.getMarksEntityList().remove(marksEntity);
                 courseIdOld = em.merge(courseIdOld);
             }
             if (courseIdNew != null && !courseIdNew.equals(courseIdOld)) {
-                courseIdNew.getMarksList().add(marksEntity);
+                courseIdNew.getMarksEntityList().add(marksEntity);
                 courseIdNew = em.merge(courseIdNew);
             }
             if (semesterIdOld != null && !semesterIdOld.equals(semesterIdNew)) {
-                semesterIdOld.getMarksList().remove(marksEntity);
+                semesterIdOld.getMarksEntityList().remove(marksEntity);
                 semesterIdOld = em.merge(semesterIdOld);
             }
             if (semesterIdNew != null && !semesterIdNew.equals(semesterIdOld)) {
-                semesterIdNew.getMarksList().add(marksEntity);
+                semesterIdNew.getMarksEntityList().add(marksEntity);
                 semesterIdNew = em.merge(semesterIdNew);
             }
             if (studentIdOld != null && !studentIdOld.equals(studentIdNew)) {
-                studentIdOld.getMarksList().remove(marksEntity);
+                studentIdOld.getMarksEntityList().remove(marksEntity);
                 studentIdOld = em.merge(studentIdOld);
             }
             if (studentIdNew != null && !studentIdNew.equals(studentIdOld)) {
-                studentIdNew.getMarksList().add(marksEntity);
+                studentIdNew.getMarksEntityList().add(marksEntity);
                 studentIdNew = em.merge(studentIdNew);
             }
             if (subjectIdOld != null && !subjectIdOld.equals(subjectIdNew)) {
-                subjectIdOld.getMarksList().remove(marksEntity);
+                subjectIdOld.getMarksEntityList().remove(marksEntity);
                 subjectIdOld = em.merge(subjectIdOld);
             }
             if (subjectIdNew != null && !subjectIdNew.equals(subjectIdOld)) {
-                subjectIdNew.getMarksList().add(marksEntity);
+                subjectIdNew.getMarksEntityList().add(marksEntity);
                 subjectIdNew = em.merge(subjectIdNew);
             }
             em.getTransaction().commit();
@@ -185,22 +185,22 @@ public class MarksEntityJpaController implements Serializable {
             }
             CourseEntity courseId = marksEntity.getCourseId();
             if (courseId != null) {
-                courseId.getMarksList().remove(marksEntity);
+                courseId.getMarksEntityList().remove(marksEntity);
                 courseId = em.merge(courseId);
             }
             RealSemesterEntity semesterId = marksEntity.getSemesterId();
             if (semesterId != null) {
-                semesterId.getMarksList().remove(marksEntity);
+                semesterId.getMarksEntityList().remove(marksEntity);
                 semesterId = em.merge(semesterId);
             }
             StudentEntity studentId = marksEntity.getStudentId();
             if (studentId != null) {
-                studentId.getMarksList().remove(marksEntity);
+                studentId.getMarksEntityList().remove(marksEntity);
                 studentId = em.merge(studentId);
             }
             SubjectMarkComponentEntity subjectId = marksEntity.getSubjectId();
             if (subjectId != null) {
-                subjectId.getMarksList().remove(marksEntity);
+                subjectId.getMarksEntityList().remove(marksEntity);
                 subjectId = em.merge(subjectId);
             }
             em.remove(marksEntity);

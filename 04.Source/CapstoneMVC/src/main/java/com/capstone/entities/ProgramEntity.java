@@ -19,21 +19,24 @@ import javax.persistence.Table;
 
 /**
  *
- * @author hiepnhse61627
+ * @author Rem
  */
 @Entity
-@Table(name = "Program", catalog = "CapstoneProject", schema = "dbo")
+@Table(name = "Program")
+@NamedQueries({
+    @NamedQuery(name = "ProgramEntity.findAll", query = "SELECT p FROM ProgramEntity p")})
 public class ProgramEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "Id", nullable = false)
+    @Basic(optional = false)
+    @Column(name = "Id")
     private Integer id;
     @Basic(optional = false)
-    @Column(name = "Name", nullable = false, length = 10)
+    @Column(name = "Name")
     private String name;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "programId")
-    private List<CurriculumEntity> curriculumList;
+    private List<CurriculumEntity> curriculumEntityList;
 
     public ProgramEntity() {
     }
@@ -63,12 +66,12 @@ public class ProgramEntity implements Serializable {
         this.name = name;
     }
 
-    public List<CurriculumEntity> getCurriculumList() {
-        return curriculumList;
+    public List<CurriculumEntity> getCurriculumEntityList() {
+        return curriculumEntityList;
     }
 
-    public void setCurriculumList(List<CurriculumEntity> curriculumList) {
-        this.curriculumList = curriculumList;
+    public void setCurriculumEntityList(List<CurriculumEntity> curriculumEntityList) {
+        this.curriculumEntityList = curriculumEntityList;
     }
 
     @Override
@@ -93,7 +96,7 @@ public class ProgramEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.Program[ id=" + id + " ]";
+        return "entities.ProgramEntity[ id=" + id + " ]";
     }
     
 }

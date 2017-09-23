@@ -110,7 +110,17 @@ public class SubjectController {
                                     preCode = preCode.split("/")[0];
                                 }
 
-                                en.setPrerequisiteCode(preCode);
+                                List<SubjectEntity> prequisites = new ArrayList<>();
+                                SubjectEntity pre = new SubjectEntity();
+                                pre.setId(en.getId());
+                                prequisites.add(pre);
+                                en.setSubjectEntityList(prequisites);
+
+                                prequisites = new ArrayList<>();
+                                pre = new SubjectEntity();
+                                pre.setId(preCode);
+                                prequisites.add(pre);
+                                en.setSubjectEntityList1(prequisites);
                             }
                         }
                     }
@@ -122,15 +132,15 @@ public class SubjectController {
             }
             is.close();
 
-            for (SubjectEntity subject : columndata) {
-                for (SubjectEntity preSubject : columndata) {
-                    if (subject.getPrerequisiteCode() != null
-                            && subject.getPrerequisiteCode().equals(preSubject.getPrerequisiteCode())) {
-                        subject.setPrequisiteId(preSubject);
-                        preSubject.addChildSubject(subject);
-                    }
-                }
-            }
+//            for (SubjectEntity subject : columndata) {
+//                for (SubjectEntity preSubject : columndata) {
+//                    if (subject.getSubjectEntityList() != null
+//                            && subject.getPrerequisiteCode().equals(preSubject.getPrerequisiteCode())) {
+//                        subject.setPrequisiteId(preSubject);
+//                        preSubject.addChildSubject(subject);
+//                    }
+//                }
+//            }
 
             subjectService.insertSubjectList(columndata);
         } catch (Exception e) {

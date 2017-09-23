@@ -7,25 +7,34 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 /**
  *
- * @author hiepnhse61627
+ * @author Rem
  */
 @Entity
-@Table(name = "Course", catalog = "CapstoneProject", schema = "dbo")
+@Table(name = "Course")
+@NamedQueries({
+    @NamedQuery(name = "CourseEntity.findAll", query = "SELECT c FROM CourseEntity c")})
 public class CourseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "Id", nullable = false)
-    @GeneratedValue (strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "Id")
     private Integer id;
     @Column(name = "Class")
     private String class1;
     @OneToMany(mappedBy = "courseId")
-    private List<MarksEntity> marksList;
+    private List<MarksEntity> marksEntityList;
 
     public CourseEntity() {
     }
@@ -50,12 +59,12 @@ public class CourseEntity implements Serializable {
         this.class1 = class1;
     }
 
-    public List<MarksEntity> getMarksList() {
-        return marksList;
+    public List<MarksEntity> getMarksEntityList() {
+        return marksEntityList;
     }
 
-    public void setMarksList(List<MarksEntity> marksList) {
-        this.marksList = marksList;
+    public void setMarksEntityList(List<MarksEntity> marksEntityList) {
+        this.marksEntityList = marksEntityList;
     }
 
     @Override
@@ -80,7 +89,7 @@ public class CourseEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.Course[ id=" + id + " ]";
+        return "entities.CourseEntity[ id=" + id + " ]";
     }
     
 }

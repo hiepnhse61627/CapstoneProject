@@ -5,6 +5,8 @@
  */
 package com.capstone.jpa;
 
+import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
@@ -14,15 +16,13 @@ import com.capstone.entities.CurriculumEntity;
 import com.capstone.entities.DocumentEntity;
 import com.capstone.entities.DocumentStudentEntity;
 import com.capstone.entities.StudentEntity;
-import com.capstone.jpa.exceptions.NonexistentEntityException;
-import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 /**
  *
- * @author hiepnhse61627
+ * @author Rem
  */
 public class DocumentStudentEntityJpaController implements Serializable {
 
@@ -57,15 +57,15 @@ public class DocumentStudentEntityJpaController implements Serializable {
             }
             em.persist(documentStudentEntity);
             if (curriculumId != null) {
-                curriculumId.getDocumentStudentList().add(documentStudentEntity);
+                curriculumId.getDocumentStudentEntityList().add(documentStudentEntity);
                 curriculumId = em.merge(curriculumId);
             }
             if (documentId != null) {
-                documentId.getDocumentStudentList().add(documentStudentEntity);
+                documentId.getDocumentStudentEntityList().add(documentStudentEntity);
                 documentId = em.merge(documentId);
             }
             if (studentId != null) {
-                studentId.getDocumentStudentList().add(documentStudentEntity);
+                studentId.getDocumentStudentEntityList().add(documentStudentEntity);
                 studentId = em.merge(studentId);
             }
             em.getTransaction().commit();
@@ -107,27 +107,27 @@ public class DocumentStudentEntityJpaController implements Serializable {
             }
             documentStudentEntity = em.merge(documentStudentEntity);
             if (curriculumIdOld != null && !curriculumIdOld.equals(curriculumIdNew)) {
-                curriculumIdOld.getDocumentStudentList().remove(documentStudentEntity);
+                curriculumIdOld.getDocumentStudentEntityList().remove(documentStudentEntity);
                 curriculumIdOld = em.merge(curriculumIdOld);
             }
             if (curriculumIdNew != null && !curriculumIdNew.equals(curriculumIdOld)) {
-                curriculumIdNew.getDocumentStudentList().add(documentStudentEntity);
+                curriculumIdNew.getDocumentStudentEntityList().add(documentStudentEntity);
                 curriculumIdNew = em.merge(curriculumIdNew);
             }
             if (documentIdOld != null && !documentIdOld.equals(documentIdNew)) {
-                documentIdOld.getDocumentStudentList().remove(documentStudentEntity);
+                documentIdOld.getDocumentStudentEntityList().remove(documentStudentEntity);
                 documentIdOld = em.merge(documentIdOld);
             }
             if (documentIdNew != null && !documentIdNew.equals(documentIdOld)) {
-                documentIdNew.getDocumentStudentList().add(documentStudentEntity);
+                documentIdNew.getDocumentStudentEntityList().add(documentStudentEntity);
                 documentIdNew = em.merge(documentIdNew);
             }
             if (studentIdOld != null && !studentIdOld.equals(studentIdNew)) {
-                studentIdOld.getDocumentStudentList().remove(documentStudentEntity);
+                studentIdOld.getDocumentStudentEntityList().remove(documentStudentEntity);
                 studentIdOld = em.merge(studentIdOld);
             }
             if (studentIdNew != null && !studentIdNew.equals(studentIdOld)) {
-                studentIdNew.getDocumentStudentList().add(documentStudentEntity);
+                studentIdNew.getDocumentStudentEntityList().add(documentStudentEntity);
                 studentIdNew = em.merge(studentIdNew);
             }
             em.getTransaction().commit();
@@ -161,17 +161,17 @@ public class DocumentStudentEntityJpaController implements Serializable {
             }
             CurriculumEntity curriculumId = documentStudentEntity.getCurriculumId();
             if (curriculumId != null) {
-                curriculumId.getDocumentStudentList().remove(documentStudentEntity);
+                curriculumId.getDocumentStudentEntityList().remove(documentStudentEntity);
                 curriculumId = em.merge(curriculumId);
             }
             DocumentEntity documentId = documentStudentEntity.getDocumentId();
             if (documentId != null) {
-                documentId.getDocumentStudentList().remove(documentStudentEntity);
+                documentId.getDocumentStudentEntityList().remove(documentStudentEntity);
                 documentId = em.merge(documentId);
             }
             StudentEntity studentId = documentStudentEntity.getStudentId();
             if (studentId != null) {
-                studentId.getDocumentStudentList().remove(documentStudentEntity);
+                studentId.getDocumentStudentEntityList().remove(documentStudentEntity);
                 studentId = em.merge(studentId);
             }
             em.remove(documentStudentEntity);

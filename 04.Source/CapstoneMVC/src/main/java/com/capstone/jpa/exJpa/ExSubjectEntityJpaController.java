@@ -44,8 +44,8 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
                 SubjectMarkComponentEntity entity = new SubjectMarkComponentEntity();
                 entity.setSubjectId(en.getId());
 
-                en.setSubjectMarkComponent(entity);
-                entity.setSubject(en);
+                en.setSubjectMarkComponentEntity(entity);
+                entity.setSubjectEntity(en);
 
                 manager.persist(en);
                 manager.persist(entity);

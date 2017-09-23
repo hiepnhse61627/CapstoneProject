@@ -31,12 +31,6 @@ import java.util.stream.Collectors;
 @Controller
 public class StudentController {
 
-    private ArrayList<String> seasons = new ArrayList<String>() {{
-        add("spring");
-        add("summer");
-        add("fall");
-    }};
-
     @RequestMapping("/create")
     public String Index() {
         return "CreateNewStudent";
@@ -128,26 +122,7 @@ public class StudentController {
                 }
 
                 filtered = set.stream().filter(a -> a.getSubjectId() == null).collect(Collectors.toList());
-                filtered.forEach(c -> {
-                    set2.add(c);
-                });
-
-                set2.sort(Comparator.comparingInt(a -> {
-                    String removewhite = ((MarksEntity) a).getSemesterId().getSemester().replaceAll("\\s+", "");
-                    String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
-                    Pattern pattern = Pattern.compile("^\\D*(\\d)");
-                    Matcher matcher = pattern.matcher(removeline);
-                    matcher.find();
-                    return Integer.parseInt(removeline.substring(matcher.start(1), removeline.length()));
-                }).thenComparingInt(a -> {
-                    String removewhite = ((MarksEntity) a).getSemesterId().getSemester().replaceAll("\\s+", "");
-                    String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
-                    Pattern pattern = Pattern.compile("^\\D*(\\d)");
-                    Matcher matcher = pattern.matcher(removeline);
-                    matcher.find();
-                    String season = removeline.substring(0, matcher.start(1)).toLowerCase();
-                    return seasons.indexOf(season);
-                }));
+                filtered.forEach(c -> set2.add(c));
 
                 set3 = set2.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
             }

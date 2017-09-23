@@ -20,22 +20,25 @@ import javax.persistence.Table;
 
 /**
  *
- * @author hiepnhse61627
+ * @author Rem
  */
 @Entity
-@Table(name = "Subject_MarkComponent", catalog = "CapstoneProject", schema = "dbo")
+@Table(name = "Subject_MarkComponent")
+@NamedQueries({
+    @NamedQuery(name = "SubjectMarkComponentEntity.findAll", query = "SELECT s FROM SubjectMarkComponentEntity s")})
 public class SubjectMarkComponentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "SubjectId", nullable = false, length = 50)
+    @Basic(optional = false)
+    @Column(name = "SubjectId")
     private String subjectId;
     @Column(name = "ComponentPercent")
     private Integer componentPercent;
     @OneToMany(mappedBy = "subjectId")
-    private List<MarksEntity> marksList;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "subjectMarkComponent")
-    private SubjectEntity subject;
+    private List<MarksEntity> marksEntityList;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "subjectMarkComponentEntity")
+    private SubjectEntity subjectEntity;
 
     public SubjectMarkComponentEntity() {
     }
@@ -60,20 +63,20 @@ public class SubjectMarkComponentEntity implements Serializable {
         this.componentPercent = componentPercent;
     }
 
-    public List<MarksEntity> getMarksList() {
-        return marksList;
+    public List<MarksEntity> getMarksEntityList() {
+        return marksEntityList;
     }
 
-    public void setMarksList(List<MarksEntity> marksList) {
-        this.marksList = marksList;
+    public void setMarksEntityList(List<MarksEntity> marksEntityList) {
+        this.marksEntityList = marksEntityList;
     }
 
-    public SubjectEntity getSubject() {
-        return subject;
+    public SubjectEntity getSubjectEntity() {
+        return subjectEntity;
     }
 
-    public void setSubject(SubjectEntity subject) {
-        this.subject = subject;
+    public void setSubjectEntity(SubjectEntity subjectEntity) {
+        this.subjectEntity = subjectEntity;
     }
 
     @Override
@@ -98,7 +101,7 @@ public class SubjectMarkComponentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.SubjectMarkComponent[ subjectId=" + subjectId + " ]";
+        return "entities.SubjectMarkComponentEntity[ subjectId=" + subjectId + " ]";
     }
     
 }

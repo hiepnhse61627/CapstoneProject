@@ -6,25 +6,35 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 
 /**
  *
- * @author hiepnhse61627
+ * @author Rem
  */
 @Entity
-@Table(name = "Marks", catalog = "CapstoneProject", schema = "dbo")
+@Table(name = "Marks")
+@NamedQueries({
+    @NamedQuery(name = "MarksEntity.findAll", query = "SELECT m FROM MarksEntity m")})
 public class MarksEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "Id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "Id")
     private Integer id;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
-    @Column(name = "AverageMark", precision = 53)
+    @Column(name = "AverageMark")
     private Double averageMark;
-    @Column(name = "Status", length = 50)
+    @Column(name = "Status")
     private String status;
     @JoinColumn(name = "CourseId", referencedColumnName = "Id")
     @ManyToOne
@@ -124,7 +134,7 @@ public class MarksEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.Marks[ id=" + id + " ]";
+        return "entities.MarksEntity[ id=" + id + " ]";
     }
     
 }

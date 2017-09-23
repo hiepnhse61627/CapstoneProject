@@ -88,19 +88,19 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                 }
 
                 if (courseId != null) {
-                    courseId.getMarksList().add(marksEntity);
+                    courseId.getMarksEntityList().add(marksEntity);
                     courseId = em.merge(courseId);
                 }
                 if (semesterId != null) {
-                    semesterId.getMarksList().add(marksEntity);
+                    semesterId.getMarksEntityList().add(marksEntity);
                     semesterId = em.merge(semesterId);
                 }
                 if (studentId != null) {
-                    studentId.getMarksList().add(marksEntity);
+                    studentId.getMarksEntityList().add(marksEntity);
                     studentId = em.merge(studentId);
                 }
                 if (subjectId != null) {
-                    subjectId.getMarksList().add(marksEntity);
+                    subjectId.getMarksEntityList().add(marksEntity);
                     subjectId = em.merge(subjectId);
 
                 }

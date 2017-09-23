@@ -7,31 +7,40 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 /**
  *
- * @author hiepnhse61627
+ * @author Rem
  */
 @Entity
-@Table(name = "Student", catalog = "CapstoneProject", schema = "dbo", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"RollNumber"})})
+@Table(name = "Student")
+@NamedQueries({
+    @NamedQuery(name = "StudentEntity.findAll", query = "SELECT s FROM StudentEntity s")})
 public class StudentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "ID", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Basic(optional = false)
+    @Column(name = "ID")
     private Integer id;
     @Basic(optional = false)
-    @Column(name = "RollNumber", nullable = false, length = 50)
+    @Column(name = "RollNumber")
     private String rollNumber;
-    @Column(name = "FullName", length = 150)
+    @Column(name = "FullName")
     private String fullName;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
-    private List<DocumentStudentEntity> documentStudentList;
+    private List<DocumentStudentEntity> documentStudentEntityList;
     @OneToMany(mappedBy = "studentId")
-    private List<MarksEntity> marksList;
+    private List<MarksEntity> marksEntityList;
 
     public StudentEntity() {
     }
@@ -69,20 +78,20 @@ public class StudentEntity implements Serializable {
         this.fullName = fullName;
     }
 
-    public List<DocumentStudentEntity> getDocumentStudentList() {
-        return documentStudentList;
+    public List<DocumentStudentEntity> getDocumentStudentEntityList() {
+        return documentStudentEntityList;
     }
 
-    public void setDocumentStudentList(List<DocumentStudentEntity> documentStudentList) {
-        this.documentStudentList = documentStudentList;
+    public void setDocumentStudentEntityList(List<DocumentStudentEntity> documentStudentEntityList) {
+        this.documentStudentEntityList = documentStudentEntityList;
     }
 
-    public List<MarksEntity> getMarksList() {
-        return marksList;
+    public List<MarksEntity> getMarksEntityList() {
+        return marksEntityList;
     }
 
-    public void setMarksList(List<MarksEntity> marksList) {
-        this.marksList = marksList;
+    public void setMarksEntityList(List<MarksEntity> marksEntityList) {
+        this.marksEntityList = marksEntityList;
     }
 
     @Override
@@ -107,7 +116,7 @@ public class StudentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.Student[ id=" + id + " ]";
+        return "entities.StudentEntity[ id=" + id + " ]";
     }
     
 }

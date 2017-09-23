@@ -5,6 +5,9 @@
  */
 package com.capstone.jpa;
 
+import com.capstone.jpa.exceptions.IllegalOrphanException;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
@@ -15,15 +18,12 @@ import java.util.ArrayList;
 import java.util.List;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
-import com.capstone.jpa.exceptions.IllegalOrphanException;
-import com.capstone.jpa.exceptions.NonexistentEntityException;
-import com.capstone.jpa.exceptions.PreexistingEntityException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 /**
  *
- * @author hiepnhse61627
+ * @author Rem
  */
 public class StudentEntityJpaController implements Serializable {
 
@@ -37,45 +37,45 @@ public class StudentEntityJpaController implements Serializable {
     }
 
     public void create(StudentEntity studentEntity) throws PreexistingEntityException, Exception {
-        if (studentEntity.getDocumentStudentList() == null) {
-            studentEntity.setDocumentStudentList(new ArrayList<DocumentStudentEntity>());
+        if (studentEntity.getDocumentStudentEntityList() == null) {
+            studentEntity.setDocumentStudentEntityList(new ArrayList<DocumentStudentEntity>());
         }
-        if (studentEntity.getMarksList() == null) {
-            studentEntity.setMarksList(new ArrayList<MarksEntity>());
+        if (studentEntity.getMarksEntityList() == null) {
+            studentEntity.setMarksEntityList(new ArrayList<MarksEntity>());
         }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            List<DocumentStudentEntity> attachedDocumentStudentList = new ArrayList<DocumentStudentEntity>();
-            for (DocumentStudentEntity documentStudentListDocumentStudentEntityToAttach : studentEntity.getDocumentStudentList()) {
-                documentStudentListDocumentStudentEntityToAttach = em.getReference(documentStudentListDocumentStudentEntityToAttach.getClass(), documentStudentListDocumentStudentEntityToAttach.getId());
-                attachedDocumentStudentList.add(documentStudentListDocumentStudentEntityToAttach);
+            List<DocumentStudentEntity> attachedDocumentStudentEntityList = new ArrayList<DocumentStudentEntity>();
+            for (DocumentStudentEntity documentStudentEntityListDocumentStudentEntityToAttach : studentEntity.getDocumentStudentEntityList()) {
+                documentStudentEntityListDocumentStudentEntityToAttach = em.getReference(documentStudentEntityListDocumentStudentEntityToAttach.getClass(), documentStudentEntityListDocumentStudentEntityToAttach.getId());
+                attachedDocumentStudentEntityList.add(documentStudentEntityListDocumentStudentEntityToAttach);
             }
-            studentEntity.setDocumentStudentList(attachedDocumentStudentList);
-            List<MarksEntity> attachedMarksList = new ArrayList<MarksEntity>();
-            for (MarksEntity marksListMarksEntityToAttach : studentEntity.getMarksList()) {
-                marksListMarksEntityToAttach = em.getReference(marksListMarksEntityToAttach.getClass(), marksListMarksEntityToAttach.getId());
-                attachedMarksList.add(marksListMarksEntityToAttach);
+            studentEntity.setDocumentStudentEntityList(attachedDocumentStudentEntityList);
+            List<MarksEntity> attachedMarksEntityList = new ArrayList<MarksEntity>();
+            for (MarksEntity marksEntityListMarksEntityToAttach : studentEntity.getMarksEntityList()) {
+                marksEntityListMarksEntityToAttach = em.getReference(marksEntityListMarksEntityToAttach.getClass(), marksEntityListMarksEntityToAttach.getId());
+                attachedMarksEntityList.add(marksEntityListMarksEntityToAttach);
             }
-            studentEntity.setMarksList(attachedMarksList);
+            studentEntity.setMarksEntityList(attachedMarksEntityList);
             em.persist(studentEntity);
-            for (DocumentStudentEntity documentStudentListDocumentStudentEntity : studentEntity.getDocumentStudentList()) {
-                StudentEntity oldStudentIdOfDocumentStudentListDocumentStudentEntity = documentStudentListDocumentStudentEntity.getStudentId();
-                documentStudentListDocumentStudentEntity.setStudentId(studentEntity);
-                documentStudentListDocumentStudentEntity = em.merge(documentStudentListDocumentStudentEntity);
-                if (oldStudentIdOfDocumentStudentListDocumentStudentEntity != null) {
-                    oldStudentIdOfDocumentStudentListDocumentStudentEntity.getDocumentStudentList().remove(documentStudentListDocumentStudentEntity);
-                    oldStudentIdOfDocumentStudentListDocumentStudentEntity = em.merge(oldStudentIdOfDocumentStudentListDocumentStudentEntity);
+            for (DocumentStudentEntity documentStudentEntityListDocumentStudentEntity : studentEntity.getDocumentStudentEntityList()) {
+                StudentEntity oldStudentIdOfDocumentStudentEntityListDocumentStudentEntity = documentStudentEntityListDocumentStudentEntity.getStudentId();
+                documentStudentEntityListDocumentStudentEntity.setStudentId(studentEntity);
+                documentStudentEntityListDocumentStudentEntity = em.merge(documentStudentEntityListDocumentStudentEntity);
+                if (oldStudentIdOfDocumentStudentEntityListDocumentStudentEntity != null) {
+                    oldStudentIdOfDocumentStudentEntityListDocumentStudentEntity.getDocumentStudentEntityList().remove(documentStudentEntityListDocumentStudentEntity);
+                    oldStudentIdOfDocumentStudentEntityListDocumentStudentEntity = em.merge(oldStudentIdOfDocumentStudentEntityListDocumentStudentEntity);
                 }
             }
-            for (MarksEntity marksListMarksEntity : studentEntity.getMarksList()) {
-                StudentEntity oldStudentIdOfMarksListMarksEntity = marksListMarksEntity.getStudentId();
-                marksListMarksEntity.setStudentId(studentEntity);
-                marksListMarksEntity = em.merge(marksListMarksEntity);
-                if (oldStudentIdOfMarksListMarksEntity != null) {
-                    oldStudentIdOfMarksListMarksEntity.getMarksList().remove(marksListMarksEntity);
-                    oldStudentIdOfMarksListMarksEntity = em.merge(oldStudentIdOfMarksListMarksEntity);
+            for (MarksEntity marksEntityListMarksEntity : studentEntity.getMarksEntityList()) {
+                StudentEntity oldStudentIdOfMarksEntityListMarksEntity = marksEntityListMarksEntity.getStudentId();
+                marksEntityListMarksEntity.setStudentId(studentEntity);
+                marksEntityListMarksEntity = em.merge(marksEntityListMarksEntity);
+                if (oldStudentIdOfMarksEntityListMarksEntity != null) {
+                    oldStudentIdOfMarksEntityListMarksEntity.getMarksEntityList().remove(marksEntityListMarksEntity);
+                    oldStudentIdOfMarksEntityListMarksEntity = em.merge(oldStudentIdOfMarksEntityListMarksEntity);
                 }
             }
             em.getTransaction().commit();
@@ -97,62 +97,62 @@ public class StudentEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             StudentEntity persistentStudentEntity = em.find(StudentEntity.class, studentEntity.getId());
-            List<DocumentStudentEntity> documentStudentListOld = persistentStudentEntity.getDocumentStudentList();
-            List<DocumentStudentEntity> documentStudentListNew = studentEntity.getDocumentStudentList();
-            List<MarksEntity> marksListOld = persistentStudentEntity.getMarksList();
-            List<MarksEntity> marksListNew = studentEntity.getMarksList();
+            List<DocumentStudentEntity> documentStudentEntityListOld = persistentStudentEntity.getDocumentStudentEntityList();
+            List<DocumentStudentEntity> documentStudentEntityListNew = studentEntity.getDocumentStudentEntityList();
+            List<MarksEntity> marksEntityListOld = persistentStudentEntity.getMarksEntityList();
+            List<MarksEntity> marksEntityListNew = studentEntity.getMarksEntityList();
             List<String> illegalOrphanMessages = null;
-            for (DocumentStudentEntity documentStudentListOldDocumentStudentEntity : documentStudentListOld) {
-                if (!documentStudentListNew.contains(documentStudentListOldDocumentStudentEntity)) {
+            for (DocumentStudentEntity documentStudentEntityListOldDocumentStudentEntity : documentStudentEntityListOld) {
+                if (!documentStudentEntityListNew.contains(documentStudentEntityListOldDocumentStudentEntity)) {
                     if (illegalOrphanMessages == null) {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
-                    illegalOrphanMessages.add("You must retain DocumentStudentEntity " + documentStudentListOldDocumentStudentEntity + " since its studentId field is not nullable.");
+                    illegalOrphanMessages.add("You must retain DocumentStudentEntity " + documentStudentEntityListOldDocumentStudentEntity + " since its studentId field is not nullable.");
                 }
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            List<DocumentStudentEntity> attachedDocumentStudentListNew = new ArrayList<DocumentStudentEntity>();
-            for (DocumentStudentEntity documentStudentListNewDocumentStudentEntityToAttach : documentStudentListNew) {
-                documentStudentListNewDocumentStudentEntityToAttach = em.getReference(documentStudentListNewDocumentStudentEntityToAttach.getClass(), documentStudentListNewDocumentStudentEntityToAttach.getId());
-                attachedDocumentStudentListNew.add(documentStudentListNewDocumentStudentEntityToAttach);
+            List<DocumentStudentEntity> attachedDocumentStudentEntityListNew = new ArrayList<DocumentStudentEntity>();
+            for (DocumentStudentEntity documentStudentEntityListNewDocumentStudentEntityToAttach : documentStudentEntityListNew) {
+                documentStudentEntityListNewDocumentStudentEntityToAttach = em.getReference(documentStudentEntityListNewDocumentStudentEntityToAttach.getClass(), documentStudentEntityListNewDocumentStudentEntityToAttach.getId());
+                attachedDocumentStudentEntityListNew.add(documentStudentEntityListNewDocumentStudentEntityToAttach);
             }
-            documentStudentListNew = attachedDocumentStudentListNew;
-            studentEntity.setDocumentStudentList(documentStudentListNew);
-            List<MarksEntity> attachedMarksListNew = new ArrayList<MarksEntity>();
-            for (MarksEntity marksListNewMarksEntityToAttach : marksListNew) {
-                marksListNewMarksEntityToAttach = em.getReference(marksListNewMarksEntityToAttach.getClass(), marksListNewMarksEntityToAttach.getId());
-                attachedMarksListNew.add(marksListNewMarksEntityToAttach);
+            documentStudentEntityListNew = attachedDocumentStudentEntityListNew;
+            studentEntity.setDocumentStudentEntityList(documentStudentEntityListNew);
+            List<MarksEntity> attachedMarksEntityListNew = new ArrayList<MarksEntity>();
+            for (MarksEntity marksEntityListNewMarksEntityToAttach : marksEntityListNew) {
+                marksEntityListNewMarksEntityToAttach = em.getReference(marksEntityListNewMarksEntityToAttach.getClass(), marksEntityListNewMarksEntityToAttach.getId());
+                attachedMarksEntityListNew.add(marksEntityListNewMarksEntityToAttach);
             }
-            marksListNew = attachedMarksListNew;
-            studentEntity.setMarksList(marksListNew);
+            marksEntityListNew = attachedMarksEntityListNew;
+            studentEntity.setMarksEntityList(marksEntityListNew);
             studentEntity = em.merge(studentEntity);
-            for (DocumentStudentEntity documentStudentListNewDocumentStudentEntity : documentStudentListNew) {
-                if (!documentStudentListOld.contains(documentStudentListNewDocumentStudentEntity)) {
-                    StudentEntity oldStudentIdOfDocumentStudentListNewDocumentStudentEntity = documentStudentListNewDocumentStudentEntity.getStudentId();
-                    documentStudentListNewDocumentStudentEntity.setStudentId(studentEntity);
-                    documentStudentListNewDocumentStudentEntity = em.merge(documentStudentListNewDocumentStudentEntity);
-                    if (oldStudentIdOfDocumentStudentListNewDocumentStudentEntity != null && !oldStudentIdOfDocumentStudentListNewDocumentStudentEntity.equals(studentEntity)) {
-                        oldStudentIdOfDocumentStudentListNewDocumentStudentEntity.getDocumentStudentList().remove(documentStudentListNewDocumentStudentEntity);
-                        oldStudentIdOfDocumentStudentListNewDocumentStudentEntity = em.merge(oldStudentIdOfDocumentStudentListNewDocumentStudentEntity);
+            for (DocumentStudentEntity documentStudentEntityListNewDocumentStudentEntity : documentStudentEntityListNew) {
+                if (!documentStudentEntityListOld.contains(documentStudentEntityListNewDocumentStudentEntity)) {
+                    StudentEntity oldStudentIdOfDocumentStudentEntityListNewDocumentStudentEntity = documentStudentEntityListNewDocumentStudentEntity.getStudentId();
+                    documentStudentEntityListNewDocumentStudentEntity.setStudentId(studentEntity);
+                    documentStudentEntityListNewDocumentStudentEntity = em.merge(documentStudentEntityListNewDocumentStudentEntity);
+                    if (oldStudentIdOfDocumentStudentEntityListNewDocumentStudentEntity != null && !oldStudentIdOfDocumentStudentEntityListNewDocumentStudentEntity.equals(studentEntity)) {
+                        oldStudentIdOfDocumentStudentEntityListNewDocumentStudentEntity.getDocumentStudentEntityList().remove(documentStudentEntityListNewDocumentStudentEntity);
+                        oldStudentIdOfDocumentStudentEntityListNewDocumentStudentEntity = em.merge(oldStudentIdOfDocumentStudentEntityListNewDocumentStudentEntity);
                     }
                 }
             }
-            for (MarksEntity marksListOldMarksEntity : marksListOld) {
-                if (!marksListNew.contains(marksListOldMarksEntity)) {
-                    marksListOldMarksEntity.setStudentId(null);
-                    marksListOldMarksEntity = em.merge(marksListOldMarksEntity);
+            for (MarksEntity marksEntityListOldMarksEntity : marksEntityListOld) {
+                if (!marksEntityListNew.contains(marksEntityListOldMarksEntity)) {
+                    marksEntityListOldMarksEntity.setStudentId(null);
+                    marksEntityListOldMarksEntity = em.merge(marksEntityListOldMarksEntity);
                 }
             }
-            for (MarksEntity marksListNewMarksEntity : marksListNew) {
-                if (!marksListOld.contains(marksListNewMarksEntity)) {
-                    StudentEntity oldStudentIdOfMarksListNewMarksEntity = marksListNewMarksEntity.getStudentId();
-                    marksListNewMarksEntity.setStudentId(studentEntity);
-                    marksListNewMarksEntity = em.merge(marksListNewMarksEntity);
-                    if (oldStudentIdOfMarksListNewMarksEntity != null && !oldStudentIdOfMarksListNewMarksEntity.equals(studentEntity)) {
-                        oldStudentIdOfMarksListNewMarksEntity.getMarksList().remove(marksListNewMarksEntity);
-                        oldStudentIdOfMarksListNewMarksEntity = em.merge(oldStudentIdOfMarksListNewMarksEntity);
+            for (MarksEntity marksEntityListNewMarksEntity : marksEntityListNew) {
+                if (!marksEntityListOld.contains(marksEntityListNewMarksEntity)) {
+                    StudentEntity oldStudentIdOfMarksEntityListNewMarksEntity = marksEntityListNewMarksEntity.getStudentId();
+                    marksEntityListNewMarksEntity.setStudentId(studentEntity);
+                    marksEntityListNewMarksEntity = em.merge(marksEntityListNewMarksEntity);
+                    if (oldStudentIdOfMarksEntityListNewMarksEntity != null && !oldStudentIdOfMarksEntityListNewMarksEntity.equals(studentEntity)) {
+                        oldStudentIdOfMarksEntityListNewMarksEntity.getMarksEntityList().remove(marksEntityListNewMarksEntity);
+                        oldStudentIdOfMarksEntityListNewMarksEntity = em.merge(oldStudentIdOfMarksEntityListNewMarksEntity);
                     }
                 }
             }
@@ -186,20 +186,20 @@ public class StudentEntityJpaController implements Serializable {
                 throw new NonexistentEntityException("The studentEntity with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
-            List<DocumentStudentEntity> documentStudentListOrphanCheck = studentEntity.getDocumentStudentList();
-            for (DocumentStudentEntity documentStudentListOrphanCheckDocumentStudentEntity : documentStudentListOrphanCheck) {
+            List<DocumentStudentEntity> documentStudentEntityListOrphanCheck = studentEntity.getDocumentStudentEntityList();
+            for (DocumentStudentEntity documentStudentEntityListOrphanCheckDocumentStudentEntity : documentStudentEntityListOrphanCheck) {
                 if (illegalOrphanMessages == null) {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
-                illegalOrphanMessages.add("This StudentEntity (" + studentEntity + ") cannot be destroyed since the DocumentStudentEntity " + documentStudentListOrphanCheckDocumentStudentEntity + " in its documentStudentList field has a non-nullable studentId field.");
+                illegalOrphanMessages.add("This StudentEntity (" + studentEntity + ") cannot be destroyed since the DocumentStudentEntity " + documentStudentEntityListOrphanCheckDocumentStudentEntity + " in its documentStudentEntityList field has a non-nullable studentId field.");
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            List<MarksEntity> marksList = studentEntity.getMarksList();
-            for (MarksEntity marksListMarksEntity : marksList) {
-                marksListMarksEntity.setStudentId(null);
-                marksListMarksEntity = em.merge(marksListMarksEntity);
+            List<MarksEntity> marksEntityList = studentEntity.getMarksEntityList();
+            for (MarksEntity marksEntityListMarksEntity : marksEntityList) {
+                marksEntityListMarksEntity.setStudentId(null);
+                marksEntityListMarksEntity = em.merge(marksEntityListMarksEntity);
             }
             em.remove(studentEntity);
             em.getTransaction().commit();

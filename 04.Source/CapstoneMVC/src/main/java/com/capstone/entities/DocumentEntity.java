@@ -21,27 +21,30 @@ import javax.persistence.Table;
 
 /**
  *
- * @author hiepnhse61627
+ * @author Rem
  */
 @Entity
-@Table(name = "Document", catalog = "CapstoneProject", schema = "dbo")
+@Table(name = "Document")
+@NamedQueries({
+    @NamedQuery(name = "DocumentEntity.findAll", query = "SELECT d FROM DocumentEntity d")})
 public class DocumentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "Id", nullable = false)
+    @Basic(optional = false)
+    @Column(name = "Id")
     private Integer id;
-    @Column(name = "Code", length = 50)
+    @Column(name = "Code")
     private String code;
-    @Column(name = "Description", length = 2147483647)
+    @Column(name = "Description")
     private String description;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "documentId")
-    private List<DocumentStudentEntity> documentStudentList;
-    @JoinColumn(name = "DocTypeId", referencedColumnName = "Id", nullable = false)
+    private List<DocumentStudentEntity> documentStudentEntityList;
+    @JoinColumn(name = "DocTypeId", referencedColumnName = "Id")
     @ManyToOne(optional = false)
     private DocTypeEntity docTypeId;
     @OneToMany(mappedBy = "docParentId")
-    private List<DocumentEntity> documentList;
+    private List<DocumentEntity> documentEntityList;
     @JoinColumn(name = "DocParentId", referencedColumnName = "Id")
     @ManyToOne
     private DocumentEntity docParentId;
@@ -77,12 +80,12 @@ public class DocumentEntity implements Serializable {
         this.description = description;
     }
 
-    public List<DocumentStudentEntity> getDocumentStudentList() {
-        return documentStudentList;
+    public List<DocumentStudentEntity> getDocumentStudentEntityList() {
+        return documentStudentEntityList;
     }
 
-    public void setDocumentStudentList(List<DocumentStudentEntity> documentStudentList) {
-        this.documentStudentList = documentStudentList;
+    public void setDocumentStudentEntityList(List<DocumentStudentEntity> documentStudentEntityList) {
+        this.documentStudentEntityList = documentStudentEntityList;
     }
 
     public DocTypeEntity getDocTypeId() {
@@ -93,12 +96,12 @@ public class DocumentEntity implements Serializable {
         this.docTypeId = docTypeId;
     }
 
-    public List<DocumentEntity> getDocumentList() {
-        return documentList;
+    public List<DocumentEntity> getDocumentEntityList() {
+        return documentEntityList;
     }
 
-    public void setDocumentList(List<DocumentEntity> documentList) {
-        this.documentList = documentList;
+    public void setDocumentEntityList(List<DocumentEntity> documentEntityList) {
+        this.documentEntityList = documentEntityList;
     }
 
     public DocumentEntity getDocParentId() {
@@ -131,7 +134,7 @@ public class DocumentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.Document[ id=" + id + " ]";
+        return "entities.DocumentEntity[ id=" + id + " ]";
     }
     
 }
