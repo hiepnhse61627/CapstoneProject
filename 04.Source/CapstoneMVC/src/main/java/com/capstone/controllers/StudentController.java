@@ -21,14 +21,19 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Controller
 public class StudentController {
+
+    private ArrayList<String> seasons = new ArrayList<String>() {{
+        add("spring");
+        add("summer");
+        add("fall");
+    }};
 
     @RequestMapping("/create")
     public String Index() {
@@ -49,9 +54,9 @@ public class StudentController {
 
     @RequestMapping(value = "/getstudents")
     @ResponseBody
-    public JsonObject GetStudents(@RequestParam Map<String,String> params) {
+    public JsonObject GetStudents(@RequestParam Map<String, String> params) {
         try {
-            JsonObject data  = new JsonObject();
+            JsonObject data = new JsonObject();
 
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager manager = emf.createEntityManager();
@@ -125,6 +130,23 @@ public class StudentController {
                     set2.add(c);
                 });
 
+                set2.sort(Comparator.comparingInt(a -> {
+                    String removewhite = ((MarksEntity) a).getSemesterId().getSemester().replaceAll("\\s+", "");
+                    String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
+                    Pattern pattern = Pattern.compile("^\\D*(\\d)");
+                    Matcher matcher = pattern.matcher(removeline);
+                    matcher.find();
+                    return Integer.parseInt(removeline.substring(matcher.start(1), removeline.length()));
+                }).thenComparingInt(a -> {
+                    String removewhite = ((MarksEntity) a).getSemesterId().getSemester().replaceAll("\\s+", "");
+                    String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
+                    Pattern pattern = Pattern.compile("^\\D*(\\d)");
+                    Matcher matcher = pattern.matcher(removeline);
+                    matcher.find();
+                    String season = removeline.substring(0, matcher.start(1)).toLowerCase();
+                    return seasons.indexOf(season);
+                }));
+
                 set3 = set2.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
             }
 
@@ -136,16 +158,18 @@ public class StudentController {
                     tmp.add(m.getStudentId().getFullName());
                     tmp.add(m.getSubjectId() == null ? "N/A" : m.getSubjectId().getSubjectId());
                     tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getClass1());
+                    tmp.add(m.getSemesterId() == null ? "N/A" : m.getSemesterId().getSemester());
                     tmp.add(String.valueOf(m.getAverageMark()));
                     tmp.add(m.getStatus());
                     parent.add(tmp);
                 });
             }
 
-            JsonArray result = (JsonArray) new Gson().toJsonTree(parent, new TypeToken<List<MarksEntity>>(){}.getType());
+            JsonArray result = (JsonArray) new Gson().toJsonTree(parent, new TypeToken<List<MarksEntity>>() {
+            }.getType());
 
             data.addProperty("iTotalRecords", set2.size());
-            data.addProperty("iTotalDisplayRecords",  set2.size());
+            data.addProperty("iTotalDisplayRecords", set2.size());
             data.add("aaData", result);
             data.addProperty("sEcho", params.get("sEcho"));
 

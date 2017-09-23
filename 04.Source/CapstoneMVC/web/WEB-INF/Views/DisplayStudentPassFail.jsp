@@ -42,6 +42,7 @@
                     <th>Tên SV</th>
                     <th>Môn học</th>
                     <th>Lớp</th>
+                    <th>Học kỳ</th>
                     <th>Điểm TB</th>
                     <th>Status</th>
                 </tr>
