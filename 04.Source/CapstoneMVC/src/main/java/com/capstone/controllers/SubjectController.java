@@ -55,7 +55,6 @@ public class SubjectController {
         } catch (Exception e) {
             result = new JsonObject();
             result.addProperty("success", false);
-            result.addProperty("message", e.getMessage());
         }
 
         return result;
