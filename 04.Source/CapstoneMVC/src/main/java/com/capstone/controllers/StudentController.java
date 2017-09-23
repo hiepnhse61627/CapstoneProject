@@ -6,6 +6,8 @@ import com.capstone.services.IRealSemesterService;
 import com.capstone.services.ISubjectService;
 import com.capstone.services.RealSemesterServiceImpl;
 import com.capstone.services.SubjectServiceImpl;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -20,6 +22,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,9 +40,9 @@ public class StudentController {
         ModelAndView view = new ModelAndView("DisplayStudentPassFail");
 
         IRealSemesterService service = new RealSemesterServiceImpl();
-//        view.addObject("semesters", service.getAllSemester());
+        view.addObject("semesters", service.getAllSemester());
         ISubjectService service2 = new SubjectServiceImpl();
-//        view.addObject("subjects", service2.getAllSubjects());
+        view.addObject("subjects", service2.getAllSubjects());
 
         return view;
     }
@@ -98,13 +101,36 @@ public class StudentController {
             List<MarksEntity> set = query.getResultList();
 
             List<MarksEntity> set2 = new ArrayList<>();
+            List<MarksEntity> set3 = new ArrayList<>();
+            Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
             if (!set.isEmpty()) {
-                set2 = set.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+                List<MarksEntity> filtered = set.stream().filter(a -> a.getSubjectId() != null).collect(Collectors.toList());
+
+                for (MarksEntity m : filtered) {
+                    if (map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()) == null) {
+                        List<MarksEntity> list = new ArrayList<>();
+                        list.add(m);
+                        map.put(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId(), list);
+                    } else {
+                        map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()).add(m);
+                    }
+                }
+
+                for (Table.Cell<String, String, List<MarksEntity>> cell : map.cellSet()) {
+                    set2.add(cell.getValue().get(cell.getValue().size() - 1));
+                }
+
+                filtered = set.stream().filter(a -> a.getSubjectId() == null).collect(Collectors.toList());
+                filtered.forEach(c -> {
+                    set2.add(c);
+                });
+
+                set3 = set2.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
             }
 
             ArrayList<ArrayList<String>> parent = new ArrayList<>();
-            if (!set2.isEmpty()) {
-                set2.forEach(m -> {
+            if (!set3.isEmpty()) {
+                set3.forEach(m -> {
                     ArrayList<String> tmp = new ArrayList<>();
                     tmp.add(m.getStudentId().getRollNumber());
                     tmp.add(m.getStudentId().getFullName());
@@ -118,8 +144,8 @@ public class StudentController {
 
             JsonArray result = (JsonArray) new Gson().toJsonTree(parent, new TypeToken<List<MarksEntity>>(){}.getType());
 
-            data.addProperty("iTotalRecords", set.size());
-            data.addProperty("iTotalDisplayRecords",  set.size());
+            data.addProperty("iTotalRecords", set2.size());
+            data.addProperty("iTotalDisplayRecords",  set2.size());
             data.add("aaData", result);
             data.addProperty("sEcho", params.get("sEcho"));
 

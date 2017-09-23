@@ -27,4 +27,10 @@ public class SubjectServiceImpl implements ISubjectService {
     public List<SubjectEntity> getAllSubjects() {
         return controller.findSubjectEntityEntities();
     }
+
+    @Override
+    public int getCurrentLine() { return controller.getCurrentLine(); }
+
+    @Override
+    public int getTotalLine() { return controller.getTotalLine(); }
 }
