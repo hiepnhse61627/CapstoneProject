@@ -73,7 +73,8 @@ public class SubjectController {
     }
 
     private JsonObject ReadFile(MultipartFile file1, File file2, boolean isNewFile) {
-        List<SubjectEntity> columndata = new ArrayList<SubjectEntity>();;
+        List<SubjectEntity> columndata = new ArrayList<SubjectEntity>();
+        ;
         JsonObject obj = new JsonObject();
         InputStream is = null;
 
@@ -85,62 +86,81 @@ public class SubjectController {
             }
 
             HSSFWorkbook workbook = new HSSFWorkbook(is);
-            HSSFSheet sheet = workbook.getSheetAt(0);
-            Iterator<Row> rowIterator = sheet.iterator();
 
-            while (rowIterator.hasNext()) {
-                Row row = rowIterator.next();
-                Iterator<Cell> cellIterator = row.cellIterator();
-                SubjectEntity en = new SubjectEntity();
-                while (cellIterator.hasNext()) {
-                    Cell cell = cellIterator.next();
-                    if (row.getRowNum() > 3) { //To filter column headings
-                        if (cell.getColumnIndex() == 1) { // Subject code
-                            en.setId(cell.getStringCellValue().trim());
-                        } else if (cell.getColumnIndex() == 2) { // Abbreviation
-                            en.setAbbreviation(cell.getStringCellValue().trim());
-                        } else if (cell.getColumnIndex() == 3) { // Subject name
-                            en.setName(cell.getStringCellValue().trim());
-                        } else if (cell.getColumnIndex() == 4) { // No. of credits
-                            en.setCredits((int) cell.getNumericCellValue());
-                        } else if (cell.getColumnIndex() == 5) { // Prerequisite
-                            String preCode = cell.getStringCellValue().trim();
-                            if (!preCode.isEmpty()) {
-                                if (preCode.contains("/")) {
-                                    preCode = preCode.split("/")[0];
+            for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
+                HSSFSheet sheet = workbook.getSheetAt(i);
+                Iterator<Row> rowIterator = sheet.iterator();
+
+                while (rowIterator.hasNext()) {
+                    Row row = rowIterator.next();
+                    Iterator<Cell> cellIterator = row.cellIterator();
+                    SubjectEntity en = new SubjectEntity();
+                    while (cellIterator.hasNext()) {
+                        Cell cell = cellIterator.next();
+                        if (row.getRowNum() > 3) { //To filter column headings
+                            if (cell.getColumnIndex() == 1) { // Subject code
+                                en.setId(cell.getStringCellValue().trim());
+                            } else if (cell.getColumnIndex() == 2) { // Abbreviation
+                                en.setAbbreviation(cell.getStringCellValue().trim());
+                            } else if (cell.getColumnIndex() == 3) { // Subject name
+                                en.setName(cell.getStringCellValue().trim());
+                            } else if (cell.getColumnIndex() == 4) { // No. of credits
+                                try {
+                                    en.setCredits((int)cell.getNumericCellValue());
+                                } catch (Exception e) {
+                                    en.setCredits(null);
                                 }
+                            } else if (cell.getColumnIndex() == 5) { // Prerequisite
+                                String preCode = cell.getStringCellValue().trim();
+                                if (!preCode.isEmpty()) {
+                                    if (preCode.contains("/")) {
+                                        preCode = preCode.split("/")[0];
+                                    }
 
-                                List<SubjectEntity> prequisites = new ArrayList<>();
-                                SubjectEntity pre = new SubjectEntity();
-                                pre.setId(en.getId());
-                                prequisites.add(pre);
-                                en.setSubjectEntityList(prequisites);
+                                    if (preCode.contains(",")) {
+                                        List<SubjectEntity> prequisites = new ArrayList<>();
+                                        SubjectEntity pre = new SubjectEntity();
 
-                                prequisites = new ArrayList<>();
-                                pre = new SubjectEntity();
-                                pre.setId(preCode);
-                                prequisites.add(pre);
-                                en.setSubjectEntityList1(prequisites);
+                                        String[] code = preCode.split(",");
+                                        for (String c: code) {
+                                            if (c != null && !c.isEmpty()) {
+                                                pre = new SubjectEntity();
+                                                pre.setId(c.trim());
+                                                prequisites.add(pre);
+                                            }
+                                        }
+                                        en.setSubjectEntityList(prequisites);
+
+                                        prequisites = new ArrayList<>();
+                                        pre = new SubjectEntity();
+                                        pre.setId(en.getId());
+                                        prequisites.add(pre);
+                                        en.setSubjectEntityList1(prequisites);
+                                    } else {
+                                        List<SubjectEntity> prequisites = new ArrayList<>();
+                                        SubjectEntity pre = new SubjectEntity();
+                                        pre.setId(preCode);
+                                        prequisites.add(pre);
+                                        en.setSubjectEntityList(prequisites);
+
+                                        prequisites = new ArrayList<>();
+                                        pre = new SubjectEntity();
+                                        pre.setId(en.getId());
+                                        prequisites.add(pre);
+                                        en.setSubjectEntityList1(prequisites);
+                                    }
+                                }
                             }
                         }
                     }
-                }
 
-                if (en.getName() != null && !en.getName().isEmpty() && !columndata.stream().anyMatch(c -> c.getId().equals(en.getId()))) {
-                    columndata.add(en);
+                    if (en.getName() != null && !en.getName().isEmpty() && !columndata.stream().anyMatch(c -> c.getId().equals(en.getId()))) {
+                        columndata.add(en);
+                    }
                 }
             }
-            is.close();
 
-//            for (SubjectEntity subject : columndata) {
-//                for (SubjectEntity preSubject : columndata) {
-//                    if (subject.getSubjectEntityList() != null
-//                            && subject.getPrerequisiteCode().equals(preSubject.getPrerequisiteCode())) {
-//                        subject.setPrequisiteId(preSubject);
-//                        preSubject.addChildSubject(subject);
-//                    }
-//                }
-//            }
+            is.close();
 
             subjectService.insertSubjectList(columndata);
         } catch (Exception e) {
