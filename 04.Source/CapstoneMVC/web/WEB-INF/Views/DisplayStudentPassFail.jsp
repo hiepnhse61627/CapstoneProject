@@ -77,9 +77,9 @@
                     <table id="table-mark-detail">
                         <thead>
                         <tr>
-                            <th>Học kỳ</th>
                             <th>Môn học</th>
-                            <th>Lớp</th>
+                            <th>Học kỳ</th>
+                            <th>Số lần học lại</th>
                             <th>Điểm trung bình</th>
                             <th>Trạng thái</th>
                         </tr>
@@ -141,6 +141,7 @@
             "bRetrieve": true,
             "bScrollCollapse": true,
             "bProcessing": true,
+            "bSort": false,
             "sAjaxSource": "/getstudents", // url getData.php etc
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "semesterId", "value": $('#semester').val()}),
@@ -163,21 +164,21 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4, 5, 6],
+                    "aTargets": [0, 1, 2, 3, 4, 5, 6, 7],
                     "bSortable": false,
                 },
                 {
-                    "aTargets": [0, 2, 3, 4, 5],
+                    "aTargets": [0, 2, 3, 4, 5, 6],
                     "sClass": "text-center",
                 },
                 {
                     "aTargets": [1],
                     "mRender": function (data, type, row) {
-                        return "<a onclick='GetAllStudentMarks(" + row[6] + ")'>" + data + "</a>";
+                        return "<a onclick='GetAllStudentMarks(" + row[7] + ")'>" + data + "</a>";
                     }
                 },
                 {
-                    "aTargets": [6],
+                    "aTargets": [7],
                     "bVisible": false
                 }
             ],
@@ -196,8 +197,9 @@
             contentType: false,
             data: form,
             success: function (result) {
-                console.log(result.error);
+
                 if (result.success) {
+                    debugger
                     result.studentMarkDetail = JSON.parse(result.studentMarkDetail);
 
                     $("#markDetail").find(".modal-title").html("Chi tiết điểm - " + result.studentMarkDetail.studentName);
@@ -220,13 +222,14 @@
             "bRetrieve": true,
             "bScrollCollapse": true,
             "bProcessing": true,
+            "bSort": false,
             "data": dataSet,
             "aoColumns": [
-                {"mData": "semester"},
                 {"mData": "subject"},
-                {"mData": "class1"},
+                {"mData": "semester"},
+                {"mData": "repeatingNumber"},
                 {"mData": "averageMark"},
-                {"mData": "status"}
+                {"mData": "status"},
             ],
             "oLanguage": {
                 "sSearchPlaceholder": "",
