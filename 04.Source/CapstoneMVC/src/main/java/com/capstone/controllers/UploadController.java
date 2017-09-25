@@ -8,9 +8,8 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Controller;
@@ -364,6 +363,27 @@ public class UploadController {
         return obj;
     }
 
+    private static int findRow(XSSFSheet sheet, String cellContent) {
+        for (Row row : sheet) {
+            for (Cell cell : row) {
+                if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
+                    if (cell.getRichStringCellValue().getString().trim().equals(cellContent)) {
+                        return row.getRowNum();
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    private static boolean checkCell(XSSFCell c) {
+        if (c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+            return false;
+        }
+        return true;
+    }
+
+
     private JsonObject ReadCourseFile(MultipartFile file, File file2, boolean isNewFile) {
         JsonObject obj = new JsonObject();
 
@@ -382,13 +402,40 @@ public class UploadController {
             int classIndex = 0;
             int startDateIndex = 0;
             int endDateIndex = 0;
-            int excelDataIndex = 4;
+            int excelDataIndex = 0;
+            int checkIndex = 0;
+            int dataStartIndex = 0;
             List<CourseEntity> courses = new ArrayList<>();
 
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
+            //get header data row index
+            excelDataIndex = findRow(spreadsheet, "Lớp");
+            row = spreadsheet.getRow(excelDataIndex);
 
-            row = spreadsheet.getRow(2);
+            //get data start index
+            for (dataStartIndex = excelDataIndex; dataStartIndex <= spreadsheet.getLastRowNum(); dataStartIndex++) {
+                boolean flag = false;
+                for (int curCellIndex = 0; curCellIndex <= row.getLastCellNum(); curCellIndex++) {
+                    if (row.getCell(curCellIndex).getStringCellValue().toString().equals("Lớp")) {
+                        checkIndex = curCellIndex;
+                        flag = true;
+                        break;
+                    }
+                }
+                if (flag) {
+                    break;
+                }
+            }
+
+            for (int conRowIndex = excelDataIndex + 1; conRowIndex <= spreadsheet.getLastRowNum(); conRowIndex++) {
+                if (checkCell(spreadsheet.getRow(conRowIndex).getCell(checkIndex)) == true) {
+                    dataStartIndex = conRowIndex;
+                    break;
+                }
+            }
+
+            row = spreadsheet.getRow(excelDataIndex);
             for (int cellIndex = 0; cellIndex <= row.getLastCellNum(); cellIndex++) {
                 if (row.getCell(cellIndex).getStringCellValue().toString().equals("Lớp")) {
                     classIndex = cellIndex;
@@ -405,7 +452,7 @@ public class UploadController {
 
             } else {
 
-                for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                for (int rowIndex = dataStartIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
                     row = spreadsheet.getRow(rowIndex);
 
                     if (row != null) {
@@ -435,7 +482,7 @@ public class UploadController {
                     }
                 }
 
-            courseService.createCourseList(courses);
+                courseService.createCourseList(courses);
             }
         } catch (Exception e) {
             obj.addProperty("success", false);
