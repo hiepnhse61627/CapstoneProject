@@ -10,9 +10,8 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Controller;
@@ -27,8 +26,16 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.ServletContext;
 import java.io.*;
 import java.lang.reflect.Array;
+
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 @Controller
@@ -51,7 +58,9 @@ public class UploadController {
     ICourseService courseService = new CourseServiceImpl();
     IMarksService marksService = new MarksServiceImpl();
 
-    /** --------------STUDENTS------------ **/
+    /**
+     * --------------STUDENTS------------
+     **/
     @RequestMapping(value = "/goUploadStudentList")
     public ModelAndView goUploadStudentListPage() {
         ModelAndView view = new ModelAndView("uploadStudentList");
@@ -73,7 +82,7 @@ public class UploadController {
 
     @RequestMapping(value = "/uploadStudentExistFile", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject chooseExistFile(@RequestParam("file") String file){
+    public JsonObject chooseExistFile(@RequestParam("file") String file) {
         JsonObject obj;
         try {
             File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
@@ -89,7 +98,7 @@ public class UploadController {
 
     @RequestMapping(value = "/uploadStudentList", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject uploadFile(@RequestParam("file") MultipartFile file){
+    public JsonObject uploadFile(@RequestParam("file") MultipartFile file) {
         JsonObject obj = ReadFile(file, null, true);
         if (obj.get("success").getAsBoolean()) {
             ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
@@ -203,7 +212,9 @@ public class UploadController {
         return obj;
     }
 
-    /** --------------MARKS------------ **/
+    /**
+     * --------------MARKS------------
+     **/
     @RequestMapping(value = "/goUploadStudentMarks")
     public ModelAndView goUploadStudentMarksPage() {
         ModelAndView view = new ModelAndView("uploadStudentMarks");
@@ -250,8 +261,7 @@ public class UploadController {
             InputStream is;
             if (isNewFile) {
                 is = file.getInputStream();
-            }
-            else {
+            } else {
                 is = new FileInputStream(file2);
             }
 
@@ -315,7 +325,7 @@ public class UploadController {
                                 marksEntity.setCourseId(courseEntity);
                             } else {
                                 courseEntity = new CourseEntity();
-                                courseEntity.setClass1(cla.toUpperCase());
+                                courseEntity.setClazz(cla.toUpperCase());
                                 courseEntity = courseService.createCourse(courseEntity);
 
                                 marksEntity.setCourseId(courseEntity);
@@ -337,7 +347,7 @@ public class UploadController {
             }
             is.close();
             marksService.createMarks(marksEntities);
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             jsonObject.addProperty("success", false);
             jsonObject.addProperty("message", ex.getMessage());
@@ -358,4 +368,186 @@ public class UploadController {
         jsonObject.addProperty("successSavedMark", marksService.getSuccessSavedMark());
         return jsonObject;
     }
+
+    /**
+     * --------------COURSE------------
+     **/
+    @RequestMapping(value = "/goUploadCoursePage")
+    public ModelAndView goUploadCoursePage() {
+        ModelAndView view = new ModelAndView("uploadCourse");
+
+        ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+        File[] list = read.readFiles(context, folder);
+        view.addObject("files", list);
+        return view;
+    }
+
+    @RequestMapping("/getCourseStatus")
+    @ResponseBody
+    public JsonObject getCourseCurrentLine() {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("current", studentService.getCurrentLine());
+        obj.addProperty("total", studentService.getTotalLine());
+        return obj;
+    }
+
+    @RequestMapping(value = "/uploadCourseExistFile", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject chooseExistCourseFile(@RequestParam("file") String file) {
+        JsonObject obj;
+        try {
+            File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
+            obj = ReadFile(null, f, false);
+        } catch (Exception e) {
+            obj = new JsonObject();
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
+        }
+
+        return obj;
+    }
+
+    @RequestMapping(value = "/uploadCourse", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject uploadCourseFile(@RequestParam("file") MultipartFile files) {
+        JsonObject obj = ReadCourseFile(files, null, true);
+        if (obj.get("success").getAsBoolean()) {
+            ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+            read.saveFile(context, files, folder);
+        }
+
+        return obj;
+    }
+
+    private static int findRow(XSSFSheet sheet, String cellContent) {
+        for (Row row : sheet) {
+            for (Cell cell : row) {
+                if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
+                    if (cell.getRichStringCellValue().getString().trim().equals(cellContent)) {
+                        return row.getRowNum();
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    private static boolean checkCell(XSSFCell c) {
+        if (c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+            return false;
+        }
+        return true;
+    }
+
+
+    private JsonObject ReadCourseFile(MultipartFile file, File file2, boolean isNewFile) {
+        JsonObject obj = new JsonObject();
+
+        try {
+            InputStream is;
+            if (isNewFile) {
+                is = file.getInputStream();
+            } else {
+                is = new FileInputStream(file2);
+            }
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+            int classIndex = 0;
+            int startDateIndex = 0;
+            int endDateIndex = 0;
+            int excelDataIndex = 0;
+            int checkIndex = 0;
+            int dataStartIndex = 0;
+            List<CourseEntity> courses = new ArrayList<>();
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
+            //get header data row index
+            excelDataIndex = findRow(spreadsheet, "Lớp");
+            row = spreadsheet.getRow(excelDataIndex);
+
+            //get data start index
+            for (dataStartIndex = excelDataIndex; dataStartIndex <= spreadsheet.getLastRowNum(); dataStartIndex++) {
+                boolean flag = false;
+                for (int curCellIndex = 0; curCellIndex <= row.getLastCellNum(); curCellIndex++) {
+                    if (row.getCell(curCellIndex).getStringCellValue().toString().equals("Lớp")) {
+                        checkIndex = curCellIndex;
+                        flag = true;
+                        break;
+                    }
+                }
+                if (flag) {
+                    break;
+                }
+            }
+
+            for (int conRowIndex = excelDataIndex + 1; conRowIndex <= spreadsheet.getLastRowNum(); conRowIndex++) {
+                if (checkCell(spreadsheet.getRow(conRowIndex).getCell(checkIndex)) == true) {
+                    dataStartIndex = conRowIndex;
+                    break;
+                }
+            }
+
+            row = spreadsheet.getRow(excelDataIndex);
+            for (int cellIndex = 0; cellIndex <= row.getLastCellNum(); cellIndex++) {
+                if (row.getCell(cellIndex).getStringCellValue().toString().equals("Lớp")) {
+                    classIndex = cellIndex;
+                }
+                if (row.getCell(cellIndex).getStringCellValue().toString().equals("Ngày \n" + "bắt đầu")) {
+                    startDateIndex = cellIndex;
+                }
+                if (row.getCell(cellIndex).getStringCellValue().toString().equals("Ngày \n" + "kết thúc")) {
+                    endDateIndex = cellIndex;
+                }
+                if (classIndex != 0 && startDateIndex != 0 && endDateIndex != 0) break;
+            }
+            if (classIndex == 0 && startDateIndex == 0 && endDateIndex == 0) {
+
+            } else {
+
+                for (int rowIndex = dataStartIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                    row = spreadsheet.getRow(rowIndex);
+
+                    if (row != null) {
+                        CourseEntity course = new CourseEntity();
+                        Cell classCell = row.getCell(classIndex);
+                        Cell startDateCell = row.getCell(startDateIndex);
+                        Cell endDateCell = row.getCell(endDateIndex);
+                        if (classCell != null) {
+                            System.out.println(classCell.getStringCellValue() + " \t\t ");
+                            course.setClazz(classCell.getStringCellValue());
+                        }
+                        if (startDateCell != null) {
+                            System.out.println(startDateCell.getDateCellValue());
+//                            String startDate = String.valueOf(startDateCell.getNumericCellValue());
+                            course.setStartDate(Timestamp.valueOf(String.valueOf(sdf.format(startDateCell.getDateCellValue()))));
+                        }
+                        if (endDateCell != null) {
+                            System.out.println(endDateCell.getDateCellValue());
+//                            String endDate = sdf.format(endDateCell.getNumericCellValue());
+
+                            course.setEndDate(Timestamp.valueOf(String.valueOf(sdf.format(endDateCell.getDateCellValue()))));
+                        }
+
+                        if (course.getClazz() != null) {
+                            courses.add(course);
+                        }
+                    }
+                }
+
+                courseService.createCourseList(courses);
+            }
+        } catch (Exception e) {
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
+            return obj;
+        }
+
+        obj.addProperty("success", true);
+        return obj;
+    }
 }
+

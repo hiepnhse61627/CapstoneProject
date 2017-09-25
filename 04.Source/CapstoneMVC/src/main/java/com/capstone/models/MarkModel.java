@@ -6,6 +6,7 @@ public class MarkModel {
     private String class1;
     private String status;
     private double averageMark;
+    private int repeatingNumber;
 
     public String getSubject() {
         return subject;
@@ -45,5 +46,13 @@ public class MarkModel {
 
     public void setAverageMark(double averageMark) {
         this.averageMark = averageMark;
+    }
+
+    public int getRepeatingNumber() {
+        return repeatingNumber;
+    }
+
+    public void setRepeatingNumber(int repeatingNumber) {
+        this.repeatingNumber = repeatingNumber;
     }
 }

@@ -1,11 +1,12 @@
 package com.capstone.services;
 
 import com.capstone.entities.CourseEntity;
+import com.capstone.jpa.CourseEntityJpaController;
 import com.capstone.jpa.exJpa.ExCourseEntityJpaController;
-import com.capstone.jpa.exJpa.ExRealSemesterEntityJpaController;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.util.List;
 
 public class CourseServiceImpl implements ICourseService {
 
@@ -15,6 +16,11 @@ public class CourseServiceImpl implements ICourseService {
     @Override
     public CourseEntity findCourseByClass(String className) {
         return courseEntityJpaController.findCourseByClass(className);
+    }
+
+    @Override
+    public void createCourseList(List<CourseEntity> courseEntityList) {
+        courseEntityJpaController.createCourseList(courseEntityList);
     }
 
     @Override

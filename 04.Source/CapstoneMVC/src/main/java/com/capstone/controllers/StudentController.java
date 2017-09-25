@@ -4,6 +4,7 @@ import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.models.MarkModel;
 import com.capstone.models.StudentMarkModel;
+import com.capstone.models.Ultilities;
 import com.capstone.services.IRealSemesterService;
 import com.capstone.services.ISubjectService;
 import com.capstone.services.RealSemesterServiceImpl;
@@ -64,18 +65,18 @@ public class StudentController {
                 String cid = params.get("semesterId");
                 String sid = params.get("subjectId");
                 if (cid.equals("0") && !sid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sid AND LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.class1) LIKE :s)", MarksEntity.class);
+                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sid AND LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.clazz) LIKE :s)", MarksEntity.class);
                     query.setParameter("sid", sid);
                     query.setParameter("s", "%" + search + "%");
                 } else if (sid.equals("0") && !cid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.semesterId.id = :cid AND LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.class1) LIKE :s)", MarksEntity.class);
+                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.semesterId.id = :cid AND LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.clazz) LIKE :s)", MarksEntity.class);
                     query.setParameter("cid", Integer.parseInt(cid));
                     query.setParameter("s", "%" + search + "%");
                 } else if (sid.equals("0") && cid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.class1) LIKE :s)", MarksEntity.class);
+                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.clazz) LIKE :s)", MarksEntity.class);
                     query.setParameter("s", "%" + search + "%");
                 } else if (!sid.equals("0") && !cid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sid AND c.semesterId.id = :cid AND LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.class1) LIKE :s)", MarksEntity.class);
+                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sid AND c.semesterId.id = :cid AND LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.clazz) LIKE :s)", MarksEntity.class);
                     query.setParameter("cid", Integer.parseInt(cid));
                     query.setParameter("sid", sid);
                     query.setParameter("s", "%" + search + "%");
@@ -122,7 +123,9 @@ public class StudentController {
                 }
 
                 filtered = set.stream().filter(a -> a.getSubjectId() == null).collect(Collectors.toList());
-                filtered.forEach(c -> set2.add(c));
+                List<MarksEntity> finalSet = set2;
+                filtered.forEach(c -> finalSet.add(c));
+                set2 = Ultilities.SortMarkBySemester(finalSet);
 
                 set3 = set2.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
             }
@@ -134,7 +137,7 @@ public class StudentController {
                     tmp.add(m.getStudentId().getRollNumber());
                     tmp.add(m.getStudentId().getFullName());
                     tmp.add(m.getSubjectId() == null ? "N/A" : m.getSubjectId().getSubjectId());
-                    tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getClass1());
+                    tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getClazz());
                     tmp.add(m.getSemesterId() == null ? "N/A" : m.getSemesterId().getSemester());
                     tmp.add(String.valueOf(m.getAverageMark()));
                     tmp.add(m.getStatus());
@@ -168,28 +171,55 @@ public class StudentController {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em = emf.createEntityManager();
 
-            TypedQuery<MarksEntity> query = em.createQuery("SELECT m FROM MarksEntity m WHERE m.studentId.id = :sid", MarksEntity.class);
+            TypedQuery<MarksEntity> query = em.createQuery(
+                    "SELECT m FROM MarksEntity m WHERE m.studentId.id = :sid", MarksEntity.class);
             query.setParameter("sid", studentId);
             List<MarksEntity> mlist = query.getResultList();
+            mlist = Ultilities.SortMarkBySemester(mlist);
 
-            List<MarkModel> markList = new ArrayList<>();
+            boolean isFound;
+            MarkModel curMark;
+            List<MarkModel> dataList = new ArrayList<>();
+
             for (MarksEntity m : mlist) {
-                MarkModel mark = new MarkModel();
-                mark.setSemester(m.getSemesterId().getSemester());
-                mark.setSubject(m.getSubjectId() != null ? m.getSubjectId().getSubjectId() : "N/A");
-                mark.setClass1(m.getCourseId().getClass1());
-                mark.setStatus(m.getStatus());
-                mark.setAverageMark(m.getAverageMark());
+                String subjectCode = m.getSubjectId() != null ? m.getSubjectId().getSubjectId() : "N/A";
+                curMark = null;
+                isFound = false;
 
-                markList.add(mark);
+                for (MarkModel data : dataList) {
+                    if (data.getSubject().equals(subjectCode)) {
+                        isFound = true;
+                        curMark = data;
+                        break;
+                    }
+                }
+
+                if (!isFound) {
+                    MarkModel mark = new MarkModel();
+                    mark.setSemester(m.getSemesterId().getSemester());
+                    mark.setSubject(subjectCode);
+                    mark.setClass1(m.getCourseId().getClazz());
+                    mark.setStatus(m.getStatus());
+                    mark.setAverageMark(m.getAverageMark());
+                    mark.setRepeatingNumber(1);
+
+                    dataList.add(mark);
+                } else {
+                    curMark.setSemester(m.getSemesterId().getSemester());
+                    curMark.setClass1(m.getCourseId().getClazz());
+                    curMark.setStatus(m.getStatus());
+                    curMark.setAverageMark(m.getAverageMark());
+                    curMark.setRepeatingNumber(curMark.getRepeatingNumber() + 1);
+                }
             }
+            dataList = Ultilities.SortMarkModelBySemester(dataList);
 
             StudentMarkModel model = new StudentMarkModel();
             MarksEntity firstRecord = mlist.get(0);
             model.setStudentId(studentId);
             model.setStudentName(firstRecord.getStudentId().getFullName());
             model.setRollNumber(firstRecord.getStudentId().getRollNumber());
-            model.setMarkList(markList);
+            model.setMarkList(dataList);
 
             String data = new Gson().toJson(model);
 
