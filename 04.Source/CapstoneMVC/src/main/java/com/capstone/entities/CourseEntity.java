@@ -1,24 +1,15 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package com.capstone.entities;
 
-import java.io.Serializable;
-import java.util.List;
 import javax.persistence.*;
+import java.io.Serializable;
+import java.sql.Timestamp;
+import java.util.List;
 
-/**
- *
- * @author Rem
- */
 @Entity
 @Table(name = "Course")
 @NamedQueries({
-    @NamedQuery(name = "CourseEntity.findAll", query = "SELECT c FROM CourseEntity c")})
-public class CourseEntity implements Serializable {
-
+        @NamedQuery(name = "CourseEntity.findAll", query ="SELECT c FROM CourseEntity c")})
+public class CourseEntity implements Serializable{
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
@@ -26,7 +17,11 @@ public class CourseEntity implements Serializable {
     @Column(name = "Id")
     private Integer id;
     @Column(name = "Class")
-    private String class1;
+    private String clazz;
+    @Column(name = "StartDate")
+    private Timestamp startDate;
+    @Column(name = "EndDate")
+    private Timestamp endDate;
     @OneToMany(mappedBy = "courseId")
     private List<MarksEntity> marksEntityList;
 
@@ -45,12 +40,12 @@ public class CourseEntity implements Serializable {
         this.id = id;
     }
 
-    public String getClass1() {
-        return class1;
+    public String getClazz() {
+        return clazz;
     }
 
-    public void setClass1(String class1) {
-        this.class1 = class1;
+    public void setClazz(String clazz) {
+        this.clazz = clazz;
     }
 
     public List<MarksEntity> getMarksEntityList() {
@@ -61,29 +56,50 @@ public class CourseEntity implements Serializable {
         this.marksEntityList = marksEntityList;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
-        return hash;
+
+    @Basic
+    @Column(name = "StartDate")
+    public Timestamp getStartDate() {
+        return startDate;
     }
 
+    public void setStartDate(Timestamp startDate) {
+        this.startDate = startDate;
+    }
+
+    @Basic
+    @Column(name = "EndDate")
+    public Timestamp getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(Timestamp endDate) {
+        this.endDate = endDate;
+    }
+
+
     @Override
-    public boolean equals(Object object) {
-        // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof CourseEntity)) {
-            return false;
-        }
-        CourseEntity other = (CourseEntity) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
-            return false;
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CourseEntity that = (CourseEntity) o;
+
+        if (id != that.id) return false;
+        if (clazz != null ? !clazz.equals(that.clazz) : that.clazz != null) return false;
+        if (startDate != null ? !startDate.equals(that.startDate) : that.startDate != null) return false;
+        if (endDate != null ? !endDate.equals(that.endDate) : that.endDate != null) return false;
+
         return true;
     }
 
     @Override
-    public String toString() {
-        return "entities.CourseEntity[ id=" + id + " ]";
+    public int hashCode() {
+        int result = id;
+        result = 31 * result + (clazz != null ? clazz.hashCode() : 0);
+        result = 31 * result + (startDate != null ? startDate.hashCode() : 0);
+        result = 31 * result + (endDate != null ? endDate.hashCode() : 0);
+        return result;
     }
-    
+
 }

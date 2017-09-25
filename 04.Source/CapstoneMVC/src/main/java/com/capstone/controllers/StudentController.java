@@ -65,18 +65,18 @@ public class StudentController {
                 String cid = params.get("semesterId");
                 String sid = params.get("subjectId");
                 if (cid.equals("0") && !sid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sid AND LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.class1) LIKE :s)", MarksEntity.class);
+                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sid AND LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.clazz) LIKE :s)", MarksEntity.class);
                     query.setParameter("sid", sid);
                     query.setParameter("s", "%" + search + "%");
                 } else if (sid.equals("0") && !cid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.semesterId.id = :cid AND LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.class1) LIKE :s)", MarksEntity.class);
+                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.semesterId.id = :cid AND LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.clazz) LIKE :s)", MarksEntity.class);
                     query.setParameter("cid", Integer.parseInt(cid));
                     query.setParameter("s", "%" + search + "%");
                 } else if (sid.equals("0") && cid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.class1) LIKE :s)", MarksEntity.class);
+                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.clazz) LIKE :s)", MarksEntity.class);
                     query.setParameter("s", "%" + search + "%");
                 } else if (!sid.equals("0") && !cid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sid AND c.semesterId.id = :cid AND LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.class1) LIKE :s)", MarksEntity.class);
+                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sid AND c.semesterId.id = :cid AND LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.clazz) LIKE :s)", MarksEntity.class);
                     query.setParameter("cid", Integer.parseInt(cid));
                     query.setParameter("sid", sid);
                     query.setParameter("s", "%" + search + "%");
@@ -137,7 +137,7 @@ public class StudentController {
                     tmp.add(m.getStudentId().getRollNumber());
                     tmp.add(m.getStudentId().getFullName());
                     tmp.add(m.getSubjectId() == null ? "N/A" : m.getSubjectId().getSubjectId());
-                    tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getClass1());
+                    tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getClazz());
                     tmp.add(m.getSemesterId() == null ? "N/A" : m.getSemesterId().getSemester());
                     tmp.add(String.valueOf(m.getAverageMark()));
                     tmp.add(m.getStatus());
@@ -198,7 +198,7 @@ public class StudentController {
                     MarkModel mark = new MarkModel();
                     mark.setSemester(m.getSemesterId().getSemester());
                     mark.setSubject(subjectCode);
-                    mark.setClass1(m.getCourseId().getClass1());
+                    mark.setClass1(m.getCourseId().getClazz());
                     mark.setStatus(m.getStatus());
                     mark.setAverageMark(m.getAverageMark());
                     mark.setRepeatingNumber(1);
@@ -206,7 +206,7 @@ public class StudentController {
                     dataList.add(mark);
                 } else {
                     curMark.setSemester(m.getSemesterId().getSemester());
-                    curMark.setClass1(m.getCourseId().getClass1());
+                    curMark.setClass1(m.getCourseId().getClazz());
                     curMark.setStatus(m.getStatus());
                     curMark.setAverageMark(m.getAverageMark());
                     curMark.setRepeatingNumber(curMark.getRepeatingNumber() + 1);
