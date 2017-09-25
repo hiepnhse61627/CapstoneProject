@@ -5,6 +5,7 @@
  */
 package com.capstone.jpa;
 
+import com.capstone.entities.*;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.io.Serializable;
@@ -12,11 +13,7 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.capstone.entities.CourseEntity;
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.RealSemesterEntity;
-import com.capstone.entities.StudentEntity;
-import com.capstone.entities.SubjectMarkComponentEntity;
+
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
