@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="/Resources/plugins/dist/css/skins/skin-custom.css"/>
     <link rel="stylesheet" href="/Resources/plugins/dist/css/skins/_all-skins.css"/>
     <link rel="stylesheet" href="/Resources/plugins/sweetalert2/sweetalert2.min.css"/>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/Resources/plugins/DataTables/datatables.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/datatables/datatables.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/select2/select2.min.css"/>
 
     <!-- REQUIRED JS SCRIPTS -->
@@ -36,7 +36,7 @@
     <!-- AdminLTE App -->
     <script src="/Resources/plugins/dist/js/app.min.js"></script>
     <script src="/Resources/plugins/sweetalert2/sweetalert2.min.js"></script>
-    <script src="/Resources/plugins/DataTables/datatables.min.js"></script>
+    <script src="/Resources/plugins/datatables/datatables.min.js"></script>
     <script src="/Resources/plugins/select2/select2.min.js"></script>
 
     <style>
@@ -155,6 +155,9 @@
                 <!-- Optionally, you can add icons to the links -->
                 <li class="active">
                     <a href="#"><i class="fa fa-dashboard"></i> <span>Thống kê</span></a>
+                </li>
+                <li class="active">
+                    <a href="/goSQLQueryPage"><i class="fa fa-dashboard"></i> <span>Truy vấn dữ liệu</span></a>
                 </li>
                 <li class="treeview">
                     <a href="#">
