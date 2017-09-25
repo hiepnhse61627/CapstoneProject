@@ -137,7 +137,7 @@
                            isrunning = false;
                            swal(
                                'Thành công!',
-                               'Đã import các môn học!',
+                               'Đã import danh sách điểm!',
                                'success'
                            );
                        } else {

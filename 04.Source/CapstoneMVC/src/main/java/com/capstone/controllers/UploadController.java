@@ -4,9 +4,11 @@ import com.capstone.models.ReadAndSaveFileToServer;
 import com.capstone.services.*;
 import com.google.gson.JsonObject;
 import org.apache.commons.io.IOUtils;
+import org.apache.poi.POIXMLDocument;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -32,6 +34,8 @@ import java.util.List;
 @Controller
 public class UploadController {
 
+    private final String xlsExcelExtension = "xls";
+    private final String xlsxExcelExtension = "xlsx";
     private final String folder = "DSSV-StudentsList";
     private final String marksFolder = "Marks-StudentMarks";
     private int totalLine;
@@ -99,44 +103,95 @@ public class UploadController {
         JsonObject obj = new JsonObject();
 
         try {
-            InputStream is;
-            if (isNewFile) {
-                is = file.getInputStream();
-            }
-            else {
-                is = new FileInputStream(file2);
-            }
+            InputStream is = isNewFile ? file.getInputStream() : new FileInputStream(file2);
 
-            XSSFWorkbook workbook = new XSSFWorkbook(is);
-            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+            String originalFileName = isNewFile ? file.getOriginalFilename() : file2.getName();
+            String extension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1, originalFileName.length());
 
-            XSSFRow row;
-            int rollNumberIndex = 1;
-            int studentNameIndex = 2;
-            int excelDataIndex = 3;
             List<StudentEntity> students = new ArrayList<>();
 
-            for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
-                row = spreadsheet.getRow(rowIndex);
-                if (row != null) {
-                    StudentEntity student = new StudentEntity();
-                    Cell rollNumberCell = row.getCell(rollNumberIndex);
-                    Cell studentNameCell = row.getCell(studentNameIndex);
-                    if (rollNumberCell != null) {
-                        System.out.println(rollNumberCell.getStringCellValue() + " \t\t ");
-                        student.setRollNumber(rollNumberCell.getStringCellValue());
-                    }
-                    if (studentNameCell != null) {
-                        System.out.println(studentNameCell.getStringCellValue());
-                        student.setFullName(studentNameCell.getStringCellValue());
-                    }
+            if (extension.equals(xlsExcelExtension)) {
+                HSSFWorkbook workbook = new HSSFWorkbook(is);
+                HSSFSheet spreadsheet = workbook.getSheetAt(0);
 
-                    if (student.getRollNumber() != null) {
-                        students.add(student);
+                HSSFRow row;
+                int excelDataIndex = 0;
+                int rollNumberIndex = 0;
+                int studentNameIndex = 0;
+                boolean rollNumberFlag = false;
+                boolean studentNameFlag = false;
+
+                for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                    row = spreadsheet.getRow(rowIndex);
+                    if (row != null) {
+                        if (rollNumberFlag == false || studentNameFlag == false) {
+                            for (int cellIndex = row.getFirstCellNum(); cellIndex <= row.getLastCellNum(); cellIndex++) {
+                                Cell cell = row.getCell(cellIndex);
+                                if (cell != null && cell.getStringCellValue().contains("MSSV")) {
+                                    rollNumberIndex = cellIndex;
+                                    rollNumberFlag = true;
+                                } else if (cell != null && cell.getStringCellValue().contains("Họ tên")) {
+                                    studentNameIndex = cellIndex;
+                                    studentNameFlag = true;
+                                }
+                            }
+                            if (rollNumberFlag == true && studentNameFlag == true) {
+                                rowIndex++;
+                                row = spreadsheet.getRow(rowIndex);
+                            }
+                        }
+                        if (rollNumberFlag == true && studentNameFlag == true) {
+                            StudentEntity student = new StudentEntity();
+                            Cell rollNumberCell = row.getCell(rollNumberIndex);
+                            Cell studentNameCell = row.getCell(studentNameIndex);
+                            if (rollNumberCell != null && !rollNumberCell.getStringCellValue().isEmpty()) {
+                                student.setRollNumber(rollNumberCell.getStringCellValue());
+                            }
+                            if (studentNameCell != null && !studentNameCell.getStringCellValue().isEmpty()) {
+                                student.setFullName(studentNameCell.getStringCellValue());
+                            }
+
+                            if (student.getRollNumber() != null) {
+                                students.add(student);
+                            }
+                        }
                     }
                 }
-            }
+            } else if (extension.equals(xlsxExcelExtension)) {
+                XSSFWorkbook workbook = new XSSFWorkbook(is);
+                XSSFSheet spreadsheet = workbook.getSheetAt(0);
 
+                XSSFRow row;
+
+                int rollNumberIndex = 1;
+                int studentNameIndex = 2;
+                int excelDataIndex = 3;
+
+                for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                    row = spreadsheet.getRow(rowIndex);
+                    if (row != null) {
+                        StudentEntity student = new StudentEntity();
+                        Cell rollNumberCell = row.getCell(rollNumberIndex);
+                        Cell studentNameCell = row.getCell(studentNameIndex);
+                        if (rollNumberCell != null) {
+                            System.out.println(rollNumberCell.getStringCellValue() + " \t\t ");
+                            student.setRollNumber(rollNumberCell.getStringCellValue());
+                        }
+                        if (studentNameCell != null) {
+                            System.out.println(studentNameCell.getStringCellValue());
+                            student.setFullName(studentNameCell.getStringCellValue());
+                        }
+
+                        if (student.getRollNumber() != null) {
+                            students.add(student);
+                        }
+                    }
+                }
+            } else {
+                obj.addProperty("success", false);
+                obj.addProperty("message", "Chỉ chấp nhận file excel");
+                return obj;
+            }
             studentService.createStudentList(students);
         } catch (Exception e) {
             obj.addProperty("success", false);
@@ -220,7 +275,7 @@ public class UploadController {
 
                 Cell rollNumberCell = row.getCell(rollNumberIndex);
                 if (rollNumberCell != null) {
-                    StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumberCell.getStringCellValue());
+                    StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumberCell.getStringCellValue().trim());
                     if (studentEntity != null) {
                         MarksEntity marksEntity = new MarksEntity();
                         marksEntity.setStudentId(studentEntity);
