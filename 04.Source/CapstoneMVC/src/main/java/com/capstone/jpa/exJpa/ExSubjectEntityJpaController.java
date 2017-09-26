@@ -7,6 +7,8 @@ import com.capstone.jpa.SubjectEntityJpaController;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.TypedQuery;
+import javax.security.auth.Subject;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -57,5 +59,28 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         }
 
         manager.getTransaction().commit();
+    }
+
+    private List<SubjectEntity> prequisiteList;
+
+    public List<SubjectEntity> getAllPrequisiteSubjects(String subId) {
+        prequisiteList = new ArrayList<>();
+        EntityManager manager = getEntityManager();
+        SubjectEntity currSub = manager.find(SubjectEntity.class, subId);
+        getPrequisite(currSub, currSub.getId());
+        return prequisiteList;
+    }
+
+    private void getPrequisite(SubjectEntity curr, String subId) {
+        List<SubjectEntity> pre = curr.getSubjectEntityList();
+        if (!pre.isEmpty()) {
+            for (SubjectEntity s: pre) {
+                getPrequisite(s, subId);
+            }
+        }
+
+        if (!curr.getId().equals(subId)) {
+            prequisiteList.add(curr);
+        }
     }
 }

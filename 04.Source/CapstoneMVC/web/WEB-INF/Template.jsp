@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="/Resources/plugins/sweetalert2/sweetalert2.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/datatables/datatables.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/select2/select2.min.css"/>
+    <%--<link rel="stylesheet" href="/Resources/plugins/jQueryUI/jquery-ui.min.css"/>--%>
 
     <!-- REQUIRED JS SCRIPTS -->
 
@@ -38,6 +39,7 @@
     <script src="/Resources/plugins/sweetalert2/sweetalert2.min.js"></script>
     <script src="/Resources/plugins/datatables/datatables.min.js"></script>
     <script src="/Resources/plugins/select2/select2.min.js"></script>
+    <script src="/Resources/plugins/jQueryUI/jquery-ui.min.js"></script>
 
     <style>
         .logo-mini img {
@@ -194,8 +196,10 @@
                         <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách làm đồ án</a></li>
                         <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách tốt nghiệp</a></li>
                         <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách đóng học phí</a></li>
+                        <li><a href="/checkPrequisite"><i class="fa fa-circle-o"></i> Danh sách pass môn nhưng chưa pass môn tiên quyết</a></li>
                         <li><a href="/display"><i class="fa fa-circle-o"></i> Danh sách học lại</a></li>
                         <li><a href="#"><i class="fa fa-circle-o"></i> Danh sách chậm tiến độ</a></li>
+                        checkPrequisite
                     </ul>
                 </li>
             </ul><!-- /.sidebar-menu -->
