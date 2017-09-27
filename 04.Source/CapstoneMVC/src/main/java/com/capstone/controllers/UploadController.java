@@ -319,7 +319,6 @@ public class UploadController {
 
                         if (classNameCell != null) {
                             String cla = classNameCell.getStringCellValue();
-                            cla = cla.substring(0, cla.indexOf("_") < 0 ? cla.length() : cla.indexOf("_"));
                             CourseEntity courseEntity = courseService.findCourseByClass(cla.toUpperCase());
                             if (courseEntity != null) {
                                 marksEntity.setCourseId(courseEntity);
@@ -340,29 +339,37 @@ public class UploadController {
                             marksEntity.setStatus(statusCell.getStringCellValue());
                         }
                         // Add mark entity to list
-                        if (marksEntities.isEmpty() || marksEntity.getSubjectId() == null) {
-                            marksEntities.add(marksEntity);
-                        } else { // check if a student learn one subject twice in same semester, same average mark but in different class then remove classes contain (_)
-                            for (MarksEntity mark : marksEntities) {
-                                if (mark.getSubjectId() != null) { // start compare
-                                    if ((mark.getSemesterId().getSemester().equals(marksEntity.getSemesterId().getSemester()))
-                                            && (Double.compare(mark.getAverageMark(), marksEntity.getAverageMark()) == 0)
-                                            && (mark.getSubjectId().getSubjectId().equals(marksEntity.getSubjectId().getSubjectId()))) { // found
-                                        if (marksEntity.getSubjectId().getSubjectId().contains("_")) {
-                                            break;
-                                        } else {
-                                            marksEntities.remove(mark);
-                                            marksEntities.add(marksEntity);
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                        marksEntities.add(marksEntity);
                     }
                 }
                 ++this.currentLine;
             }
             is.close();
+            // Check student same semester, same subject but in different class
+            List<MarksEntity> removalList = new ArrayList<>();
+            for (int i = 0; i < marksEntities.size(); i++) {
+                MarksEntity current = marksEntities.get(i);
+                for (int j = i + 1; j < marksEntities.size(); j++) {
+                    MarksEntity next = marksEntities.get(j);
+                    if (current.getSubjectId() != null && next.getSubjectId() != null) {
+                        if ((current.getSemesterId().getSemester().equals(next.getSemesterId().getSemester()))
+                                && (current.getSubjectId().getSubjectId().equals(next.getSubjectId().getSubjectId()))
+                                && (Double.compare(current.getAverageMark(), next.getAverageMark()) == 0)) { // found
+                            if (current.getCourseId().getClazz().toUpperCase().contains("_SPRING")
+                                    || current.getCourseId().getClazz().toUpperCase().contains("_FALL")
+                                    || current.getCourseId().getClazz().toUpperCase().contains("_SUMMER")) {
+                                marksEntities.remove(i);
+                                break;
+                            } else if (next.getCourseId().getClazz().toUpperCase().contains("_SPRING")
+                                    || next.getCourseId().getClazz().toUpperCase().contains("_FALL")
+                                    || next.getCourseId().getClazz().toUpperCase().contains("_SUMMER")) {
+                                marksEntities.remove(j);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
             marksService.createMarks(marksEntities);
         } catch (Exception ex) {
             ex.printStackTrace();
