@@ -33,9 +33,11 @@
                 <button id="but" type="button" class="btn btn-primary" onclick="GetStudents()">Lấy thông tin</button>
             </div>
         </div>
-        <div class="form-group">
-            <label>Danh sách sinh viên đậu môn nhưng fail prequisites</label>
-            <table id="table"></table>
+        <div class="col-md-12">
+            <div class="form-group">
+                <label>Danh sách sinh viên đậu môn nhưng fail prequisites</label>
+                <table id="table"></table>
+            </div>
         </div>
     </div>
 </section>
