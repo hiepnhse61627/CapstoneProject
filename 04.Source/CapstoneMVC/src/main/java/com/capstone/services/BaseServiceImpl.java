@@ -15,4 +15,9 @@ public class BaseServiceImpl implements IBaseService {
     public List<Object> getDataInDatabaseByQuery(String queryString) {
         return webBaseJpaController.getDataInDatabaseByQuery(queryString);
     }
+
+    @Override
+    public List<String> getColumnHeaders(String sqlString) {
+        return webBaseJpaController.getColumnHeaders(sqlString);
+    }
 }

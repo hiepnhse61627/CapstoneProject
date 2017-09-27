@@ -339,8 +339,25 @@ public class UploadController {
                         if (statusCell != null) {
                             marksEntity.setStatus(statusCell.getStringCellValue());
                         }
-
-                        marksEntities.add(marksEntity);
+                        // Add mark entity to list
+                        if (marksEntities.isEmpty() || marksEntity.getSubjectId() == null) {
+                            marksEntities.add(marksEntity);
+                        } else { // check if a student learn one subject twice in same semester, same average mark but in different class then remove classes contain (_)
+                            for (MarksEntity mark : marksEntities) {
+                                if (mark.getSubjectId() != null) { // start compare
+                                    if ((mark.getSemesterId().getSemester().equals(marksEntity.getSemesterId().getSemester()))
+                                            && (Double.compare(mark.getAverageMark(), marksEntity.getAverageMark()) == 0)
+                                            && (mark.getSubjectId().getSubjectId().equals(marksEntity.getSubjectId().getSubjectId()))) { // found
+                                        if (marksEntity.getSubjectId().getSubjectId().contains("_")) {
+                                            break;
+                                        } else {
+                                            marksEntities.remove(mark);
+                                            marksEntities.add(marksEntity);
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 ++this.currentLine;

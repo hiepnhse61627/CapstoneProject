@@ -57,7 +57,6 @@
                         </thead>
                     </table>
                 </div>
-                <button type="button" onclick="RefreshTable()" class="btn-success btn-success">Tìm kiếm</button>
                 </form>
             </div>
         </div>

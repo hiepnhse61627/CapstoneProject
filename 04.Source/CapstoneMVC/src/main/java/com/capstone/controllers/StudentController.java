@@ -5,10 +5,7 @@ import com.capstone.entities.StudentEntity;
 import com.capstone.models.MarkModel;
 import com.capstone.models.StudentMarkModel;
 import com.capstone.models.Ultilities;
-import com.capstone.services.IRealSemesterService;
-import com.capstone.services.ISubjectService;
-import com.capstone.services.RealSemesterServiceImpl;
-import com.capstone.services.SubjectServiceImpl;
+import com.capstone.services.*;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import com.google.gson.Gson;
@@ -31,6 +28,8 @@ import java.util.stream.Collectors;
 
 @Controller
 public class StudentController {
+
+    IMarksService marksService = new MarksServiceImpl();
 
     @RequestMapping("/create")
     public String Index() {
@@ -55,77 +54,37 @@ public class StudentController {
         try {
             JsonObject data = new JsonObject();
 
-            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-            EntityManager manager = emf.createEntityManager();
+            String semesterId = params.get("semesterId");
+            String subjectId = params.get("subjectId");
+            String searchKey = params.get("sSearch");
 
-            String search = params.get("sSearch");
-            TypedQuery<MarksEntity> query = null;
-            if (search != null && !search.isEmpty()) {
-
-                String cid = params.get("semesterId");
-                String sid = params.get("subjectId");
-                if (cid.equals("0") && !sid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sid AND LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.clazz) LIKE :s)", MarksEntity.class);
-                    query.setParameter("sid", sid);
-                    query.setParameter("s", "%" + search + "%");
-                } else if (sid.equals("0") && !cid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.semesterId.id = :cid AND LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.clazz) LIKE :s)", MarksEntity.class);
-                    query.setParameter("cid", Integer.parseInt(cid));
-                    query.setParameter("s", "%" + search + "%");
-                } else if (sid.equals("0") && cid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.clazz) LIKE :s)", MarksEntity.class);
-                    query.setParameter("s", "%" + search + "%");
-                } else if (!sid.equals("0") && !cid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sid AND c.semesterId.id = :cid AND LOWER(c.status) LIKE '%fail%' AND (LOWER(c.studentId.fullName) LIKE :s OR LOWER(c.studentId.rollNumber) LIKE :s OR LOWER(c.courseId.clazz) LIKE :s)", MarksEntity.class);
-                    query.setParameter("cid", Integer.parseInt(cid));
-                    query.setParameter("sid", sid);
-                    query.setParameter("s", "%" + search + "%");
-                }
-            } else {
-                String cid = params.get("semesterId");
-                String sid = params.get("subjectId");
-                if (cid.equals("0") && !sid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sid AND LOWER(c.status) LIKE '%fail%'", MarksEntity.class);
-                    query.setParameter("sid", sid);
-                } else if (sid.equals("0") && !cid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.semesterId.id = :cid AND LOWER(c.status) LIKE '%fail%'", MarksEntity.class);
-                    query.setParameter("cid", Integer.parseInt(cid));
-                } else if (sid.equals("0") && cid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE LOWER(c.status) LIKE '%fail%'", MarksEntity.class);
-                } else if (!cid.equals("0") && !sid.equals("0")) {
-                    query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sid AND c.semesterId.id = :cid AND LOWER(c.status) LIKE '%fail%'", MarksEntity.class);
-                    query.setParameter("sid", sid);
-                    query.setParameter("cid", Integer.parseInt(cid));
-                }
-            }
-
-//            query.setFirstResult(Integer.parseInt(params.get("iDisplayStart")));
-            List<MarksEntity> set = query.getResultList();
-
+            List<MarksEntity> set = marksService.getMarkByConditions(semesterId, subjectId, searchKey);
             List<MarksEntity> set2 = new ArrayList<>();
             List<MarksEntity> set3 = new ArrayList<>();
             Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
+
             if (!set.isEmpty()) {
                 List<MarksEntity> filtered = set.stream().filter(a -> a.getSubjectId() != null).collect(Collectors.toList());
-
                 for (MarksEntity m : filtered) {
                     if (map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()) == null) {
                         List<MarksEntity> list = new ArrayList<>();
                         list.add(m);
-                        map.put(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId(), list);
+                        map.put(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId(), Ultilities.SortMarkBySemester(list));
                     } else {
                         map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()).add(m);
+                        Ultilities.SortMarkBySemester(map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()));
                     }
                 }
 
                 for (Table.Cell<String, String, List<MarksEntity>> cell : map.cellSet()) {
-                    set2.add(cell.getValue().get(cell.getValue().size() - 1));
+                    if (cell.getValue().get(cell.getValue().size() - 1).getStatus().equals("Fail")) {
+                        set2.add(cell.getValue().get(cell.getValue().size() - 1));
+                    }
                 }
 
-                filtered = set.stream().filter(a -> a.getSubjectId() == null).collect(Collectors.toList());
-                List<MarksEntity> finalSet = set2;
-                filtered.forEach(c -> finalSet.add(c));
-                set2 = Ultilities.SortMarkBySemester(finalSet);
+                set.stream().filter(a -> a.getSubjectId() == null).forEach(c -> {
+                    if (c.getStatus().equals("Fail"))  set2.add(c);
+                });
 
                 set3 = set2.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
             }

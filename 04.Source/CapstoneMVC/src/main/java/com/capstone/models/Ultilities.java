@@ -4,7 +4,11 @@ import com.capstone.entities.MarksEntity;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
-import java.util.*;
+import org.eclipse.persistence.jpa.jpql.parser.DateTime;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -35,6 +39,14 @@ public class Ultilities {
         }).thenComparingInt(a -> {
             String semester = ((MarksEntity) a).getSemesterId().getSemester();
             return semester.indexOf("_");
+        }).thenComparingLong(a -> {
+            MarksEntity en = (MarksEntity)a;
+            Timestamp time = en.getCourseId().getStartDate();
+            if (time == null) {
+                time = Timestamp.valueOf("1970-1-1 00:00:00");
+                time.setTime(0);
+            }
+            return time.getTime();
         }));
 
         return set;
