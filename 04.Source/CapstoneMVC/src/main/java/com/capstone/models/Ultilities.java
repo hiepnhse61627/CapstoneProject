@@ -1,7 +1,9 @@
 package com.capstone.models;
 
 import com.capstone.entities.MarksEntity;
+import org.eclipse.persistence.jpa.jpql.parser.DateTime;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -34,6 +36,14 @@ public class Ultilities {
         }).thenComparingInt(a -> {
             String semester = ((MarksEntity) a).getSemesterId().getSemester();
             return semester.indexOf("_");
+        }).thenComparingLong(a -> {
+            MarksEntity en = (MarksEntity)a;
+            Timestamp time = en.getCourseId().getStartDate();
+            if (time == null) {
+                time = Timestamp.valueOf("1970-1-1 00:00:00");
+                time.setTime(0);
+            }
+            return time.getTime();
         }));
 
         return set;

@@ -40,4 +40,9 @@ public class MarksServiceImpl implements IMarksService {
     public int getSuccessSavedMark() {
         return marksEntityJpaController.getSuccessSavedMark();
     }
+
+    @Override
+    public List<MarksEntity> getMarkByConditions(String semesterId, String subjectId, String searchKey) {
+        return marksEntityJpaController.getMarksByConditions(semesterId, subjectId, searchKey);
+    }
 }

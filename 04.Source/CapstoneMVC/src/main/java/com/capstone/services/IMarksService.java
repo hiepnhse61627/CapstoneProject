@@ -9,4 +9,5 @@ public interface IMarksService {
     void createMarks(List<MarksEntity> marksEntities);
     int getTotalExistMarks();
     int getSuccessSavedMark();
+    List<MarksEntity> getMarkByConditions(String semesterId, String subjectId, String searchKey);
 }

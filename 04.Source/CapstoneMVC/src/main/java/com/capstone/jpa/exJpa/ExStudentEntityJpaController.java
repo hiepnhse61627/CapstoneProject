@@ -1,9 +1,13 @@
 package com.capstone.jpa.exJpa;
 
+import com.capstone.entities.MarksEntity;
+import com.capstone.entities.RealSemesterEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.jpa.StudentEntityJpaController;
 
 import javax.persistence.*;
+import javax.persistence.criteria.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExStudentEntityJpaController extends StudentEntityJpaController {
