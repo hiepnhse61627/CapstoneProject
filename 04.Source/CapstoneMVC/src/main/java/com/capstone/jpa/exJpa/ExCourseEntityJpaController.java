@@ -15,13 +15,12 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
 
     public CourseEntity findCourseByClass(String className) {
         EntityManager em = getEntityManager();
-        CourseEntity courseEntity = new CourseEntity();
         try {
-            String sqlString = "SELECT c FROM CourseEntity c WHERE c.class1 = :class1";
+            String sqlString = "SELECT c FROM CourseEntity c WHERE c.clazz = :class1";
             Query query = em.createQuery(sqlString);
             query.setParameter("class1", className);
 
-            courseEntity = (CourseEntity) query.getSingleResult();
+            CourseEntity courseEntity = (CourseEntity) query.getSingleResult();
 
             return  courseEntity;
         } catch (NoResultException nrEx) {

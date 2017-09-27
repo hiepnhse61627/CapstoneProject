@@ -33,10 +33,7 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Controller
 public class UploadController {
@@ -351,8 +348,8 @@ public class UploadController {
                                         if (marksEntity.getSubjectId().getSubjectId().contains("_")) {
                                             break;
                                         } else {
-                                            marksEntities.remove(mark);
-                                            marksEntities.add(marksEntity);
+                                            marksEntities.set(marksEntities.indexOf(mark), marksEntity);
+//                                            marksEntities.add(marksEntity);
                                         }
                                     }
                                 }
