@@ -1,12 +1,13 @@
 package com.capstone.models;
 
 import com.capstone.entities.MarksEntity;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Ultilities {
     public static List<MarksEntity> SortMarkBySemester(List<MarksEntity> set) {
@@ -67,5 +68,42 @@ public class Ultilities {
         }));
 
         return set;
+    }
+
+    public static List<MarksEntity> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, String prequisiteId) {
+        List<MarksEntity> result = new ArrayList<>();
+        Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
+        if (!list.isEmpty()) {
+            for (MarksEntity m : list) {
+                if (map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()) == null) {
+                    List<MarksEntity> tmp = new ArrayList<>();
+                    tmp.add(m);
+                    map.put(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId(), SortMarkBySemester(tmp));
+                } else {
+                    map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()).add(m);
+                    SortMarkBySemester(map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()));
+                }
+            }
+
+            Set<String> l = map.rowKeySet();
+            for (String m: l) {
+                Map<String, List<MarksEntity>> n = map.row(m);
+                if (n.get(subId) != null && !n.get(subId).isEmpty()) {
+                    List<MarksEntity> f = n.get(subId);
+                    MarksEntity k = f.get(f.size() - 1);
+                    if (k.getStatus().toLowerCase().contains("pass")) {
+                        if (n.get(prequisiteId) != null && !n.get(prequisiteId).isEmpty()) {
+                            f = n.get(subId);
+                            k = f.get(f.size() - 1);
+                            if (k.getStatus().toLowerCase().contains("fail")) {
+                                result.add(k);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 }
