@@ -4,14 +4,10 @@ import com.capstone.entities.MarksEntity;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
-import org.eclipse.persistence.jpa.jpql.parser.DateTime;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class Ultilities {
     public static List<MarksEntity> SortMarkBySemester(List<MarksEntity> set) {
