@@ -5,6 +5,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
 import java.io.Serializable;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +19,33 @@ public class WebBaseJpaController implements Serializable {
 
     public EntityManager getEntityManager() {
         return emf.createEntityManager();
+    }
+
+    public List<String> getColumnHeaders(String sqlString) {
+        String connectionString = "jdbc:sqlserver://localhost:1433;database=CapstoneProject";
+        Connection connection = null;
+        PreparedStatement preparedStatement = null;
+        ResultSet resultSet = null;
+        ResultSetMetaData resultSetMetaData = null;
+        List<String> columnHeaders = new ArrayList<>();
+
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            connection = DriverManager.getConnection(connectionString, "sa", "sa");
+            preparedStatement = connection.prepareStatement(sqlString);
+            resultSet = preparedStatement.executeQuery();
+            resultSetMetaData = resultSet.getMetaData();
+
+            int columnCount = resultSetMetaData.getColumnCount();
+            for (int i = 1; i <= columnCount; i++) {
+                String columnName = resultSetMetaData.getColumnName(i);
+                columnHeaders.add(columnName);
+            }
+
+            return columnHeaders;
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     public List<Object> getDataInDatabaseByQuery(String sqlString) {

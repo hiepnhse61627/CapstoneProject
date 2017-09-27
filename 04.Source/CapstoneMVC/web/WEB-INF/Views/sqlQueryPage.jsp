@@ -31,22 +31,7 @@
             </div>
         </div>
     </div>
-    <table id="table">
-        <thead>
-        <tr>
-            <th>Header 1</th>
-            <th>Header 2</th>
-            <th>Header 3</th>
-            <th>Header 4</th>
-            <th>Header 5</th>
-            <th>Header 6</th>
-            <th>Header 7</th>
-            <th>Header 8</th>
-            <th>Header 9</th>
-            <th>Header 10</th>
-        </tr>
-        </thead>
-    </table>
+    <table id="myTable"></table>
 </section>
 
 <script>
@@ -93,49 +78,35 @@
     function LoadTable() {
         if (table != null) {
             table.fnDestroy();
-            table = null;
+            $('#myTable').empty();
         }
+        var form = new FormData();
+        form.append('queryStr', $('#inputQuery').val());
 
-        table = $('#table').dataTable({
-            "bServerSide": true,
-            "bFilter": true,
-            "bRetrieve": true,
-            "bScrollCollapse": true,
-            "bProcessing": true,
-            "sAjaxSource": "/query-in-database", // url getData.php etc
-            "fnServerParams": function (aoData) {
-                aoData.push({"name": "queryStr", "value": $('#inputQuery').val()})
-            },
-//            "aoColumnDefs": [
-//                {
-//                    "aTargets": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-//                    "bSortable": false,
-//                },
-//            ],
-            "bAutoWidth": false,
-        }).fnSetFilteringDelay(1000);
+        $.ajax({
+            type : 'POST',
+            url : '/get-table-properties',
+            processData : false,
+            contentType : false,
+            data : form,
+            success : function (result) {
+                if (result) {
+                    table = $('#myTable').dataTable({
+                        "bServerSide": true,
+                        "bFilter": true,
+                        "bRetrieve": true,
+                        "bScrollCollapse": true,
+                        "bProcessing": true,
+                        "sAjaxSource": "/query-in-database", // url getData.php etc
+                        "fnServerParams": function (aoData) {
+                            aoData.push({"name": "queryStr", "value": $('#inputQuery').val()})
+                        },
+                        "aoColumns" : result.aoColumns,
+                        "aoColumnDefs": result.aoColumnDefs,
+                        "bAutoWidth": false,
+                    }).fnSetFilteringDelay(1000);
+                }
+            }
+        });
     }
-
-    function RefreshTable() {
-        if (table != null) {
-            table._fnPageChange(0);
-            table._fnAjaxUpdate();
-        }
-    }
-
-//    function search() {
-//        var form = new FormData();
-//        form.append("queryStr", $('#inputQuery').val());
-//
-//        $.ajax({
-//           type: 'POST',
-//           url: '/query-in-database',
-//           processData: false,
-//           contentType: false,
-//           data: form,
-//           success: function (result) {
-//               console.log(result.databaseData);
-//           }
-//        });
-//    }
 </script>
