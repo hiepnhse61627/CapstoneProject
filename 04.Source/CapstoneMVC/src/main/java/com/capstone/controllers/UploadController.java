@@ -11,6 +11,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
@@ -139,7 +140,7 @@ public class UploadController {
                                 if (cell != null && cell.getStringCellValue().contains("MSSV")) {
                                     rollNumberIndex = cellIndex;
                                     rollNumberFlag = true;
-                                } else if (cell != null && cell.getStringCellValue().contains("Họ tên")) {
+                                } else if (cell != null && cell.getStringCellValue().contains("tên")) {
                                     studentNameIndex = cellIndex;
                                     studentNameFlag = true;
                                 }
@@ -149,12 +150,18 @@ public class UploadController {
                                 row = spreadsheet.getRow(rowIndex);
                             }
                         }
+                        System.out.println(rowIndex);
                         if (rollNumberFlag == true && studentNameFlag == true) {
                             StudentEntity student = new StudentEntity();
                             Cell rollNumberCell = row.getCell(rollNumberIndex);
                             Cell studentNameCell = row.getCell(studentNameIndex);
-                            if (rollNumberCell != null && !rollNumberCell.getStringCellValue().isEmpty()) {
-                                student.setRollNumber(rollNumberCell.getStringCellValue());
+                            if (rollNumberCell != null) {
+                                String rollNumber = rollNumberCell.getCellType() == Cell.CELL_TYPE_STRING ?
+                                        rollNumberCell.getStringCellValue() : (rollNumberCell.getNumericCellValue() == 0 ?
+                                        "" : Integer.toString((int)rollNumberCell.getNumericCellValue()));
+                                if (!rollNumber.isEmpty()) {
+                                    student.setRollNumber(rollNumber);
+                                }
                             }
                             if (studentNameCell != null && !studentNameCell.getStringCellValue().isEmpty()) {
                                 student.setFullName(studentNameCell.getStringCellValue());
