@@ -91,7 +91,7 @@
                                 if (result.success) {
                                     swal({
                                         title: 'Thành công',
-                                        text: "Đã import các sinh viên!",
+                                        text: "Đã import các môn học!",
                                         type: 'success'
                                     }).then(function () {
                                         location.reload();

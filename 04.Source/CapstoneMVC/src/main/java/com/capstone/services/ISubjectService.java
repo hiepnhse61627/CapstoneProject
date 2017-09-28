@@ -9,6 +9,7 @@ public interface ISubjectService {
     void insertSubjectList(List<SubjectEntity> list);
     SubjectEntity findSubjectbyId(String id);
     List<SubjectEntity> getAllSubjects();
+    List<SubjectEntity> getAllPrequisiteSubjects(String subId);
 
     int getCurrentLine();
     int getTotalLine();

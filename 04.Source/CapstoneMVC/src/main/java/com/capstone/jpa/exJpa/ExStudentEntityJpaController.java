@@ -44,12 +44,13 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
                     List<StudentEntity> stus = single.getResultList();
                     if (stus.size() == 0) {
                         em.persist(student);
-                    } else {
-                        StudentEntity stu = stus.get(0);
-                        stu.setRollNumber(student.getRollNumber());
-                        stu.setFullName(student.getFullName());
-                        em.merge(stu);
                     }
+//                    } else {
+//                        StudentEntity stu = stus.get(0);
+//                        stu.setRollNumber(student.getRollNumber());
+//                        stu.setFullName(student.getFullName());
+//                        em.merge(stu);
+//                    }
 
                     em.getTransaction().commit();
                 } catch (Exception e) {
