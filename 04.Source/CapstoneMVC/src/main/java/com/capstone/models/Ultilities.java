@@ -73,6 +73,14 @@ public class Ultilities {
         }).thenComparingInt(a -> {
             String semester = ((MarkModel) a).getSemester();
             return semester.indexOf("_");
+        }).thenComparingLong(a -> {
+            MarksEntity en = (MarksEntity)a;
+            Timestamp time = en.getCourseId().getStartDate();
+            if (time == null) {
+                time = Timestamp.valueOf("1970-1-1 00:00:00");
+                time.setTime(0);
+            }
+            return time.getTime();
         }));
 
         return set;
