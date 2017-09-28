@@ -4,6 +4,9 @@ import com.capstone.entities.MarksEntity;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
+import javax.persistence.Persistence;
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -36,7 +39,7 @@ public class Ultilities {
             String semester = ((MarksEntity) a).getSemesterId().getSemester();
             return semester.indexOf("_");
         }).thenComparingLong(a -> {
-            MarksEntity en = (MarksEntity)a;
+            MarksEntity en = (MarksEntity) a;
             Timestamp time = en.getCourseId().getStartDate();
             if (time == null) {
                 time = Timestamp.valueOf("1970-1-1 00:00:00");
@@ -102,7 +105,7 @@ public class Ultilities {
             }
 
             Set<String> l = map.rowKeySet();
-            for (String m: l) {
+            for (String m : l) {
                 Map<String, List<MarksEntity>> n = map.row(m);
                 if (n.get(subId) != null && !n.get(subId).isEmpty()) {
                     List<MarksEntity> f = n.get(subId);
@@ -121,5 +124,21 @@ public class Ultilities {
         }
 
         return result;
+    }
+
+    public static Connection getConnection() {
+        String connectionString = "jdbc:sqlserver://localhost:1433;database=CapstoneProject";
+        Connection connection = null;
+        String username = "sa";
+        String password = "123";
+
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            connection = DriverManager.getConnection(connectionString, username, password);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return connection;
     }
 }
