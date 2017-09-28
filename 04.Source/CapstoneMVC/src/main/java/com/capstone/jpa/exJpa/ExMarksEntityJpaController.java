@@ -154,9 +154,9 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                 Expression<String> studentFullnameExpression = marksEntityRoot.get("studentId").get("fullName");
                 Expression<String> studentRollNumberExpression = marksEntityRoot.get("studentId").get("rollNumber");
                 Expression<String> classExpression = marksEntityRoot.get("courseId").get("clazz");
-                Predicate fullNamePredicate = criteriaBuilder.like(studentFullnameExpression, searchKey);
-                Predicate rollNumberPredicate = criteriaBuilder.like(studentRollNumberExpression, searchKey);
-                Predicate classPredicate = criteriaBuilder.like(classExpression, searchKey);
+                Predicate fullNamePredicate = criteriaBuilder.like(studentFullnameExpression, "%" + searchKey + "%");
+                Predicate rollNumberPredicate = criteriaBuilder.like(studentRollNumberExpression, "%" + searchKey + "%");
+                Predicate classPredicate = criteriaBuilder.like(classExpression, "%" + searchKey + "%");
 
                 searchKeyPredicate = criteriaBuilder.or(fullNamePredicate, rollNumberPredicate, classPredicate);
                 predicate = predicate == null ? searchKeyPredicate : criteriaBuilder.and(predicate, searchKeyPredicate);

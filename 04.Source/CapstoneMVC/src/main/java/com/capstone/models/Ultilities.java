@@ -109,7 +109,7 @@ public class Ultilities {
                     MarksEntity k = f.get(f.size() - 1);
                     if (k.getStatus().toLowerCase().contains("pass")) {
                         if (n.get(prequisiteId) != null && !n.get(prequisiteId).isEmpty()) {
-                            f = n.get(subId);
+                            f = n.get(prequisiteId);
                             k = f.get(f.size() - 1);
                             if (k.getStatus().toLowerCase().contains("fail")) {
                                 result.add(k);
