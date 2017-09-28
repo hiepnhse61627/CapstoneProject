@@ -22,6 +22,8 @@ public class CourseEntity implements Serializable{
     private Timestamp startDate;
     @Column(name = "EndDate")
     private Timestamp endDate;
+    @Column(name = "SubjectCode")
+    private String subjectCode;
     @OneToMany(mappedBy = "courseId")
     private List<MarksEntity> marksEntityList;
 
@@ -77,6 +79,15 @@ public class CourseEntity implements Serializable{
         this.endDate = endDate;
     }
 
+    @Basic
+    @Column(name = "SubjectCode")
+    public String getSubjectCode() {
+        return subjectCode;
+    }
+
+    public void setSubjectCode(String subjectCode) {
+        this.subjectCode = subjectCode;
+    }
 
     @Override
     public boolean equals(Object o) {
@@ -89,7 +100,7 @@ public class CourseEntity implements Serializable{
         if (clazz != null ? !clazz.equals(that.clazz) : that.clazz != null) return false;
         if (startDate != null ? !startDate.equals(that.startDate) : that.startDate != null) return false;
         if (endDate != null ? !endDate.equals(that.endDate) : that.endDate != null) return false;
-
+        if (subjectCode != null ? !subjectCode.equals(that.subjectCode) : that.subjectCode != null) return false;
         return true;
     }
 
@@ -99,6 +110,7 @@ public class CourseEntity implements Serializable{
         result = 31 * result + (clazz != null ? clazz.hashCode() : 0);
         result = 31 * result + (startDate != null ? startDate.hashCode() : 0);
         result = 31 * result + (endDate != null ? endDate.hashCode() : 0);
+        result = 31 * result + (subjectCode != null ? subjectCode.hashCode() : 0);
         return result;
     }
 

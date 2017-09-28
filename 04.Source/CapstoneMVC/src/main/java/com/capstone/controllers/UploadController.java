@@ -486,11 +486,13 @@ public class UploadController {
             int classIndex = 0;
             int startDateIndex = 0;
             int endDateIndex = 0;
+            int subjectCodeIndex = 0;
             int excelDataIndex = 0;
             int checkIndex = 0;
             int dataStartIndex = 0;
-            List<CourseEntity> courses = new ArrayList<>();
 
+            List<CourseEntity> courses = new ArrayList<>();
+            List<CourseEntity> uniqueCourses = new ArrayList<>();
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 
             //get header data row index
@@ -530,9 +532,12 @@ public class UploadController {
                 if (row.getCell(cellIndex).getStringCellValue().toString().equals("Ngày \n" + "kết thúc")) {
                     endDateIndex = cellIndex;
                 }
-                if (classIndex != 0 && startDateIndex != 0 && endDateIndex != 0) break;
+                if (row.getCell(cellIndex).getStringCellValue().toString().equals("Mã môn")) {
+                    subjectCodeIndex = cellIndex;
+                }
+                if (classIndex != 0 && startDateIndex != 0 && endDateIndex != 0 && subjectCodeIndex != 0) break;
             }
-            if (classIndex == 0 && startDateIndex == 0 && endDateIndex == 0) {
+            if (classIndex == 0 && startDateIndex == 0 && endDateIndex == 0 && subjectCodeIndex == 0) {
 
             } else {
 
@@ -544,29 +549,35 @@ public class UploadController {
                         Cell classCell = row.getCell(classIndex);
                         Cell startDateCell = row.getCell(startDateIndex);
                         Cell endDateCell = row.getCell(endDateIndex);
-                        if (classCell != null) {
-                            System.out.println(classCell.getStringCellValue() + " \t\t ");
-                            course.setClazz(classCell.getStringCellValue());
-                        }
-                        if (startDateCell != null) {
-                            System.out.println(startDateCell.getDateCellValue());
-//                            String startDate = String.valueOf(startDateCell.getNumericCellValue());
-                            course.setStartDate(Timestamp.valueOf(String.valueOf(sdf.format(startDateCell.getDateCellValue()))));
-                        }
-                        if (endDateCell != null) {
-                            System.out.println(endDateCell.getDateCellValue());
-//                            String endDate = sdf.format(endDateCell.getNumericCellValue());
+                        Cell subjectCell = row.getCell(subjectCodeIndex);
+                        if (classCell != null && startDateCell != null && endDateCell != null && subjectCell != null) {
+                            if (classCell != null) {
+                                course.setClazz(classCell.getStringCellValue());
+                            }
+                            if (startDateCell != null) {
+                                course.setStartDate(Timestamp.valueOf(String.valueOf(sdf.format(startDateCell.getDateCellValue()))));
+                            }
+                            if (endDateCell != null) {
+                                course.setEndDate(Timestamp.valueOf(String.valueOf(sdf.format(endDateCell.getDateCellValue()))));
+                            }
+                            if (subjectCell != null) {
+                                course.setSubjectCode(subjectCell.getStringCellValue());
+                            }
 
-                            course.setEndDate(Timestamp.valueOf(String.valueOf(sdf.format(endDateCell.getDateCellValue()))));
-                        }
-
-                        if (course.getClazz() != null) {
-                            courses.add(course);
+                            if (course.getClazz() != null) {
+                                courses.add(course);
+                            }
                         }
                     }
                 }
+                System.out.println("All Course Added");
+                for (CourseEntity element : courses) {
+                    if (!uniqueCourses.contains(element)) {
+                        uniqueCourses.add(element);
+                    }
+                }
 
-                courseService.createCourseList(courses);
+                courseService.createCourseList(uniqueCourses);
             }
         } catch (Exception e) {
             obj.addProperty("success", false);
