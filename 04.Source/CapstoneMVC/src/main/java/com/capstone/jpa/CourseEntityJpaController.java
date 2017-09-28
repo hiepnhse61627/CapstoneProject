@@ -44,30 +44,36 @@ public class CourseEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void createCourseList(List<CourseEntity> students) {
-        totalLine = students.size();
+    public void createCourseList(List<CourseEntity> courses) {
+        totalLine = courses.size();
         currentLine = 0;
 
         EntityManager em = null;
         try {
             em = getEntityManager();
-            for (CourseEntity course : students) {
+            for (CourseEntity course : courses) {
                 try {
                     em.getTransaction().begin();
 
-                    TypedQuery<CourseEntity> single = em.createQuery("SELECT c FROM CourseEntity c WHERE c.clazz = :class", CourseEntity.class);
+                    TypedQuery<CourseEntity> single = em.createQuery("SELECT c FROM CourseEntity c " +
+                            "WHERE c.clazz = :class AND c.subjectCode = :subjectCode " +
+                            "AND c.startDate = :startDate AND c.endDate = :endDate", CourseEntity.class);
                     single.setParameter("class", course.getClazz());
+                    single.setParameter("subjectCode", course.getSubjectCode());
+                    single.setParameter("startDate", course.getStartDate());
+                    single.setParameter("endDate", course.getEndDate());
 
                     List<CourseEntity> stus = single.getResultList();
                     if (stus.size() == 0) {
                         em.persist(course);
-                    } else {
-                        CourseEntity stu = stus.get(0);
-                        stu.setClazz(course.getClazz());
-                        stu.setStartDate(course.getStartDate());
-                        stu.setEndDate(course.getEndDate());
-                        em.merge(stu);
                     }
+//                    else {
+//                        CourseEntity stu = stus.get(0);
+//                        stu.setClazz(course.getClazz());
+//                        stu.setStartDate(course.getStartDate());
+//                        stu.setEndDate(course.getEndDate());
+//                        em.merge(stu);
+//                    }
 
                     em.getTransaction().commit();
                 } catch (Exception e) {
