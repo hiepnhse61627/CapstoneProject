@@ -114,7 +114,7 @@ public class Ultilities {
                         if (n.get(prequisiteId) != null && !n.get(prequisiteId).isEmpty()) {
                             f = n.get(prequisiteId);
                             k = f.get(f.size() - 1);
-                            if (k.getStatus().toLowerCase().contains("fail")) {
+                            if (k.getStatus().toLowerCase().contains("fail") && k.getAverageMark() < 4) {
                                 result.add(k);
                             }
                         }
@@ -130,7 +130,7 @@ public class Ultilities {
         String connectionString = "jdbc:sqlserver://localhost:1433;database=CapstoneProject";
         Connection connection = null;
         String username = "sa";
-        String password = "123";
+        String password = "sa";
 
         try {
             Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
