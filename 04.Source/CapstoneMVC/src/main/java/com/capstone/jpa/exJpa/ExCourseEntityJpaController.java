@@ -16,9 +16,9 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
     public CourseEntity findCourseByClass(String className) {
         EntityManager em = getEntityManager();
         try {
-            String sqlString = "SELECT c FROM CourseEntity c WHERE c.clazz = :class1";
+            String sqlString = "SELECT c FROM CourseEntity c WHERE c.clazz = :clazz";
             Query query = em.createQuery(sqlString);
-            query.setParameter("class1", className);
+            query.setParameter("clazz", className);
 
             CourseEntity courseEntity = (CourseEntity) query.getSingleResult();
 
