@@ -72,7 +72,13 @@
 
     $(document).ready(function (e) {
         $('.select').select2();
+    });
 
+    $('#inputQuery').keypress(function (e) {
+        if (e.keyCode === 13) {
+            e.preventDefault();
+            LoadTable();
+        }
     });
 
     function LoadTable() {
@@ -90,6 +96,7 @@
             contentType : false,
             data : form,
             success : function (result) {
+                debugger
                 if (result) {
                     table = $('#myTable').dataTable({
                         "bServerSide": true,

@@ -1,5 +1,7 @@
 package com.capstone.jpa.exJpa;
 
+import com.capstone.models.Ultilities;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
@@ -22,7 +24,6 @@ public class WebBaseJpaController implements Serializable {
     }
 
     public List<String> getColumnHeaders(String sqlString) {
-        String connectionString = "jdbc:sqlserver://localhost:1433;database=CapstoneProject";
         Connection connection = null;
         PreparedStatement preparedStatement = null;
         ResultSet resultSet = null;
@@ -30,8 +31,7 @@ public class WebBaseJpaController implements Serializable {
         List<String> columnHeaders = new ArrayList<>();
 
         try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            connection = DriverManager.getConnection(connectionString, "sa", "sa");
+            connection = Ultilities.getConnection();
             preparedStatement = connection.prepareStatement(sqlString);
             resultSet = preparedStatement.executeQuery();
             resultSetMetaData = resultSet.getMetaData();
