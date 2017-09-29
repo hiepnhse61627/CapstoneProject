@@ -328,7 +328,7 @@ public class UploadController {
                                 marksEntity.setCourseId(courseEntity);
                             } else {
                                 courseEntity = new CourseEntity();
-                                courseEntity.setClazz(cla.toUpperCase());
+                                courseEntity.setClazz(classNameCell.getStringCellValue().toUpperCase());
                                 courseEntity = courseService.createCourse(courseEntity);
 
                                 marksEntity.setCourseId(courseEntity);
@@ -350,25 +350,27 @@ public class UploadController {
             }
             is.close();
             // Check student same semester, same subject but in different class
-            List<MarksEntity> removalList = new ArrayList<>();
             for (int i = 0; i < marksEntities.size(); i++) {
                 MarksEntity current = marksEntities.get(i);
                 for (int j = i + 1; j < marksEntities.size(); j++) {
                     MarksEntity next = marksEntities.get(j);
                     if (current.getSubjectId() != null && next.getSubjectId() != null) {
-                        if ((current.getSemesterId().getSemester().equals(next.getSemesterId().getSemester()))
-                                && (current.getSubjectId().getSubjectId().equals(next.getSubjectId().getSubjectId()))
-                                && (Double.compare(current.getAverageMark(), next.getAverageMark()) == 0)) { // found
+                        if ((current.getSemesterId().getSemester().toUpperCase().equals(next.getSemesterId().getSemester().toUpperCase()))
+                                && (current.getStudentId().getRollNumber().toUpperCase().equals(next.getStudentId().getRollNumber().toUpperCase()))
+                                && (current.getSubjectId().getSubjectId().toUpperCase().equals(next.getSubjectId().getSubjectId().toUpperCase()))
+                                && (current.getAverageMark().toString().toUpperCase().equals(next.getAverageMark().toString().toUpperCase()))) { // found
+                            System.out.println("SEMESTER: " + current.getSemesterId().getSemester().toUpperCase() + "\t\t" + next.getSemesterId().getSemester().toUpperCase());
+                            System.out.println("SUBJECT_ID: " + current.getSubjectId().getSubjectId().toUpperCase() + "\t\t" + next.getSubjectId().getSubjectId().toUpperCase());
+                            System.out.println("AVERAGE_MARK: " + current.getAverageMark() + "\t\t"  + next.getAverageMark());
+                            System.out.println("-------------------------------------------------------------------------------------------------------------------------");
                             if (current.getCourseId().getClazz().toUpperCase().contains("_SPRING")
                                     || current.getCourseId().getClazz().toUpperCase().contains("_FALL")
                                     || current.getCourseId().getClazz().toUpperCase().contains("_SUMMER")) {
                                 marksEntities.remove(i);
-                                break;
                             } else if (next.getCourseId().getClazz().toUpperCase().contains("_SPRING")
                                     || next.getCourseId().getClazz().toUpperCase().contains("_FALL")
                                     || next.getCourseId().getClazz().toUpperCase().contains("_SUMMER")) {
                                 marksEntities.remove(j);
-                                break;
                             }
                         }
                     }
