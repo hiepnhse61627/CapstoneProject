@@ -1,11 +1,13 @@
 package com.capstone.jpa.exJpa;
 
+import com.capstone.entities.MarksEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.jpa.SubjectEntityJpaController;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 import javax.security.auth.Subject;
 import java.util.ArrayList;

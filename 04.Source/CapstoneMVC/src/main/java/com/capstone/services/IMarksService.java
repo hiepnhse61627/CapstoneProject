@@ -10,4 +10,5 @@ public interface IMarksService {
     int getTotalExistMarks();
     int getSuccessSavedMark();
     List<MarksEntity> getMarkByConditions(String semesterId, String subjectId, String searchKey);
+    List<MarksEntity> getStudentMarksById(int stuId);
 }
