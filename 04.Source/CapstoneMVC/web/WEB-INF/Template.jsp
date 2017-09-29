@@ -183,6 +183,7 @@
                         <li><a href="/goUploadStudentList"><i class="fa fa-circle-o"></i> Danh sách sinh viên</a></li>
                         <li><a href="/goUploadStudentMarks"><i class="fa fa-circle-o"></i> Danh sách điểm</a></li>
                         <li><a href="/subject"> <i class="fa fa-circle-o"></i> Danh sách môn học</a></li>
+                        <li><a href="/goUploadCoursePage"> <i class="fa fa-circle-o"></i> Danh sách khóa học</a></li>
                     </ul>
                 </li>
                 <li class="treeview">

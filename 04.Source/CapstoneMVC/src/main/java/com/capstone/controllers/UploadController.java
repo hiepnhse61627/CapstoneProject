@@ -521,7 +521,13 @@ public class UploadController {
                         Cell subjectCell = row.getCell(subjectCodeIndex);
                         if (classCell != null && startDateCell != null && endDateCell != null && subjectCell != null) {
                             if (classCell != null) {
-                                course.setClazz(classCell.getStringCellValue());
+                                if (classCell.getCellType() == Cell.CELL_TYPE_NUMERIC){
+                                    System.out.println("Class Num ---- " + classCell.getNumericCellValue());
+                                    course.setClazz(String.valueOf(classCell.getNumericCellValue()));
+                                }else{
+                                    System.out.println("Class String ----" + classCell.getStringCellValue());
+                                    course.setClazz(classCell.getStringCellValue());
+                                }
                             }
                             if (startDateCell != null) {
                                 course.setStartDate(Timestamp.valueOf(String.valueOf(sdf.format(startDateCell.getDateCellValue()))));
@@ -530,7 +536,14 @@ public class UploadController {
                                 course.setEndDate(Timestamp.valueOf(String.valueOf(sdf.format(endDateCell.getDateCellValue()))));
                             }
                             if (subjectCell != null) {
-                                course.setSubjectCode(subjectCell.getStringCellValue());
+                                if (subjectCell.getCellType() == Cell.CELL_TYPE_NUMERIC){
+                                    System.out.println("Subject Num ------" + subjectCell.getNumericCellValue());
+                                    course.setSubjectCode(String.valueOf(subjectCell.getNumericCellValue()));
+                                }else{
+                                    System.out.println("Subject String ----" + subjectCell.getStringCellValue());
+                                    course.setSubjectCode(subjectCell.getStringCellValue());
+                                }
+
                             }
 
                             if (course.getClazz() != null) {
