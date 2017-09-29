@@ -40,7 +40,7 @@
     <script src="/Resources/plugins/sweetalert2/sweetalert2.min.js"></script>
     <script src="/Resources/plugins/datatables/datatables.min.js"></script>
     <script src="/Resources/plugins/select2/select2.min.js"></script>
-    <script src="/Resources/plugins/jQueryUI/jquery-ui.min.js"></script>
+    <%--<script src="/Resources/plugins/jQueryUI/jquery-ui.min.js"></script>--%>
 
 </head>
 <body class="hold-transition skin-black-light sidebar-mini">
@@ -182,6 +182,16 @@
                         <i class="fa fa-angle-left pull-right"></i>
                     </a>
                     <ul class="treeview-menu">
+                        <li>
+                            <a href="/studentDetail">
+                                <div class="menu-child-wrapper">
+                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                    <div class="child-content col-md-11">
+                                        Xem sinh viên nợ môn
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
                         <li>
                             <a href="#">
                                 <div class="menu-child-wrapper">

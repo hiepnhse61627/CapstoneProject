@@ -22,6 +22,10 @@ public class StudentServiceImpl implements IStudentService {
         return studentEntityJpaController.findStudentByRollNumber(rollNumber);
     }
 
+    public List<StudentEntity> findAllStudents() {
+        return studentEntityJpaController.findStudentEntityEntities();
+    }
+
     @Override
     public int getCurrentLine() {
         return studentEntityJpaController.getCurrentLine();

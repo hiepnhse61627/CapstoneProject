@@ -9,4 +9,5 @@ public interface IStudentService {
     int getTotalLine();
     void createStudentList(List<StudentEntity> studentEntityList);
     StudentEntity findStudentByRollNumber(String rollNumber);
+    List<StudentEntity> findAllStudents();
 }

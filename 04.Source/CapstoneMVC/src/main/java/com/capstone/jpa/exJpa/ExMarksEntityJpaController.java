@@ -4,10 +4,7 @@ import com.capstone.entities.*;
 import com.capstone.jpa.MarksEntityJpaController;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
+import javax.persistence.*;
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -174,5 +171,13 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             em.close();
         }
         return marks;
+    }
+
+
+    public List<MarksEntity> getStudentMarksById(int stuId) {
+        EntityManager em = getEntityManager();
+        TypedQuery<MarksEntity> query = em.createQuery("SELECT m FROM MarksEntity m WHERE m.studentId.id = :sid", MarksEntity.class);
+        query.setParameter("sid", stuId);
+        return query.getResultList();
     }
 }
