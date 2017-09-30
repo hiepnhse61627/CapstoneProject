@@ -4,7 +4,6 @@ import com.capstone.entities.MarksEntity;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
-import javax.persistence.Persistence;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Timestamp;
@@ -77,8 +76,8 @@ public class Ultilities {
             String semester = ((MarkModel) a).getSemester();
             return semester.indexOf("_");
         }).thenComparingLong(a -> {
-            MarksEntity en = (MarksEntity)a;
-            Timestamp time = en.getCourseId().getStartDate();
+            MarkModel en = (MarkModel) a;
+            Timestamp time = en.getStartDate();
             if (time == null) {
                 time = Timestamp.valueOf("1970-1-1 00:00:00");
                 time.setTime(0);

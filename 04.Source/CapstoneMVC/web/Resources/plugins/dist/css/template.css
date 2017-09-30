@@ -1,5 +1,6 @@
 a {
     white-space: normal;
+    cursor: pointer;
 }
 
 .logo-mini img {
@@ -22,9 +23,13 @@ a {
     background: linear-gradient(to bottom, white, white, white, white, white, orange);
 }
 
-.content-header > h1 {
+.content-header > h1,
+.content-header-title {
+    margin: 0;
+    font-size: 24px;
     font-weight: 600;
 }
+
 
 .box {
     border: none;
