@@ -13,6 +13,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.reflect.TypeToken;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -21,6 +24,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
+import javax.servlet.ServletContext;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -28,6 +32,9 @@ import java.util.stream.Collectors;
 
 @Controller
 public class StudentController {
+
+    @Autowired
+    ServletContext context;
 
     IMarksService marksService = new MarksServiceImpl();
 
@@ -83,7 +90,7 @@ public class StudentController {
                 }
 
                 set.stream().filter(a -> a.getSubjectId() == null).forEach(c -> {
-                    if (c.getStatus().equals("Fail"))  set2.add(c);
+                    if (c.getStatus().equals("Fail")) set2.add(c);
                 });
 
                 set3 = set2.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
@@ -143,17 +150,15 @@ public class StudentController {
             for (MarksEntity m : mlist) {
                 String subjectCode = m.getSubjectId() != null ? m.getSubjectId().getSubjectId() : "N/A";
                 curMark = null;
-                isFound = false;
 
                 for (MarkModel data : dataList) {
                     if (data.getSubject().equals(subjectCode)) {
-                        isFound = true;
                         curMark = data;
                         break;
                     }
                 }
 
-                if (!isFound) {
+                if (curMark == null) {
                     MarkModel mark = new MarkModel();
                     mark.setSemester(m.getSemesterId().getSemester());
                     mark.setSubject(subjectCode);
@@ -161,6 +166,8 @@ public class StudentController {
                     mark.setStatus(m.getStatus());
                     mark.setAverageMark(m.getAverageMark());
                     mark.setRepeatingNumber(1);
+                    mark.setStartDate(m.getCourseId().getStartDate());
+                    mark.setEndDate(m.getCourseId().getEndDate());
 
                     dataList.add(mark);
                 } else {
@@ -169,6 +176,8 @@ public class StudentController {
                     curMark.setStatus(m.getStatus());
                     curMark.setAverageMark(m.getAverageMark());
                     curMark.setRepeatingNumber(curMark.getRepeatingNumber() + 1);
+                    curMark.setStartDate(curMark.getStartDate());
+                    curMark.setEndDate(curMark.getEndDate());
                 }
             }
             dataList = Ultilities.SortMarkModelBySemester(dataList);
