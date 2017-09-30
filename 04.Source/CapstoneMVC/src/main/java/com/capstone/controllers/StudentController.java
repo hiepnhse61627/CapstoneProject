@@ -65,40 +65,15 @@ public class StudentController {
             String subjectId = params.get("subjectId");
             String searchKey = params.get("sSearch");
 
-            List<MarksEntity> set = marksService.getMarkByConditions(semesterId, subjectId, searchKey);
-            List<MarksEntity> set2 = new ArrayList<>();
-            List<MarksEntity> set3 = new ArrayList<>();
-            Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
-
-            if (!set.isEmpty()) {
-                List<MarksEntity> filtered = set.stream().filter(a -> a.getSubjectId() != null).collect(Collectors.toList());
-                for (MarksEntity m : filtered) {
-                    if (map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()) == null) {
-                        List<MarksEntity> list = new ArrayList<>();
-                        list.add(m);
-                        map.put(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId(), Ultilities.SortMarkBySemester(list));
-                    } else {
-                        map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()).add(m);
-                        Ultilities.SortMarkBySemester(map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()));
-                    }
-                }
-
-                for (Table.Cell<String, String, List<MarksEntity>> cell : map.cellSet()) {
-                    if (cell.getValue().get(cell.getValue().size() - 1).getStatus().equals("Fail")) {
-                        set2.add(cell.getValue().get(cell.getValue().size() - 1));
-                    }
-                }
-
-                set.stream().filter(a -> a.getSubjectId() == null).forEach(c -> {
-                    if (c.getStatus().equals("Fail")) set2.add(c);
-                });
-
-                set3 = set2.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+            List<MarksEntity> dataList = this.GetStudentsList(semesterId, subjectId, searchKey);
+            List<MarksEntity> displayList = new ArrayList<>();
+            if (!dataList.isEmpty()) {
+                displayList = dataList.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
             }
 
-            ArrayList<ArrayList<String>> parent = new ArrayList<>();
-            if (!set3.isEmpty()) {
-                set3.forEach(m -> {
+            ArrayList<ArrayList<String>> result = new ArrayList<>();
+            if (!displayList.isEmpty()) {
+                displayList.forEach(m -> {
                     ArrayList<String> tmp = new ArrayList<>();
                     tmp.add(m.getStudentId().getRollNumber());
                     tmp.add(m.getStudentId().getFullName());
@@ -108,16 +83,16 @@ public class StudentController {
                     tmp.add(String.valueOf(m.getAverageMark()));
                     tmp.add(m.getStatus());
                     tmp.add(m.getStudentId().getId() + "");
-                    parent.add(tmp);
+                    result.add(tmp);
                 });
             }
 
-            JsonArray result = (JsonArray) new Gson().toJsonTree(parent, new TypeToken<List<MarksEntity>>() {
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result, new TypeToken<List<MarksEntity>>() {
             }.getType());
 
-            data.addProperty("iTotalRecords", set2.size());
-            data.addProperty("iTotalDisplayRecords", set2.size());
-            data.add("aaData", result);
+            data.addProperty("iTotalRecords", dataList.size());
+            data.addProperty("iTotalDisplayRecords", dataList.size());
+            data.add("aaData", aaData);
             data.addProperty("sEcho", params.get("sEcho"));
 
             return data;
@@ -126,6 +101,38 @@ public class StudentController {
         }
 
         return null;
+    }
+
+    public List<MarksEntity> GetStudentsList(String semesterId, String subjectId, String searchKey) {
+        List<MarksEntity> markList = marksService.getMarkByConditions(semesterId, subjectId, searchKey);
+        List<MarksEntity> result = new ArrayList<>();
+        Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
+
+        if (!markList.isEmpty()) {
+            List<MarksEntity> filtered = markList.stream().filter(a -> a.getSubjectId() != null).collect(Collectors.toList());
+            for (MarksEntity m : filtered) {
+                if (map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()) == null) {
+                    List<MarksEntity> list = new ArrayList<>();
+                    list.add(m);
+                    map.put(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId(), Ultilities.SortMarkBySemester(list));
+                } else {
+                    map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()).add(m);
+                    Ultilities.SortMarkBySemester(map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()));
+                }
+            }
+
+            for (Table.Cell<String, String, List<MarksEntity>> cell : map.cellSet()) {
+                if (cell.getValue().get(cell.getValue().size() - 1).getStatus().equals("Fail")) {
+                    result.add(cell.getValue().get(cell.getValue().size() - 1));
+                }
+            }
+
+            markList.stream().filter(a -> a.getSubjectId() == null).forEach(c -> {
+                if (c.getStatus().equals("Fail")) result.add(c);
+            });
+        }
+
+        return result;
     }
 
     @RequestMapping(value = "/student/getAllMarks", method = RequestMethod.POST)

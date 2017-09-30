@@ -1,66 +1,53 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<style>
-    a {
-        cursor: pointer;
-    }
-</style>
-
 <section class="content-header">
-    <h1>
-        Danh sách sinh viên nợ môn
-    </h1>
+    <h1>Danh sách sinh viên nợ môn</h1>
 </section>
 <section class="content">
     <div class="row">
         <div class="col-md-12">
             <div class="box">
-                <form id="form">
-                    <div class="form-group">
-                        <div class="box-header">
-                            <h4 class="box-title">Học kỳ</h4>
-                        </div>
-                        <select id="semester" class="select form-control">
-                            <option value="0">All</option>
-                            <c:forEach var="semester" items="${semesters}">
-                                <option value="${semester.id}">${semester.semester}</option>
-                            </c:forEach>
-                        </select>
+                <div class="form-group">
+                    <div class="box-header">
+                        <h4 class="box-title">Học kỳ</h4>
                     </div>
-                    <div class="form-group">
-                        <div class="box-header">
-                            <h4 class="box-title">Môn học</h4>
-                        </div>
-                        <select id="subject" class="select form-control">
-                            <option value="0">All</option>
-                            <c:forEach var="sub" items="${subjects}">
-                                <option value="${sub.id}">${sub.id} - ${sub.name} - ${sub.abbreviation}</option>
-                            </c:forEach>
-                        </select>
+                    <select id="semester" class="select form-control">
+                        <option value="0">All</option>
+                        <c:forEach var="semester" items="${semesters}">
+                            <option value="${semester.id}">${semester.semester}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <div class="box-header">
+                        <h4 class="box-title">Môn học</h4>
                     </div>
-                    <button type="button" onclick="RefreshTable()" class="btn btn-success">Tìm kiếm</button>
-                </form>
+                    <select id="subject" class="select form-control">
+                        <option value="0">All</option>
+                        <c:forEach var="sub" items="${subjects}">
+                            <option value="${sub.id}">${sub.id} - ${sub.name} - ${sub.abbreviation}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>
+                    <button type="button" class="btn btn-primary" onclick="ExportExcel()">Xuất dữ liệu</button>
+                </div>
 
-                <div class="col-md-12">
-                    <table id="table">
-                        <thead>
-                        <tr>
-                            <th>MSSV</th>
-                            <th>Tên SV</th>
-                            <th>Môn học</th>
-                            <th>Lớp</th>
-                            <th>Học kỳ</th>
-                            <th>Điểm TB</th>
-                            <th>Status</th>
-                        </tr>
-                        </thead>
-                    </table>
-                </div>
-                <div class="col-md-12">
-                    <a href="/exportExcel?objectType=1" class="btn btn-success">Export File</a>
-                </div>
-                </form>
+                <table id="table">
+                    <thead>
+                    <tr>
+                        <th>MSSV</th>
+                        <th>Tên SV</th>
+                        <th>Môn học</th>
+                        <th>Lớp</th>
+                        <th>Học kỳ</th>
+                        <th>Điểm TB</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                </table>
             </div>
         </div>
     </div>
@@ -96,6 +83,13 @@
 
     </div>
 </div>
+
+<form id="export-excel" action="/exportExcel" hidden>
+    <input name="objectType"/>
+    <input name="subjectId"/>
+    <input name="semesterId"/>
+    <input name="sSearch"/>
+</form>
 
 <script>
     var table = null;
@@ -258,6 +252,15 @@
             "bAutoWidth": false,
         });
         $("#markDetail").modal();
+    }
+
+    function ExportExcel() {
+        $("input[name='objectType']").val(1);
+        $("input[name='subjectId']").val($('#subject').val());
+        $("input[name='semesterId']").val($('#semester').val());
+        $("input[name='sSearch']").val(table.api().context[0].oPreviousSearch.sSearch);
+
+        $("#export-excel").submit();
     }
 
     function RefreshTable() {
