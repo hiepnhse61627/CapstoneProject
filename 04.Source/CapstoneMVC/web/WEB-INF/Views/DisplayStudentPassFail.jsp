@@ -57,6 +57,9 @@
                         </thead>
                     </table>
                 </div>
+                <div class="col-md-12">
+                    <a href="/exportExcel?objectType=1" class="btn btn-success">Export File</a>
+                </div>
                 </form>
             </div>
         </div>
