@@ -13,12 +13,14 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
         super(emf);
     }
 
-    public CourseEntity findCourseByClass(String className) {
+    public CourseEntity findCourseByClassAndSubjectCode(String className, String subjectCode) {
         EntityManager em = getEntityManager();
         try {
-            String sqlString = "SELECT c FROM CourseEntity c WHERE c.clazz = :clazz";
+            String sqlString = "SELECT c FROM CourseEntity c WHERE lower(c.clazz) = :clazz AND lower(c.subjectCode) = :subjectCode";
             Query query = em.createQuery(sqlString);
             query.setParameter("clazz", className);
+            query.setParameter("subjectCode", subjectCode);
+            query.setMaxResults(1);
 
             CourseEntity courseEntity = (CourseEntity) query.getSingleResult();
 

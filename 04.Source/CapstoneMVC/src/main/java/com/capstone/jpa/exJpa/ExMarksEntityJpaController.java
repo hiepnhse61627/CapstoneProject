@@ -74,17 +74,17 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                 }
 
                 // Check marks in database
-                int entityDB =
-                        findMarksByProperties(marksEntity.getCourseId().getId(), marksEntity.getSemesterId().getId(),
-                                marksEntity.getStudentId().getId(),
-                                marksEntity.getSubjectId() != null ? marksEntity.getSubjectId().getSubjectId() : null,
-                                marksEntity.getAverageMark(), marksEntity.getStatus());
-
-                if (entityDB == 0) {
-                    em.persist(marksEntity);
-                } else {
-                    // do nothing
-                }
+//                int entityDB =
+//                        findMarksByProperties(marksEntity.getCourseId().getId(), marksEntity.getSemesterId().getId(),
+//                                marksEntity.getStudentId().getId(),
+//                                marksEntity.getSubjectId() != null ? marksEntity.getSubjectId().getSubjectId() : null,
+//                                marksEntity.getAverageMark(), marksEntity.getStatus());
+//
+//                if (entityDB == 0) {
+                em.persist(marksEntity);
+//                } else {
+//                    // do nothing
+//                }
 
                 if (courseId != null) {
                     courseId.getMarksEntityList().add(marksEntity);

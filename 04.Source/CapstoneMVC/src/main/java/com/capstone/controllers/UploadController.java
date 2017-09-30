@@ -304,12 +304,6 @@ public class UploadController {
                             RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(semesterNameCell.getStringCellValue().toUpperCase());
                             if (realSemesterEntity != null) {
                                 marksEntity.setSemesterId(realSemesterEntity);
-                            } else {
-                                realSemesterEntity = new RealSemesterEntity();
-                                realSemesterEntity.setSemester(semesterNameCell.getStringCellValue().toUpperCase());
-                                realSemesterEntity = realSemesterService.createRealSemester(realSemesterEntity);
-
-                                marksEntity.setSemesterId(realSemesterEntity);
                             }
                         }
 
@@ -321,16 +315,11 @@ public class UploadController {
                             }
                         }
 
-                        if (classNameCell != null) {
+                        if (classNameCell != null && subjectCodeCell != null) {
                             String cla = classNameCell.getStringCellValue();
-                            CourseEntity courseEntity = courseService.findCourseByClass(cla.toUpperCase());
+                            String subjectCd = subjectCodeCell.getStringCellValue();
+                            CourseEntity courseEntity = courseService.findCourseByClassAndSubjectCode(cla.toLowerCase(), subjectCd.toLowerCase());
                             if (courseEntity != null) {
-                                marksEntity.setCourseId(courseEntity);
-                            } else {
-                                courseEntity = new CourseEntity();
-                                courseEntity.setClazz(classNameCell.getStringCellValue().toUpperCase());
-                                courseEntity = courseService.createCourse(courseEntity);
-
                                 marksEntity.setCourseId(courseEntity);
                             }
                         }
@@ -363,14 +352,16 @@ public class UploadController {
                             System.out.println("SUBJECT_ID: " + current.getSubjectId().getSubjectId().toUpperCase() + "\t\t" + next.getSubjectId().getSubjectId().toUpperCase());
                             System.out.println("AVERAGE_MARK: " + current.getAverageMark() + "\t\t"  + next.getAverageMark());
                             System.out.println("-------------------------------------------------------------------------------------------------------------------------");
-                            if (current.getCourseId().getClazz().toUpperCase().contains("_SPRING")
-                                    || current.getCourseId().getClazz().toUpperCase().contains("_FALL")
-                                    || current.getCourseId().getClazz().toUpperCase().contains("_SUMMER")) {
-                                marksEntities.remove(i);
-                            } else if (next.getCourseId().getClazz().toUpperCase().contains("_SPRING")
-                                    || next.getCourseId().getClazz().toUpperCase().contains("_FALL")
-                                    || next.getCourseId().getClazz().toUpperCase().contains("_SUMMER")) {
-                                marksEntities.remove(j);
+                            if (current.getCourseId() != null && next.getCourseId() != null) {
+                                if (current.getCourseId().getClazz().toUpperCase().contains("_SPRING")
+                                        || current.getCourseId().getClazz().toUpperCase().contains("_FALL")
+                                        || current.getCourseId().getClazz().toUpperCase().contains("_SUMMER")) {
+                                    marksEntities.remove(i);
+                                } else if (next.getCourseId().getClazz().toUpperCase().contains("_SPRING")
+                                        || next.getCourseId().getClazz().toUpperCase().contains("_FALL")
+                                        || next.getCourseId().getClazz().toUpperCase().contains("_SUMMER")) {
+                                    marksEntities.remove(j);
+                                }
                             }
                         }
                     }

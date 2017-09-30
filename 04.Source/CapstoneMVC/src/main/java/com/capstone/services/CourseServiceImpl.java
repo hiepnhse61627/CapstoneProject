@@ -14,8 +14,8 @@ public class CourseServiceImpl implements ICourseService {
     ExCourseEntityJpaController courseEntityJpaController = new ExCourseEntityJpaController(emf);
 
     @Override
-    public CourseEntity findCourseByClass(String className) {
-        return courseEntityJpaController.findCourseByClass(className);
+    public CourseEntity findCourseByClassAndSubjectCode(String className, String subjectCode) {
+        return courseEntityJpaController.findCourseByClassAndSubjectCode(className, subjectCode);
     }
 
     @Override

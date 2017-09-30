@@ -6,7 +6,7 @@ import com.capstone.entities.CourseEntity;
 import java.util.List;
 
 public interface ICourseService {
-    CourseEntity findCourseByClass(String className);
+    CourseEntity findCourseByClassAndSubjectCode(String className, String subjectCode);
     void createCourseList(List<CourseEntity> courseEntityList);
     CourseEntity createCourse(CourseEntity entity);
 }
