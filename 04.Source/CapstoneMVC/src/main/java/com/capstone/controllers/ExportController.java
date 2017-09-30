@@ -1,13 +1,16 @@
 package com.capstone.controllers;
 
 import com.capstone.exporters.IExportObject;
+import com.google.gson.JsonObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Map;
 
 @Controller
 public class ExportController {
@@ -16,8 +19,9 @@ public class ExportController {
     private IExportObject exportObject;
 
     @RequestMapping(value = "/exportExcel")
-    public void exportFile(@RequestParam("objectType") int objectType, HttpServletResponse response) {
-        exportObject = createExportImplementation(objectType);
+    @ResponseBody
+    public void exportFile(@RequestParam Map<String, String> params, HttpServletResponse response) {
+        exportObject = createExportImplementation(Integer.parseInt(params.get("objectType")));
         // set content attributes for the response
         response.setContentType(mimeType);
         // set headers for the response
@@ -27,7 +31,8 @@ public class ExportController {
         OutputStream os;
         try {
             os = response.getOutputStream();
-            exportObject.writeData(os);
+            exportObject.writeData(os, params);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -38,8 +43,8 @@ public class ExportController {
      */
     private IExportObject createExportImplementation(int objectType) {
         final String[] CLASSNAME_EXPORTER = {
-                ""
-                , "com.capstone.exporters.ExportStudentsFailImpl" // 1 = Export students fail
+                "",
+                "com.capstone.exporters.ExportStudentsFailImpl" // 1 = Export students fail
         };
 
         try {
