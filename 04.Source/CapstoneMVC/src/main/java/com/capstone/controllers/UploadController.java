@@ -12,6 +12,7 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
@@ -54,6 +55,7 @@ public class UploadController {
     IRealSemesterService realSemesterService = new RealSemesterServiceImpl();
     ISubjectMarkComponentService subjectMarkComponentService = new SubjectMarkComponentServiceImpl();
     ICourseService courseService = new CourseServiceImpl();
+    ISubjectCurriculumService curriculumsService = new SubjectCurriculumServiceImpl();
     IMarksService marksService = new MarksServiceImpl();
 
     /**
@@ -155,7 +157,7 @@ public class UploadController {
                             if (rollNumberCell != null) {
                                 String rollNumber = rollNumberCell.getCellType() == Cell.CELL_TYPE_STRING ?
                                         rollNumberCell.getStringCellValue() : (rollNumberCell.getNumericCellValue() == 0 ?
-                                        "" : Integer.toString((int)rollNumberCell.getNumericCellValue()));
+                                        "" : Integer.toString((int) rollNumberCell.getNumericCellValue()));
                                 if (!rollNumber.isEmpty()) {
                                     student.setRollNumber(rollNumber);
                                 }
@@ -350,7 +352,7 @@ public class UploadController {
                                 && (current.getAverageMark().toString().toUpperCase().equals(next.getAverageMark().toString().toUpperCase()))) { // found
                             System.out.println("SEMESTER: " + current.getSemesterId().getSemester().toUpperCase() + "\t\t" + next.getSemesterId().getSemester().toUpperCase());
                             System.out.println("SUBJECT_ID: " + current.getSubjectId().getSubjectId().toUpperCase() + "\t\t" + next.getSubjectId().getSubjectId().toUpperCase());
-                            System.out.println("AVERAGE_MARK: " + current.getAverageMark() + "\t\t"  + next.getAverageMark());
+                            System.out.println("AVERAGE_MARK: " + current.getAverageMark() + "\t\t" + next.getAverageMark());
                             System.out.println("-------------------------------------------------------------------------------------------------------------------------");
                             if (current.getCourseId() != null && next.getCourseId() != null) {
                                 if (current.getCourseId().getClass1().toUpperCase().contains("_SPRING")
@@ -545,10 +547,10 @@ public class UploadController {
                         Cell subjectCell = row.getCell(subjectCodeIndex);
                         if (classCell != null && startDateCell != null && endDateCell != null && subjectCell != null) {
                             if (classCell != null) {
-                                if (classCell.getCellType() == Cell.CELL_TYPE_NUMERIC){
+                                if (classCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
                                     System.out.println("Class Num ---- " + classCell.getNumericCellValue());
                                     course.setClass1(String.valueOf(classCell.getNumericCellValue()));
-                                }else{
+                                } else {
                                     System.out.println("Class String ----" + classCell.getStringCellValue());
                                     course.setClass1(classCell.getStringCellValue());
                                 }
@@ -560,10 +562,10 @@ public class UploadController {
                                 course.setEndDate(sdf.parse(String.valueOf(endDateCell.getDateCellValue())));
                             }
                             if (subjectCell != null) {
-                                if (subjectCell.getCellType() == Cell.CELL_TYPE_NUMERIC){
+                                if (subjectCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
                                     System.out.println("Subject Num ------" + subjectCell.getNumericCellValue());
                                     course.setSubjectCode(String.valueOf(subjectCell.getNumericCellValue()));
-                                }else{
+                                } else {
                                     System.out.println("Subject String ----" + subjectCell.getStringCellValue());
                                     course.setSubjectCode(subjectCell.getStringCellValue());
                                 }
@@ -599,5 +601,206 @@ public class UploadController {
         obj.addProperty("success", true);
         return obj;
     }
+
+    /**
+     * --------------CURRICULUM------------
+     **/
+    @RequestMapping(value = "/goUploadCurriculumPage")
+    public ModelAndView goUploadCurriculumPage() {
+        ModelAndView view = new ModelAndView("uploadCurriculum");
+
+        ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+        File[] list = read.readFiles(context, folder);
+        view.addObject("files", list);
+        return view;
+    }
+
+    @RequestMapping("/getCurriculumStatus")
+    @ResponseBody
+    public JsonObject getCurriculumCurrentLine() {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("current", studentService.getCurrentLine());
+        obj.addProperty("total", studentService.getTotalLine());
+        return obj;
+    }
+
+    @RequestMapping(value = "/uploadCurriculumExistFile", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject chooseExistCurriculumFile(@RequestParam("file") String file) {
+        JsonObject obj;
+        try {
+            File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
+            obj = ReadCurriculumFile(null, f, false);
+        } catch (Exception e) {
+            obj = new JsonObject();
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
+        }
+
+        return obj;
+    }
+
+    @RequestMapping(value = "/uploadCurriculum", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject uploadCurriculumFile(@RequestParam("file") MultipartFile files) {
+        JsonObject obj = ReadCurriculumFile(files, null, true);
+        if (obj.get("success").getAsBoolean()) {
+            ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+            read.saveFile(context, files, folder);
+        }
+
+        return obj;
+    }
+
+    private static int findRowCurriculum(XSSFSheet sheet, String cellContent) {
+        for (Row row : sheet) {
+            for (Cell cell : row) {
+                if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
+                    if (cell.getRichStringCellValue().getString().trim().equals(cellContent)) {
+                        return row.getRowNum();
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    private static boolean checkCellCurriculum(XSSFCell c) {
+        if (c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+            return false;
+        }
+        return true;
+    }
+
+
+    private JsonObject ReadCurriculumFile(MultipartFile file, File file2, boolean isNewFile) {
+        JsonObject obj = new JsonObject();
+
+        try {
+            InputStream is;
+            if (isNewFile) {
+                is = file.getInputStream();
+            } else {
+                is = new FileInputStream(file2);
+            }
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(1);
+
+            XSSFRow row;
+            int subjectCodeIndex = 0;
+            int subjectNameIndex = 0;
+            int excelDataIndex = 0;
+            int checkIndex = 0;
+
+            String curriculumName = spreadsheet.getSheetName();
+
+            List<SubjectCurriculumEntity> curriculums = new ArrayList<>();
+            List<SubjectCurriculumEntity> uniqueCurriculum = new ArrayList<>();
+//            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
+
+            //get header data row index
+            excelDataIndex = findRowCurriculum(spreadsheet, "Phase 1");
+//            row = spreadsheet.getRow(excelDataIndex);
+
+//            //get data start index
+//            for (dataStartIndex = excelDataIndex + 1; dataStartIndex <= spreadsheet.getLastRowNum(); dataStartIndex++) {
+//                boolean flag = false;
+//                for (int curCellIndex = 1; curCellIndex <= row.getLastCellNum(); curCellIndex++) {
+//                    if (row.getCell(curCellIndex).getStringCellValue().toString().equals("Lớp")) {
+//                        checkIndex = curCellIndex;
+//                        flag = true;
+//                        break;
+//                    }
+//                }
+//                if (flag) {
+//                    break;
+//                }
+//            }
+
+//            for (int conRowIndex = excelDataIndex + 1; conRowIndex <= spreadsheet.getLastRowNum(); conRowIndex++) {
+//                if (checkCell(spreadsheet.getRow(conRowIndex).getCell(checkIndex)) == true) {
+//                    dataStartIndex = conRowIndex;
+//                    break;
+//                }
+//            }
+
+
+
+            row = spreadsheet.getRow(excelDataIndex);
+            for (int cellIndex = 0; cellIndex <= row.getLastCellNum(); cellIndex++) {
+
+                if (classIndex != 0 && startDateIndex != 0 && endDateIndex != 0 && subjectCodeIndex != 0) break;
+            }
+            if (classIndex == 0 && startDateIndex == 0 && endDateIndex == 0 && subjectCodeIndex == 0) {
+
+            } else {
+
+                for (int rowIndex = dataStartIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                    row = spreadsheet.getRow(rowIndex);
+
+                    if (row != null) {
+                        SubjectCurriculumEntity curriculum = new SubjectCurriculumEntity();
+                        Cell classCell = row.getCell(classIndex);
+                        Cell startDateCell = row.getCell(startDateIndex);
+                        Cell endDateCell = row.getCell(endDateIndex);
+                        Cell subjectCell = row.getCell(subjectCodeIndex);
+                        if (classCell != null && startDateCell != null && endDateCell != null && subjectCell != null) {
+                            if (classCell != null) {
+                                if (classCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+                                    System.out.println("Class Num ---- " + classCell.getNumericCellValue());
+                                    curriculum.setClass1(String.valueOf(classCell.getNumericCellValue()));
+                                } else {
+                                    System.out.println("Class String ----" + classCell.getStringCellValue());
+                                    curriculum.setClass1(classCell.getStringCellValue());
+                                }
+                            }
+//                            if (startDateCell != null) {
+//                                curriculum.setStartDate(sdf.parse(String.valueOf(startDateCell.getDateCellValue())));
+//                            }
+//                            if (endDateCell != null) {
+//                                curriculum.setEndDate(sdf.parse(String.valueOf(endDateCell.getDateCellValue())));
+//                            }
+                            if (subjectCell != null) {
+                                if (subjectCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+                                    System.out.println("Subject Num ------" + subjectCell.getNumericCellValue());
+                                    curriculum.setSubjectCode(String.valueOf(subjectCell.getNumericCellValue()));
+                                } else {
+                                    System.out.println("Subject String ----" + subjectCell.getStringCellValue());
+                                    curriculum.setSubjectCode(subjectCell.getStringCellValue());
+                                }
+
+                            }
+
+                            if (curriculum.getClass1() != null) {
+                                curriculums.add(curriculum);
+                            }
+                        }
+                    }
+                }
+
+                System.out.println("All Curriculum Added");
+                for (SubjectCurriculumEntity element : curriculums) {
+                    if (!uniqueCurriculum.stream().anyMatch(c -> c.getClass1().equals(element.getClass1())
+                            && c.getSubjectCode().equals(element.getSubjectCode())
+                            && c.getStartDate() == element.getStartDate()
+                            && c.getEndDate() == element.getEndDate())) {
+                        uniqueCurriculum.add(element);
+                    }
+                }
+
+                curriculumsService.createCurriculumList(uniqueCurriculum);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
+            return obj;
+        }
+
+        obj.addProperty("success", true);
+        return obj;
+    }
+
 }
 

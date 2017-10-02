@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface ISubjectCurriculumService {
     List<SubjectCurriculumEntity> getAllSubjectCurriculum();
+    void createCurriculumList(List<SubjectCurriculumEntity> courseEntityList);
+    SubjectCurriculumEntity createCurriculum(SubjectCurriculumEntity entity);
 }
