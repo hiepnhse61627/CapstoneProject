@@ -7,6 +7,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
 import javax.persistence.Query;
+import java.util.List;
 
 public class ExCourseEntityJpaController extends CourseEntityJpaController {
     public ExCourseEntityJpaController(EntityManagerFactory emf) {
@@ -48,6 +49,15 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
             if (em != null) {
                 em.close();
             }
+        }
+    }
+
+    public void createCourseList(List<CourseEntity> courseEntityList) {
+        EntityManager em = getEntityManager();
+        for (CourseEntity courseEntity: courseEntityList) {
+            em.getTransaction().begin();
+            em.persist(courseEntity);
+            em.getTransaction().commit();
         }
     }
 }

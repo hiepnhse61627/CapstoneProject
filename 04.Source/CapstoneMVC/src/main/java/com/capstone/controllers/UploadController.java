@@ -418,7 +418,7 @@ public class UploadController {
         JsonObject obj;
         try {
             File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
-            obj = ReadFile(null, f, false);
+            obj = ReadCourseFile(null, f, false);
         } catch (Exception e) {
             obj = new JsonObject();
             obj.addProperty("success", false);
@@ -486,7 +486,7 @@ public class UploadController {
 
             List<CourseEntity> courses = new ArrayList<>();
             List<CourseEntity> uniqueCourses = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
 
             //get header data row index
             excelDataIndex = findRow(spreadsheet, "Lớp");
@@ -554,10 +554,10 @@ public class UploadController {
                                 }
                             }
                             if (startDateCell != null) {
-                                course.setStartDate(Timestamp.valueOf(String.valueOf(sdf.format(startDateCell.getDateCellValue()))));
+                                course.setStartDate(sdf.parse(String.valueOf(startDateCell.getDateCellValue())));
                             }
                             if (endDateCell != null) {
-                                course.setEndDate(Timestamp.valueOf(String.valueOf(sdf.format(endDateCell.getDateCellValue()))));
+                                course.setEndDate(sdf.parse(String.valueOf(endDateCell.getDateCellValue())));
                             }
                             if (subjectCell != null) {
                                 if (subjectCell.getCellType() == Cell.CELL_TYPE_NUMERIC){
@@ -576,6 +576,7 @@ public class UploadController {
                         }
                     }
                 }
+
                 System.out.println("All Course Added");
                 for (CourseEntity element : courses) {
                     if (!uniqueCourses.contains(element)) {
@@ -586,6 +587,7 @@ public class UploadController {
                 courseService.createCourseList(uniqueCourses);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             obj.addProperty("success", false);
             obj.addProperty("message", e.getMessage());
             return obj;
