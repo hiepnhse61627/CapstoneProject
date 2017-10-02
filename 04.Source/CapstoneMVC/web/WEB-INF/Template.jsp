@@ -26,7 +26,7 @@
     <link rel="stylesheet" href="/Resources/plugins/datatables/datatables.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/select2/select2.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/dist/css/template.css"/>
-    <%--<link rel="stylesheet" href="/Resources/plugins/jQueryUI/jquery-ui.min.css"/>--%>
+    <link rel="stylesheet" href="/Resources/plugins/jQueryUI/jquery-ui.min.css"/>
 
     <!-- REQUIRED JS SCRIPTS -->
 
@@ -40,8 +40,8 @@
     <script src="/Resources/plugins/sweetalert2/sweetalert2.min.js"></script>
     <script src="/Resources/plugins/datatables/datatables.min.js"></script>
     <script src="/Resources/plugins/select2/select2.min.js"></script>
-    <%--<script src="/Resources/plugins/jQueryUI/jquery-ui.min.js"></script>--%>
-
+    <script src="/Resources/plugins/jQueryUI/jquery-ui.min.js"></script>
+    <script src="/Resources/plugins/tablednd/jquery.tablednd.min.js"></script>
 </head>
 <body class="hold-transition skin-black-light sidebar-mini">
 <div class="wrapper">

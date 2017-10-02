@@ -93,7 +93,7 @@
                 {
                     "aTargets": [2],
                     "mRender": function (data, type, row) {
-                        return "<a class='btn btn-primary' onclick='alert(" + row[2] + ");'>" +
+                        return "<a class='btn btn-primary' href='/editcurriculum/" + data + "'>" +
                             "<i class='fa fa-eye'></i></a>";
                     }
                 },
