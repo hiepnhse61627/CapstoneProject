@@ -1,10 +1,10 @@
 package com.capstone.controllers;
 
-import com.capstone.entities.CurriculumMappingEntity;
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.SubjectCurriculumEntity;
+import com.capstone.entities.*;
 import com.capstone.services.ISubjectCurriculumService;
+import com.capstone.services.ISubjectService;
 import com.capstone.services.SubjectCurriculumServiceImpl;
+import com.capstone.services.SubjectServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -23,8 +23,6 @@ import java.util.stream.Collectors;
 @Controller
 public class SubjectCurriculumController {
 
-    private ISubjectCurriculumService service = new SubjectCurriculumServiceImpl();
-
     @RequestMapping("/subcurriculum")
     public String Index() {
         return "SubjectCurriculum";
@@ -32,12 +30,16 @@ public class SubjectCurriculumController {
 
     @RequestMapping("/editcurriculum/{curId}")
     public ModelAndView Edit(@PathVariable("curId") int curId) {
+        ISubjectCurriculumService service = new SubjectCurriculumServiceImpl();
+        ISubjectService service2 = new SubjectServiceImpl();
+
         ModelAndView view = new ModelAndView("EditSubjectCurriculum");
         SubjectCurriculumEntity ent = service.getCurriculumById(curId);
         ent.getCurriculumMappingEntityList().sort(Comparator.comparingInt(c -> c.getOrdering()));
         view.addObject("data", ent);
 
-        Map<String, List<CurriculumMappingEntity>> map = new HashMap<>();
+        Map<String, List<CurriculumMappingEntity>> unsortedmap = new HashMap<>();
+        Map<String, List<CurriculumMappingEntity>> map = new TreeMap<>(unsortedmap);
         for (CurriculumMappingEntity en : ent.getCurriculumMappingEntityList()) {
             if (map.get(en.getTerm()) == null) {
                 List<CurriculumMappingEntity> tmp = new ArrayList<>();
@@ -49,6 +51,9 @@ public class SubjectCurriculumController {
         }
         view.addObject("list", map);
 
+        List<SubjectEntity> l2 = service2.getAllSubjects();
+        view.addObject("subs", l2);
+
         return view;
     }
 
@@ -56,6 +61,8 @@ public class SubjectCurriculumController {
     @ResponseBody
     public JsonObject Edit(@RequestParam() List<String> data, @RequestParam int id) {
         JsonObject obj = new JsonObject();
+        ISubjectCurriculumService service = new SubjectCurriculumServiceImpl();
+        ISubjectService service2 = new SubjectServiceImpl();
 
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = emf.createEntityManager();
@@ -72,6 +79,7 @@ public class SubjectCurriculumController {
                         term = s;
                     } else {
                         List<CurriculumMappingEntity> l = ent.getCurriculumMappingEntityList();
+
                         for (CurriculumMappingEntity c : l) {
                             if (c.getSubjectEntity().getId().equals(s)) {
                                 c.setTerm(term);
@@ -79,7 +87,35 @@ public class SubjectCurriculumController {
                                 em.getTransaction().begin();
                                 em.merge(c);
                                 em.getTransaction().commit();
+                                break;
                             }
+                        }
+
+                        boolean flag = false;
+                        for (CurriculumMappingEntity c : l) {
+                            if (c.getSubjectEntity().getId().equals(s)) {
+                                flag = true;
+                                break;
+                            }
+                        }
+
+                        if (!flag) {
+                            CurriculumMappingEntity c = new CurriculumMappingEntity();
+                            c.setOrdering(order++);
+                            c.setTerm(term);
+
+                            CurriculumMappingEntityPK pk = new CurriculumMappingEntityPK();
+                            pk.setSubId(s);
+                            pk.setCurId(ent.getId());
+
+                            c.setCurriculumMappingEntityPK(pk);
+//                            c.setSubjectCurriculumEntity(ent);
+//                            c.setSubjectEntity(service2.findSubjectbyId(s));
+                            ent.getCurriculumMappingEntityList().add(c);
+//                            c.getSubjectEntity().setCurriculumMappingEntityList(l);
+                            em.getTransaction().begin();
+                            em.persist(c);
+                            em.getTransaction().commit();
                         }
                     }
                 }
@@ -94,6 +130,9 @@ public class SubjectCurriculumController {
     @RequestMapping("/getsubcurriculum")
     @ResponseBody
     public JsonObject GetSubCurriculum(@RequestParam Map<String, String> params) {
+        ISubjectCurriculumService service = new SubjectCurriculumServiceImpl();
+        ISubjectService service2 = new SubjectServiceImpl();
+
         try {
             JsonObject data = new JsonObject();
 
