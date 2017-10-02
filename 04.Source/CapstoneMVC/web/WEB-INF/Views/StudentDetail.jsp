@@ -29,11 +29,23 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="box">
-                <div class="form-group">
-                    <label>Danh sách môn còn nợ</label>
-                    <table id="table"></table>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="col-md-6">
+                    <div class="box">
+                        <div class="form-group">
+                            <label>Danh sách môn còn nợ</label>
+                            <table id="table"></table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="box">
+                        <div class="form-group">
+                            <label>Danh sách môn học tiếp theo</label>
+
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
