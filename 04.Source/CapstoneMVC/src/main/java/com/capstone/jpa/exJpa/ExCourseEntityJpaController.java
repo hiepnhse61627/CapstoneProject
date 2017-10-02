@@ -55,9 +55,13 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
     public void createCourseList(List<CourseEntity> courseEntityList) {
         EntityManager em = getEntityManager();
         for (CourseEntity courseEntity: courseEntityList) {
-            em.getTransaction().begin();
-            em.persist(courseEntity);
-            em.getTransaction().commit();
+            try {
+                em.getTransaction().begin();
+                em.persist(courseEntity);
+                em.getTransaction().commit();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }
