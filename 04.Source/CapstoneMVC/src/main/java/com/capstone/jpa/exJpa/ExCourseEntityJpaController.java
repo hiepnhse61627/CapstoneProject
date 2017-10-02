@@ -3,10 +3,7 @@ package com.capstone.jpa.exJpa;
 import com.capstone.entities.CourseEntity;
 import com.capstone.jpa.CourseEntityJpaController;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.NoResultException;
-import javax.persistence.Query;
+import javax.persistence.*;
 import java.util.List;
 
 public class ExCourseEntityJpaController extends CourseEntityJpaController {
@@ -17,7 +14,7 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
     public CourseEntity findCourseByClassAndSubjectCode(String className, String subjectCode) {
         EntityManager em = getEntityManager();
         try {
-            String sqlString = "SELECT c FROM CourseEntity c WHERE lower(c.clazz) = :clazz AND lower(c.subjectCode) = :subjectCode";
+            String sqlString = "SELECT c FROM CourseEntity c WHERE lower(c.class1) = :clazz AND lower(c.subjectCode) = :subjectCode";
             Query query = em.createQuery(sqlString);
             query.setParameter("clazz", className);
             query.setParameter("subjectCode", subjectCode);
@@ -56,9 +53,16 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
         EntityManager em = getEntityManager();
         for (CourseEntity courseEntity: courseEntityList) {
             try {
-                em.getTransaction().begin();
-                em.persist(courseEntity);
-                em.getTransaction().commit();
+                TypedQuery<CourseEntity> tmp = em.createQuery("SELECT c FROM CourseEntity c WHERE c.class1 = :class AND c.endDate = :enddate AND c.startDate = :startdate AND c.subjectCode = :sub ", CourseEntity.class);
+                tmp.setParameter("sub", courseEntity.getSubjectCode());
+                tmp.setParameter("class", courseEntity.getClass1());
+                tmp.setParameter("startdate", courseEntity.getStartDate(), TemporalType.TIMESTAMP);
+                tmp.setParameter("enddate", courseEntity.getEndDate(), TemporalType.TIMESTAMP);
+                if (tmp.getResultList().size() == 0) {
+                    em.getTransaction().begin();
+                    em.persist(courseEntity);
+                    em.getTransaction().commit();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
