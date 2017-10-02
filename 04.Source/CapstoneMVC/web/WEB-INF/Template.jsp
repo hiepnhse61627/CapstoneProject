@@ -193,6 +193,16 @@
                                 </div>
                             </a>
                         </li>
+                        <li>
+                            <a href="/subcurriculum">
+                                <div class="menu-child-wrapper">
+                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                    <div class="child-content col-md-11">
+                                        Khung chương trình
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 <li class="treeview">
