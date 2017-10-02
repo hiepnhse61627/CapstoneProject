@@ -78,7 +78,7 @@ public class StudentController {
                     tmp.add(m.getStudentId().getRollNumber());
                     tmp.add(m.getStudentId().getFullName());
                     tmp.add(m.getSubjectId() == null ? "N/A" : m.getSubjectId().getSubjectId());
-                    tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getClazz());
+                    tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getClass1());
                     tmp.add(m.getSemesterId() == null ? "N/A" : m.getSemesterId().getSemester());
                     tmp.add(String.valueOf(m.getAverageMark()));
                     tmp.add(m.getStatus());
@@ -169,7 +169,7 @@ public class StudentController {
                     MarkModel mark = new MarkModel();
                     mark.setSemester(m.getSemesterId().getSemester());
                     mark.setSubject(subjectCode);
-                    mark.setClass1(m.getCourseId().getClazz());
+                    mark.setClass1(m.getCourseId().getClass1());
                     mark.setStatus(m.getStatus());
                     mark.setAverageMark(m.getAverageMark());
                     mark.setRepeatingNumber(1);
@@ -179,7 +179,7 @@ public class StudentController {
                     dataList.add(mark);
                 } else {
                     curMark.setSemester(m.getSemesterId().getSemester());
-                    curMark.setClass1(m.getCourseId().getClazz());
+                    curMark.setClass1(m.getCourseId().getClass1());
                     curMark.setStatus(m.getStatus());
                     curMark.setAverageMark(m.getAverageMark());
                     curMark.setRepeatingNumber(curMark.getRepeatingNumber() + 1);

@@ -8,6 +8,7 @@ package com.capstone.entities;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -16,6 +17,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
@@ -28,6 +30,9 @@ import javax.persistence.Table;
 @NamedQueries({
     @NamedQuery(name = "SubjectEntity.findAll", query = "SELECT s FROM SubjectEntity s")})
 public class SubjectEntity implements Serializable {
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
+    private List<CurriculumMappingEntity> curriculumMappingEntityList;
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -137,6 +142,14 @@ public class SubjectEntity implements Serializable {
     @Override
     public String toString() {
         return "entities.SubjectEntity[ id=" + id + " ]";
+    }
+
+    public List<CurriculumMappingEntity> getCurriculumMappingEntityList() {
+        return curriculumMappingEntityList;
+    }
+
+    public void setCurriculumMappingEntityList(List<CurriculumMappingEntity> curriculumMappingEntityList) {
+        this.curriculumMappingEntityList = curriculumMappingEntityList;
     }
     
 }

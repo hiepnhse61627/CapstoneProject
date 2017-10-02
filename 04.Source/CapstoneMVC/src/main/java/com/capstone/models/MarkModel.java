@@ -1,14 +1,15 @@
 package com.capstone.models;
 
 import java.sql.Timestamp;
+import java.util.Date;
 
 public class MarkModel {
     private String subject;
     private String semester;
     private String class1;
     private String status;
-    private Timestamp startDate;
-    private Timestamp endDate;
+    private Date startDate;
+    private Date endDate;
     private double averageMark;
     private int repeatingNumber;
 
@@ -60,19 +61,19 @@ public class MarkModel {
         this.repeatingNumber = repeatingNumber;
     }
 
-    public Timestamp getStartDate() {
+    public Date getStartDate() {
         return startDate;
     }
 
-    public void setStartDate(Timestamp startDate) {
+    public void setStartDate(Date startDate) {
         this.startDate = startDate;
     }
 
-    public Timestamp getEndDate() {
+    public Date getEndDate() {
         return endDate;
     }
 
-    public void setEndDate(Timestamp endDate) {
+    public void setEndDate(Date endDate) {
         this.endDate = endDate;
     }
 }

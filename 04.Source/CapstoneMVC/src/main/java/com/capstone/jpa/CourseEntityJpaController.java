@@ -5,35 +5,23 @@
  */
 package com.capstone.jpa;
 
-import com.capstone.entities.CourseEntity;
-import com.capstone.jpa.exceptions.NonexistentEntityException;
-import com.capstone.jpa.exceptions.PreexistingEntityException;
-
+import com.capstone.entities.*;
+import com.capstone.jpa.exceptions.*;
 import java.io.Serializable;
-import javax.persistence.*;
+import javax.persistence.Query;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.capstone.entities.MarksEntity;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
  * @author Rem
  */
 public class CourseEntityJpaController implements Serializable {
-
-    private int currentLine = 0;
-    private int totalLine = 0;
-
-
-    public int getCurrentLine() {
-        return currentLine;
-    }
-
-    public int getTotalLine() {
-        return totalLine;
-    }
 
     public CourseEntityJpaController(EntityManagerFactory emf) {
         this.emf = emf;
@@ -42,56 +30,6 @@ public class CourseEntityJpaController implements Serializable {
 
     public EntityManager getEntityManager() {
         return emf.createEntityManager();
-    }
-
-    public void createCourseList(List<CourseEntity> courses) {
-        totalLine = courses.size();
-        currentLine = 0;
-
-        EntityManager em = null;
-        try {
-            em = getEntityManager();
-            for (CourseEntity course : courses) {
-                try {
-                    em.getTransaction().begin();
-
-                    TypedQuery<CourseEntity> single = em.createQuery("SELECT c FROM CourseEntity c " +
-                            "WHERE c.clazz = :class AND c.subjectCode = :subjectCode " +
-                            "AND c.startDate = :startDate AND c.endDate = :endDate", CourseEntity.class);
-                    single.setParameter("class", course.getClazz());
-                    single.setParameter("subjectCode", course.getSubjectCode());
-                    single.setParameter("startDate", course.getStartDate());
-                    single.setParameter("endDate", course.getEndDate());
-
-                    List<CourseEntity> stus = single.getResultList();
-                    if (stus.size() == 0) {
-                        em.persist(course);
-                    }
-//                    else {
-//                        CourseEntity stu = stus.get(0);
-//                        stu.setClazz(course.getClazz());
-//                        stu.setStartDate(course.getStartDate());
-//                        stu.setEndDate(course.getEndDate());
-//                        em.merge(stu);
-//                    }
-
-                    em.getTransaction().commit();
-                } catch (Exception e) {
-                    System.out.println("Course " + course.getClazz() + "caused " + e.getMessage());
-                }
-
-                currentLine++;
-
-                System.out.println(currentLine + "-" + totalLine);
-            }
-        } finally {
-            if (em != null) {
-                em.close();
-            }
-        }
-
-        totalLine = 0;
-        currentLine = 0;
     }
 
     public void create(CourseEntity courseEntity) throws PreexistingEntityException, Exception {

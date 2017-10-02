@@ -89,7 +89,7 @@ public class StudentFailPrequisite {
                     tmp.add(m.getStudentId().getRollNumber());
                     tmp.add(m.getStudentId().getFullName());
                     tmp.add(m.getSubjectId() == null ? "N/A" : m.getSubjectId().getSubjectId());
-                    tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getClazz());
+                    tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getClass1());
                     tmp.add(m.getSemesterId() == null ? "N/A" : m.getSemesterId().getSemester());
                     tmp.add(String.valueOf(m.getAverageMark()));
                     tmp.add(m.getStatus());

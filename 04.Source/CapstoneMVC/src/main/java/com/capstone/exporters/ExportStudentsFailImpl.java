@@ -84,7 +84,7 @@ public class ExportStudentsFailImpl implements IExportObject {
             row.createCell(count++).setCellValue(m.getStudentId().getRollNumber());
             row.createCell(count++).setCellValue(m.getStudentId().getFullName());
             row.createCell(count++).setCellValue(m.getSubjectId() == null ? "N/A" : m.getSubjectId().getSubjectId());
-            row.createCell(count++).setCellValue(m.getCourseId() == null ? "N/A" : m.getCourseId().getClazz());
+            row.createCell(count++).setCellValue(m.getCourseId() == null ? "N/A" : m.getCourseId().getClass1());
             row.createCell(count++).setCellValue(m.getSemesterId() == null ? "N/A" : m.getSemesterId().getSemester());
             row.createCell(count++).setCellValue(String.valueOf(m.getAverageMark()));
             row.createCell(count).setCellValue(m.getStatus());

@@ -7,6 +7,7 @@ import com.google.common.collect.Table;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -39,10 +40,9 @@ public class Ultilities {
             return semester.indexOf("_");
         }).thenComparingLong(a -> {
             MarksEntity en = (MarksEntity) a;
-            Timestamp time = en.getCourseId().getStartDate();
+            Date time = en.getCourseId().getStartDate();
             if (time == null) {
-                time = Timestamp.valueOf("1970-1-1 00:00:00");
-                time.setTime(0);
+                time = Date.from(Instant.MIN);
             }
             return time.getTime();
         }));
@@ -77,10 +77,9 @@ public class Ultilities {
             return semester.indexOf("_");
         }).thenComparingLong(a -> {
             MarkModel en = (MarkModel) a;
-            Timestamp time = en.getStartDate();
+            Date time = en.getStartDate();
             if (time == null) {
-                time = Timestamp.valueOf("1970-1-1 00:00:00");
-                time.setTime(0);
+                time = Date.from(Instant.MIN);
             }
             return time.getTime();
         }));

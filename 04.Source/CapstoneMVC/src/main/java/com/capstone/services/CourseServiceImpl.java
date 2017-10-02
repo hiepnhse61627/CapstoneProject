@@ -20,7 +20,7 @@ public class CourseServiceImpl implements ICourseService {
 
     @Override
     public void createCourseList(List<CourseEntity> courseEntityList) {
-        courseEntityJpaController.createCourseList(courseEntityList);
+//        courseEntityJpaController.createCourseList(courseEntityList);
     }
 
     @Override

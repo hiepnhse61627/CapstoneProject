@@ -24,10 +24,10 @@ import javax.persistence.Table;
  * @author Rem
  */
 @Entity
-@Table(name = "Program")
+@Table(name = "Subject_Curriculum")
 @NamedQueries({
-    @NamedQuery(name = "ProgramEntity.findAll", query = "SELECT p FROM ProgramEntity p")})
-public class ProgramEntity implements Serializable {
+    @NamedQuery(name = "SubjectCurriculumEntity.findAll", query = "SELECT s FROM SubjectCurriculumEntity s")})
+public class SubjectCurriculumEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -35,22 +35,18 @@ public class ProgramEntity implements Serializable {
     @Column(name = "Id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Basic(optional = false)
     @Column(name = "Name")
     private String name;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "programId")
-    private List<CurriculumEntity> curriculumEntityList;
+    @Column(name = "Description")
+    private String description;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectCurriculumEntity")
+    private List<CurriculumMappingEntity> curriculumMappingEntityList;
 
-    public ProgramEntity() {
+    public SubjectCurriculumEntity() {
     }
 
-    public ProgramEntity(Integer id) {
+    public SubjectCurriculumEntity(Integer id) {
         this.id = id;
-    }
-
-    public ProgramEntity(Integer id, String name) {
-        this.id = id;
-        this.name = name;
     }
 
     public Integer getId() {
@@ -69,12 +65,20 @@ public class ProgramEntity implements Serializable {
         this.name = name;
     }
 
-    public List<CurriculumEntity> getCurriculumEntityList() {
-        return curriculumEntityList;
+    public String getDescription() {
+        return description;
     }
 
-    public void setCurriculumEntityList(List<CurriculumEntity> curriculumEntityList) {
-        this.curriculumEntityList = curriculumEntityList;
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public List<CurriculumMappingEntity> getCurriculumMappingEntityList() {
+        return curriculumMappingEntityList;
+    }
+
+    public void setCurriculumMappingEntityList(List<CurriculumMappingEntity> curriculumMappingEntityList) {
+        this.curriculumMappingEntityList = curriculumMappingEntityList;
     }
 
     @Override
@@ -87,10 +91,10 @@ public class ProgramEntity implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof ProgramEntity)) {
+        if (!(object instanceof SubjectCurriculumEntity)) {
             return false;
         }
-        ProgramEntity other = (ProgramEntity) object;
+        SubjectCurriculumEntity other = (SubjectCurriculumEntity) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -99,7 +103,7 @@ public class ProgramEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.ProgramEntity[ id=" + id + " ]";
+        return "entities.SubjectCurriculumEntity[ id=" + id + " ]";
     }
     
 }

@@ -30,7 +30,6 @@ public class SubjectMarkComponentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
     @Column(name = "SubjectId")
     private String subjectId;
     @Column(name = "ComponentPercent")

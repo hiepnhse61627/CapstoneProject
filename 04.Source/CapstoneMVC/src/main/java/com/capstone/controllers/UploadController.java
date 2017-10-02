@@ -353,13 +353,13 @@ public class UploadController {
                             System.out.println("AVERAGE_MARK: " + current.getAverageMark() + "\t\t"  + next.getAverageMark());
                             System.out.println("-------------------------------------------------------------------------------------------------------------------------");
                             if (current.getCourseId() != null && next.getCourseId() != null) {
-                                if (current.getCourseId().getClazz().toUpperCase().contains("_SPRING")
-                                        || current.getCourseId().getClazz().toUpperCase().contains("_FALL")
-                                        || current.getCourseId().getClazz().toUpperCase().contains("_SUMMER")) {
+                                if (current.getCourseId().getClass1().toUpperCase().contains("_SPRING")
+                                        || current.getCourseId().getClass1().toUpperCase().contains("_FALL")
+                                        || current.getCourseId().getClass1().toUpperCase().contains("_SUMMER")) {
                                     marksEntities.remove(i);
-                                } else if (next.getCourseId().getClazz().toUpperCase().contains("_SPRING")
-                                        || next.getCourseId().getClazz().toUpperCase().contains("_FALL")
-                                        || next.getCourseId().getClazz().toUpperCase().contains("_SUMMER")) {
+                                } else if (next.getCourseId().getClass1().toUpperCase().contains("_SPRING")
+                                        || next.getCourseId().getClass1().toUpperCase().contains("_FALL")
+                                        || next.getCourseId().getClass1().toUpperCase().contains("_SUMMER")) {
                                     marksEntities.remove(j);
                                 }
                             }
@@ -547,10 +547,10 @@ public class UploadController {
                             if (classCell != null) {
                                 if (classCell.getCellType() == Cell.CELL_TYPE_NUMERIC){
                                     System.out.println("Class Num ---- " + classCell.getNumericCellValue());
-                                    course.setClazz(String.valueOf(classCell.getNumericCellValue()));
+                                    course.setClass1(String.valueOf(classCell.getNumericCellValue()));
                                 }else{
                                     System.out.println("Class String ----" + classCell.getStringCellValue());
-                                    course.setClazz(classCell.getStringCellValue());
+                                    course.setClass1(classCell.getStringCellValue());
                                 }
                             }
                             if (startDateCell != null) {
@@ -570,7 +570,7 @@ public class UploadController {
 
                             }
 
-                            if (course.getClazz() != null) {
+                            if (course.getClass1() != null) {
                                 courses.add(course);
                             }
                         }

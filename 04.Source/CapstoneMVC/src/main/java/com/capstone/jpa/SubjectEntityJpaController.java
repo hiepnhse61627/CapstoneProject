@@ -5,16 +5,13 @@
  */
 package com.capstone.jpa;
 
-import com.capstone.jpa.exceptions.IllegalOrphanException;
-import com.capstone.jpa.exceptions.NonexistentEntityException;
-import com.capstone.jpa.exceptions.PreexistingEntityException;
+import com.capstone.entities.*;
+import com.capstone.jpa.exceptions.*;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.capstone.entities.SubjectMarkComponentEntity;
-import com.capstone.entities.SubjectEntity;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -41,6 +38,9 @@ public class SubjectEntityJpaController implements Serializable {
         }
         if (subjectEntity.getSubjectEntityList1() == null) {
             subjectEntity.setSubjectEntityList1(new ArrayList<SubjectEntity>());
+        }
+        if (subjectEntity.getCurriculumMappingEntityList() == null) {
+            subjectEntity.setCurriculumMappingEntityList(new ArrayList<CurriculumMappingEntity>());
         }
         List<String> illegalOrphanMessages = null;
         SubjectMarkComponentEntity subjectMarkComponentEntityOrphanCheck = subjectEntity.getSubjectMarkComponentEntity();
@@ -77,6 +77,12 @@ public class SubjectEntityJpaController implements Serializable {
                 attachedSubjectEntityList1.add(subjectEntityList1SubjectEntityToAttach);
             }
             subjectEntity.setSubjectEntityList1(attachedSubjectEntityList1);
+            List<CurriculumMappingEntity> attachedCurriculumMappingEntityList = new ArrayList<CurriculumMappingEntity>();
+            for (CurriculumMappingEntity curriculumMappingEntityListCurriculumMappingEntityToAttach : subjectEntity.getCurriculumMappingEntityList()) {
+                curriculumMappingEntityListCurriculumMappingEntityToAttach = em.getReference(curriculumMappingEntityListCurriculumMappingEntityToAttach.getClass(), curriculumMappingEntityListCurriculumMappingEntityToAttach.getCurriculumMappingEntityPK());
+                attachedCurriculumMappingEntityList.add(curriculumMappingEntityListCurriculumMappingEntityToAttach);
+            }
+            subjectEntity.setCurriculumMappingEntityList(attachedCurriculumMappingEntityList);
             em.persist(subjectEntity);
             if (subjectMarkComponentEntity != null) {
                 subjectMarkComponentEntity.setSubjectEntity(subjectEntity);
@@ -89,6 +95,15 @@ public class SubjectEntityJpaController implements Serializable {
             for (SubjectEntity subjectEntityList1SubjectEntity : subjectEntity.getSubjectEntityList1()) {
                 subjectEntityList1SubjectEntity.getSubjectEntityList().add(subjectEntity);
                 subjectEntityList1SubjectEntity = em.merge(subjectEntityList1SubjectEntity);
+            }
+            for (CurriculumMappingEntity curriculumMappingEntityListCurriculumMappingEntity : subjectEntity.getCurriculumMappingEntityList()) {
+                SubjectEntity oldSubjectEntityOfCurriculumMappingEntityListCurriculumMappingEntity = curriculumMappingEntityListCurriculumMappingEntity.getSubjectEntity();
+                curriculumMappingEntityListCurriculumMappingEntity.setSubjectEntity(subjectEntity);
+                curriculumMappingEntityListCurriculumMappingEntity = em.merge(curriculumMappingEntityListCurriculumMappingEntity);
+                if (oldSubjectEntityOfCurriculumMappingEntityListCurriculumMappingEntity != null) {
+                    oldSubjectEntityOfCurriculumMappingEntityListCurriculumMappingEntity.getCurriculumMappingEntityList().remove(curriculumMappingEntityListCurriculumMappingEntity);
+                    oldSubjectEntityOfCurriculumMappingEntityListCurriculumMappingEntity = em.merge(oldSubjectEntityOfCurriculumMappingEntityListCurriculumMappingEntity);
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -115,6 +130,8 @@ public class SubjectEntityJpaController implements Serializable {
             List<SubjectEntity> subjectEntityListNew = subjectEntity.getSubjectEntityList();
             List<SubjectEntity> subjectEntityList1Old = persistentSubjectEntity.getSubjectEntityList1();
             List<SubjectEntity> subjectEntityList1New = subjectEntity.getSubjectEntityList1();
+            List<CurriculumMappingEntity> curriculumMappingEntityListOld = persistentSubjectEntity.getCurriculumMappingEntityList();
+            List<CurriculumMappingEntity> curriculumMappingEntityListNew = subjectEntity.getCurriculumMappingEntityList();
             List<String> illegalOrphanMessages = null;
             if (subjectMarkComponentEntityNew != null && !subjectMarkComponentEntityNew.equals(subjectMarkComponentEntityOld)) {
                 SubjectEntity oldSubjectEntityOfSubjectMarkComponentEntity = subjectMarkComponentEntityNew.getSubjectEntity();
@@ -123,6 +140,14 @@ public class SubjectEntityJpaController implements Serializable {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
                     illegalOrphanMessages.add("The SubjectMarkComponentEntity " + subjectMarkComponentEntityNew + " already has an item of type SubjectEntity whose subjectMarkComponentEntity column cannot be null. Please make another selection for the subjectMarkComponentEntity field.");
+                }
+            }
+            for (CurriculumMappingEntity curriculumMappingEntityListOldCurriculumMappingEntity : curriculumMappingEntityListOld) {
+                if (!curriculumMappingEntityListNew.contains(curriculumMappingEntityListOldCurriculumMappingEntity)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain CurriculumMappingEntity " + curriculumMappingEntityListOldCurriculumMappingEntity + " since its subjectEntity field is not nullable.");
                 }
             }
             if (illegalOrphanMessages != null) {
@@ -146,6 +171,13 @@ public class SubjectEntityJpaController implements Serializable {
             }
             subjectEntityList1New = attachedSubjectEntityList1New;
             subjectEntity.setSubjectEntityList1(subjectEntityList1New);
+            List<CurriculumMappingEntity> attachedCurriculumMappingEntityListNew = new ArrayList<CurriculumMappingEntity>();
+            for (CurriculumMappingEntity curriculumMappingEntityListNewCurriculumMappingEntityToAttach : curriculumMappingEntityListNew) {
+                curriculumMappingEntityListNewCurriculumMappingEntityToAttach = em.getReference(curriculumMappingEntityListNewCurriculumMappingEntityToAttach.getClass(), curriculumMappingEntityListNewCurriculumMappingEntityToAttach.getCurriculumMappingEntityPK());
+                attachedCurriculumMappingEntityListNew.add(curriculumMappingEntityListNewCurriculumMappingEntityToAttach);
+            }
+            curriculumMappingEntityListNew = attachedCurriculumMappingEntityListNew;
+            subjectEntity.setCurriculumMappingEntityList(curriculumMappingEntityListNew);
             subjectEntity = em.merge(subjectEntity);
             if (subjectMarkComponentEntityOld != null && !subjectMarkComponentEntityOld.equals(subjectMarkComponentEntityNew)) {
                 subjectMarkComponentEntityOld.setSubjectEntity(null);
@@ -179,6 +211,17 @@ public class SubjectEntityJpaController implements Serializable {
                     subjectEntityList1NewSubjectEntity = em.merge(subjectEntityList1NewSubjectEntity);
                 }
             }
+            for (CurriculumMappingEntity curriculumMappingEntityListNewCurriculumMappingEntity : curriculumMappingEntityListNew) {
+                if (!curriculumMappingEntityListOld.contains(curriculumMappingEntityListNewCurriculumMappingEntity)) {
+                    SubjectEntity oldSubjectEntityOfCurriculumMappingEntityListNewCurriculumMappingEntity = curriculumMappingEntityListNewCurriculumMappingEntity.getSubjectEntity();
+                    curriculumMappingEntityListNewCurriculumMappingEntity.setSubjectEntity(subjectEntity);
+                    curriculumMappingEntityListNewCurriculumMappingEntity = em.merge(curriculumMappingEntityListNewCurriculumMappingEntity);
+                    if (oldSubjectEntityOfCurriculumMappingEntityListNewCurriculumMappingEntity != null && !oldSubjectEntityOfCurriculumMappingEntityListNewCurriculumMappingEntity.equals(subjectEntity)) {
+                        oldSubjectEntityOfCurriculumMappingEntityListNewCurriculumMappingEntity.getCurriculumMappingEntityList().remove(curriculumMappingEntityListNewCurriculumMappingEntity);
+                        oldSubjectEntityOfCurriculumMappingEntityListNewCurriculumMappingEntity = em.merge(oldSubjectEntityOfCurriculumMappingEntityListNewCurriculumMappingEntity);
+                    }
+                }
+            }
             em.getTransaction().commit();
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
@@ -196,7 +239,7 @@ public class SubjectEntityJpaController implements Serializable {
         }
     }
 
-    public void destroy(String id) throws NonexistentEntityException {
+    public void destroy(String id) throws IllegalOrphanException, NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -207,6 +250,17 @@ public class SubjectEntityJpaController implements Serializable {
                 subjectEntity.getId();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The subjectEntity with id " + id + " no longer exists.", enfe);
+            }
+            List<String> illegalOrphanMessages = null;
+            List<CurriculumMappingEntity> curriculumMappingEntityListOrphanCheck = subjectEntity.getCurriculumMappingEntityList();
+            for (CurriculumMappingEntity curriculumMappingEntityListOrphanCheckCurriculumMappingEntity : curriculumMappingEntityListOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This SubjectEntity (" + subjectEntity + ") cannot be destroyed since the CurriculumMappingEntity " + curriculumMappingEntityListOrphanCheckCurriculumMappingEntity + " in its curriculumMappingEntityList field has a non-nullable subjectEntity field.");
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
             }
             SubjectMarkComponentEntity subjectMarkComponentEntity = subjectEntity.getSubjectMarkComponentEntity();
             if (subjectMarkComponentEntity != null) {
