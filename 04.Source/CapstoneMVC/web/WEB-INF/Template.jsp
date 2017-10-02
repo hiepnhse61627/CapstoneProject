@@ -105,7 +105,7 @@
                     </a>
                     <ul class="treeview-menu">
                         <li>
-                            <a href="#">
+                            <a href="/studentList">
                                 <div class="menu-child-wrapper">
                                     <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                     <div class="child-content col-md-11">

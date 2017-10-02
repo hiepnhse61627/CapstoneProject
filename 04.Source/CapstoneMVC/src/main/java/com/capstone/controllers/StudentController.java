@@ -135,7 +135,7 @@ public class StudentController {
         return result;
     }
 
-    @RequestMapping(value = "/student/getAllMarks", method = RequestMethod.POST)
+    @RequestMapping(value = "/student/getAllLatestMarks", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject GetAllStudentMarks(int studentId) {
         JsonObject result = new JsonObject();
@@ -187,7 +187,7 @@ public class StudentController {
                     curMark.setEndDate(curMark.getEndDate());
                 }
             }
-            dataList = Ultilities.SortMarkModelBySemester(dataList);
+//            dataList = Ultilities.SortMarkModelBySemester(dataList);
 
             StudentMarkModel model = new StudentMarkModel();
             MarksEntity firstRecord = mlist.get(0);
