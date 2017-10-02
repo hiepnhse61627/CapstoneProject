@@ -579,7 +579,10 @@ public class UploadController {
 
                 System.out.println("All Course Added");
                 for (CourseEntity element : courses) {
-                    if (!uniqueCourses.contains(element)) {
+                    if (!uniqueCourses.stream().anyMatch(c -> c.getClass1().equals(element.getClass1())
+                            && c.getSubjectCode().equals(element.getSubjectCode())
+                            && c.getStartDate() == element.getStartDate()
+                            && c.getEndDate() == element.getEndDate())) {
                         uniqueCourses.add(element);
                     }
                 }
