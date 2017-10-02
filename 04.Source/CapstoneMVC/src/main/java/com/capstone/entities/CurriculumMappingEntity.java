@@ -30,6 +30,8 @@ public class CurriculumMappingEntity implements Serializable {
     protected CurriculumMappingEntityPK curriculumMappingEntityPK;
     @Column(name = "Term")
     private String term;
+    @Column(name = "Ordering")
+    private Integer ordering;
     @JoinColumn(name = "SubId", referencedColumnName = "Id", insertable = false, updatable = false)
     @ManyToOne(optional = false)
     private SubjectEntity subjectEntity;
@@ -104,5 +106,12 @@ public class CurriculumMappingEntity implements Serializable {
     public String toString() {
         return "entities.CurriculumMappingEntity[ curriculumMappingEntityPK=" + curriculumMappingEntityPK + " ]";
     }
-    
+
+    public Integer getOrdering() {
+        return ordering;
+    }
+
+    public void setOrdering(Integer ordering) {
+        this.ordering = ordering;
+    }
 }
