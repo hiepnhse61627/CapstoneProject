@@ -131,7 +131,7 @@ public class StudentList {
                 MarkModel data = new MarkModel();
                 data.setSemester(m.getSemesterId().getSemester());
                 data.setSubject(m.getSubjectId() != null ? m.getSubjectId().getSubjectId() : "N/A");
-                data.setClass1(m.getCourseId().getClazz());
+                data.setClass1(m.getCourseId().getClass1());
                 data.setStatus(m.getStatus());
                 data.setAverageMark(m.getAverageMark());
                 data.setStartDate(m.getCourseId().getStartDate());
