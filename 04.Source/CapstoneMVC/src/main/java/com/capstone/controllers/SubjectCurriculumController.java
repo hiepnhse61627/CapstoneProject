@@ -30,6 +30,9 @@ public class SubjectCurriculumController {
 
     @RequestMapping("/editcurriculum/{curId}")
     public ModelAndView Edit(@PathVariable("curId") int curId) {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+        EntityManager em = emf.createEntityManager();
+
         ISubjectCurriculumService service = new SubjectCurriculumServiceImpl();
         ISubjectService service2 = new SubjectServiceImpl();
 
@@ -59,7 +62,7 @@ public class SubjectCurriculumController {
 
     @RequestMapping(value = "/editcurriculum", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject Edit(@RequestParam() List<String> data, @RequestParam int id) {
+    public JsonObject Edit(@RequestParam() List<String> data, @RequestParam int id, @RequestParam String name, @RequestParam String des) {
         JsonObject obj = new JsonObject();
         ISubjectCurriculumService service = new SubjectCurriculumServiceImpl();
         ISubjectService service2 = new SubjectServiceImpl();
@@ -69,23 +72,64 @@ public class SubjectCurriculumController {
 
         try {
             SubjectCurriculumEntity ent = service.getCurriculumById(id);
+
             if (ent != null) {
+                if (name != null && !name.isEmpty()) ent.setName(name);
+                if (des != null && !des.isEmpty()) ent.setDescription(des);
+
                 System.out.println(ent.getName() + " - " + ent.getDescription());
+
+                List<CurriculumMappingEntity> l = ent.getCurriculumMappingEntityList();
+                List<CurriculumMappingEntity> notin = new ArrayList<>();
+                for (CurriculumMappingEntity m : l) {
+                    boolean flag = false;
+                    for (String s : data) {
+                        if (!s.toLowerCase().contains("học kỳ") && m.getSubjectEntity().getId().equals(s)) flag = true;
+                    }
+                    if (!flag) {
+                        notin.add(m);
+                    }
+                }
+
+                if (!notin.isEmpty()) {
+                    for (CurriculumMappingEntity m : notin) {
+                        em.getTransaction().begin();
+                        CurriculumMappingEntity tmp5 = em.merge(m);
+                        em.remove(tmp5);
+                        em.flush();
+                        l.remove(m);
+                        ent.setCurriculumMappingEntityList(l);
+                        SubjectCurriculumEntity tmp4 = em.merge(ent);
+                        em.flush();
+                        em.refresh(tmp4);
+                        em.getTransaction().commit();
+
+                        ent = tmp4;
+                    }
+                }
 
                 String term = "";
                 int order = 1;
-                for (String s: data) {
+                for (String s : data) {
                     if (s.toLowerCase().contains("học kỳ")) {
                         term = s;
                     } else {
-                        List<CurriculumMappingEntity> l = ent.getCurriculumMappingEntityList();
+                        l = ent.getCurriculumMappingEntityList();
 
                         for (CurriculumMappingEntity c : l) {
                             if (c.getSubjectEntity().getId().equals(s)) {
+                                int i = l.indexOf(c);
                                 c.setTerm(term);
                                 c.setOrdering(order++);
                                 em.getTransaction().begin();
-                                em.merge(c);
+                                CurriculumMappingEntity tmp = em.merge(c);
+                                em.flush();
+                                em.refresh(tmp);
+                                l.set(i, tmp);
+                                ent.setCurriculumMappingEntityList(l);
+                                SubjectCurriculumEntity tmp3 = em.merge(ent);
+                                em.flush();
+                                em.refresh(tmp3);
                                 em.getTransaction().commit();
                                 break;
                             }
@@ -100,6 +144,8 @@ public class SubjectCurriculumController {
                         }
 
                         if (!flag) {
+                            em.getTransaction().begin();
+
                             CurriculumMappingEntity c = new CurriculumMappingEntity();
                             c.setOrdering(order++);
                             c.setTerm(term);
@@ -107,21 +153,30 @@ public class SubjectCurriculumController {
                             CurriculumMappingEntityPK pk = new CurriculumMappingEntityPK();
                             pk.setSubId(s);
                             pk.setCurId(ent.getId());
-
                             c.setCurriculumMappingEntityPK(pk);
-//                            c.setSubjectCurriculumEntity(ent);
-//                            c.setSubjectEntity(service2.findSubjectbyId(s));
-                            ent.getCurriculumMappingEntityList().add(c);
-//                            c.getSubjectEntity().setCurriculumMappingEntityList(l);
-                            em.getTransaction().begin();
+
                             em.persist(c);
+                            em.flush();
+//                            em.merge(c);
+                            em.refresh(c);
+
+                            List<CurriculumMappingEntity> tmp = ent.getCurriculumMappingEntityList();
+                            tmp.add(c);
+                            ent.setCurriculumMappingEntityList(tmp);
+                            SubjectCurriculumEntity tmp2 = em.merge(ent);
+                            em.flush();
+                            em.refresh(tmp2);
+
                             em.getTransaction().commit();
                         }
                     }
                 }
             }
+            obj.addProperty("success", true);
         } catch (Exception e) {
             e.printStackTrace();
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
         }
 
         return obj;

@@ -22,6 +22,6 @@ public class SubjectCurriculumServiceImpl implements ISubjectCurriculumService {
 
     @Override
     public SubjectCurriculumEntity getCurriculumById(int curId) {
-        return controller.findSubjectCurriculumEntity(curId);
+        return controller.findById(curId);
     }
 }
