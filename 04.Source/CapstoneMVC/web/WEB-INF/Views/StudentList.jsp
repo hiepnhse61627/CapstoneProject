@@ -1,52 +1,21 @@
-<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 
 <section class="content-header">
-    <h1>Danh sách sinh viên nợ môn</h1>
+    <h1>Danh sách sinh viên</h1>
 </section>
+
 <section class="content">
     <div class="row">
         <div class="col-md-12">
-            <div class="box">
-                <div class="form-group">
-                    <div class="box-header">
-                        <h4 class="box-title">Học kỳ</h4>
-                    </div>
-                    <select id="semester" class="select form-control">
-                        <option value="0">All</option>
-                        <c:forEach var="semester" items="${semesters}">
-                            <option value="${semester.id}">${semester.semester}</option>
-                        </c:forEach>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <div class="box-header">
-                        <h4 class="box-title">Môn học</h4>
-                    </div>
-                    <select id="subject" class="select form-control">
-                        <option value="0">All</option>
-                        <c:forEach var="sub" items="${subjects}">
-                            <option value="${sub.id}">${sub.id} - ${sub.name} - ${sub.abbreviation}</option>
-                        </c:forEach>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <button type="button" class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>
-                    <button type="button" class="btn btn-primary" onclick="ExportExcel()">Xuất dữ liệu</button>
-                </div>
-
-                <table id="table">
+            <div class="box p-t-15">
+                <table id="tbl-student">
                     <thead>
-                    <tr>
-                        <th>MSSV</th>
-                        <th>Tên SV</th>
-                        <th>Môn học</th>
-                        <th>Lớp</th>
-                        <th>Học kỳ</th>
-                        <th>Điểm TB</th>
-                        <th>Status</th>
-                    </tr>
+                    <th>MSSV</th>
+                    <th>Tên sinh viên</th>
+                    <th>Xem tất cả điểm</th>
                     </thead>
+                    <tbody></tbody>
                 </table>
             </div>
         </div>
@@ -68,7 +37,7 @@
                         <tr>
                             <th>Môn học</th>
                             <th>Học kỳ</th>
-                            <th>Số lần học</th>
+                            <th>Lớp</th>
                             <th>Điểm trung bình</th>
                             <th>Trạng thái</th>
                         </tr>
@@ -84,16 +53,9 @@
     </div>
 </div>
 
-<form id="export-excel" action="/exportExcel" hidden>
-    <input name="objectType"/>
-    <input name="subjectId"/>
-    <input name="semesterId"/>
-    <input name="sSearch"/>
-</form>
-
 <script>
-    var table = null;
-    var tableMarkDetail = null;
+    var tblStudent;
+    var tableMarkDetail;
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -113,7 +75,7 @@
             anControl.off('keyup search input').on('keyup search input', function () {
                 var $$this = $this;
 
-                if ((anControl.val().length == 0 || anControl.val().length >= 3) && (sPreviousSearch === null || sPreviousSearch != anControl.val())) {
+                if ((anControl.val().length == 0 || anControl.val().length >= 2) && (sPreviousSearch === null || sPreviousSearch != anControl.val())) {
                     window.clearTimeout(oTimerId);
                     sPreviousSearch = anControl.val();
                     oTimerId = window.setTimeout(function () {
@@ -128,23 +90,22 @@
         return this;
     };
 
-    $(document).ready(function () {
-        $('.select').select2();
 
-        table = $('#table').dataTable({
+    $(document).ready(function () {
+        LoadStundentList();
+    });
+
+    function LoadStundentList() {
+        tblStudent = $('#tbl-student').dataTable({
             "bServerSide": true,
             "bFilter": true,
             "bRetrieve": true,
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/getstudents", // url getData.php etc
-            "fnServerParams": function (aoData) {
-                aoData.push({"name": "semesterId", "value": $('#semester').val()}),
-                    aoData.push({"name": "subjectId", "value": $('#subject').val()})
-            },
+            "sAjaxSource": "/loadStudentList",
             "oLanguage": {
-                "sSearchPlaceholder": "",
+                "sSearchPlaceholder": "Tên hoặc MSSV",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
@@ -156,44 +117,40 @@
                     "sNext": "<i class='fa fa-chevron-right'></i>",
                     "sPrevious": "<i class='fa fa-chevron-left'></i>"
                 }
-
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4, 5, 6, 7],
+                    "aTargets": [0, 1, 2],
                     "bSortable": false,
                 },
                 {
-                    "aTargets": [0, 2, 3, 4, 5, 6],
+                    "aTargets": [0, 2],
+                    "bSortable": false,
                     "sClass": "text-center",
                 },
                 {
-                    "aTargets": [1],
+                    "aTargets": [2],
                     "mRender": function (data, type, row) {
-                        return "<a onclick='GetAllStudentMarks(" + row[7] + ")'>" + data + "</a>";
+                        return "<a class='btn btn-primary' onclick='GetMarks(" + data + ")'>" +
+                            "<i class='fa fa-eye'></i></a>";
                     }
                 },
-                {
-                    "aTargets": [7],
-                    "bVisible": false
-                }
             ],
             "bAutoWidth": false,
-        }).fnSetFilteringDelay(1000);
-    });
+        }).fnSetFilteringDelay(700);
+    }
 
-    function GetAllStudentMarks(studentId) {
+    function GetMarks(studentId) {
         var form = new FormData();
         form.append("studentId", studentId);
 
         $.ajax({
             type: "POST",
-            url: "/student/getAllLatestMarks",
+            url: "/studentList/getAllMarks",
             processData: false,
             contentType: false,
             data: form,
             success: function (result) {
-
                 if (result.success) {
                     result.studentMarkDetail = JSON.parse(result.studentMarkDetail);
 
@@ -222,7 +179,7 @@
             "aoColumns": [
                 {"mData": "subject"},
                 {"mData": "semester"},
-                {"mData": "repeatingNumber"},
+                {"mData": "class1"},
                 {"mData": "averageMark"},
                 {"mData": "status"},
             ],
@@ -243,7 +200,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4],
+                    "aTargets": [0, 1, 2, 3],
                     "bSortable": false,
                     "sClass": "text-center",
                 },
@@ -253,19 +210,4 @@
         $("#markDetail").modal();
     }
 
-    function ExportExcel() {
-        $("input[name='objectType']").val(1);
-        $("input[name='subjectId']").val($('#subject').val());
-        $("input[name='semesterId']").val($('#semester').val());
-        $("input[name='sSearch']").val(table.api().context[0].oPreviousSearch.sSearch);
-
-        $("#export-excel").submit();
-    }
-
-    function RefreshTable() {
-        if (table != null) {
-            table._fnPageChange(0);
-            table._fnAjaxUpdate();
-        }
-    }
 </script>
