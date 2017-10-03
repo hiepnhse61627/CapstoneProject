@@ -194,7 +194,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="/subcurriculum">
+                            <a href="/goUploadCurriculumPage">
                                 <div class="menu-child-wrapper">
                                     <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                     <div class="child-content col-md-11">
