@@ -69,6 +69,9 @@ public class StudentFailPrequisite {
     @ResponseBody
     public JsonObject GetStudents(@RequestParam Map<String, String> params) {
         try {
+            String pres = params.get("prequisiteId").trim();
+            System.out.println(pres);
+
             JsonObject data = new JsonObject();
 
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
@@ -77,8 +80,14 @@ public class StudentFailPrequisite {
             String sub = params.get("subId").trim();
             String pre = params.get("prequisiteId").trim();
 
-            TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId = :pre", MarksEntity.class);
-            List<MarksEntity> list = query.setParameter("sub", sub).setParameter("pre", pre).getResultList();
+            List<MarksEntity> list = new ArrayList<>();
+            String[] p = pres.split(",");
+            if (p.length > 0) {
+                for (String m: p) {
+                    TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId = :pre", MarksEntity.class);
+                    query.setParameter("sub", sub).setParameter("pre", m).getResultList().forEach(c -> list.add(c));
+                }
+            }
 
             List<MarksEntity> result = Ultilities.FilterStudentPassedSubFailPrequisite(list, sub, pre);
 
