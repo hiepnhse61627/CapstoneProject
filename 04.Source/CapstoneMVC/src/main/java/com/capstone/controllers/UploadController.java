@@ -307,20 +307,30 @@ public class UploadController {
                             }
                         }
 
-                        if (subjectCodeCell != null) {
-                            SubjectMarkComponentEntity subjectMarkComponentEntity =
-                                    subjectMarkComponentService.findSubjectMarkComponentById(subjectCodeCell.getStringCellValue().toUpperCase());
-                            if (subjectMarkComponentEntity != null) {
-                                marksEntity.setSubjectId(subjectMarkComponentEntity);
-                            }
-                        }
-
                         if (classNameCell != null && subjectCodeCell != null) {
                             String cla = classNameCell.getStringCellValue();
                             String subjectCd = subjectCodeCell.getStringCellValue();
+                            // find subject mark component
+                            SubjectMarkComponentEntity subjectMarkComponentEntity =
+                                    subjectMarkComponentService.findSubjectMarkComponentById(subjectCd.toUpperCase());
+
+                            if (subjectMarkComponentEntity != null) {
+                                marksEntity.setSubjectId(subjectMarkComponentEntity);
+                            }
+                            // find course
                             CourseEntity courseEntity = courseService.findCourseByClassAndSubjectCode(cla.toLowerCase(), subjectCd.toLowerCase());
                             if (courseEntity != null) {
                                 marksEntity.setCourseId(courseEntity);
+                            } else { // create new course entity
+                                CourseEntity newCourse = new CourseEntity();
+                                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
+                                newCourse.setClass1(cla.toUpperCase());
+                                newCourse.setSubjectCode(subjectCd.toUpperCase());
+                                newCourse.setStartDate(sdf.parse(String.valueOf(new Date("01/01/1970"))));
+                                newCourse.setEndDate(sdf.parse(String.valueOf(new Date("01/01/1970"))));
+                                newCourse = courseService.createCourse(newCourse);
+
+                                marksEntity.setCourseId(newCourse);
                             }
                         }
 
@@ -348,10 +358,6 @@ public class UploadController {
                                 && (current.getStudentId().getRollNumber().toUpperCase().equals(next.getStudentId().getRollNumber().toUpperCase()))
                                 && (current.getSubjectId().getSubjectId().toUpperCase().equals(next.getSubjectId().getSubjectId().toUpperCase()))
                                 && (current.getAverageMark().toString().toUpperCase().equals(next.getAverageMark().toString().toUpperCase()))) { // found
-                            System.out.println("SEMESTER: " + current.getSemesterId().getSemester().toUpperCase() + "\t\t" + next.getSemesterId().getSemester().toUpperCase());
-                            System.out.println("SUBJECT_ID: " + current.getSubjectId().getSubjectId().toUpperCase() + "\t\t" + next.getSubjectId().getSubjectId().toUpperCase());
-                            System.out.println("AVERAGE_MARK: " + current.getAverageMark() + "\t\t"  + next.getAverageMark());
-                            System.out.println("-------------------------------------------------------------------------------------------------------------------------");
                             if (current.getCourseId() != null && next.getCourseId() != null) {
                                 if (current.getCourseId().getClass1().toUpperCase().contains("_SPRING")
                                         || current.getCourseId().getClass1().toUpperCase().contains("_FALL")
