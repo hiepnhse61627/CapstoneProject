@@ -174,16 +174,6 @@
                             </a>
                         </li>
 						<li>
-                            <a href="/subject">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Danh sách môn học
-                                    </div>
-                                </div>
-                            </a>
-                        </li>
-						<li>
                             <a href="/goUploadCoursePage">
                                 <div class="menu-child-wrapper">
                                     <div class="child-icon"><i class="fa fa-circle-o"></i></div>
@@ -194,7 +184,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="/goUploadCurriculumPage">
+                            <a href="/subcurriculum">
                                 <div class="menu-child-wrapper">
                                     <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                     <div class="child-content col-md-11">
