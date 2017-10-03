@@ -1,7 +1,9 @@
 package com.capstone.controllers;
 
+import com.capstone.entities.CurriculumMappingEntity;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
+import com.capstone.entities.SubjectEntity;
 import com.capstone.models.MarkModel;
 import com.capstone.models.StudentMarkModel;
 import com.capstone.models.Ultilities;
@@ -49,7 +51,7 @@ public class StudentDetail {
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("StudentDetail");
         view.addObject("students", service.findAllStudents());
-        TestData();
+//        TestData();
         return view;
     }
 
@@ -117,6 +119,21 @@ public class StudentDetail {
         }
 
         return data;
+    }
+
+    @RequestMapping("/getStudentNextCourse")
+    @ResponseBody
+    public List<SubjectEntity> GetStudentNextCourse(@RequestParam int stuId) {
+        EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
+        EntityManager em = fac.createEntityManager();
+        TypedQuery<CurriculumMappingEntity> query = em.createQuery("SELECT a FROM CurriculumMappingEntity a JOIN " +
+                "SubjectEntity b JOIN MarksEntity c " +
+                "WHERE a.subjectEntity.id = b.id AND " +
+                "b.subjectMarkComponentEntity.subjectId = c.subjectId.subjectId AND " +
+                "c.studentId.id = :stuId", CurriculumMappingEntity.class);
+        query.setParameter("stuId", stuId);
+
+        return null;
     }
 
     private void TestData() {
