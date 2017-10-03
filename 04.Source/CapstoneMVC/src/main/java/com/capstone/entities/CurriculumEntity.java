@@ -40,6 +40,8 @@ public class CurriculumEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "Name")
     private String name;
+    @Column(name = "SubjectCode")
+    private String subjectCode;
     @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
     @ManyToOne(optional = false)
     private ProgramEntity programId;
@@ -56,6 +58,14 @@ public class CurriculumEntity implements Serializable {
     public CurriculumEntity(Integer id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public String getSubjectCode() {
+        return subjectCode;
+    }
+
+    public void setSubjectCode(String subjectCode) {
+        this.subjectCode = subjectCode;
     }
 
     public Integer getId() {

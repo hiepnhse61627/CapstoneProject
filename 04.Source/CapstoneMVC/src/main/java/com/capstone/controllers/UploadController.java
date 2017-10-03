@@ -665,13 +665,6 @@ public class UploadController {
         return 0;
     }
 
-    private static boolean checkCellCurriculum(XSSFCell c) {
-        if (c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-            return false;
-        }
-        return true;
-    }
-
 
     private JsonObject ReadCurriculumFile(MultipartFile file, File file2, boolean isNewFile) {
         JsonObject obj = new JsonObject();
@@ -688,109 +681,51 @@ public class UploadController {
             XSSFSheet spreadsheet = workbook.getSheetAt(1);
 
             XSSFRow row;
-            int subjectCodeIndex = 0;
-            int subjectNameIndex = 0;
             int excelDataIndex = 0;
-            int checkIndex = 0;
 
             String curriculumName = spreadsheet.getSheetName();
 
-            List<SubjectCurriculumEntity> curriculums = new ArrayList<>();
-            List<SubjectCurriculumEntity> uniqueCurriculum = new ArrayList<>();
+            List<CurriculumMappingEntity> curriculums = new ArrayList<>();
+            List<CurriculumMappingEntity> uniqueCurriculum = new ArrayList<>();
 //            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
 
             //get header data row index
-            excelDataIndex = findRowCurriculum(spreadsheet, "Phase 1");
-//            row = spreadsheet.getRow(excelDataIndex);
+            excelDataIndex = findRowCurriculum(spreadsheet, "Học kỳ 1");
 
-//            //get data start index
-//            for (dataStartIndex = excelDataIndex + 1; dataStartIndex <= spreadsheet.getLastRowNum(); dataStartIndex++) {
-//                boolean flag = false;
-//                for (int curCellIndex = 1; curCellIndex <= row.getLastCellNum(); curCellIndex++) {
-//                    if (row.getCell(curCellIndex).getStringCellValue().toString().equals("Lớp")) {
-//                        checkIndex = curCellIndex;
-//                        flag = true;
-//                        break;
-//                    }
-//                }
-//                if (flag) {
-//                    break;
-//                }
-//            }
-
-//            for (int conRowIndex = excelDataIndex + 1; conRowIndex <= spreadsheet.getLastRowNum(); conRowIndex++) {
-//                if (checkCell(spreadsheet.getRow(conRowIndex).getCell(checkIndex)) == true) {
-//                    dataStartIndex = conRowIndex;
-//                    break;
-//                }
-//            }
-
-
-
-            row = spreadsheet.getRow(excelDataIndex);
-            for (int cellIndex = 0; cellIndex <= row.getLastCellNum(); cellIndex++) {
-
-                if (classIndex != 0 && startDateIndex != 0 && endDateIndex != 0 && subjectCodeIndex != 0) break;
-            }
-            if (classIndex == 0 && startDateIndex == 0 && endDateIndex == 0 && subjectCodeIndex == 0) {
-
-            } else {
-
-                for (int rowIndex = dataStartIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
-                    row = spreadsheet.getRow(rowIndex);
-
-                    if (row != null) {
-                        SubjectCurriculumEntity curriculum = new SubjectCurriculumEntity();
-                        Cell classCell = row.getCell(classIndex);
-                        Cell startDateCell = row.getCell(startDateIndex);
-                        Cell endDateCell = row.getCell(endDateIndex);
-                        Cell subjectCell = row.getCell(subjectCodeIndex);
-                        if (classCell != null && startDateCell != null && endDateCell != null && subjectCell != null) {
-                            if (classCell != null) {
-                                if (classCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-                                    System.out.println("Class Num ---- " + classCell.getNumericCellValue());
-                                    curriculum.setClass1(String.valueOf(classCell.getNumericCellValue()));
-                                } else {
-                                    System.out.println("Class String ----" + classCell.getStringCellValue());
-                                    curriculum.setClass1(classCell.getStringCellValue());
-                                }
-                            }
-//                            if (startDateCell != null) {
-//                                curriculum.setStartDate(sdf.parse(String.valueOf(startDateCell.getDateCellValue())));
-//                            }
-//                            if (endDateCell != null) {
-//                                curriculum.setEndDate(sdf.parse(String.valueOf(endDateCell.getDateCellValue())));
-//                            }
-                            if (subjectCell != null) {
-                                if (subjectCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-                                    System.out.println("Subject Num ------" + subjectCell.getNumericCellValue());
-                                    curriculum.setSubjectCode(String.valueOf(subjectCell.getNumericCellValue()));
-                                } else {
-                                    System.out.println("Subject String ----" + subjectCell.getStringCellValue());
-                                    curriculum.setSubjectCode(subjectCell.getStringCellValue());
-                                }
-
-                            }
-
-                            if (curriculum.getClass1() != null) {
-                                curriculums.add(curriculum);
-                            }
-                        }
+            for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                XSSFRow termRow = spreadsheet.getRow(rowIndex);
+                String term = "";
+                if (termRow.getCell(1).getCellType() == Cell.CELL_TYPE_NUMERIC) {
+                    if (termRow.getCell(2).getStringCellValue() == ""
+                            && termRow.getCell(3).getStringCellValue() != "") {
+                        term = termRow.getCell(3).getStringCellValue();
+                        rowIndex++;
                     }
                 }
 
-                System.out.println("All Curriculum Added");
-                for (SubjectCurriculumEntity element : curriculums) {
-                    if (!uniqueCurriculum.stream().anyMatch(c -> c.getClass1().equals(element.getClass1())
-                            && c.getSubjectCode().equals(element.getSubjectCode())
-                            && c.getStartDate() == element.getStartDate()
-                            && c.getEndDate() == element.getEndDate())) {
-                        uniqueCurriculum.add(element);
+                row = spreadsheet.getRow(rowIndex);
+                if (row != null) {
+                    CurriculumMappingEntity curriculum = new CurriculumMappingEntity();
+                    Cell subjectCell = row.getCell(2);
+                    if (subjectCell != null) {
+                        curriculum.setCurriculumMappingEntityPK(subjectCell.getRichStringCellValue().getString());
+                        curriculum.setTerm(term);
+                        curriculums.add(curriculum);
+
                     }
                 }
-
-                curriculumsService.createCurriculumList(uniqueCurriculum);
             }
+
+            System.out.println("All Curriculum Added");
+            for (CurriculumMappingEntity element : curriculums) {
+                if (!uniqueCurriculum.stream().anyMatch(c -> c.getTerm().equals(element.getTerm())
+                        && c.getCurriculumMappingEntityPK().equals(element.getCurriculumMappingEntityPK()))) {
+                    uniqueCurriculum.add(element);
+                }
+            }
+
+            curriculumsService.createCurriculumList(curriculums);
+
         } catch (Exception e) {
             e.printStackTrace();
             obj.addProperty("success", false);
