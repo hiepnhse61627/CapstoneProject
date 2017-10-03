@@ -51,7 +51,6 @@ public class StudentDetail {
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("StudentDetail");
         view.addObject("students", service.findAllStudents());
-//        TestData();
         return view;
     }
 
@@ -134,85 +133,5 @@ public class StudentDetail {
         query.setParameter("stuId", stuId);
 
         return null;
-    }
-
-    private void TestData() {
-        try {
-            File file = new File("C:\\Users\\Rem\\Downloads\\Test.xls");
-            InputStream is = new FileInputStream(file);
-
-            HSSFWorkbook workbook = new HSSFWorkbook(is);
-            HSSFSheet spreadsheet = workbook.getSheetAt(1);
-
-            HSSFRow row;
-            int termIndex = 0;
-            int subjectIndex = 0;
-            int rowIndex = 0;
-            boolean flag = false;
-
-            for (rowIndex = termIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
-                row = spreadsheet.getRow(rowIndex);
-
-                if (row != null) {
-                    for (int cellIndex = row.getFirstCellNum(); cellIndex <= row.getLastCellNum(); cellIndex++) {
-                        Cell cell = row.getCell(cellIndex);
-                        if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("học kỳ")) {
-                            termIndex = cellIndex;
-                            subjectIndex = cellIndex - 1;
-                            flag = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (flag) {
-                    break;
-                }
-            }
-
-            int found = 0;
-            while((found = findRow(spreadsheet, found, "học kỳ")) != -1) {
-
-                row = spreadsheet.getRow(found);
-                Cell term = row.getCell(termIndex);
-                String termString = term.getStringCellValue();
-                System.out.println(termString);
-
-                for (rowIndex = found + 1; rowIndex < findRow(spreadsheet, row.getRowNum() + 1, "học kỳ"); rowIndex++) {
-                    row = spreadsheet.getRow(rowIndex);
-                    Cell subject = row.getCell(subjectIndex);
-                    String subString = subject.getStringCellValue();
-                    if (subString != null && !subString.isEmpty()) System.out.println(" - " + subString);
-                }
-
-                rowIndex = row.getRowNum() + 1;
-                found = row.getRowNum() + 1;
-            }
-
-            for (rowIndex = rowIndex; rowIndex < spreadsheet.getLastRowNum(); rowIndex++) {
-                row = spreadsheet.getRow(rowIndex);
-                Cell subject = row.getCell(subjectIndex);
-                String subString = subject.getStringCellValue();
-                if (subString != null && !subString.isEmpty()) System.out.println(" - " + subString);
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private int findRow(HSSFSheet sheet, int currentRow, String cellContent) {
-        for (int rowIndex = currentRow; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
-            Row row = sheet.getRow(rowIndex);
-            if (row != null) {
-                for (int cellIndex = row.getFirstCellNum(); cellIndex <= row.getLastCellNum(); cellIndex++) {
-                    Cell cell = row.getCell(cellIndex);
-                    if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains(cellContent)) {
-                        return row.getRowNum();
-                    }
-                }
-            }
-        }
-        return -1;
     }
 }
