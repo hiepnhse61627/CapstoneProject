@@ -44,7 +44,9 @@
                                 <td>${list.subjectEntity.id}</td>
                                 <td>${list.subjectEntity.name}</td>
                                 <td>
-                                    <button class="remove" type="button" style="display: none">Remove</button>
+                                    <button class="up btn btn-link" type="button" style="visibility: hidden"><i class="fa fa-arrow-up"></i></button>
+                                    <button class="down btn btn-link" type="button" style="visibility: hidden"><i class="fa fa-arrow-down"></i></button>
+                                    <button class="remove btn btn-link" type="button" style="visibility: hidden"><i class="fa fa-times"></i></button>
                                 </td>
                             </tr>
                         </c:forEach>
@@ -63,9 +65,7 @@
                     <tr class="table-row">
                         <td id="${s.id}">${s.id} - ${s.name}</td>
                         <td>
-                            <button type="button" style="display: none" onclick="AddSubject('${s.id}', '${s.name}')">
-                                Add
-                            </button>
+                            <button type="button" class="btn btn-link" style="visibility: hidden" onclick="AddSubject('${s.id}', '${s.name}')"><i class="fa fa-plus"></i></button>
                         </td>
                     </tr>
                 </c:forEach>
@@ -107,19 +107,40 @@
 
     function IntializeRows() {
         $('#table tr').hover(function () { /* hover first argument is mouseenter*/
-            $(this).find('button').css({"display": "block"});
+            $(this).find('button').css({"visibility": "visible"});
         }, function () {  /* hover second argument is mouseleave*/
-            $(this).find('button').css({"display": "none"});
+            $(this).find('button').css({"visibility": "hidden"});
         });
 
         $('#subjects tr').hover(function () { /* hover first argument is mouseenter*/
-            $(this).find('button').css({"display": "block"});
+            $(this).find('button').css({"visibility": "visible"});
         }, function () {  /* hover second argument is mouseleave*/
-            $(this).find('button').css({"display": "none"});
+            $(this).find('button').css({"visibility": "hidden"});
         });
 
         $('.remove').click(function () {
             $(this).parents('tr').first().remove();
+
+            GetRowsData();
+        });
+
+        $('.down').click(function () {
+            var thisRow = $(this).closest('tr');
+            var nextRow = thisRow.next();
+            if (nextRow.length) {
+                nextRow.after(thisRow);
+            }
+
+            GetRowsData();
+        });
+
+        $('.up').click(function () {
+            var thisRow = $(this).closest('tr');
+            var nextRow = thisRow.prev();
+            if (nextRow.length) {
+                nextRow.before(thisRow);
+            }
+
             GetRowsData();
         });
     }
@@ -127,10 +148,19 @@
     function Add() {
         var term = $('.index').length + 1;
         $('#table').find('tbody').append("<tr id='Học kỳ " + term + "' class='index'><td><b>Học kỳ " + term + "</b></td></tr>");
+        IntializeRows();
     }
 
     function AddSubject(id, name) {
-        $('#table').find('tbody').append("<tr id='" + id + "'><td>" + id + "</td><td>" + name + "</td><td><button class='remove' type='button' style='display: none'>Remove</button></td></tr>");
+        $('#table').find('tbody').append("<tr id='" + id + "'>" +
+            "<td>" + id + "</td>" +
+            "<td>" + name + "</td>" +
+            "<td>" +
+            "<button class='up btn btn-link' type='button' style='visibility: hidden'><i class='fa fa-arrow-up'></i></button>" +
+            "<button class='down btn btn-link' type='button' style='visibility: hidden'><i class='fa fa-arrow-down'></i></button>" +
+            "<button class='remove btn btn-link' type='button' style='visibility: hidden'><i class='fa fa-times'></i></button>" +
+            "</td>" +
+            "</tr>");
         IntializeRows();
         GetRowsData();
         dnd = $('#table').tableDnD({
