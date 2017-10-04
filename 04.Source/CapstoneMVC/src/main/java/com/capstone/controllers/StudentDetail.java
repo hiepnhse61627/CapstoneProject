@@ -28,10 +28,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -122,16 +119,41 @@ public class StudentDetail {
 
     @RequestMapping("/getStudentNextCourse")
     @ResponseBody
-    public List<SubjectEntity> GetStudentNextCourse(@RequestParam int stuId) {
-        EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
-        EntityManager em = fac.createEntityManager();
-        TypedQuery<CurriculumMappingEntity> query = em.createQuery("SELECT a FROM CurriculumMappingEntity a JOIN " +
-                "SubjectEntity b JOIN MarksEntity c " +
-                "WHERE a.subjectEntity.id = b.id AND " +
-                "b.subjectMarkComponentEntity.subjectId = c.subjectId.subjectId AND " +
-                "c.studentId.id = :stuId", CurriculumMappingEntity.class);
-        query.setParameter("stuId", stuId);
+    public JsonObject GetStudentNextCourse(@RequestParam Map<String, String> params) {
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+        EntityManager em = emf.createEntityManager();
+        JsonObject jsonObject = new JsonObject();
+        String currentTerm = "";
+        List<Object> objects = new ArrayList<>();
+        int stuId = Integer.parseInt(params.get("stuId"));
+        Gson gson = new Gson();
 
-        return null;
+        try {
+            String sqlString = "SELECT distinct Curriculum_Mapping.term FROM Student " +
+                    "INNER JOIN Marks on student.ID = Marks.StudentId and Student.ID =" + stuId +
+                    " INNER JOIN Curriculum_Mapping on Marks.SubjectId = Curriculum_Mapping.SubId";
+            Query query = em.createNativeQuery(sqlString);
+            currentTerm = query.getSingleResult().toString();
+
+            int currentTermNumber = Integer.parseInt(currentTerm.replaceAll("[^0-9]", ""));
+            int nextTermNumber = currentTermNumber + 1;
+
+            sqlString = "SELECT c.SubId, s.Name FROM Curriculum_Mapping c, Subject s WHERE c.term LIKE '%"+ nextTermNumber + "' AND c.SubId = s.Id";
+            query = em.createNativeQuery(sqlString);
+            objects = query.getResultList();
+
+            List<Object> objects2 = objects.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+            JsonArray aaData = (JsonArray) gson.toJsonTree(objects2);
+
+            jsonObject.addProperty("iTotalRecords", objects.size());
+            jsonObject.addProperty("iTotalDisplayRecords",  objects.size());
+            jsonObject.add("aaData", aaData);
+            jsonObject.addProperty("sEcho", params.get("sEcho"));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+
+        return jsonObject;
     }
 }

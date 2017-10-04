@@ -43,7 +43,14 @@
                     <div class="box">
                         <div class="form-group">
                             <label>Danh sách môn học tiếp theo</label>
-
+                            <table id="nextCourseTable">
+                                <thead>
+                                    <tr>
+                                        <th>Mã môn</th>
+                                        <th>Tên môn</th>
+                                    </tr>
+                                </thead>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -54,6 +61,7 @@
 
 <script>
     var table = null;
+    var nextCourseTable = null;
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -125,12 +133,52 @@
             ],
             "bAutoWidth": false,
         }).fnSetFilteringDelay(1000);
+
+        nextCourseTable = $('#nextCourseTable').dataTable({
+            "bServerSide": true,
+            "bFilter": true,
+            "bRetrieve": true,
+            "bScrollCollapse": true,
+            "bProcessing": true,
+            "bSort": false,
+            "sAjaxSource": "/getStudentNextCourse", // url getData.php etc
+            "fnServerParams": function (aoData) {
+                aoData.push({"name": "stuId", "value": $('#select').val()})
+            },
+            "oLanguage": {
+                "sSearchPlaceholder": "",
+                "sSearch": "Tìm kiếm:",
+                "sZeroRecords": "Không có dữ liệu phù hợp",
+                "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
+                "sEmptyTable": "Không có dữ liệu",
+                "sInfoFiltered": " - lọc ra từ _MAX_ dòng",
+                "sLengthMenu": "Hiển thị _MENU_ dòng",
+                "sProcessing": "Đang xử lý...",
+                "oPaginate": {
+                    "sNext": "<i class='fa fa-chevron-right'></i>",
+                    "sPrevious": "<i class='fa fa-chevron-left'></i>"
+                }
+
+            },
+            "aoColumnDefs": [
+                {
+                    "aTargets": [0, 1],
+                    "bSortable": false,
+                },
+            ],
+            "bAutoWidth": false,
+        }).fnSetFilteringDelay(1000);
     });
 
     function RefreshTable() {
         if (table != null) {
             table._fnPageChange(0);
             table._fnAjaxUpdate();
+        }
+
+        if (nextCourseTable != null) {
+            nextCourseTable._fnPageChange(0);
+            nextCourseTable._fnAjaxUpdate();
         }
     }
 </script>
