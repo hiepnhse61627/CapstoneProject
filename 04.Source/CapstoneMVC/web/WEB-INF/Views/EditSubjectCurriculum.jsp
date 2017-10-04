@@ -36,11 +36,11 @@
                 <table class="table" id="table">
                     <tbody>
                     <c:forEach var="row" items="${list}">
-                        <tr id="${row.key}" class="index">
+                        <tr id="${row.key}" class="index nodrag">
                             <td colspan="2"><b>${row.key}</b></td>
                         </tr>
                         <c:forEach var="list" items="${row.value}">
-                            <tr id="${list.subjectEntity.id}">
+                            <tr id="${list.subjectEntity.id}" class="draggable">
                                 <td>${list.subjectEntity.id}</td>
                                 <td>${list.subjectEntity.name}</td>
                                 <td>
@@ -85,13 +85,8 @@
     $(document).ready(function () {
         dnd = $('#table').tableDnD({
             onDrop: function (table, row) {
-                data = [];
-                var rows = table.tBodies[0].rows;
-                for (var i = 0; i < rows.length; i++) {
-                    data.push(rows[i].id);
-                }
-                console.log(data);
-            }
+                GetRowsData();
+            },
         });
 
         IntializeRows();
@@ -131,7 +126,7 @@
         $('.down').click(function () {
             var thisRow = $(this).closest('tr');
             var nextRow = thisRow.next();
-            if (nextRow.length) {
+            if (nextRow.length > 0) {
                 nextRow.after(thisRow);
             }
 
@@ -141,7 +136,8 @@
         $('.up').click(function () {
             var thisRow = $(this).closest('tr');
             var nextRow = thisRow.prev();
-            if (nextRow.length) {
+            var topRow = nextRow.prev();
+            if (nextRow.length > 0 && topRow.length != 0) {
                 nextRow.before(thisRow);
             }
 
@@ -151,7 +147,7 @@
 
     function Add() {
         var term = $('.index').length + 1;
-        $('#table').find('tbody').append("<tr id='Học kỳ " + term + "' class='index'>" +
+        $('#table').find('tbody').append("<tr id='Học kỳ " + term + "' class='index nodrag'>" +
             "<td colspan='2'><b>Học kỳ " + term + "</b></td>" +
             "</tr>");
         IntializeRows();
@@ -172,7 +168,8 @@
         dnd = $('#table').tableDnD({
             onDrop: function (table, row) {
                 GetRowsData();
-            }
+            },
+            activeCols: ["draggable"]
         });
     }
 
