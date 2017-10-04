@@ -37,16 +37,19 @@
                     <tbody>
                     <c:forEach var="row" items="${list}">
                         <tr id="${row.key}" class="index">
-                            <td><b>${row.key}</b></td>
+                            <td colspan="2"><b>${row.key}</b></td>
                         </tr>
                         <c:forEach var="list" items="${row.value}">
                             <tr id="${list.subjectEntity.id}">
                                 <td>${list.subjectEntity.id}</td>
                                 <td>${list.subjectEntity.name}</td>
                                 <td>
-                                    <button class="up btn btn-link" type="button" style="visibility: hidden"><i class="fa fa-arrow-up"></i></button>
-                                    <button class="down btn btn-link" type="button" style="visibility: hidden"><i class="fa fa-arrow-down"></i></button>
-                                    <button class="remove btn btn-link" type="button" style="visibility: hidden"><i class="fa fa-times"></i></button>
+                                    <button class="up btn btn-link" type="button" style="visibility: hidden"><i
+                                            class="fa fa-arrow-up"></i></button>
+                                    <button class="down btn btn-link" type="button" style="visibility: hidden"><i
+                                            class="fa fa-arrow-down"></i></button>
+                                    <button class="remove btn btn-link" type="button" style="visibility: hidden"><i
+                                            class="fa fa-times"></i></button>
                                 </td>
                             </tr>
                         </c:forEach>
@@ -65,7 +68,8 @@
                     <tr class="table-row">
                         <td id="${s.id}">${s.id} - ${s.name}</td>
                         <td>
-                            <button type="button" class="btn btn-link" style="visibility: hidden" onclick="AddSubject('${s.id}', '${s.name}')"><i class="fa fa-plus"></i></button>
+                            <button type="button" class="btn btn-link" style="visibility: hidden"
+                                    onclick="AddSubject('${s.id}', '${s.name}')"><i class="fa fa-plus"></i></button>
                         </td>
                     </tr>
                 </c:forEach>
@@ -147,7 +151,9 @@
 
     function Add() {
         var term = $('.index').length + 1;
-        $('#table').find('tbody').append("<tr id='Học kỳ " + term + "' class='index'><td><b>Học kỳ " + term + "</b></td></tr>");
+        $('#table').find('tbody').append("<tr id='Học kỳ " + term + "' class='index'>" +
+            "<td colspan='2'><b>Học kỳ " + term + "</b></td>" +
+            "</tr>");
         IntializeRows();
     }
 
