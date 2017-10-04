@@ -27,6 +27,7 @@
     <link rel="stylesheet" href="/Resources/plugins/select2/select2.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/dist/css/template.css"/>
     <link rel="stylesheet" href="/Resources/plugins/jQueryUI/jquery-ui.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/iCheck/square/blue.css"/>
 
     <!-- REQUIRED JS SCRIPTS -->
 
@@ -42,6 +43,7 @@
     <script src="/Resources/plugins/select2/select2.min.js"></script>
     <script src="/Resources/plugins/jQueryUI/jquery-ui.min.js"></script>
     <script src="/Resources/plugins/tablednd/jquery.tablednd.min.js"></script>
+    <script src="/Resources/plugins/iCheck/icheck.min.js"></script>
 </head>
 <body class="hold-transition skin-black-light sidebar-mini">
 <div class="wrapper">

@@ -7,6 +7,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.TypedQuery;
 import java.util.List;
 
 public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpaController {
@@ -21,6 +22,41 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
             return em.find(SubjectCurriculumEntity.class, id);
         } finally {
             em.close();
+        }
+    }
+
+    public SubjectCurriculumEntity createCurriculum(SubjectCurriculumEntity entity) {
+        EntityManager em = null;
+        try {
+            em = getEntityManager();
+            em.getTransaction().begin();
+            em.persist(entity);
+            em.flush();
+            em.getTransaction().commit();
+
+            return entity;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    public void createCurriculumList(List<SubjectCurriculumEntity> subjectCurriculumEntityList) {
+        EntityManager em = getEntityManager();
+        for (SubjectCurriculumEntity subjectCurriculumEntity : subjectCurriculumEntityList) {
+            try {
+                TypedQuery<SubjectCurriculumEntity> tmp = em.createQuery("SELECT c FROM SubjectCurriculumEntity c WHERE c.name = :name AND c.description = :description", SubjectCurriculumEntity.class);
+                tmp.setParameter("name", subjectCurriculumEntity.getName());
+                tmp.setParameter("description", subjectCurriculumEntity.getDescription());
+                if (tmp.getResultList().size() == 0) {
+                    em.getTransaction().begin();
+                    em.persist(subjectCurriculumEntity);
+                    em.getTransaction().commit();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }

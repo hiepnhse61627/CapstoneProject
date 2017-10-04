@@ -1,5 +1,6 @@
 package com.capstone.services;
 
+import com.capstone.entities.CurriculumEntity;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.SubjectCurriculumEntity;
 import com.capstone.jpa.exJpa.ExMarksEntityJpaController;
@@ -15,6 +16,7 @@ public class SubjectCurriculumServiceImpl implements ISubjectCurriculumService {
     ExSubjectCurriculumJpaController controller = new ExSubjectCurriculumJpaController(emf);
 
 
+
     @Override
     public List<SubjectCurriculumEntity> getAllSubjectCurriculum() {
         return controller.findSubjectCurriculumEntityEntities();
@@ -23,5 +25,15 @@ public class SubjectCurriculumServiceImpl implements ISubjectCurriculumService {
     @Override
     public SubjectCurriculumEntity getCurriculumById(int curId) {
         return controller.findById(curId);
+    }
+
+    public void createCurriculumList(List<SubjectCurriculumEntity> curriculumEntityList) {
+//        controller.createCurriculumList(curriculumEntityList);
+    }
+
+    @Override
+    public SubjectCurriculumEntity createCurriculum(SubjectCurriculumEntity entity) {
+//        return controller.createCurriculum(entity);
+        return null;
     }
 }

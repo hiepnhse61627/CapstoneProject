@@ -27,7 +27,7 @@
             </div>
             <div class="form-group">
                 <label>Chọn môn tiên quyết</label>
-                <select id="prequisite" class="select form-control"></select>
+                <form id="prequisite"></form>
             </div>
             <div class="form-group">
                 <button id="but" type="button" class="btn btn-primary" onclick="GetStudents()">Lấy thông tin</button>
@@ -39,6 +39,7 @@
                 <table id="table"></table>
             </div>
         </div>
+        <input type="hidden" id="hidden" value=""/>
     </div>
 </section>
 
@@ -51,6 +52,9 @@
         $('#select').on('change', function() {
             Get();
         })
+
+        Get();
+        GetStudents();
     });
 
     function Get() {
@@ -66,21 +70,43 @@
             success: function (result) {
                 if (result.success) {
                     console.log(result.data);
-                    $("#prequisite").find('option').remove();
 
-                    var options;
+                    var options = "<div><label><input id='all' type='checkbox'/>All</label></div>";
 
                     if (result.data.length == 0) {
                         $('#comment').html("<font color='red'>Môn này không có môn tiên quyết</font>");
+                        $("#prequisite").html("");
                     } else {
                         $.each(result.data, function(i, item) {
-                            options += "<option value='" + item.value + "'>" + item.name + "</option>";
+                            options += "<div><label><input name='pre' type='checkbox' value='" + item.value + "'/>" + item.name + "</label></div>";
                         });
 
-                        $("#prequisite").append(options);
-                        $('#prequisite').removeAttr('selected').find('option:first').attr('selected', 'selected');
+                        $("#prequisite").html(options);
                         $('#comment').html("");
                     }
+
+                    $('input').iCheck({
+                        checkboxClass: 'icheckbox_square-blue',
+                        radioClass: 'iradio_square-blue',
+                        increaseArea: '20%' // optional
+                    });
+
+                    $('#all').on('ifClicked', function(event){
+                        console.log($('#all').not(':checked').length);
+                        if ($('#all').not(':checked').length > 0) {
+                            $('#prequisite input[name=pre]').iCheck('check');
+                        } else {
+                            $("#prequisite input[name=pre]").iCheck('uncheck');
+                        }
+                    });
+
+                    $('#prequisite input[name=pre]').on('ifToggled', function(event){
+                        if ($("#prequisite input[name=pre]:checked").length == $('#prequisite input[name=pre]').length) {
+                            $('#all').iCheck('check');
+                        } else {
+                            $('#all').iCheck('uncheck');
+                        }
+                    });
                 } else {
                     swal('', 'Có lỗi xảy ra, vui lòng thử lại sau', 'error');
                 }
@@ -89,6 +115,15 @@
     }
 
     function GetStudents() {
+        var jsonString = [];
+        $("#prequisite input:checked").each(function(){
+            if ($(this).val() != 'on') {
+                jsonString.push($(this).val());
+            }
+        });
+        console.log(jsonString);
+        $('#hidden').val(jsonString.join(','));
+
         if (table == null || table == 'undefined') {
             table = $('#table').dataTable({
                 "bServerSide": true,
@@ -100,7 +135,7 @@
                 "sAjaxSource": "/getFailStudents", // url getData.php etc
                 "fnServerParams": function (aoData) {
                     aoData.push({"name": "subId", "value": $('#select').val()}),
-                        aoData.push({"name": "prequisiteId", "value": $('#prequisite').val()})
+                        aoData.push({"name": "prequisiteId", "value":  $('#hidden').val()})
                 },
                 "oLanguage": {
                     "sSearchPlaceholder": "",
