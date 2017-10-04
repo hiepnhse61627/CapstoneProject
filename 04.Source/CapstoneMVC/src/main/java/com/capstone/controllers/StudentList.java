@@ -25,6 +25,7 @@ import javax.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 public class StudentList {
@@ -62,9 +63,9 @@ public class StudentList {
                 queryStr += " WHERE s.rollNumber LIKE :sRollNum OR s.fullName LIKE :sName";
             }
 
-            TypedQuery<StudentEntity> query = em.createQuery(queryStr, StudentEntity.class)
-                    .setFirstResult(iDisplayStart)
-                    .setMaxResults(iDisplayLength);
+            TypedQuery<StudentEntity> query = em.createQuery(queryStr, StudentEntity.class);
+//                    .setFirstResult(iDisplayStart)
+//                    .setMaxResults(iDisplayLength);
 
             if (!sSearch.isEmpty()) {
                 query.setParameter("sRollNum", "%" + sSearch + "%");
@@ -74,6 +75,7 @@ public class StudentList {
             List<StudentEntity> studentList = query.getResultList();
             iTotalDisplayRecords = studentList.size();
             List<List<String>> result = new ArrayList<>();
+            studentList = studentList.stream().skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
 
             for (StudentEntity std : studentList) {
                 List<String> dataList = new ArrayList<String>() {{
@@ -88,6 +90,7 @@ public class StudentList {
                     .toJsonTree(result, new TypeToken<List<List<String>>>() {}.getType());
 
             jsonObj.addProperty("iTotalRecords", iTotalRecords);
+//            jsonObj.addProperty("iTotalDisplayRecords", iTotalRecords);
             jsonObj.addProperty("iTotalDisplayRecords", iTotalDisplayRecords);
             jsonObj.add("aaData", aaData);
             jsonObj.addProperty("sEcho", params.get("sEcho"));
