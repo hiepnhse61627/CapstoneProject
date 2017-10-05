@@ -357,7 +357,7 @@ public class UploadController {
                 MarksEntity current = marksEntities.get(i);
                 for (int j = i + 1; j < marksEntities.size(); j++) {
                     MarksEntity next = marksEntities.get(j);
-                    if (current.getSubjectId() != null && next.getSubjectId() != null) {
+                    if (current.getSubjectId() != null && current.getSemesterId() != null && next.getSemesterId() != null && next.getSubjectId() != null) {
                         if ((current.getSemesterId().getSemester().toUpperCase().equals(next.getSemesterId().getSemester().toUpperCase()))
                                 && (current.getStudentId().getRollNumber().toUpperCase().equals(next.getStudentId().getRollNumber().toUpperCase()))
                                 && (current.getSubjectId().getSubjectId().toUpperCase().equals(next.getSubjectId().getSubjectId().toUpperCase()))
