@@ -116,7 +116,6 @@
 
         swal({
             title: 'Đang xử lý',
-            text: "yassss",
             html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
             type: 'info',
             onOpen: function () {
