@@ -46,6 +46,7 @@ public class UploadController {
     private final String marksFolder = "Marks-StudentMarks";
     private int totalLine;
     private int currentLine;
+    private int selectedRowNumber;
 
     @Autowired
     ServletContext context;
@@ -249,7 +250,8 @@ public class UploadController {
 
     @RequestMapping(value = "/uploadStudentMarks", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject uploadStudentMarks(@RequestParam("file") MultipartFile file) throws IOException {
+    public JsonObject uploadStudentMarks(@RequestParam("file") MultipartFile file, @RequestParam("row") int row) throws IOException {
+        selectedRowNumber = row;
         JsonObject jsonObject = readMarkFile(file, null, true);
         if (jsonObject.get("success").getAsBoolean()) {
             ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
@@ -274,10 +276,10 @@ public class UploadController {
             XSSFWorkbook workbook = new XSSFWorkbook(is);
             XSSFSheet spreadsheet = workbook.getSheetAt(0);
 
-            this.totalLine = spreadsheet.getLastRowNum();
-
             XSSFRow row;
-            int excelDataIndex = 1;
+            int excelDataIndex = selectedRowNumber;
+            this.totalLine = spreadsheet.getLastRowNum() - excelDataIndex;
+
             int semesterNameIndex = 0;
             int rollNumberIndex = 1;
             int subjectCodeIndex = 2;
@@ -285,7 +287,7 @@ public class UploadController {
             int averageMarkIndex = 4;
             int statusIndex = 5;
 
-            this.currentLine = excelDataIndex;
+            this.currentLine = 1;
             for (int rowIndex = excelDataIndex; rowIndex < spreadsheet.getLastRowNum(); rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
 
