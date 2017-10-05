@@ -22,6 +22,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -78,18 +79,12 @@ public class StudentFailPrequisite {
             EntityManager manager = emf.createEntityManager();
 
             String sub = params.get("subId").trim();
-            String pre = params.get("prequisiteId").trim();
+//            String pre = params.get("prequisiteId").trim();
 
-            List<MarksEntity> list = new ArrayList<>();
             String[] p = pres.split(",");
-            if (p.length > 0) {
-                for (String m: p) {
-                    TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId = :pre", MarksEntity.class);
-                    query.setParameter("sub", sub).setParameter("pre", m).getResultList().forEach(c -> list.add(c));
-                }
-            }
-
-            List<MarksEntity> result = Ultilities.FilterStudentPassedSubFailPrequisite(list, sub, pre);
+            TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId =:sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
+            List<MarksEntity> list = query.setParameter("sub", sub).setParameter("sList", Arrays.asList(p)).getResultList();
+            List<MarksEntity> result = Ultilities.FilterStudentPassedSubFailPrequisite(list, sub, p);
 
             ArrayList<ArrayList<String>> parent = new ArrayList<>();
             if (!result.isEmpty()) {
@@ -107,7 +102,8 @@ public class StudentFailPrequisite {
                 });
             }
 
-            JsonArray output = (JsonArray) new Gson().toJsonTree(parent, new TypeToken<List<MarksEntity>>() {}.getType());
+            JsonArray output = (JsonArray) new Gson().toJsonTree(parent, new TypeToken<List<MarksEntity>>() {
+            }.getType());
 
             data.addProperty("iTotalRecords", result.size());
             data.addProperty("iTotalDisplayRecords", result.size());

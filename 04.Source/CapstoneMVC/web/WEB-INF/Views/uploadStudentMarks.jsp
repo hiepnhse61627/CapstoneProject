@@ -80,31 +80,31 @@
                 swal({
                     title: 'Đang xử lý',
                     html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>' +
-                          '<div class="form-group" id="progress"></div>',
+                    '<div class="form-group" id="progress"></div>',
                     type: 'info',
-                    onOpen: function() {
+                    onOpen: function () {
                         swal.showLoading();
                         isrunning = true;
                         $.ajax({
-                           type: 'POST',
-                           url: '/upload-exist-marks-file',
-                           processData: false,
-                           contentType: false,
-                           data: form,
-                           success: function (result) {
+                            type: 'POST',
+                            url: '/upload-exist-marks-file',
+                            processData: false,
+                            contentType: false,
+                            data: form,
+                            success: function (result) {
                                 isrunning = false;
                                 if (result.success) {
                                     swal({
                                         title: 'Thành công',
                                         text: 'Đã import danh sách điểm',
                                         type: 'success'
-                                    }).then(function() {
+                                    }).then(function () {
                                         location.reload();
                                     });
                                 } else {
                                     swal('Đã xảy ra lỗi', result.message, 'error');
                                 }
-                           }
+                            }
                         });
                         updateSuccessSavedMarks(isrunning);
                     },
@@ -116,38 +116,60 @@
 
     // Import file process
     function Add() {
-        var form = new FormData();
-        form.append('file', $('#file')[0].files[0]);
-        isrunning = true;
-
         swal({
-            title: 'Đang xử lý',
-            html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div><div id="progress" class="form-group"></div>',
-            type: 'info',
-            onOpen: function() {
-                swal.showLoading();
-                $.ajax({
-                   type: 'POST',
-                   url: '/uploadStudentMarks',
-                   processData: false,
-                   contentType: false,
-                   data: form,
-                   success: function (result) {
-                       if (result.success) {
-                           isrunning = false;
-                           swal(
-                               'Thành công!',
-                               'Đã import danh sách điểm!',
-                               'success'
-                           );
-                       } else {
-                           swal('Đã xảy ra lỗi!', result.message, 'error');
-                       }
-                   }
-                });
-                updateSuccessSavedMarks(isrunning);
+            title: 'Nhập số dòng để thực thi',
+            input: 'number',
+            showCancelButton: true,
+            confirmButtonText: 'Gửi',
+            showLoaderOnConfirm: true,
+            preConfirm: function (number) {
+                return new Promise(function (resolve, reject) {
+                    if (number == '') {
+                        reject('Không được để trống');
+                    }
+                    if (number < 1) {
+                        reject('Không được nhập số nhở hơn 1');
+                    } else {
+                        resolve();
+                    }
+                })
             },
             allowOutsideClick: false
+        }).then(function (number) {
+            isrunning = true;
+            var form = new FormData();
+            form.append('file', $('#file')[0].files[0]);
+            form.append('row',  number);
+
+            swal({
+                title: 'Đang xử lý',
+                html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div><div id="progress" class="form-group"></div>',
+                type: 'info',
+                onOpen: function () {
+                    swal.showLoading();
+                    $.ajax({
+                        type: 'POST',
+                        url: '/uploadStudentMarks',
+                        processData: false,
+                        contentType: false,
+                        data: form,
+                        success: function (result) {
+                            if (result.success) {
+                                isrunning = false;
+                                swal(
+                                    'Thành công!',
+                                    'Đã import danh sách điểm!',
+                                    'success'
+                                );
+                            } else {
+                                swal('Đã xảy ra lỗi!', result.message, 'error');
+                            }
+                        }
+                    });
+                    updateSuccessSavedMarks(isrunning);
+                },
+                allowOutsideClick: false
+            });
         });
     }
 
@@ -159,7 +181,7 @@
             contentType: false,
             success: function (result) {
                 $('#progress').html("<div>(" + result.currentLine + "/" + result.totalLine + ")</div>" +
-                                    "<div>(" + result.successSavedMark + "/" + result.totalExistMarks + ")</div>");
+                    "<div>(" + result.successSavedMark + "/" + result.totalExistMarks + ")</div>");
                 if (running) {
                     setTimeout("updateSuccessSavedMarks(isrunning)", 50);
                 }
