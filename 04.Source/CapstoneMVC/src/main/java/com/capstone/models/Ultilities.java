@@ -87,7 +87,7 @@ public class Ultilities {
         return set;
     }
 
-    public static List<MarksEntity> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, String prequisiteId) {
+    public static List<MarksEntity> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, String[] prequisiteId) {
         List<MarksEntity> result = new ArrayList<>();
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
         if (!list.isEmpty()) {
@@ -109,11 +109,15 @@ public class Ultilities {
                     List<MarksEntity> f = n.get(subId);
                     MarksEntity k = f.get(f.size() - 1);
                     if (k.getStatus().toLowerCase().contains("pass")) {
-                        if (n.get(prequisiteId) != null && !n.get(prequisiteId).isEmpty()) {
-                            f = n.get(prequisiteId);
-                            k = f.get(f.size() - 1);
-                            if (k.getStatus().toLowerCase().contains("fail") && k.getAverageMark() < 4) {
-                                result.add(k);
+                        if (prequisiteId.length > 0) {
+                            for (String s: prequisiteId) {
+                                if (n.get(s) != null && !n.get(s).isEmpty()) {
+                                    f = n.get(s);
+                                    k = f.get(f.size() - 1);
+                                    if (k.getStatus().toLowerCase().contains("fail") && k.getAverageMark() < 4) {
+                                        result.add(k);
+                                    }
+                                }
                             }
                         }
                     }
