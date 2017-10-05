@@ -14,7 +14,7 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
     public CourseEntity findCourseByClassAndSubjectCode(String className, String subjectCode) {
         EntityManager em = getEntityManager();
         try {
-            String sqlString = "SELECT c FROM CourseEntity c WHERE lower(c.class1) = :clazz AND lower(c.subjectCode) = :subjectCode";
+            String sqlString = "SELECT c FROM CourseEntity c WHERE c.class1 = :clazz AND c.subjectCode = :subjectCode";
             Query query = em.createQuery(sqlString);
             query.setParameter("clazz", className);
             query.setParameter("subjectCode", subjectCode);
