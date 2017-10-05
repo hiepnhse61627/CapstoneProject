@@ -302,7 +302,9 @@ public class UploadController {
                         Cell averageMarkCell = row.getCell(averageMarkIndex);
                         Cell statusCell = row.getCell(statusIndex);
 
+                        String semesterName = "";
                         if (semesterNameCell != null) {
+                            semesterName = semesterNameCell.getStringCellValue().trim().toUpperCase();
                             RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(semesterNameCell.getStringCellValue().toUpperCase());
                             if (realSemesterEntity != null) {
                                 marksEntity.setSemesterId(realSemesterEntity);
@@ -310,8 +312,8 @@ public class UploadController {
                         }
 
                         if (classNameCell != null && subjectCodeCell != null) {
-                            String cla = classNameCell.getStringCellValue();
-                            String subjectCd = subjectCodeCell.getStringCellValue();
+                            String cla = classNameCell.getStringCellValue().trim();
+                            String subjectCd = subjectCodeCell.getStringCellValue().trim();
                             // find subject mark component
                             SubjectMarkComponentEntity subjectMarkComponentEntity =
                                     subjectMarkComponentService.findSubjectMarkComponentById(subjectCd.toUpperCase());
@@ -320,18 +322,43 @@ public class UploadController {
                                 marksEntity.setSubjectId(subjectMarkComponentEntity);
                             }
                             // find course
-                            CourseEntity courseEntity = courseService.findCourseByClassAndSubjectCode(cla.toLowerCase(), subjectCd.toLowerCase());
+                            CourseEntity courseEntity = courseService.findCourseByClassAndSubjectCode(cla.toUpperCase(), subjectCd.toUpperCase());
+                            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
                             if (courseEntity != null) {
                                 marksEntity.setCourseId(courseEntity);
                             } else { // create new course entity
+                                String semesterYear;
                                 CourseEntity newCourse = new CourseEntity();
-                                SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
-                                newCourse.setClass1(cla.toUpperCase());
-                                newCourse.setSubjectCode(subjectCd.toUpperCase());
-                                newCourse.setStartDate(sdf.parse(String.valueOf(new Date("01/01/1970"))));
-                                newCourse.setEndDate(sdf.parse(String.valueOf(new Date("01/01/1970"))));
+                                if (semesterName.contains("_H2")) {
+                                    semesterYear = semesterName.substring(0, semesterName.indexOf("_")).replaceAll("[^0-9]", "");
+                                    newCourse.setClass1(cla.toUpperCase());
+                                    newCourse.setSubjectCode(subjectCd.toUpperCase());
+                                    if (semesterName.contains("SPRING")) {
+                                        newCourse.setStartDate(sdf.parse(String.valueOf(new Date("03/01/" + semesterYear))));
+                                        newCourse.setEndDate(sdf.parse(String.valueOf(new Date("03/30/" + semesterYear))));
+                                    } else if (semesterName.contains("SUMMER")) {
+                                        newCourse.setStartDate(sdf.parse(String.valueOf(new Date("07/01/" + semesterYear))));
+                                        newCourse.setEndDate(sdf.parse(String.valueOf(new Date("07/30/" + semesterYear))));
+                                    } else if (semesterName.contains("FALL")) {
+                                        newCourse.setStartDate(sdf.parse(String.valueOf(new Date("11/05/" + semesterYear))));
+                                        newCourse.setEndDate(sdf.parse(String.valueOf(new Date("11/30/" + semesterYear))));
+                                    }
+                                } else {
+                                    semesterYear = semesterName.replaceAll("[^0-9]", "");
+                                    newCourse.setClass1(cla.toUpperCase());
+                                    newCourse.setSubjectCode(subjectCd.toUpperCase());
+                                    if (semesterName.contains("SPRING")) {
+                                        newCourse.setStartDate(sdf.parse(String.valueOf(new Date("01/01/" + semesterYear))));
+                                        newCourse.setEndDate(sdf.parse(String.valueOf(new Date("01/30/" + semesterYear))));
+                                    } else if (semesterName.contains("SUMMER")) {
+                                        newCourse.setStartDate(sdf.parse(String.valueOf(new Date("05/01/" + semesterYear))));
+                                        newCourse.setEndDate(sdf.parse(String.valueOf(new Date("05/30/" + semesterYear))));
+                                    } else if (semesterName.contains("FALL")) {
+                                        newCourse.setStartDate(sdf.parse(String.valueOf(new Date("09/05/" + semesterYear))));
+                                        newCourse.setEndDate(sdf.parse(String.valueOf(new Date("09/30/" + semesterYear))));
+                                    }
+                                }
                                 newCourse = courseService.createCourse(newCourse);
-
                                 marksEntity.setCourseId(newCourse);
                             }
                         }
@@ -360,12 +387,6 @@ public class UploadController {
                                 && (current.getStudentId().getRollNumber().toUpperCase().equals(next.getStudentId().getRollNumber().toUpperCase()))
                                 && (current.getSubjectId().getSubjectId().toUpperCase().equals(next.getSubjectId().getSubjectId().toUpperCase()))
                                 && (current.getAverageMark().toString().toUpperCase().equals(next.getAverageMark().toString().toUpperCase()))) { // found
-
-                            System.out.println("SEMESTER: " + current.getSemesterId().getSemester().toUpperCase() + "\t\t" + next.getSemesterId().getSemester().toUpperCase());
-                            System.out.println("SUBJECT_ID: " + current.getSubjectId().getSubjectId().toUpperCase() + "\t\t" + next.getSubjectId().getSubjectId().toUpperCase());
-                            System.out.println("AVERAGE_MARK: " + current.getAverageMark() + "\t\t" + next.getAverageMark());
-                            System.out.println("-------------------------------------------------------------------------------------------------------------------------");
-
                             if (current.getCourseId() != null && next.getCourseId() != null) {
                                 if (current.getCourseId().getClass1().toUpperCase().contains("_SPRING")
                                         || current.getCourseId().getClass1().toUpperCase().contains("_FALL")

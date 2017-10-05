@@ -150,7 +150,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             if (searchKey != null && !searchKey.isEmpty()) {
                 Expression<String> studentFullnameExpression = marksEntityRoot.get("studentId").get("fullName");
                 Expression<String> studentRollNumberExpression = marksEntityRoot.get("studentId").get("rollNumber");
-                Expression<String> classExpression = marksEntityRoot.get("courseId").get("clazz");
+                Expression<String> classExpression = marksEntityRoot.get("courseId").get("class1");
                 Predicate fullNamePredicate = criteriaBuilder.like(studentFullnameExpression, "%" + searchKey + "%");
                 Predicate rollNumberPredicate = criteriaBuilder.like(studentRollNumberExpression, "%" + searchKey + "%");
                 Predicate classPredicate = criteriaBuilder.like(classExpression, "%" + searchKey + "%");
