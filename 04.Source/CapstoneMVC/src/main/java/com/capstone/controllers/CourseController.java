@@ -3,6 +3,8 @@ package com.capstone.controllers;
 import com.capstone.entities.CourseEntity;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
+import com.capstone.services.CourseServiceImpl;
+import com.capstone.services.ICourseService;
 import com.capstone.services.ISubjectService;
 import com.capstone.services.SubjectServiceImpl;
 import com.google.gson.Gson;
@@ -25,6 +27,8 @@ import java.util.*;
 
 @Controller
 public class CourseController {
+
+    ICourseService courseService = new CourseServiceImpl();
 
     @RequestMapping("/course")
     public ModelAndView CoursePage() {
@@ -130,17 +134,13 @@ public class CourseController {
             Date startDate = sdf.parse(params.get("sStartDate"));
             Date endDate = sdf.parse(params.get("sEndDate"));
 
-            CourseEntity course = new CourseEntity() {{
-                setClass1(params.get("clazz"));
-                setSubjectCode(params.get("subjectCode"));
-                setStartDate(startDate);
-                setEndDate(endDate);
-            }};
+            CourseEntity course = new CourseEntity();
+            course.setClass1(params.get("clazz"));
+            course.setSubjectCode(params.get("subjectCode"));
+            course.setStartDate(startDate);
+            course.setEndDate(endDate);
 
-            em.getTransaction().begin();
-            em.persist(course);
-            em.flush();
-            em.getTransaction().commit();
+            courseService.createCourse(course);
 
             jsonObj.addProperty("success", true);
         } catch (Exception e) {
