@@ -47,65 +47,23 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         EntityManager em = null;
         this.totalExistStudent = marks.size();
         this.successSavedStudent = 0;
+        int batchSize = 1000;
         try {
             em = getEntityManager();
 
-            for (MarksEntity marksEntity : marks) {
-                em.getTransaction().begin();
-                CourseEntity courseId = marksEntity.getCourseId();
-                if (courseId != null) {
-                    courseId = em.getReference(courseId.getClass(), courseId.getId());
-                    marksEntity.setCourseId(courseId);
-                }
-                RealSemesterEntity semesterId = marksEntity.getSemesterId();
-                if (semesterId != null) {
-                    semesterId = em.getReference(semesterId.getClass(), semesterId.getId());
-                    marksEntity.setSemesterId(semesterId);
-                }
-                StudentEntity studentId = marksEntity.getStudentId();
-                if (studentId != null) {
-                    studentId = em.getReference(studentId.getClass(), studentId.getId());
-                    marksEntity.setStudentId(studentId);
-                }
-                SubjectMarkComponentEntity subjectId = marksEntity.getSubjectId();
-                if (subjectId != null) {
-                    subjectId = em.getReference(subjectId.getClass(), subjectId.getSubjectId());
-                    marksEntity.setSubjectId(subjectId);
-                }
-
-                // Check marks in database
-//                int entityDB =
-//                        findMarksByProperties(marksEntity.getCourseId().getId(), marksEntity.getSemesterId().getId(),
-//                                marksEntity.getStudentId().getId(),
-//                                marksEntity.getSubjectId() != null ? marksEntity.getSubjectId().getSubjectId() : null,
-//                                marksEntity.getAverageMark(), marksEntity.getStatus());
-//
-//                if (entityDB == 0) {
+            em.getTransaction().begin();
+            for (int i = 0; i < marks.size(); i++) {
+                MarksEntity marksEntity = marks.get(i);
                 em.persist(marksEntity);
-//                } else {
-//                    // do nothing
-//                }
 
-                if (courseId != null) {
-                    courseId.getMarksEntityList().add(marksEntity);
-                    courseId = em.merge(courseId);
+                if (i > 0 && i % batchSize == 0) {
+                    em.flush();
+                    em.clear();
                 }
-                if (semesterId != null) {
-                    semesterId.getMarksEntityList().add(marksEntity);
-                    semesterId = em.merge(semesterId);
-                }
-                if (studentId != null) {
-                    studentId.getMarksEntityList().add(marksEntity);
-                    studentId = em.merge(studentId);
-                }
-                if (subjectId != null) {
-                    subjectId.getMarksEntityList().add(marksEntity);
-                    subjectId = em.merge(subjectId);
 
-                }
-                em.getTransaction().commit();
                 ++this.successSavedStudent;
             }
+            em.getTransaction().commit();
         } catch (Exception ex) {
             throw ex;
         } finally {

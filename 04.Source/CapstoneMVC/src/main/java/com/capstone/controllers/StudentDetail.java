@@ -132,7 +132,7 @@ public class StudentDetail {
             String sqlString = "SELECT distinct Curriculum_Mapping.term FROM Student " +
                     "INNER JOIN Marks on student.ID = Marks.StudentId and Student.ID =" + stuId +
                     " INNER JOIN Curriculum_Mapping on Marks.SubjectId = Curriculum_Mapping.SubId";
-            Query query = em.createNativeQuery(sqlString);
+            Query query = em.createNativeQuery(sqlString).setMaxResults(1);
             currentTerm = query.getSingleResult().toString();
 
             int currentTermNumber = Integer.parseInt(currentTerm.replaceAll("[^0-9]", ""));
