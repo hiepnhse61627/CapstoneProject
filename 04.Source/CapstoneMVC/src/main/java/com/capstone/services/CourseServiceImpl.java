@@ -3,6 +3,7 @@ package com.capstone.services;
 import com.capstone.entities.CourseEntity;
 import com.capstone.jpa.CourseEntityJpaController;
 import com.capstone.jpa.exJpa.ExCourseEntityJpaController;
+import com.capstone.models.DatatableModel;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -27,4 +28,20 @@ public class CourseServiceImpl implements ICourseService {
     public CourseEntity createCourse(CourseEntity entity) {
         return courseEntityJpaController.createCourse(entity);
     }
+
+    @Override
+    public void updateCourse(CourseEntity model) {
+        courseEntityJpaController.updateCourse(model);
+    }
+
+    @Override
+    public void deleteCourse(int courseId) {
+        courseEntityJpaController.deleteCourse(courseId);
+    }
+
+    @Override
+    public List<CourseEntity> getCourseListForDatatable(DatatableModel model) {
+        return courseEntityJpaController.getCourseListForDatatable(model);
+    }
+
 }

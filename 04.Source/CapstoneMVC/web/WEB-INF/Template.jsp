@@ -141,6 +141,9 @@
                         </li>
                     </ul>
                 </li>
+                <li>
+                    <a href="/course"><i class="fa fa-list"></i> <span>Quản lý khóa học</span></a>
+                </li>
                 <li class="treeview">
                     <a href="#">
                         <i class="glyphicon glyphicon-save"></i>
@@ -178,7 +181,7 @@
                                 </div>
                             </a>
                         </li>
-						<li>
+                        <li>
                             <a href="/goUploadCoursePage">
                                 <div class="menu-child-wrapper">
                                     <div class="child-icon"><i class="fa fa-circle-o"></i></div>

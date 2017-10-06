@@ -3,10 +3,8 @@ package com.capstone.controllers;
 import com.capstone.entities.CourseEntity;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
-import com.capstone.services.CourseServiceImpl;
-import com.capstone.services.ICourseService;
-import com.capstone.services.ISubjectService;
-import com.capstone.services.SubjectServiceImpl;
+import com.capstone.models.DatatableModel;
+import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -29,6 +27,7 @@ import java.util.*;
 public class CourseController {
 
     ICourseService courseService = new CourseServiceImpl();
+    IMarksService markService = new MarksServiceImpl();
 
     @RequestMapping("/course")
     public ModelAndView CoursePage() {
@@ -49,45 +48,15 @@ public class CourseController {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em = emf.createEntityManager();
 
-            String sSearch = params.get("sSearch");
-            int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
-            int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
-            int iTotalRecords = 0;
-            int iTotalDisplayRecords = 0;
 
-            TypedQuery<Integer> queryCount;
+            DatatableModel model = new DatatableModel();
+            model.sSearch = params.get("sSearch");
+            model.iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
+            model.iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
+            model.iTotalRecords = 0;
+            model.iTotalDisplayRecords = 0;
 
-            // Đếm số khóa học
-            queryCount = em.createQuery("SELECT COUNT(c) FROM CourseEntity c", Integer.class);
-            iTotalRecords = ((Number) queryCount.getSingleResult()).intValue();
-
-            // Đếm số khóa học sau khi filter
-            if (sSearch.isEmpty()) {
-                iTotalDisplayRecords = iTotalRecords;
-            } else {
-                queryCount = em.createQuery("SELECT COUNT(c) FROM CourseEntity c " +
-                        "WHERE c.subjectCode LIKE :subCode OR c.class1 LIKE :class", Integer.class);
-                queryCount.setParameter("subCode", "%" + sSearch + "%");
-                queryCount.setParameter("class", "%" + sSearch + "%");
-                iTotalDisplayRecords = ((Number) queryCount.getSingleResult()).intValue();
-            }
-
-            // Danh sách khóa học
-            String queryStr = "SELECT c FROM CourseEntity c";
-            if (!sSearch.isEmpty()) {
-                queryStr += " WHERE c.subjectCode LIKE :subCode OR c.class1 LIKE :class";
-            }
-
-            TypedQuery<CourseEntity> query = em.createQuery(queryStr, CourseEntity.class)
-                    .setFirstResult(iDisplayStart)
-                    .setMaxResults(iDisplayLength);
-
-            if (!sSearch.isEmpty()) {
-                query.setParameter("subCode", "%" + sSearch + "%");
-                query.setParameter("class", "%" + sSearch + "%");
-            }
-
-            List<CourseEntity> courseList = query.getResultList();
+            List<CourseEntity> courseList = courseService.getCourseListForDatatable(model);
             List<List<String>> result = new ArrayList<>();
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
@@ -106,8 +75,8 @@ public class CourseController {
                     .toJsonTree(result, new TypeToken<List<List<String>>>() {
                     }.getType());
 
-            jsonObj.addProperty("iTotalRecords", iTotalRecords);
-            jsonObj.addProperty("iTotalDisplayRecords", iTotalDisplayRecords);
+            jsonObj.addProperty("iTotalRecords", model.iTotalRecords);
+            jsonObj.addProperty("iTotalDisplayRecords", model.iTotalDisplayRecords);
             jsonObj.add("aaData", aaData);
             jsonObj.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {
@@ -125,10 +94,6 @@ public class CourseController {
         try {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em = emf.createEntityManager();
-
-//            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
-//            Date startDate = sdf.parse(String.valueOf(new Date(params.get("sStartDate"))));
-//            Date endDate = sdf.parse(String.valueOf(new Date(params.get("sEndDate"))));
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             Date startDate = sdf.parse(params.get("sStartDate"));
@@ -160,26 +125,18 @@ public class CourseController {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em = emf.createEntityManager();
 
-            int courseId = Integer.parseInt(params.get("courseId"));
-
-            String queryStr = "SELECT c FROM CourseEntity c WHERE c.id = :courseId";
-            TypedQuery<CourseEntity> query = em.createQuery(queryStr, CourseEntity.class);
-            query.setParameter("courseId", courseId);
-            CourseEntity course = query.getSingleResult();
-
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             Date startDate = sdf.parse(params.get("sStartDate"));
             Date endDate = sdf.parse(params.get("sEndDate"));
 
-            course.setClass1(params.get("clazz"));
-            course.setSubjectCode(params.get("subjectCode"));
-            course.setStartDate(startDate);
-            course.setEndDate(endDate);
+            CourseEntity model = new CourseEntity();
+            model.setId(Integer.parseInt(params.get("courseId")));
+            model.setSubjectCode(params.get("subjectCode"));
+            model.setClass1(params.get("clazz"));
+            model.setStartDate(startDate);
+            model.setEndDate(endDate);
 
-            em.getTransaction().begin();
-            em.merge(course);
-            em.getTransaction().commit();
-
+            courseService.updateCourse(model);
             jsonObj.addProperty("success", true);
         } catch (Exception e) {
             jsonObj.addProperty("false", false);
@@ -198,24 +155,13 @@ public class CourseController {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em = emf.createEntityManager();
 
-            String queryStr = "SELECT COUNT(m) FROM MarksEntity m WHERE m.courseId.id = :courseId";
-            TypedQuery<Integer> queryCountMarks = em.createQuery(queryStr, Integer.class);
-            queryCountMarks.setParameter("courseId", courseId);
-            int countMarks = ((Number) queryCountMarks.getSingleResult()).intValue();
+            int countMarks = markService.countMarksByCourseId(courseId);
 
             if (countMarks > 0) {
                 jsonObj.addProperty("success", false);
                 jsonObj.addProperty("message", "Không thể xóa, khóa học này đã được dùng.");
             } else {
-                queryStr = "SELECT c FROM CourseEntity c WHERE c.id = :courseId";
-                TypedQuery<CourseEntity> query = em.createQuery(queryStr, CourseEntity.class);
-                query.setParameter("courseId", courseId);
-                CourseEntity course = query.getSingleResult();
-
-                em.getTransaction().begin();
-                em.remove(course);
-                em.getTransaction().commit();
-
+                courseService.deleteCourse(courseId);
                 jsonObj.addProperty("success", true);
             }
         } catch (Exception e) {

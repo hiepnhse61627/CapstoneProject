@@ -138,4 +138,21 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         query.setParameter("sid", stuId);
         return query.getResultList();
     }
+
+    public int countMarksByCourseId(int courseId) {
+        EntityManager em = getEntityManager();
+        int count = 0;
+
+        try {
+            String queryStr = "SELECT COUNT(m) FROM MarksEntity m WHERE m.courseId.id = :courseId";
+            TypedQuery<Integer> queryCountMarks = em.createQuery(queryStr, Integer.class);
+            queryCountMarks.setParameter("courseId", courseId);
+            count = ((Number) queryCountMarks.getSingleResult()).intValue();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return count;
+    }
 }
