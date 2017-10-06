@@ -2,6 +2,7 @@ package com.capstone.jpa.exJpa;
 
 import com.capstone.entities.CourseEntity;
 import com.capstone.jpa.CourseEntityJpaController;
+import com.capstone.models.DatatableModel;
 
 import javax.persistence.*;
 import java.util.List;
@@ -68,4 +69,85 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
             }
         }
     }
+
+    public void updateCourse(CourseEntity model) {
+        EntityManager em = getEntityManager();
+
+        try {
+            CourseEntity course = this.findCourseEntity(model.getId());
+            course.setSubjectCode(model.getSubjectCode());
+            course.setClass1(model.getClass1());
+            course.setStartDate(model.getStartDate());
+            course.setEndDate(model.getEndDate());
+
+            em.getTransaction().begin();
+            em.merge(course);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void deleteCourse(int courseId) {
+        EntityManager em = getEntityManager();
+
+        try {
+            CourseEntity course = this.findCourseEntity(courseId);
+            if (!em.contains(course)) {
+                course = em.merge(course);
+            }
+
+            em.getTransaction().begin();
+            em.remove(course);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public List<CourseEntity> getCourseListForDatatable(DatatableModel model) {
+        EntityManager em = getEntityManager();
+        List<CourseEntity> result = null;
+
+        try {
+            TypedQuery<Integer> queryCount;
+
+            // Đếm số khóa học
+            queryCount = em.createQuery("SELECT COUNT(c) FROM CourseEntity c", Integer.class);
+            model.iTotalRecords = ((Number) queryCount.getSingleResult()).intValue();
+
+            // Đếm số khóa học sau khi filter
+            if (model.sSearch.isEmpty()) {
+                model.iTotalDisplayRecords = model.iTotalRecords;
+            } else {
+                queryCount = em.createQuery("SELECT COUNT(c) FROM CourseEntity c " +
+                        "WHERE c.subjectCode LIKE :subCode OR c.class1 LIKE :class", Integer.class);
+                queryCount.setParameter("subCode", "%" + model.sSearch + "%");
+                queryCount.setParameter("class", "%" + model.sSearch + "%");
+                model.iTotalDisplayRecords = ((Number) queryCount.getSingleResult()).intValue();
+            }
+
+            // Danh sách khóa học
+            String queryStr = "SELECT c FROM CourseEntity c";
+            if (!model.sSearch.isEmpty()) {
+                queryStr += " WHERE c.subjectCode LIKE :subCode OR c.class1 LIKE :class";
+            }
+
+            TypedQuery<CourseEntity> query = em.createQuery(queryStr, CourseEntity.class)
+                    .setFirstResult(model.iDisplayStart)
+                    .setMaxResults(model.iDisplayLength);
+
+            if (!model.sSearch.isEmpty()) {
+                query.setParameter("subCode", "%" + model.sSearch + "%");
+                query.setParameter("class", "%" + model.sSearch + "%");
+            }
+
+            result = query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
 }
