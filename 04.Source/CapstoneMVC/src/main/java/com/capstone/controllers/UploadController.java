@@ -46,7 +46,7 @@ public class UploadController {
     private final String marksFolder = "Marks-StudentMarks";
     private int totalLine;
     private int currentLine;
-    private int selectedRowNumber;
+    private int selectedRowNumber = -1;
 
     @Autowired
     ServletContext context;
@@ -234,7 +234,8 @@ public class UploadController {
 
     @RequestMapping(value = "/upload-exist-marks-file", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject chooseExistMarkFile(@RequestParam("file") String file) {
+    public JsonObject chooseExistMarkFile(@RequestParam("file") String file, @RequestParam("row") int row) {
+        selectedRowNumber = row;
         JsonObject jsonObject;
         try {
             File f = new File(context.getRealPath("/") + "UploadedFiles/" + marksFolder + "/" + file);
@@ -277,7 +278,7 @@ public class UploadController {
             XSSFSheet spreadsheet = workbook.getSheetAt(0);
 
             XSSFRow row;
-            int excelDataIndex = selectedRowNumber;
+            int excelDataIndex = selectedRowNumber < 0 ? 0 : selectedRowNumber;
             this.totalLine = spreadsheet.getLastRowNum() - excelDataIndex;
 
             int semesterNameIndex = 0;

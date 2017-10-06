@@ -74,41 +74,64 @@
                 confirmButtonText: 'Tiếp tục',
                 cancelButtonText: 'Đóng'
             }).then(function () {
-                var form = new FormData();
-                form.append('file', $('#selected td').html());
-
                 swal({
-                    title: 'Đang xử lý',
-                    html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>' +
-                    '<div class="form-group" id="progress"></div>',
-                    type: 'info',
-                    onOpen: function () {
-                        swal.showLoading();
-                        isrunning = true;
-                        $.ajax({
-                            type: 'POST',
-                            url: '/upload-exist-marks-file',
-                            processData: false,
-                            contentType: false,
-                            data: form,
-                            success: function (result) {
-                                isrunning = false;
-                                if (result.success) {
-                                    swal({
-                                        title: 'Thành công',
-                                        text: 'Đã import danh sách điểm',
-                                        type: 'success'
-                                    }).then(function () {
-                                        location.reload();
-                                    });
-                                } else {
-                                    swal('Đã xảy ra lỗi', result.message, 'error');
-                                }
+                    title: 'Nhập dòng bắt đầu',
+                    input: 'number',
+                    showCancelButton: true,
+                    confirmButtonText: 'Gửi',
+                    showLoaderOnConfirm: true,
+                    preConfirm: function (number) {
+                        return new Promise(function (resolve, reject) {
+                            if (number == '') {
+                                reject('Không được để trống');
                             }
-                        });
-                        updateSuccessSavedMarks(isrunning);
+                            if (number < 1) {
+                                reject('Không được nhập số nhở hơn 1');
+                            } else {
+                                resolve();
+                            }
+                        })
                     },
                     allowOutsideClick: false
+                }).then(function (number) {
+                    isrunning = true;
+                    var form = new FormData();
+                    form.append('file', $('#selected td').html());
+                    form.append('row', number);
+
+                    swal({
+                        title: 'Đang xử lý',
+                        html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>' +
+                        '<div class="form-group" id="progress"></div>',
+                        type: 'info',
+                        onOpen: function () {
+                            swal.showLoading();
+                            isrunning = true;
+                            $.ajax({
+                                type: 'POST',
+                                url: '/upload-exist-marks-file',
+                                processData: false,
+                                contentType: false,
+                                data: form,
+                                success: function (result) {
+                                    isrunning = false;
+                                    if (result.success) {
+                                        swal({
+                                            title: 'Thành công',
+                                            text: 'Đã import danh sách điểm',
+                                            type: 'success'
+                                        }).then(function () {
+                                            location.reload();
+                                        });
+                                    } else {
+                                        swal('Đã xảy ra lỗi', result.message, 'error');
+                                    }
+                                }
+                            });
+                            updateSuccessSavedMarks(isrunning);
+                        },
+                        allowOutsideClick: false
+                    });
                 });
             });
         }
@@ -117,7 +140,7 @@
     // Import file process
     function Add() {
         swal({
-            title: 'Nhập số dòng để thực thi',
+            title: 'Nhập dòng bắt đầu',
             input: 'number',
             showCancelButton: true,
             confirmButtonText: 'Gửi',
@@ -139,7 +162,7 @@
             isrunning = true;
             var form = new FormData();
             form.append('file', $('#file')[0].files[0]);
-            form.append('row',  number);
+            form.append('row', number);
 
             swal({
                 title: 'Đang xử lý',
