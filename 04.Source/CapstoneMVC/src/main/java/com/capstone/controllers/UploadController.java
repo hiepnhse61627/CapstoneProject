@@ -279,7 +279,7 @@ public class UploadController {
 
             XSSFRow row;
             int excelDataIndex = selectedRowNumber < 0 ? 0 : selectedRowNumber;
-            this.totalLine = spreadsheet.getLastRowNum() - excelDataIndex;
+            this.totalLine = spreadsheet.getLastRowNum() - excelDataIndex + 1;
 
             int semesterNameIndex = 0;
             int rollNumberIndex = 1;

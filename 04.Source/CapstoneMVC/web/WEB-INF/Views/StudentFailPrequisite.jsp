@@ -19,6 +19,7 @@
             <div class="form-group">
                 <label>Chọn môn</label>
                 <select id="select" class="select form-control">
+                    <option value="0">All</option>
                     <c:forEach var="sub" items="${subs}">
                         <option value="${sub.id}">${sub.id} - ${sub.name} - ${sub.abbreviation}</option>
                     </c:forEach>

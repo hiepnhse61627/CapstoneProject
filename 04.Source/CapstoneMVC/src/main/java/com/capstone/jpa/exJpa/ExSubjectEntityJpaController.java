@@ -73,6 +73,14 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         return prequisiteList;
     }
 
+    public List<SubjectEntity> getAllPrequisite() {
+        prequisiteList = new ArrayList<>();
+        for (SubjectEntity currSub : this.findSubjectEntityEntities()) {
+            getPrequisite(currSub, currSub.getId());
+        }
+        return prequisiteList;
+    }
+
     private void getPrequisite(SubjectEntity curr, String subId) {
         List<SubjectEntity> pre = curr.getSubjectEntityList();
         if (!pre.isEmpty()) {
@@ -81,7 +89,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
             }
         }
 
-        if (!curr.getId().equals(subId)) {
+        if (!curr.getId().equals(subId) && !prequisiteList.stream().anyMatch(a -> a.getId().equals(curr.getId()))) {
             prequisiteList.add(curr);
         }
     }

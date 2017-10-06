@@ -10,6 +10,7 @@ public interface ISubjectService {
     SubjectEntity findSubjectbyId(String id);
     List<SubjectEntity> getAllSubjects();
     List<SubjectEntity> getAllPrequisiteSubjects(String subId);
+    List<SubjectEntity> getAlllPrequisite();
 
     int getCurrentLine();
     int getTotalLine();
