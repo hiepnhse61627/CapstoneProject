@@ -3,19 +3,14 @@ package com.capstone.controllers;
 import com.capstone.models.ReadAndSaveFileToServer;
 import com.capstone.services.*;
 import com.google.gson.JsonObject;
-import org.apache.commons.io.IOUtils;
-import org.apache.poi.POIXMLDocument;
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellAddress;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.stereotype.Controller;
 import com.capstone.entities.*;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,15 +22,10 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletContext;
 import java.io.*;
-import java.lang.reflect.Array;
 
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class UploadController {
@@ -380,31 +370,42 @@ public class UploadController {
             }
             is.close();
             // Check student same semester, same subject but in different class
-            for (int i = 0; i < marksEntities.size(); i++) {
-                MarksEntity current = marksEntities.get(i);
-                for (int j = i + 1; j < marksEntities.size(); j++) {
-                    MarksEntity next = marksEntities.get(j);
-                    if (current.getSubjectId() != null && next.getSubjectId() != null) {
-                        if ((current.getSemesterId().getSemester().toUpperCase().equals(next.getSemesterId().getSemester().toUpperCase()))
-                                && (current.getStudentId().getRollNumber().toUpperCase().equals(next.getStudentId().getRollNumber().toUpperCase()))
-                                && (current.getSubjectId().getSubjectId().toUpperCase().equals(next.getSubjectId().getSubjectId().toUpperCase()))
-                                && (current.getAverageMark().toString().toUpperCase().equals(next.getAverageMark().toString().toUpperCase()))) { // found
-                            if (current.getCourseId() != null && next.getCourseId() != null) {
-                                if (current.getCourseId().getClass1().toUpperCase().contains("_SPRING")
-                                        || current.getCourseId().getClass1().toUpperCase().contains("_FALL")
-                                        || current.getCourseId().getClass1().toUpperCase().contains("_SUMMER")) {
-                                    marksEntities.remove(i);
-                                } else if (next.getCourseId().getClass1().toUpperCase().contains("_SPRING")
-                                        || next.getCourseId().getClass1().toUpperCase().contains("_FALL")
-                                        || next.getCourseId().getClass1().toUpperCase().contains("_SUMMER")) {
-                                    marksEntities.remove(j);
-                                }
-                            }
-                        }
-                    }
+            List<MarksEntity> list1 = marksEntities.stream().filter(
+                          m -> m.getCourseId().getClass1().toUpperCase().contains("_SPRING")
+                            || m.getCourseId().getClass1().toUpperCase().contains("_FALL")
+                            || m.getCourseId().getClass1().toUpperCase().contains("_SUMMER")).collect(Collectors.toList());
+            List<MarksEntity> list2 = marksEntities.stream().filter(
+                    m -> !m.getCourseId().getClass1().toUpperCase().contains("_SPRING")
+                            && !m.getCourseId().getClass1().toUpperCase().contains("_FALL")
+                            && !m.getCourseId().getClass1().toUpperCase().contains("_SUMMER")).collect(Collectors.toList());
+            // make comparator
+            Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
+                @Override
+                public int compare(MarksEntity o1, MarksEntity o2) {
+                    return new CompareToBuilder()
+                                .append(o1.getSemesterId().getSemester().toUpperCase(), o2.getSemesterId().getSemester().toUpperCase())
+                                .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
+                                .append(o1.getSubjectId() != null ? o1.getSubjectId().getSubjectId().toUpperCase() : "",
+                                        o2.getSubjectId() != null ? o2.getSubjectId().getSubjectId().toUpperCase() : "")
+                                .append(o1.getAverageMark().toString().toUpperCase(), o2.getAverageMark().toString().toUpperCase())
+                                .toComparison();
+                }
+            };
+            // start compare
+            Collections.sort(list2, comparator);
+            for (int i = 0; i < list1.size(); i++) {
+                MarksEntity keySearch = list1.get(i);
+                int index = Collections.binarySearch(list2, keySearch, comparator);
+                System.out.println(index);
+                if (index >= 0) {
+                    list1.remove(i);
                 }
             }
-            marksService.createMarks(marksEntities);
+            // result list
+            List<MarksEntity> resultList = new ArrayList<>();
+            resultList.addAll(list1);
+            resultList.addAll(list2);
+            marksService.createMarks(resultList);
         } catch (Exception ex) {
             ex.printStackTrace();
             jsonObject.addProperty("success", false);
