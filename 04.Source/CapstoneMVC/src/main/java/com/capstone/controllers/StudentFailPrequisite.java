@@ -47,7 +47,13 @@ public class StudentFailPrequisite {
 
         ISubjectService service = new SubjectServiceImpl();
         try {
-            List<SubjectEntity> pres = service.getAllPrequisiteSubjects(subId);
+            List<SubjectEntity> pres;
+            if (subId.equals("0")) {
+                pres = service.getAlllPrequisite();
+            } else {
+                pres = service.getAllPrequisiteSubjects(subId);
+            }
+
             JsonArray o1 = new JsonArray();
             for (SubjectEntity p : pres) {
                 JsonObject o2 = new JsonObject();
@@ -82,9 +88,17 @@ public class StudentFailPrequisite {
 //            String pre = params.get("prequisiteId").trim();
 
             String[] p = pres.split(",");
-            TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId =:sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
-            List<MarksEntity> list = query.setParameter("sub", sub).setParameter("sList", Arrays.asList(p)).getResultList();
-            List<MarksEntity> result = Ultilities.FilterStudentPassedSubFailPrequisite(list, sub, p);
+
+            List<MarksEntity> result;
+            if (sub.equals(0)) {
+                TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId IN :sList", MarksEntity.class);
+                List<MarksEntity> list = query.setParameter("sList", Arrays.asList(p)).getResultList();
+                result = Ultilities.FilterStudentPassedSubFailPrequisite(list, sub, p);
+            } else {
+                TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
+                List<MarksEntity> list = query.setParameter("sub", sub).setParameter("sList", Arrays.asList(p)).getResultList();
+                result = Ultilities.FilterStudentPassedSubFailPrequisite(list, sub, p);
+            }
 
             ArrayList<ArrayList<String>> parent = new ArrayList<>();
             if (!result.isEmpty()) {

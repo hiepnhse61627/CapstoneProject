@@ -34,6 +34,11 @@ public class SubjectServiceImpl implements ISubjectService {
     }
 
     @Override
+    public List<SubjectEntity> getAlllPrequisite() {
+        return controller.getAllPrequisite();
+    }
+
+    @Override
     public int getCurrentLine() { return controller.getCurrentLine(); }
 
     @Override
