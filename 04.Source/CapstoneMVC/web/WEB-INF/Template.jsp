@@ -99,7 +99,7 @@
                 <li class="active">
                     <a href="#"><i class="fa fa-dashboard"></i> <span>Thống kê</span></a>
                 </li>
-                <li class="active">
+                <li>
                     <a href="/goSQLQueryPage"><i class="fa fa-search"></i> <span>Truy vấn dữ liệu</span></a>
                 </li>
                 <li class="treeview">
