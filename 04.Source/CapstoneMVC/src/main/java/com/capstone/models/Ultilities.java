@@ -6,7 +6,6 @@ import com.google.common.collect.Table;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -110,7 +109,7 @@ public class Ultilities {
                     MarksEntity k = f.get(f.size() - 1);
                     if (k.getStatus().toLowerCase().contains("pass")) {
                         if (prequisiteId.length > 0) {
-                            for (String s: prequisiteId) {
+                            for (String s : prequisiteId) {
                                 if (n.get(s) != null && !n.get(s).isEmpty()) {
                                     f = n.get(s);
                                     k = f.get(f.size() - 1);
@@ -143,4 +142,5 @@ public class Ultilities {
 
         return connection;
     }
+
 }

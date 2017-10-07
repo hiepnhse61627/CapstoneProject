@@ -17,7 +17,6 @@ public class ReadAndSaveFileToServer {
             try {
                 byte[] bytes = file.getBytes();
 
-//                File dir = new File(context.getRealPath("/") + "UploadedFiles/UploadedSubjectTemplate/");
                 File dir = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/");
                 if (!dir.exists()) {
                     dir.mkdirs();

@@ -4,11 +4,14 @@ import com.capstone.entities.CourseEntity;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.models.DatatableModel;
+import com.capstone.models.Logger;
+import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,12 +22,16 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
+import javax.servlet.ServletContext;
 import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Controller
 public class CourseController {
+
+    @Autowired
+    ServletContext context;
 
     ICourseService courseService = new CourseServiceImpl();
     IMarksService markService = new MarksServiceImpl();
@@ -80,7 +87,7 @@ public class CourseController {
             jsonObj.add("aaData", aaData);
             jsonObj.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.writeLog(context, e);
         }
 
         return jsonObj;
@@ -109,6 +116,7 @@ public class CourseController {
 
             jsonObj.addProperty("success", true);
         } catch (Exception e) {
+            Logger.writeLog(context, e);
             jsonObj.addProperty("false", false);
             jsonObj.addProperty("message", e.getMessage());
         }
@@ -139,6 +147,7 @@ public class CourseController {
             courseService.updateCourse(model);
             jsonObj.addProperty("success", true);
         } catch (Exception e) {
+            Logger.writeLog(context, e);
             jsonObj.addProperty("false", false);
             jsonObj.addProperty("message", e.getMessage());
         }
@@ -165,6 +174,7 @@ public class CourseController {
                 jsonObj.addProperty("success", true);
             }
         } catch (Exception e) {
+            Logger.writeLog(context, e);
             jsonObj.addProperty("success", false);
             jsonObj.addProperty("message", e.getMessage());
         }
