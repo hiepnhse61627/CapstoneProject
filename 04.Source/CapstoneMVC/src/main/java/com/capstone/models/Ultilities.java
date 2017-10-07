@@ -1,6 +1,9 @@
 package com.capstone.models;
 
 import com.capstone.entities.MarksEntity;
+import com.capstone.entities.SubjectEntity;
+import com.capstone.services.ISubjectService;
+import com.capstone.services.SubjectServiceImpl;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
@@ -87,8 +90,8 @@ public class Ultilities {
         return set;
     }
 
-    public static List<MarksEntity> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, String[] prequisiteId) {
-        List<MarksEntity> result = new ArrayList<>();
+    public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, String[] prequisiteId) {
+        List<FailPrequisiteModel> result = new ArrayList<>();
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
         if (!list.isEmpty()) {
             for (MarksEntity m : list) {
@@ -102,20 +105,21 @@ public class Ultilities {
                 }
             }
 
+
             Set<String> l = map.rowKeySet();
             for (String m : l) {
                 Map<String, List<MarksEntity>> n = map.row(m);
                 if (n.get(subId) != null && !n.get(subId).isEmpty()) {
                     List<MarksEntity> f = n.get(subId);
-                    MarksEntity k = f.get(f.size() - 1);
-                    if (k.getStatus().toLowerCase().contains("pass")) {
+                    MarksEntity k1 = f.get(f.size() - 1);
+                    if (k1.getStatus().toLowerCase().contains("pass")) {
                         if (prequisiteId.length > 0) {
-                            for (String s: prequisiteId) {
+                            for (String s : prequisiteId) {
                                 if (n.get(s) != null && !n.get(s).isEmpty()) {
                                     f = n.get(s);
-                                    k = f.get(f.size() - 1);
-                                    if (k.getStatus().toLowerCase().contains("fail") && k.getAverageMark() < 4) {
-                                        result.add(k);
+                                    MarksEntity k2 = f.get(f.size() - 1);
+                                    if (k2.getStatus().toLowerCase().contains("fail") && k2.getAverageMark() < 4) {
+                                        result.add(new FailPrequisiteModel(k2, k1.getSubjectId().getSubjectId()));
                                     }
                                 }
                             }

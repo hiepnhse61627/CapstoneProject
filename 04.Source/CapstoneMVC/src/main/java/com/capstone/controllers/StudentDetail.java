@@ -123,7 +123,7 @@ public class StudentDetail {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = emf.createEntityManager();
         JsonObject jsonObject = new JsonObject();
-        String currentTerm = "";
+        final String[] currentTerm = {""};
         List<Object> objects = new ArrayList<>();
         int stuId = Integer.parseInt(params.get("stuId"));
         Gson gson = new Gson();
@@ -132,10 +132,10 @@ public class StudentDetail {
             String sqlString = "SELECT distinct Curriculum_Mapping.term FROM Student " +
                     "INNER JOIN Marks on student.ID = Marks.StudentId and Student.ID =" + stuId +
                     " INNER JOIN Curriculum_Mapping on Marks.SubjectId = Curriculum_Mapping.SubId";
-            Query query = em.createNativeQuery(sqlString).setMaxResults(1);
-            currentTerm = query.getSingleResult().toString();
+            Query query = em.createNativeQuery(sqlString);
+            query.getResultList().stream().findFirst().ifPresent(c -> currentTerm[0] = c.toString());
 
-            int currentTermNumber = Integer.parseInt(currentTerm.replaceAll("[^0-9]", ""));
+            int currentTermNumber = Integer.parseInt(currentTerm[0].replaceAll("[^0-9]", ""));
             int nextTermNumber = currentTermNumber + 1;
 
             sqlString = "SELECT c.SubId, s.Name FROM Curriculum_Mapping c, Subject s WHERE c.term LIKE '%"+ nextTermNumber + "' AND c.SubId = s.Id";

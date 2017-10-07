@@ -37,7 +37,20 @@
         <div class="col-md-12">
             <div class="form-group">
                 <label>Danh sách sinh viên đậu môn nhưng fail prequisites</label>
-                <table id="table"></table>
+                <table id="table">
+                    <thead>
+                        <tr>
+                            <th>MSSV</th>
+                            <th>Tên</th>
+                            <th>Môn hiện tại</th>
+                            <th>Môn tiên quyết</th>
+                            <th>Lớp</th>
+                            <th>Semester</th>
+                            <th>Điểm</th>
+                            <th>Tình trạng</th>
+                        </tr>
+                    </thead>
+                </table>
             </div>
         </div>
         <input type="hidden" id="hidden" value=""/>

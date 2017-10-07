@@ -2,6 +2,7 @@ package com.capstone.controllers;
 
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.SubjectEntity;
+import com.capstone.models.FailPrequisiteModel;
 import com.capstone.models.Ultilities;
 import com.capstone.services.ISubjectService;
 import com.capstone.services.SubjectServiceImpl;
@@ -85,33 +86,48 @@ public class StudentFailPrequisite {
             EntityManager manager = emf.createEntityManager();
 
             String sub = params.get("subId").trim();
-//            String pre = params.get("prequisiteId").trim();
 
             String[] p = pres.split(",");
 
-            List<MarksEntity> result;
-            if (sub.equals(0)) {
-                TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId IN :sList", MarksEntity.class);
-                List<MarksEntity> list = query.setParameter("sList", Arrays.asList(p)).getResultList();
-                result = Ultilities.FilterStudentPassedSubFailPrequisite(list, sub, p);
+            List<FailPrequisiteModel> result;
+            if (sub.equals("0")) {
+                ISubjectService service = new SubjectServiceImpl();
+                result = new ArrayList<>();
+                if (p.length > 0) {
+                    for (String i : p) {
+                        SubjectEntity pre = service.findSubjectById(i);
+                        if (pre != null) {
+                            for (SubjectEntity s: pre.getSubjectEntityList1()) {
+                                TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
+                                List<MarksEntity> list = query.setParameter("sub", s.getId()).setParameter("sList", Arrays.asList(p)).getResultList();
+                                Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getId(), p).forEach(c -> result.add(c));
+                            }
+                        }
+                    }
+                }
             } else {
                 TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
                 List<MarksEntity> list = query.setParameter("sub", sub).setParameter("sList", Arrays.asList(p)).getResultList();
                 result = Ultilities.FilterStudentPassedSubFailPrequisite(list, sub, p);
             }
 
-            ArrayList<ArrayList<String>> parent = new ArrayList<>();
+            List<FailPrequisiteModel> displayList = new ArrayList<>();
             if (!result.isEmpty()) {
-                result.forEach(m -> {
+                displayList = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+            }
+
+            ArrayList<ArrayList<String>> parent = new ArrayList<>();
+            if (!displayList.isEmpty()) {
+                displayList.forEach(m -> {
                     ArrayList<String> tmp = new ArrayList<>();
-                    tmp.add(m.getStudentId().getRollNumber());
-                    tmp.add(m.getStudentId().getFullName());
-                    tmp.add(m.getSubjectId() == null ? "N/A" : m.getSubjectId().getSubjectId());
-                    tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getClass1());
-                    tmp.add(m.getSemesterId() == null ? "N/A" : m.getSemesterId().getSemester());
-                    tmp.add(String.valueOf(m.getAverageMark()));
-                    tmp.add(m.getStatus());
-                    tmp.add(m.getStudentId().getId() + "");
+                    tmp.add(m.getMark().getStudentId().getRollNumber());
+                    tmp.add(m.getMark().getStudentId().getFullName());
+                    tmp.add(m.getSubjectWhichPrequisiteFail() == null ? "N/A" : m.getSubjectWhichPrequisiteFail());
+                    tmp.add(m.getMark().getSubjectId() == null ? "N/A" : m.getMark().getSubjectId().getSubjectId());
+                    tmp.add(m.getMark().getCourseId() == null ? "N/A" : m.getMark().getCourseId().getClass1());
+                    tmp.add(m.getMark().getSemesterId() == null ? "N/A" : m.getMark().getSemesterId().getSemester());
+                    tmp.add(String.valueOf(m.getMark().getAverageMark()));
+                    tmp.add(m.getMark().getStatus());
                     parent.add(tmp);
                 });
             }
