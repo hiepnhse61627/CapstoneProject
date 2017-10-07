@@ -13,6 +13,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.ResponseEntity;
@@ -105,34 +106,40 @@ public class StudentController {
 
     public List<MarksEntity> GetStudentsList(String semesterId, String subjectId, String searchKey) {
         List<MarksEntity> markList = marksService.getMarkByConditions(semesterId, subjectId, searchKey);
-        List<MarksEntity> result = new ArrayList<>();
-        Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
-
-        if (!markList.isEmpty()) {
-            List<MarksEntity> filtered = markList.stream().filter(a -> a.getSubjectId() != null).collect(Collectors.toList());
-            for (MarksEntity m : filtered) {
-                if (map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()) == null) {
-                    List<MarksEntity> list = new ArrayList<>();
-                    list.add(m);
-                    map.put(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId(), Ultilities.SortMarkBySemester(list));
-                } else {
-                    map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()).add(m);
-                    Ultilities.SortMarkBySemester(map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()));
-                }
+        // result list
+        List<MarksEntity> resultList = new ArrayList<>();
+        // Init students passed and failed
+        List<MarksEntity> listPassed = markList.stream().filter(p -> p.getStatus().contains("Passed")).collect(Collectors.toList());
+        List<MarksEntity> listFailed = markList.stream().filter(f -> !f.getStatus().contains("Passed")).collect(Collectors.toList());
+        // make comparator
+        Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
+            @Override
+            public int compare(MarksEntity o1, MarksEntity o2) {
+                return new CompareToBuilder()
+                        .append(o1.getSubjectId().getSubjectId().toUpperCase(), o2.getSubjectId().getSubjectId().toUpperCase())
+                        .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
+                        .toComparison();
             }
-
-            for (Table.Cell<String, String, List<MarksEntity>> cell : map.cellSet()) {
-                if (cell.getValue().get(cell.getValue().size() - 1).getStatus().equals("Fail")) {
-                    result.add(cell.getValue().get(cell.getValue().size() - 1));
-                }
+        };
+        Collections.sort(listPassed, comparator);
+        // start compare failed list to passed list
+        for (int i = 0; i < listFailed.size(); i++) {
+            MarksEntity keySearch = listFailed.get(i);
+            int index = Collections.binarySearch(listPassed, keySearch, comparator);
+            if (index >= 0) {
+                listFailed.remove(i);
             }
-
-            markList.stream().filter(a -> a.getSubjectId() == null).forEach(c -> {
-                if (c.getStatus().equals("Fail")) result.add(c);
-            });
+        }
+        // remove duplicate
+        
+        for (MarksEntity marksEntity : listFailed) {
+            if (!resultList.stream().anyMatch(r -> r.getSubjectId().getSubjectId().toUpperCase().equals(marksEntity.getSubjectId().getSubjectId().toUpperCase())
+                                                && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
+                resultList.add(marksEntity);
+            }
         }
 
-        return result;
+        return resultList;
     }
 
     @RequestMapping(value = "/student/getAllLatestMarks", method = RequestMethod.POST)
