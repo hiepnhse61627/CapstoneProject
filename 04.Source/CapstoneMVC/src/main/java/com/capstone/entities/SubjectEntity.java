@@ -7,19 +7,7 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  *
@@ -48,9 +36,9 @@ public class SubjectEntity implements Serializable {
     @JoinTable(name = "Prequisite", joinColumns = {
         @JoinColumn(name = "SubId", referencedColumnName = "Id")}, inverseJoinColumns = {
         @JoinColumn(name = "PrequisiteSubId", referencedColumnName = "Id")})
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private List<SubjectEntity> subjectEntityList;
-    @ManyToMany(mappedBy = "subjectEntityList")
+    @ManyToMany(mappedBy = "subjectEntityList", fetch = FetchType.EAGER)
     private List<SubjectEntity> subjectEntityList1;
     @JoinColumn(name = "Id", referencedColumnName = "SubjectId", insertable = false, updatable = false)
     @OneToOne(optional = false)

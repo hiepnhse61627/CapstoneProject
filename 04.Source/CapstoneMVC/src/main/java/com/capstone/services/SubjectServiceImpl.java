@@ -19,11 +19,6 @@ public class SubjectServiceImpl implements ISubjectService {
     }
 
     @Override
-    public SubjectEntity findSubjectbyId(String id) {
-        return controller.findSubjectEntity(id);
-    }
-
-    @Override
     public List<SubjectEntity> getAllSubjects() {
         return controller.findSubjectEntityEntities();
     }
@@ -36,6 +31,11 @@ public class SubjectServiceImpl implements ISubjectService {
     @Override
     public List<SubjectEntity> getAlllPrequisite() {
         return controller.getAllPrequisite();
+    }
+
+    @Override
+    public SubjectEntity findSubjectById(String id) {
+        return controller.findSubjectEntity(id);
     }
 
     @Override
