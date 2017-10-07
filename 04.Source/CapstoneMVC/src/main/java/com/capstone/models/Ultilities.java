@@ -9,7 +9,6 @@ import com.google.common.collect.Table;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -147,4 +146,5 @@ public class Ultilities {
 
         return connection;
     }
+
 }
