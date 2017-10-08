@@ -25,10 +25,11 @@
     <link rel="stylesheet" href="/Resources/plugins/sweetalert2/sweetalert2.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/datatables/datatables.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/select2/select2.min.css"/>
-    <link rel="stylesheet" href="/Resources/plugins/dist/css/template.css"/>
     <link rel="stylesheet" href="/Resources/plugins/jQueryUI/jquery-ui.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/iCheck/square/blue.css"/>
     <link rel="stylesheet" href="/Resources/plugins/daterangepicker-2.1.25/daterangepicker.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dist/css/template.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dist/css/custom-scrollbar.css"/>
 
     <!-- REQUIRED JS SCRIPTS -->
 

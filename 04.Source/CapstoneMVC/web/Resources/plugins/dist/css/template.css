@@ -62,6 +62,16 @@ a {
     padding: 7px 10px;
 }
 
+.btn-with-icon {
+    min-width: 80px;
+}
+
+.btn-with-icon div,
+.btn-with-icon i {
+    vertical-align: middle;
+    display: inline-block;
+}
+
 /* Content header */
 .b-header > h1,
 .b-header .title > h1 {
@@ -97,8 +107,38 @@ a {
     margin: 0px;
 }
 
+.form-group .title > h4 > i {
+    font-size: 16px;
+}
+
 .form-group .my-content {
+    width: 100%;
     position: relative;
+    display: inline-block;
+}
+
+.form-group .my-content .my-input-group {
+    width: 100%;
+    min-height: 30px;
+    padding: 0px 15px 0px 30px;
+    margin-bottom: 10px;
+}
+
+.form-group .my-content .my-input-group .left-content {
+    min-width: 60px;
+    text-align: left;
+    vertical-align: middle;
+    float: left;
+    padding-top: 8px;
+}
+
+.form-group .my-content .my-input-group .left-content label {
+    font-weight: normal;
+}
+
+.form-group .my-content .my-input-group .right-content {
+    width: 50%;
+    float: left;
 }
 
 
