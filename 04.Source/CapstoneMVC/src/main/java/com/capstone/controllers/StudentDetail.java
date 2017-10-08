@@ -123,7 +123,7 @@ public class StudentDetail {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = emf.createEntityManager();
         JsonObject jsonObject = new JsonObject();
-        final String[] currentTerm = {""};
+        String[] currentTerm = {"-1"};
         List<Object> objects = new ArrayList<>();
         int stuId = Integer.parseInt(params.get("stuId"));
         Gson gson = new Gson();

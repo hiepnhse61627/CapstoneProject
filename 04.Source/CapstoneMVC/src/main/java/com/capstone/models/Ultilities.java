@@ -92,42 +92,10 @@ public class Ultilities {
     }
 
     public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, String[] prequisiteId) {
-
-        // Init students passed and failed
-        List<MarksEntity> listPassed = list.stream().filter(p -> p.getStatus().contains("Passed")).collect(Collectors.toList());
-        List<MarksEntity> listFailed = list.stream().filter(f -> !f.getStatus().contains("Passed")).collect(Collectors.toList());
-        // make comparator
-        Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
-            @Override
-            public int compare(MarksEntity o1, MarksEntity o2) {
-                return new CompareToBuilder()
-                        .append(o1.getSubjectId().getSubjectId().toUpperCase(), o2.getSubjectId().getSubjectId().toUpperCase())
-                        .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
-                        .toComparison();
-            }
-        };
-        Collections.sort(listPassed, comparator);
-        // start compare failed list to passed list
-        for (int i = 0; i < listFailed.size(); i++) {
-            MarksEntity keySearch = listFailed.get(i);
-            int index = Collections.binarySearch(listPassed, keySearch, comparator);
-            if (index >= 0) {
-                listFailed.remove(i);
-            }
-        }
-        // remove duplicate
-        List<MarksEntity> resultList = new ArrayList<>();
-        for (MarksEntity marksEntity : listFailed) {
-            if (!resultList.stream().anyMatch(r -> r.getSubjectId().getSubjectId().toUpperCase().equals(marksEntity.getSubjectId().getSubjectId().toUpperCase())
-                    && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
-                resultList.add(marksEntity);
-            }
-        }
-
         List<FailPrequisiteModel> result = new ArrayList<>();
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
         if (!list.isEmpty()) {
-            for (MarksEntity m : resultList) {
+            for (MarksEntity m : list) {
                 if (map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()) == null) {
                     List<MarksEntity> tmp = new ArrayList<>();
                     tmp.add(m);
@@ -138,24 +106,33 @@ public class Ultilities {
                 }
             }
 
-
             Set<String> l = map.rowKeySet();
-            for (String m : l) {
-                Map<String, List<MarksEntity>> n = map.row(m);
-                if (n.get(subId) != null && !n.get(subId).isEmpty()) {
-                    List<MarksEntity> f = n.get(subId);
-                    MarksEntity k1 = f.get(f.size() - 1);
-                    if (k1.getStatus().toLowerCase().contains("pass")) {
-                        if (prequisiteId.length > 0) {
-                            for (String s : prequisiteId) {
-                                if (n.get(s) != null && !n.get(s).isEmpty()) {
-                                    f = n.get(s);
-                                    MarksEntity k2 = f.get(f.size() - 1);
-                                    if (k2.getStatus().toLowerCase().contains("fail") && k2.getAverageMark() < 4) {
-                                        result.add(new FailPrequisiteModel(k2, k1.getSubjectId().getSubjectId()));
+            for (String student : l) {
+                Map<String, List<MarksEntity>> subject = map.row(student);
+                if (subject.get(subId) != null && !subject.get(subId).isEmpty()) {
+                    List<MarksEntity> f = subject.get(subId);
+                    for (MarksEntity k1: f) {
+                        if (k1.getStatus().toLowerCase().contains("pass")) {
+                            if (prequisiteId.length > 0) {
+                                for (String s : prequisiteId) {
+                                    if (subject.get(s) != null && !subject.get(s).isEmpty()) {
+                                        List<MarksEntity> g = subject.get(s);
+                                        boolean isPass = false;
+                                        for (MarksEntity k2 : g) {
+                                            if (k2.getStatus().toLowerCase().contains("pass")) {
+                                                isPass = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if (!isPass) {
+                                            result.add(new FailPrequisiteModel(g.stream().filter(c -> c.getStatus().toLowerCase().contains("fail") ||
+                                                    c.getStatus().toLowerCase().contains("suspended")).findFirst().get(), k1.getSubjectId().getSubjectId()));
+                                        }
                                     }
                                 }
                             }
+                            break;
                         }
                     }
                 }
