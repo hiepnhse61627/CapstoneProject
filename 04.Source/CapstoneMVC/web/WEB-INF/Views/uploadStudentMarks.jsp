@@ -85,8 +85,8 @@
                             if (number == '') {
                                 reject('Không được để trống');
                             }
-                            if (number < 1) {
-                                reject('Không được nhập số nhở hơn 1');
+                            if (number < 0) {
+                                reject('Không được nhập số nhở hơn 0');
                             } else {
                                 resolve();
                             }
@@ -150,8 +150,8 @@
                     if (number == '') {
                         reject('Không được để trống');
                     }
-                    if (number < 1) {
-                        reject('Không được nhập số nhở hơn 1');
+                    if (number < 0) {
+                        reject('Không được nhập số nhở hơn ');
                     } else {
                         resolve();
                     }

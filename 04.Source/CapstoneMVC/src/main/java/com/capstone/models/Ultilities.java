@@ -6,6 +6,7 @@ import com.capstone.services.ISubjectService;
 import com.capstone.services.SubjectServiceImpl;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import org.apache.commons.lang.builder.CompareToBuilder;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -13,6 +14,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Ultilities {
     public static List<MarksEntity> SortMarkBySemester(List<MarksEntity> set) {
@@ -90,10 +92,42 @@ public class Ultilities {
     }
 
     public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, String[] prequisiteId) {
+
+        // Init students passed and failed
+        List<MarksEntity> listPassed = list.stream().filter(p -> p.getStatus().contains("Passed")).collect(Collectors.toList());
+        List<MarksEntity> listFailed = list.stream().filter(f -> !f.getStatus().contains("Passed")).collect(Collectors.toList());
+        // make comparator
+        Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
+            @Override
+            public int compare(MarksEntity o1, MarksEntity o2) {
+                return new CompareToBuilder()
+                        .append(o1.getSubjectId().getSubjectId().toUpperCase(), o2.getSubjectId().getSubjectId().toUpperCase())
+                        .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
+                        .toComparison();
+            }
+        };
+        Collections.sort(listPassed, comparator);
+        // start compare failed list to passed list
+        for (int i = 0; i < listFailed.size(); i++) {
+            MarksEntity keySearch = listFailed.get(i);
+            int index = Collections.binarySearch(listPassed, keySearch, comparator);
+            if (index >= 0) {
+                listFailed.remove(i);
+            }
+        }
+        // remove duplicate
+        List<MarksEntity> resultList = new ArrayList<>();
+        for (MarksEntity marksEntity : listFailed) {
+            if (!resultList.stream().anyMatch(r -> r.getSubjectId().getSubjectId().toUpperCase().equals(marksEntity.getSubjectId().getSubjectId().toUpperCase())
+                    && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
+                resultList.add(marksEntity);
+            }
+        }
+
         List<FailPrequisiteModel> result = new ArrayList<>();
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
         if (!list.isEmpty()) {
-            for (MarksEntity m : list) {
+            for (MarksEntity m : resultList) {
                 if (map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()) == null) {
                     List<MarksEntity> tmp = new ArrayList<>();
                     tmp.add(m);

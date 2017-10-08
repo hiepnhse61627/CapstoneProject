@@ -278,6 +278,8 @@ public class UploadController {
             int averageMarkIndex = 4;
             int statusIndex = 5;
 
+            RealSemesterEntity se = null;
+
             this.currentLine = 1;
             for (int rowIndex = excelDataIndex; rowIndex < spreadsheet.getLastRowNum(); rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
@@ -297,10 +299,14 @@ public class UploadController {
 
                         String semesterName = "";
                         if (semesterNameCell != null) {
-                            semesterName = semesterNameCell.getStringCellValue().trim().toUpperCase();
-                            RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(semesterNameCell.getStringCellValue().toUpperCase());
+                            semesterName = semesterNameCell.getStringCellValue().trim().toUpperCase().replaceAll(" ", "");
+                            RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(semesterName);
                             if (realSemesterEntity != null) {
                                 marksEntity.setSemesterId(realSemesterEntity);
+                            } else {
+                                se = new RealSemesterEntity();
+                                se.setSemester(semesterName);
+                                marksEntity.setSemesterId(realSemesterService.createRealSemester(se));
                             }
                         }
 
@@ -402,6 +408,7 @@ public class UploadController {
                     list1.remove(i);
                 }
             }
+
             // result list
             List<MarksEntity> resultList = new ArrayList<>();
             resultList.addAll(list1);
