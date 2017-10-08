@@ -36,7 +36,7 @@ public class ExRealSemesterEntityJpaController extends RealSemesterEntityJpaCont
     public RealSemesterEntity createRealSemester(RealSemesterEntity entity) {
         EntityManager em = null;
         try {
-            em= getEntityManager();
+            em = getEntityManager();
             em.getTransaction().begin();
             em.persist(entity);
             em.flush();
