@@ -108,6 +108,8 @@ public class StudentController {
         List<MarksEntity> markList = marksService.getMarkByConditions(semesterId, subjectId, searchKey);
         // result list
         List<MarksEntity> resultList = new ArrayList<>();
+        // compared list
+        List<MarksEntity> comparedList = new ArrayList<>();
         // Init students passed and failed
         List<MarksEntity> listPassed = markList.stream().filter(p -> p.getStatus().contains("Passed")).collect(Collectors.toList());
         List<MarksEntity> listFailed = markList.stream().filter(f -> !f.getStatus().contains("Passed")).collect(Collectors.toList());
@@ -126,13 +128,13 @@ public class StudentController {
         for (int i = 0; i < listFailed.size(); i++) {
             MarksEntity keySearch = listFailed.get(i);
             int index = Collections.binarySearch(listPassed, keySearch, comparator);
-            if (index >= 0) {
-                listFailed.remove(i);
+            if (index < 0) {
+                comparedList.add(keySearch);
             }
         }
         // remove duplicate
         
-        for (MarksEntity marksEntity : listFailed) {
+        for (MarksEntity marksEntity : comparedList) {
             if (!resultList.stream().anyMatch(r -> r.getSubjectId().getSubjectId().toUpperCase().equals(marksEntity.getSubjectId().getSubjectId().toUpperCase())
                                                 && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
                 resultList.add(marksEntity);
