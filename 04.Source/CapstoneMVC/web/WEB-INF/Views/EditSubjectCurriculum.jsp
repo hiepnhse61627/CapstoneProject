@@ -8,74 +8,140 @@
     .table-row:hover {
         background-color: #f4f4f5;
     }
+
+    .scroll-wrapper {
+        height: 400px;
+        overflow: auto;
+    }
+
+    .b-footer {
+        height: 30px;
+    }
 </style>
 
-
-<section class="content-header">
-    <h1>
-        Chỉnh sửa khung chương trình
-        <small class="pull-right"><a href="/subcurriculum" class="btn btn-primary">Trở về</a></small>
-    </h1>
-</section>
 <section class="content">
-    <div class="form-group">
-        <div class="col-md-12">
-            <div>
-                <label for="name">Tên</label>
-                <input class="form-control" id="name" value="${data.name}"/>
+    <div class="box">
+        <div class="b-header">
+            <div class="row">
+                <div class="col-md-9 title">
+                    <h1>Chỉnh sửa khung chương trình</h1>
+                </div>
+                <div class="col-md-3 text-right">
+                    <a href="/subcurriculum" class="btn btn-danger btn-with-icon">
+                        <i class="fa fa-arrow-left"></i>
+                        <div class="m-l-3">QUAY LẠI</div>
+                    </a>
+                </div>
             </div>
-            <div>
-                <label for="des">Miêu tả</label>
-                <input class="form-control" id="des" value="${data.description}"/>
-            </div>
+            <hr>
         </div>
+
+        <div class="b-body">
+            <div class="form-group">
+                <div class="row">
+                    <div class="title">
+                        <h4>Thông tin chi tiết</h4>
+                    </div>
+                    <div class="my-content">
+                        <div class="my-input-group">
+                            <div class="left-content">
+                                <label>Tên:</label>
+                            </div>
+                            <div class="right-content">
+                                <input id="name" type="text" class="form-control" value="${data.name}"/>
+                            </div>
+                        </div>
+
+                        <div class="my-input-group">
+                            <div class="left-content">
+                                <label>Mô tả:</label>
+                            </div>
+                            <div class="right-content">
+                                <input id="des" type="text" class="form-control" value="${data.description}"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="title">
+                        <h4>Khung chương trình</h4>
+                    </div>
+                    <div class="my-content">
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="scroll-wrapper custom-scrollbar">
+                            <table id="subjects" class="table table-hover">
+                                <c:forEach var="s" items="${subs}">
+                                    <tr class="table-row">
+                                        <td id="${s.id}">${s.id} - ${s.name}</td>
+                                        <td>
+                                            <button type="button" class="btn btn-link" style="visibility: hidden"
+                                                    onclick="AddSubject('${s.id}', '${s.name}')"><i
+                                                    class="fa fa-plus"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </c:forEach>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="col-md-12">
+                            <div class="scroll-wrapper custom-scrollbar">
+                                <table class="table" id="table">
+                                    <tbody>
+                                    <c:forEach var="row" items="${list}">
+                                        <tr id="${row.key}" class="index nodrag">
+                                            <td colspan="2"><b>${row.key}</b></td>
+                                        </tr>
+                                        <c:forEach var="list" items="${row.value}">
+                                            <tr id="${list.subjectEntity.id}" class="draggable">
+                                                <td>${list.subjectEntity.id}</td>
+                                                <td>${list.subjectEntity.name}</td>
+                                                <td>
+                                                    <button class="up btn btn-link" type="button"
+                                                            style="visibility: hidden"><i
+                                                            class="fa fa-arrow-up"></i></button>
+                                                    <button class="down btn btn-link" type="button"
+                                                            style="visibility: hidden">
+                                                        <i
+                                                                class="fa fa-arrow-down"></i></button>
+                                                    <button class="remove btn btn-link" type="button"
+                                                            style="visibility: hidden"><i
+                                                            class="fa fa-times"></i></button>
+                                                </td>
+                                            </tr>
+                                        </c:forEach>
+                                    </c:forEach>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="col-md-12 m-t-10">
+                            <button type="button" onclick="Add()" class="btn btn-default">Thêm học kỳ tiếp theo</button>
+                            <button type="button" onclick="Send()" class="btn btn-success">Lưu</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="b-footer">
+        </div>
+
+        <%-- End body--%>
     </div>
-    <div class="form-group">
-        <div class="col-md-6">
-            <div class="col-md-12">
-                <table class="table" id="table">
-                    <tbody>
-                    <c:forEach var="row" items="${list}">
-                        <tr id="${row.key}" class="index nodrag">
-                            <td colspan="2"><b>${row.key}</b></td>
-                        </tr>
-                        <c:forEach var="list" items="${row.value}">
-                            <tr id="${list.subjectEntity.id}" class="draggable">
-                                <td>${list.subjectEntity.id}</td>
-                                <td>${list.subjectEntity.name}</td>
-                                <td>
-                                    <button class="up btn btn-link" type="button" style="visibility: hidden"><i
-                                            class="fa fa-arrow-up"></i></button>
-                                    <button class="down btn btn-link" type="button" style="visibility: hidden"><i
-                                            class="fa fa-arrow-down"></i></button>
-                                    <button class="remove btn btn-link" type="button" style="visibility: hidden"><i
-                                            class="fa fa-times"></i></button>
-                                </td>
-                            </tr>
-                        </c:forEach>
-                    </c:forEach>
-                    </tbody>
-                </table>
-            </div>
-            <div class="col-md-12">
-                <button type="button" onclick="Add()" class="btn btn-default">Thêm học ký tiếp theo</button>
-                <button type="button" onclick="Send()" class="btn btn-success">Lưu</button>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <table id="subjects" class="table table-hover">
-                <c:forEach var="s" items="${subs}">
-                    <tr class="table-row">
-                        <td id="${s.id}">${s.id} - ${s.name}</td>
-                        <td>
-                            <button type="button" class="btn btn-link" style="visibility: hidden"
-                                    onclick="AddSubject('${s.id}', '${s.name}')"><i class="fa fa-plus"></i></button>
-                        </td>
-                    </tr>
-                </c:forEach>
-            </table>
-        </div>
-    </div>
+
 </section>
 
 <script>

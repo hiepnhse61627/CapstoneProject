@@ -25,10 +25,11 @@
     <link rel="stylesheet" href="/Resources/plugins/sweetalert2/sweetalert2.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/datatables/datatables.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/select2/select2.min.css"/>
-    <link rel="stylesheet" href="/Resources/plugins/dist/css/template.css"/>
     <link rel="stylesheet" href="/Resources/plugins/jQueryUI/jquery-ui.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/iCheck/square/blue.css"/>
     <link rel="stylesheet" href="/Resources/plugins/daterangepicker-2.1.25/daterangepicker.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dist/css/template.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dist/css/custom-scrollbar.css"/>
 
     <!-- REQUIRED JS SCRIPTS -->
 
@@ -97,7 +98,7 @@
                 <%--<li class="header">HEADER</li>--%>
                 <!-- Optionally, you can add icons to the links -->
                 <li class="active">
-                    <a href="#"><i class="fa fa-dashboard"></i> <span>Thống kê</span></a>
+                    <a href="/dashboard"><i class="fa fa-dashboard"></i> <span>Thống kê</span></a>
                 </li>
                 <li>
                     <a href="/goSQLQueryPage"><i class="fa fa-search"></i> <span>Truy vấn dữ liệu</span></a>
