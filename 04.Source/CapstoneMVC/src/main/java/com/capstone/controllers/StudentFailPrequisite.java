@@ -100,7 +100,11 @@ public class StudentFailPrequisite {
                             for (SubjectEntity s: pre.getSubjectEntityList1()) {
                                 TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
                                 List<MarksEntity> list = query.setParameter("sub", s.getId()).setParameter("sList", Arrays.asList(p)).getResultList();
-                                Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getId(), p).forEach(c -> result.add(c));
+                                Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getId(), p).forEach(c -> {
+                                    if(!result.contains(c)) {
+                                        result.add(c);
+                                    }
+                                });
                             }
                         }
                     }

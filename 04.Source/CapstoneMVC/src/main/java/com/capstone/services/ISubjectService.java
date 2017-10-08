@@ -11,7 +11,6 @@ public interface ISubjectService {
     List<SubjectEntity> getAllPrequisiteSubjects(String subId);
     List<SubjectEntity> getAlllPrequisite();
     SubjectEntity findSubjectById(String id);
-
     int getCurrentLine();
     int getTotalLine();
 }
