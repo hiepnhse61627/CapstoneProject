@@ -36,36 +36,38 @@
     }
 </style>
 
-<section class="content-header">
-    <%--<h1>Danh sách khóa học</h1>--%>
-    <div class="row">
-        <div class="col-md-9">
-            <h1 class="content-header-title">Danh sách sinh viên nợ môn</h1>
-        </div>
-        <div class="col-md-3 text-right">
-            <input class="btn btn-primary" type="button" value="Tạo khóa học" onclick="CreateCourse()"/>
-        </div>
-
-    </div>
-</section>
-
 <section class="content">
     <div class="box">
-        <div class="row p-t-15">
-            <div class="col-md-12">
-                <table id="tbl-course">
-                    <thead>
-                    <th>Lớp</th>
-                    <th>Mã môn</th>
-                    <th>Ngày bắt đầu</th>
-                    <th>Ngày kết thúc</th>
-                    <th>Chỉnh sửa</th>
-                    <th>Xóa</th>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+        <div class="b-header">
+            <div class="row">
+                <div class="col-md-9 title">
+                    <h1>Danh sách khóa học</h1>
+                </div>
+                <div class="col-md-3 text-right">
+                    <input class="btn btn-primary" type="button" value="Tạo khóa học" onclick="CreateCourse()"/>
+                </div>
+            </div>
+            <hr>
+        </div>
+
+        <div class="b-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <table id="tbl-course">
+                        <thead>
+                        <th>Lớp</th>
+                        <th>Mã môn</th>
+                        <th>Ngày bắt đầu</th>
+                        <th>Ngày kết thúc</th>
+                        <th>Chỉnh sửa</th>
+                        <th>Xóa</th>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
+
     </div>
 </section>
 
@@ -208,7 +210,7 @@
                 {
                     "aTargets": [4],
                     "mRender": function (data, type, row) {
-                        return "<a class='btn btn-success' onclick='EditCourse(" + data + ",\""
+                        return "<a class='btn btn-success tbl-btn' onclick='EditCourse(" + data + ",\""
                             + row[0] + "\",\"" + row[1] + "\",\"" + row[2] + "\",\"" + row[3] + "\")'>" +
                             "<i class='glyphicon glyphicon-pencil'></i></a>";
                     }
@@ -216,7 +218,7 @@
                 {
                     "aTargets": [5],
                     "mRender": function (data, type, row) {
-                        return "<a class='btn btn-danger' onclick='DeleteCourse(" + row[4] + ")'>" +
+                        return "<a class='btn btn-danger tbl-btn' onclick='DeleteCourse(" + row[4] + ")'>" +
                             "<i class='glyphicon glyphicon-trash'></i></a>";
                     }
                 },

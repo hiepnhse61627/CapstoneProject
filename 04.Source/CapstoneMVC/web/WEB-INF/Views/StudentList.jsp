@@ -1,22 +1,29 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 
-<section class="content-header">
-    <h1>Danh sách sinh viên</h1>
-</section>
+<%--<section class="content-header">--%>
+<%--<h1>Danh sách sinh viên</h1>--%>
+<%--</section>--%>
 
 <section class="content">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="box p-t-15">
-                <table id="tbl-student">
-                    <thead>
-                    <th>MSSV</th>
-                    <th>Tên sinh viên</th>
-                    <th>Xem tất cả điểm</th>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+    <div class="box">
+        <div class="b-header">
+            <h1>Danh sách sinh viên</h1>
+            <hr>
+        </div>
+
+        <div class="b-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <table id="tbl-student">
+                        <thead>
+                        <th>MSSV</th>
+                        <th>Tên sinh viên</th>
+                        <th>Xem tất cả điểm</th>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -131,7 +138,7 @@
                 {
                     "aTargets": [2],
                     "mRender": function (data, type, row) {
-                        return "<a class='btn btn-primary' onclick='GetMarks(" + data + ")'>" +
+                        return "<a class='btn btn-primary tbl-btn' onclick='GetMarks(" + data + ")'>" +
                             "<i class='fa fa-eye'></i></a>";
                     }
                 },

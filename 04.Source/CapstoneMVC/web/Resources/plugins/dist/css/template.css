@@ -23,17 +23,9 @@ a {
     background: linear-gradient(to bottom, white, white, white, white, white, orange);
 }
 
-.content-header > h1,
-.content-header-title {
-    margin: 0;
-    font-size: 24px;
-    font-weight: 600;
-}
-
-
 .box {
     border: none;
-    padding: 0px 15px 20px 15px;
+    padding: 12px 15px 20px 15px;
 }
 
 .box-header {
@@ -64,6 +56,105 @@ a {
         padding-left: 10%;
         padding-right: 2%;
     }
+}
+
+.tbl-btn {
+    padding: 7px 10px;
+}
+
+/* Content header */
+.b-header > h1,
+.b-header .title > h1 {
+    margin: 5px 0px 0px 0px;
+    font-size: 24px;
+    font-weight: 600;
+    color: darkgreen;
+    min-height: 28px;
+}
+
+.b-header .title > h1 {
+}
+
+.b-header > hr {
+    margin: 8px 0px 20px;
+    border-top: 1px solid #d3d3d3
+}
+
+.b-body {
+    padding: 0px 5px;
+}
+
+/* Form */
+.form-group .title {
+    width: 100%;
+    padding: 0px 15px;
+    margin-bottom: 10px;
+}
+
+.form-group .title > h4 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0px;
+}
+
+.form-group .my-content {
+
+}
+
+
+/*------------------- Datatable -------------------*/
+
+.dataTables_length label,
+.dataTables_filter label
+{
+    font-weight: normal !important;
+    font-size: 15px !important;
+}
+
+.dataTables_length label select,
+.dataTables_filter label input[type=search] {
+    height: 24px;
+    font-size: 14px;
+    border: 1px #999999 solid;
+}
+
+.dataTables_length label select {
+    margin: 0px 3px;
+    padding-bottom: 1px;
+}
+
+.dataTables_filter label input[type=search] {
+    padding: 0px 3px;
+    -webkit-appearance: searchfield !important;
+}
+.dataTables_filter label input[type=search]::placeholder {
+    color: #999999;
+}
+
+.dataTables_wrapper .dataTable {
+    padding-top: 4px;
+}
+
+.dataTables_wrapper .dataTable > thead {
+    /*background-color: goldenrod;*/
+    /*background-color: #47a741;*/
+    background-color: #3c8dbc;
+    color: white;
+    border-bottom: none;
+}
+
+.dataTables_wrapper .dataTable > thead > tr > th {
+    border-bottom: none;
+}
+
+.dataTables_wrapper .dataTable > tbody > tr:nth-child(odd) {
+    background-color: #eef1f6;
+}
+
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.current) {
+    background: linear-gradient(to bottom, #f4f4f4, #dfdfdf) !important;
+    color: #111 !important;
+    border: 1px solid #979797 !important;
 }
 
 /*.treeview-menu > li > a > i {*/
