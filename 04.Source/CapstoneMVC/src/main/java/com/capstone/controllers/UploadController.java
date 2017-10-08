@@ -36,7 +36,8 @@ public class UploadController {
     private final String marksFolder = "Marks-StudentMarks";
     private int totalLine;
     private int currentLine;
-    private int selectedRowNumber = -1;
+    private int startRowNumber = -1;
+    private int endRowNumber = -1;
 
     @Autowired
     ServletContext context;
@@ -224,8 +225,9 @@ public class UploadController {
 
     @RequestMapping(value = "/upload-exist-marks-file", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject chooseExistMarkFile(@RequestParam("file") String file, @RequestParam("row") int row) {
-        selectedRowNumber = row;
+    public JsonObject chooseExistMarkFile(@RequestParam("file") String file,  @RequestParam("startRow") int startRow, @RequestParam("endRow") int endRow) {
+        startRowNumber = startRow;
+        endRowNumber = endRow;
         JsonObject jsonObject;
         try {
             File f = new File(context.getRealPath("/") + "UploadedFiles/" + marksFolder + "/" + file);
@@ -241,8 +243,9 @@ public class UploadController {
 
     @RequestMapping(value = "/uploadStudentMarks", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject uploadStudentMarks(@RequestParam("file") MultipartFile file, @RequestParam("row") int row) throws IOException {
-        selectedRowNumber = row;
+    public JsonObject uploadStudentMarks(@RequestParam("file") MultipartFile file, @RequestParam("startRow") int startRow, @RequestParam("endRow") int endRow) throws IOException {
+        startRowNumber = startRow;
+        endRowNumber = endRow;
         JsonObject jsonObject = readMarkFile(file, null, true);
         if (jsonObject.get("success").getAsBoolean()) {
             ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
@@ -268,8 +271,8 @@ public class UploadController {
             XSSFSheet spreadsheet = workbook.getSheetAt(0);
 
             XSSFRow row;
-            int excelDataIndex = selectedRowNumber < 0 ? 0 : selectedRowNumber;
-            this.totalLine = spreadsheet.getLastRowNum() - excelDataIndex + 1;
+            int excelDataIndex = startRowNumber < 0 ? 0 : startRowNumber;
+            this.totalLine = endRowNumber - startRowNumber;
 
             int semesterNameIndex = 0;
             int rollNumberIndex = 1;
@@ -278,10 +281,9 @@ public class UploadController {
             int averageMarkIndex = 4;
             int statusIndex = 5;
 
-            RealSemesterEntity se = null;
-
             this.currentLine = 1;
-            for (int rowIndex = excelDataIndex; rowIndex < spreadsheet.getLastRowNum(); rowIndex++) {
+            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
+            for (int rowIndex = excelDataIndex; rowIndex <= endRowNumber; rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
 
                 Cell rollNumberCell = row.getCell(rollNumberIndex);
@@ -300,13 +302,16 @@ public class UploadController {
                         String semesterName = "";
                         if (semesterNameCell != null) {
                             semesterName = semesterNameCell.getStringCellValue().trim().toUpperCase().replaceAll(" ", "");
+                            if (semesterName.contains("_H2")) {
+                                semesterName = semesterName.substring(0, semesterName.indexOf("_"));
+                            }
                             RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(semesterName);
                             if (realSemesterEntity != null) {
                                 marksEntity.setSemesterId(realSemesterEntity);
                             } else {
-                                se = new RealSemesterEntity();
-                                se.setSemester(semesterName);
-                                marksEntity.setSemesterId(realSemesterService.createRealSemester(se));
+                                realSemesterEntity = new RealSemesterEntity();
+                                realSemesterEntity.setSemester(semesterName);
+                                marksEntity.setSemesterId(realSemesterService.createRealSemester(realSemesterEntity));
                             }
                         }
 
@@ -322,43 +327,16 @@ public class UploadController {
                             }
                             // find course
                             CourseEntity courseEntity = courseService.findCourseByClassAndSubjectCode(cla.toUpperCase(), subjectCd.toUpperCase());
-                            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
                             if (courseEntity != null) {
                                 marksEntity.setCourseId(courseEntity);
                             } else { // create new course entity
-                                String semesterYear;
-                                CourseEntity newCourse = new CourseEntity();
-                                if (semesterName.contains("_H2")) {
-                                    semesterYear = semesterName.substring(0, semesterName.indexOf("_")).replaceAll("[^0-9]", "");
-                                    newCourse.setClass1(cla.toUpperCase());
-                                    newCourse.setSubjectCode(subjectCd.toUpperCase());
-                                    if (semesterName.contains("SPRING")) {
-                                        newCourse.setStartDate(sdf.parse(String.valueOf(new Date("03/01/" + semesterYear))));
-                                        newCourse.setEndDate(sdf.parse(String.valueOf(new Date("03/30/" + semesterYear))));
-                                    } else if (semesterName.contains("SUMMER")) {
-                                        newCourse.setStartDate(sdf.parse(String.valueOf(new Date("07/01/" + semesterYear))));
-                                        newCourse.setEndDate(sdf.parse(String.valueOf(new Date("07/30/" + semesterYear))));
-                                    } else if (semesterName.contains("FALL")) {
-                                        newCourse.setStartDate(sdf.parse(String.valueOf(new Date("11/05/" + semesterYear))));
-                                        newCourse.setEndDate(sdf.parse(String.valueOf(new Date("11/30/" + semesterYear))));
-                                    }
-                                } else {
-                                    semesterYear = semesterName.replaceAll("[^0-9]", "");
-                                    newCourse.setClass1(cla.toUpperCase());
-                                    newCourse.setSubjectCode(subjectCd.toUpperCase());
-                                    if (semesterName.contains("SPRING")) {
-                                        newCourse.setStartDate(sdf.parse(String.valueOf(new Date("01/01/" + semesterYear))));
-                                        newCourse.setEndDate(sdf.parse(String.valueOf(new Date("01/30/" + semesterYear))));
-                                    } else if (semesterName.contains("SUMMER")) {
-                                        newCourse.setStartDate(sdf.parse(String.valueOf(new Date("05/01/" + semesterYear))));
-                                        newCourse.setEndDate(sdf.parse(String.valueOf(new Date("05/30/" + semesterYear))));
-                                    } else if (semesterName.contains("FALL")) {
-                                        newCourse.setStartDate(sdf.parse(String.valueOf(new Date("09/05/" + semesterYear))));
-                                        newCourse.setEndDate(sdf.parse(String.valueOf(new Date("09/30/" + semesterYear))));
-                                    }
-                                }
-                                newCourse = courseService.createCourse(newCourse);
-                                marksEntity.setCourseId(newCourse);
+                                courseEntity = new CourseEntity();
+                                courseEntity.setClass1(cla.toUpperCase());
+                                courseEntity.setSubjectCode(subjectCd.toUpperCase());
+                                courseEntity.setStartDate(sdf.parse(String.valueOf(new Date("01/01/1970"))));
+                                courseEntity.setEndDate(sdf.parse(String.valueOf(new Date("01/30/1970"))));
+                                courseEntity = courseService.createCourse(courseEntity);
+                                marksEntity.setCourseId(courseEntity);
                             }
                         }
 
@@ -373,7 +351,7 @@ public class UploadController {
                         marksEntities.add(marksEntity);
                     }
                 }
-                ++this.currentLine;
+                this.currentLine++;
             }
             is.close();
             // Check student same semester, same subject but in different class

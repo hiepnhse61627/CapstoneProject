@@ -90,29 +90,29 @@
                 cancelButtonText: 'Đóng'
             }).then(function () {
                 swal({
-                    title: 'Nhập dòng bắt đầu',
-                    input: 'number',
+                    title: 'Nhập dòng bắt đầu và dòng kết thúc',
+                    html:
+                        '<input id="startRow" class="swal2-input">' +
+                        '<input id="endRow" class="swal2-input">',
                     showCancelButton: true,
                     confirmButtonText: 'Gửi',
                     showLoaderOnConfirm: true,
-                    preConfirm: function (number) {
+                    preConfirm: function () {
                         return new Promise(function (resolve, reject) {
-                            if (number == '') {
-                                reject('Không được để trống');
-                            }
-                            if (number < 0) {
-                                reject('Không được nhập số nhở hơn 0');
-                            } else {
-                                resolve();
-                            }
+                            resolve([
+                                    $('#startRow').val(),
+                                    $('#endRow').val()
+                            ]);
                         })
                     },
                     allowOutsideClick: false
-                }).then(function (number) {
+                }).then(function (result) {
+                    console.log(result);
                     isrunning = true;
                     var form = new FormData();
                     form.append('file', $('#selected td').html());
-                    form.append('row', number);
+                    form.append('startRow', result[0]);
+                    form.append('endRow', result[1]);
 
                     swal({
                         title: 'Đang xử lý',
@@ -155,29 +155,29 @@
     // Import file process
     function Add() {
         swal({
-            title: 'Nhập dòng bắt đầu',
-            input: 'number',
+            title: 'Nhập dòng bắt đầu và dòng kết thúc',
+            html:
+                   '<input id="startRow" class="swal2-input">' +
+                   '<input id="endRow" class="swal2-input">',
             showCancelButton: true,
             confirmButtonText: 'Gửi',
             showLoaderOnConfirm: true,
-            preConfirm: function (number) {
+            preConfirm: function () {
                 return new Promise(function (resolve, reject) {
-                    if (number == '') {
-                        reject('Không được để trống');
-                    }
-                    if (number < 0) {
-                        reject('Không được nhập số nhở hơn ');
-                    } else {
-                        resolve();
-                    }
+                    resolve([
+                        $('#startRow').val(),
+                        $('#endRow').val()
+                    ]);
                 })
             },
             allowOutsideClick: false
-        }).then(function (number) {
+        }).then(function (result) {
+            console.log(result);
             isrunning = true;
             var form = new FormData();
             form.append('file', $('#file')[0].files[0]);
-            form.append('row', number);
+            form.append('startRow', result[0]);
+            form.append('endRow', result[1]);
 
             swal({
                 title: 'Đang xử lý',
