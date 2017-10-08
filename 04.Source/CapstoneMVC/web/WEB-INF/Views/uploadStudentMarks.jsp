@@ -1,50 +1,65 @@
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%--
-  Created by IntelliJ IDEA.
-  User: hiepnhse61627
-  Date: 17/09/2017
-  Time: 04:27 PM
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+
 <link rel="stylesheet" href="/Resources/plugins/dist/css/upload-page.css">
 
-<section class="content-header">
-    <h1>Nhập danh sách điểm</h1>
-</section>
-
 <section class="content">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="box">
-                <c:if test="${not empty files}">
-                    <div class="box-header">
-                        <h4 class="box-title">Các file đã sử dụng</h4>
-                    </div>
-                    <div class="form-group">
-                        <table id="table" class="table">
-                            <c:forEach var="file" items="${files}">
-                                <tr class="table-row">
-                                    <td>${file.name}</td>
-                                </tr>
-                            </c:forEach>
-                        </table>
-                        <button type="button" class="btn btn-primary" onclick="UseFile()">Sử dụng</button>
-                    </div>
-                </c:if>
+    <div class="box">
+        <div class="b-header">
+            <h1>Nhập danh sách điểm</h1>
+            <hr>
+        </div>
+
+        <div class="b-body">
+            <c:if test="${not empty files}">
                 <div class="form-group">
-                    <div class="box-header">
-                        <h4 class="box-title">Chọn file</h4>
+                    <div class="row">
+                        <div class="title">
+                            <h4>Các file gần đây:</h4>
+                        </div>
+                        <div class="my-content">
+                            <div class="col-md-12">
+                                <table id="table" class="table">
+                                    <c:forEach var="file" items="${files}">
+                                        <tr class="table-row">
+                                            <td>${file.name}</td>
+                                        </tr>
+                                    </c:forEach>
+                                </table>
+                            </div>
+                            <div class="col-md-12">
+                                <button type="button" class="btn btn-primary" onclick="UseFile()">Sử dụng</button>
+                            </div>
+                        </div>
                     </div>
-                    <label for="file" hidden></label>
-                    <input type="file" accept=".xls, .xlsx" id="file" name="file"/>
                 </div>
-                <div class="form-group">
-                    <button type="button" onclick="Add()" class="btn btn-success">Upload</button>
+            </c:if>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="title">
+                        <h4>Chọn file:</h4>
+                    </div>
+                    <div class="my-content">
+                        <div class="col-md-12">
+                            <label for="file" hidden></label>
+                            <input type="file" accept=".xlsx, .xls" id="file" name="file" />
+                        </div>
+                    </div>
                 </div>
             </div>
+
+            <div class="form-group">
+                Bấm vào <a class="link" href="/Resources/FileTemplates/DSSV_Template.xlsx">Template</a> để tải
+                về bản mẫu
+            </div>
+
+            <div class="form-group">
+                <button type="button" onclick="Add()" class="btn btn-success">Upload</button>
+            </div>
         </div>
+
     </div>
 </section>
 

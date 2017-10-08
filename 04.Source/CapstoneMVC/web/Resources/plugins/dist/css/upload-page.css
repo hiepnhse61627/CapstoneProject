@@ -1,4 +1,4 @@
-#table {
+.table {
     width: 60%;
     min-width: 60%;
     margin-bottom: 7px;
@@ -10,7 +10,7 @@
     }
 }
 
-#table tr td {
+.table tr td {
     border-radius: 5px;
 }
 
@@ -19,7 +19,8 @@
 }
 
 .table-row:hover:not(.selectedRow) {
-    background-color: #f4f4f5;
+    /*background-color: #f4f4f5;*/
+    background-color: #eef1f6;
 }
 
 .selectedRow {

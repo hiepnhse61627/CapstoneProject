@@ -34,11 +34,7 @@
                     <div class="my-content">
                         <div class="col-md-12">
                             <table id="myTable">
-                                <thead>
-                                <th>Tiêu đề 1</th>
-                                <th>Tiêu đề 2</th>
-                                <th>Tiêu đề 3</th>
-                                </thead>
+                                <thead></thead>
                                 <tbody></tbody>
                             </table>
                         </div>

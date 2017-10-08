@@ -3,46 +3,62 @@
 
 <link rel="stylesheet" href="/Resources/plugins/dist/css/upload-page.css">
 
-<section class="content-header">
-    <h1>Nhập môn học</h1>
-</section>
 <section class="content">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="box">
-                <c:if test="${not empty files}">
-                    <div class="box-header">
-                        <h4 class="box-title">Các file đã sử dụng</h4>
-                    </div>
-                    <div class="form-group">
-                        <table id="table" class="table">
-                            <c:forEach var="file" items="${files}">
-                                <tr class="table-row">
-                                    <td>${file.name}</td>
-                                </tr>
-                            </c:forEach>
-                        </table>
-                        <button type="button" class="btn btn-primary" onclick="UseFile()">Sử dụng</button>
-                    </div>
-                </c:if>
+    <div class="box">
+        <div class="b-header">
+            <h1>Nhập môn học</h1>
+            <hr>
+        </div>
+
+        <div class="b-body">
+            <c:if test="${not empty files}">
                 <div class="form-group">
-                    <div class="box-header">
-                        <h4 class="box-title">Chọn file</h4>
+                    <div class="row">
+                        <div class="title">
+                            <h4>Các file gần đây:</h4>
+                        </div>
+                        <div class="my-content">
+                            <div class="col-md-12">
+                                <table id="table" class="table">
+                                    <c:forEach var="file" items="${files}">
+                                        <tr class="table-row">
+                                            <td>${file.name}</td>
+                                        </tr>
+                                    </c:forEach>
+                                </table>
+                            </div>
+                            <div class="col-md-12">
+                                <button type="button" class="btn btn-primary" onclick="UseFile()">Sử dụng</button>
+                            </div>
+                        </div>
                     </div>
-                    <label for="file" hidden></label>
-                    <input type="file" accept=".xls" id="file" name="file" placeholder="Roll Number"/>
                 </div>
-                <div class="form-group">
-                    Bấm vào <a class="link" href="/Resources/FileTemplates/SubjectList_Upload_Template.xls">Template</a>
-                    để tải
-                    về bản mẫu
+            </c:if>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="title">
+                        <h4>Chọn file:</h4>
+                    </div>
+                    <div class="my-content">
+                        <div class="col-md-12">
+                            <label for="file" hidden></label>
+                            <input type="file" accept=".xlsx, .xls" id="file" name="file" />
+                        </div>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <button type="button" onclick="Add()" class="btn btn-success">Upload</button>
-                </div>
+            </div>
+
+            <div class="form-group">
+                Bấm vào <a class="link" href="/Resources/FileTemplates/SubjectList_Upload_Template.xls">Template</a> để tải
+                về bản mẫu
+            </div>
+            <div class="form-group">
+                <button type="button" onclick="Add()" class="btn btn-success">Upload</button>
             </div>
         </div>
     </div>
+
 </section>
 
 <script>
