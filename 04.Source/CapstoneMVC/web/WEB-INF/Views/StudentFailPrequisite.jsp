@@ -1,59 +1,107 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: Rem
-  Date: 9/26/2017
-  Time: 4:44 PM
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<section class="content-header">
-    <h1>
-        Danh sách sinh viên fail môn tiên quyết
-    </h1>
-</section>
+<style>
+    .content {
+        min-height: 700px;
+    }
+
+    .cbox-row {
+        width: 100%;
+        display: flex;
+    }
+
+    .cbox-subject-wrapper {
+        display: flex;
+        margin-bottom: 6px;
+    }
+
+    .cbox-subject-wrapper .cbox {
+        float: left;
+        display: inline;
+        margin-right: 5px;
+    }
+
+    #btn-display-subject,
+    #btn-search {
+        width: 85px;
+    }
+
+</style>
+
 <section class="content">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="form-group">
-                <label>Chọn môn</label>
-                <select id="select" class="select form-control">
-                    <option value="0">All</option>
-                    <c:forEach var="sub" items="${subs}">
-                        <option value="${sub.id}">${sub.id} - ${sub.name} - ${sub.abbreviation}</option>
-                    </c:forEach>
-                </select>
-                <div id="comment"></div>
-            </div>
-            <div class="form-group">
-                <label>Chọn môn tiên quyết</label>
-                <form id="prequisite"></form>
-            </div>
-            <div class="form-group">
-                <button id="but" type="button" class="btn btn-primary" onclick="GetStudents()">Lấy thông tin</button>
-            </div>
+    <div class="box">
+        <div class="b-header">
+            <h1>Danh sách sinh viên rớt môn tiên quyết</h1>
+            <hr>
         </div>
-        <div class="col-md-12">
+
+        <div class="b-body">
             <div class="form-group">
-                <label>Danh sách sinh viên đậu môn nhưng fail prequisites</label>
-                <table id="table">
-                    <thead>
-                        <tr>
-                            <th>MSSV</th>
-                            <th>Tên</th>
-                            <th>Môn hiện tại</th>
-                            <th>Môn tiên quyết</th>
-                            <th>Lớp</th>
-                            <th>Semester</th>
-                            <th>Điểm</th>
-                            <th>Tình trạng</th>
-                        </tr>
-                    </thead>
-                </table>
+                <div class="row">
+                    <div class="title">
+                        <h4>Chọn môn</h4>
+                    </div>
+                    <div class="my-content">
+                        <div class="col-md-12">
+                            <select id="select" class="select form-control">
+                                <option value="0">All</option>
+                                <c:forEach var="sub" items="${subs}">
+                                    <option value="${sub.id}">${sub.id} - ${sub.name} - ${sub.abbreviation}</option>
+                                </c:forEach>
+                            </select>
+                            <div id="comment"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="title">
+                        <h4>Chọn môn tiên quyết</h4>
+                    </div>
+                    <div class="my-content">
+                        <div class="col-md-12">
+                            <div id="prequisite" class="m-b-7"></div>
+                        </div>
+                        <div class="col-md-12">
+                            <button id="btn-search" type="button" class="btn btn-success m-r-2" onclick="GetStudents()">Tìm kiếm</button>
+                            <button id="btn-display-subject" data-display="show" type="button" class="btn btn-primary">Ẩn môn</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="title">
+                        <h4>Danh sách kết quả</h4>
+                    </div>
+                    <div class="my-content">
+                        <div class="col-md-12">
+                            <table id="table">
+                                <thead>
+                                <tr>
+                                    <th>MSSV</th>
+                                    <th>Tên</th>
+                                    <th>Môn hiện tại</th>
+                                    <th>Môn tiên quyết</th>
+                                    <th>Lớp</th>
+                                    <th>Semester</th>
+                                    <th>Điểm</th>
+                                    <th>Tình trạng</th>
+                                </tr>
+                                </thead>
+                            </table>
+                            <input type="hidden" id="hidden" value=""/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
         </div>
-        <input type="hidden" id="hidden" value=""/>
     </div>
 </section>
 
@@ -66,24 +114,34 @@
                 <h4 class="modal-title">Chi tiết điểm</h4>
             </div>
             <div class="modal-body">
-                <div class="col-md-12">
-                    <table id="table-mark-detail">
-                        <thead>
-                        <tr>
-                            <th>Môn học</th>
-                            <th>Học kỳ</th>
-                            <th>Số lần học</th>
-                            <th>Điểm trung bình</th>
-                            <th>Trạng thái</th>
-                        </tr>
-                        </thead>
-                    </table>
+                <div class="row">
+                    <div class="col-md-12">
+                        <table id="table-mark-detail">
+                            <thead>
+                            <tr>
+                                <th>Môn học</th>
+                                <th>Học kỳ</th>
+                                <th>Số lần học</th>
+                                <th>Điểm trung bình</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- checkbox template -->
+<div id="cbox-template" hidden>
+    <div class="col-md-4 col-xs-12 cbox-subject-wrapper">
+        <div class="cbox"><input type='checkbox'/></div>
+        <div class="text"></div>
     </div>
 </div>
 
@@ -94,12 +152,27 @@
     $(document).ready(function () {
         $('.select').select2();
 
-        $('#select').on('change', function() {
+        $('#select').on('change', function () {
             Get();
         })
 
         Get();
         GetStudents();
+    });
+
+    $('#btn-display-subject').click(function () {
+       var display = $(this).data("display");
+       if (display == "show") {
+           $(this).data("display", "hide");
+           $(this).html("Hiện môn");
+           $('#prequisite').removeClass('m-b-7');
+           $('#prequisite').slideUp('slow');
+       } else {
+           $(this).data("display", "show");
+           $(this).html("Ẩn môn");
+           $('#prequisite').addClass('m-b-7');
+           $('#prequisite').slideDown('slow');
+       }
     });
 
     function Get() {
@@ -114,19 +187,24 @@
             data: form,
             success: function (result) {
                 if (result.success) {
-                    console.log(result.data);
-
-                    var options = "<div><label><input id='all' type='checkbox'/>All</label></div>";
-
                     if (result.data.length == 0) {
                         $('#comment').html("<font color='red'>Môn này không có môn tiên quyết</font>");
                         $("#prequisite").html("");
                     } else {
-                        $.each(result.data, function(i, item) {
-                            options += "<div><label><input name='pre' type='checkbox' value='" + item.value + "'/>" + item.name + "</label></div>";
-                        });
+                        var html = "<div class='cbox-row'>";
+                        html += createCheckBox("Tất cả", -1, 'all', '');
 
-                        $("#prequisite").html(options);
+                        var count = 1;
+                        var numOfColumn = 3;
+                        $.each(result.data, function (i, item) {
+                            ++count;
+                            html += count % numOfColumn == 1 ? "<div class='cbox-row'>" : "";
+                            html += createCheckBox(item.name, item.value, '', 'pre');
+                            html += count % numOfColumn == 0 ? "</div>" : "";
+                        });
+                        html += count % numOfColumn != 0 ? "</div>" : "";
+
+                        $("#prequisite").html(html);
                         $('#comment').html("");
                     }
 
@@ -136,7 +214,7 @@
                         increaseArea: '20%' // optional
                     });
 
-                    $('#all').on('ifClicked', function(event){
+                    $('#all').on('ifClicked', function (event) {
                         console.log($('#all').not(':checked').length);
                         if ($('#all').not(':checked').length > 0) {
                             $('#prequisite input[name=pre]').iCheck('check');
@@ -145,7 +223,7 @@
                         }
                     });
 
-                    $('#prequisite input[name=pre]').on('ifToggled', function(event){
+                    $('#prequisite input[name=pre]').on('ifToggled', function (event) {
                         if ($("#prequisite input[name=pre]:checked").length == $('#prequisite input[name=pre]').length) {
                             $('#all').iCheck('check');
                         } else {
@@ -161,12 +239,12 @@
 
     function GetStudents() {
         var jsonString = [];
-        $("#prequisite input:checked").each(function(){
-            if ($(this).val() != 'on') {
+        $("#prequisite input:checked").each(function () {
+            if ($(this).val() != -1) {
                 jsonString.push($(this).val());
             }
         });
-        console.log(jsonString);
+
         $('#hidden').val(jsonString.join(','));
 
         if (table == null || table == 'undefined') {
@@ -180,7 +258,7 @@
                 "sAjaxSource": "/getFailStudents", // url getData.php etc
                 "fnServerParams": function (aoData) {
                     aoData.push({"name": "subId", "value": $('#select').val()}),
-                        aoData.push({"name": "prequisiteId", "value":  $('#hidden').val()})
+                        aoData.push({"name": "prequisiteId", "value": $('#hidden').val()})
                 },
                 "oLanguage": {
                     "sSearchPlaceholder": "",
@@ -201,6 +279,7 @@
                     {
                         "aTargets": [0, 2, 3, 4, 5, 6, 7],
                         "bSortable": false,
+                        "sClass": "text-center",
                     },
                     {
                         "aTargets": [1],
@@ -286,6 +365,25 @@
             "bAutoWidth": false,
         });
         $("#markDetail").modal();
+    }
+
+    function createCheckBox(text, value, id, name) {
+        var template = $('#cbox-template');
+        var cBox = template.find("input[type='checkbox']");
+        var cBoxText = template.find(".text");
+
+        cBoxText.html(text);
+        cBox.val(value);
+
+        if (id != "") {
+            cBox.attr("id", id);
+        }
+
+        if (name != "") {
+            cBox.attr("name", name);
+        }
+
+        return template.html();
     }
 </script>
 

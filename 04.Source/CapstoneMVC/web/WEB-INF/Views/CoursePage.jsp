@@ -229,7 +229,6 @@
 
     $("#btnSubmit").on("click", function () {
         if (ValidateCourseDetail()) {
-            debugger
             var successMsg = "";
             var url = "";
             if ($(this).data("type") == "create") {
