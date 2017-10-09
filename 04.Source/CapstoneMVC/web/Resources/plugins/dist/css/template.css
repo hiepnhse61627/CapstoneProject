@@ -120,7 +120,7 @@ a {
 .form-group .my-content .my-input-group {
     width: 100%;
     min-height: 30px;
-    padding: 0px 15px 0px 30px;
+    padding: 0px 15px 0px 15px;
     margin-bottom: 10px;
 }
 
@@ -129,7 +129,6 @@ a {
     text-align: left;
     vertical-align: middle;
     float: left;
-    padding-top: 8px;
 }
 
 .form-group .my-content .my-input-group .left-content label {
@@ -235,6 +234,14 @@ a {
 .text-right {
     float: right !important;
 }
+
+.text-center {
+    text-align: center;
+}
+
+/*.bg-light-blue {*/
+    /*background-color: lightgrey;*/
+/*}*/
 
 /* -------------- Margin ---------------- */
 .m-0 {
@@ -399,12 +406,20 @@ a {
     padding-left: 5px !important;
 }
 
+.p-l-8 {
+    padding-left: 8px !important;
+}
+
 .p-l-10 {
     padding-left: 10px !important;
 }
 
 .p-l-15 {
     padding-left: 15px !important;
+}
+
+.p-l-30 {
+    padding-left: 30px !important;
 }
 
 /* ---- Right ---- */
@@ -432,12 +447,20 @@ a {
     padding-right: 5px !important;
 }
 
+.p-r-8 {
+    padding-right: 8px !important;
+}
+
 .p-r-10 {
     padding-right: 10px !important;
 }
 
 .p-r-15 {
     padding-right: 15px !important;
+}
+
+.p-r-30 {
+    padding-right: 30px !important;
 }
 
 /* ---- Top ---- */
@@ -465,12 +488,20 @@ a {
     padding-top: 5px !important;
 }
 
+.p-t-8 {
+    padding-top: 8px !important;
+}
+
 .p-t-10 {
     padding-top: 10px !important;
 }
 
 .p-t-15 {
     padding-top: 15px !important;
+}
+
+.p-t-30 {
+    padding-top: 30px !important;
 }
 
 /* ---- Bottom ---- */
@@ -498,12 +529,20 @@ a {
     padding-bottom: 5px !important;
 }
 
+.p-b-8 {
+    padding-bottom: 8px !important;
+}
+
 .p-b-10 {
     padding-bottom: 10px !important;
 }
 
 .p-b-15 {
     padding-bottom: 15px !important;
+}
+
+.p-b-30 {
+    padding-bottom: 30px !important;
 }
 
 
