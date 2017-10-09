@@ -132,6 +132,7 @@ public class StudentFailPrequisite {
                     tmp.add(m.getMark().getSemesterId() == null ? "N/A" : m.getMark().getSemesterId().getSemester());
                     tmp.add(String.valueOf(m.getMark().getAverageMark()));
                     tmp.add(m.getMark().getStatus());
+                    tmp.add(m.getMark().getStudentId().getId() + "");
                     parent.add(tmp);
                 });
             }
