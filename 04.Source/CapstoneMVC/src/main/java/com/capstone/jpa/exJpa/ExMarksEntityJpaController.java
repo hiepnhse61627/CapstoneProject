@@ -79,133 +79,90 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
     }
 
     public List<MarksEntity> getMarksByConditions(String semesterId, String subjectId, String searchKey) {
-        if (realSemesters == null) realSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester());
+        if (realSemesters == null)
+            realSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester());
 
         List<MarksEntity> marks = new ArrayList<>();
-        EntityManager em = null;
-
-        try {
-            int row = -1;
-            for (RealSemesterEntity r : realSemesters) {
-                if (r.getId() == Integer.parseInt(semesterId)) {
-                    row = realSemesters.indexOf(r);
-                }
+        int row = -1;
+        for (RealSemesterEntity r : realSemesters) {
+            if (r.getId() == Integer.parseInt(semesterId)) {
+                row = realSemesters.indexOf(r);
             }
-
-            if (row < 0) {
-                em = getEntityManager();
-
-                //Create criteria builder
-                CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
-                CriteriaQuery criteriaQuery = criteriaBuilder.createQuery();
-
-                Root<MarksEntity> marksEntityRoot = criteriaQuery.from(MarksEntity.class);
-                Predicate predicate = null;
-
-                // Semester Name condition
-                Predicate semesterNamePredicate = null;
-                if (!semesterId.equals("0")) {
-                    Expression<Integer> semesterExpression = marksEntityRoot.get("semesterId").get("id");
-                    semesterNamePredicate = criteriaBuilder.equal(semesterExpression, Integer.parseInt(semesterId));
-                    predicate = predicate == null ? semesterNamePredicate : criteriaBuilder.and(predicate, semesterNamePredicate);
-                }
-
-                // Subject Component Id Condition
-                Predicate subjectComponentPredicate = null;
-                if (!subjectId.equals("0")) {
-                    Expression<String> subjectExpression = marksEntityRoot.get("subjectId").get("subjectId");
-                    subjectComponentPredicate = criteriaBuilder.equal(subjectExpression, subjectId);
-                    predicate = predicate == null ? subjectComponentPredicate : criteriaBuilder.and(predicate, subjectComponentPredicate);
-                }
-
-                // User's search keys condition
-                Predicate searchKeyPredicate = null;
-                if (searchKey != null && !searchKey.isEmpty()) {
-                    Expression<String> studentFullnameExpression = marksEntityRoot.get("studentId").get("fullName");
-                    Expression<String> studentRollNumberExpression = marksEntityRoot.get("studentId").get("rollNumber");
-                    Expression<String> classExpression = marksEntityRoot.get("courseId").get("class1");
-                    Predicate fullNamePredicate = criteriaBuilder.like(studentFullnameExpression, "%" + searchKey + "%");
-                    Predicate rollNumberPredicate = criteriaBuilder.like(studentRollNumberExpression, "%" + searchKey + "%");
-                    Predicate classPredicate = criteriaBuilder.like(classExpression, "%" + searchKey + "%");
-
-                    searchKeyPredicate = criteriaBuilder.or(fullNamePredicate, rollNumberPredicate, classPredicate);
-                    predicate = predicate == null ? searchKeyPredicate : criteriaBuilder.and(predicate, searchKeyPredicate);
-                }
-
-                if (predicate != null) {
-                    criteriaQuery.where(predicate);
-                } else {
-                    criteriaQuery.select(marksEntityRoot);
-                }
-
-                Query query = em.createQuery(criteriaQuery);
-                marks = query.getResultList();
-            } else {
-                for (int i = 0; i < row + 1; i++) {
-                    semesterId = realSemesters.get(i).getId().toString();
-
-                    em = getEntityManager();
-
-                    //Create criteria builder
-                    CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
-                    CriteriaQuery criteriaQuery = criteriaBuilder.createQuery();
-
-                    Root<MarksEntity> marksEntityRoot = criteriaQuery.from(MarksEntity.class);
-                    Predicate predicate = null;
-
-                    // Semester Name condition
-                    Predicate semesterNamePredicate = null;
-                    if (!semesterId.equals("0")) {
-                        Expression<Integer> semesterExpression = marksEntityRoot.get("semesterId").get("id");
-                        semesterNamePredicate = criteriaBuilder.equal(semesterExpression, Integer.parseInt(semesterId));
-                        predicate = predicate == null ? semesterNamePredicate : criteriaBuilder.and(predicate, semesterNamePredicate);
-                    }
-
-                    // Subject Component Id Condition
-                    Predicate subjectComponentPredicate = null;
-                    if (!subjectId.equals("0")) {
-                        Expression<String> subjectExpression = marksEntityRoot.get("subjectId").get("subjectId");
-                        subjectComponentPredicate = criteriaBuilder.equal(subjectExpression, subjectId);
-                        predicate = predicate == null ? subjectComponentPredicate : criteriaBuilder.and(predicate, subjectComponentPredicate);
-                    }
-
-                    // User's search keys condition
-                    Predicate searchKeyPredicate = null;
-                    if (searchKey != null && !searchKey.isEmpty()) {
-                        Expression<String> studentFullnameExpression = marksEntityRoot.get("studentId").get("fullName");
-                        Expression<String> studentRollNumberExpression = marksEntityRoot.get("studentId").get("rollNumber");
-                        Expression<String> classExpression = marksEntityRoot.get("courseId").get("class1");
-                        Predicate fullNamePredicate = criteriaBuilder.like(studentFullnameExpression, "%" + searchKey + "%");
-                        Predicate rollNumberPredicate = criteriaBuilder.like(studentRollNumberExpression, "%" + searchKey + "%");
-                        Predicate classPredicate = criteriaBuilder.like(classExpression, "%" + searchKey + "%");
-
-                        searchKeyPredicate = criteriaBuilder.or(fullNamePredicate, rollNumberPredicate, classPredicate);
-                        predicate = predicate == null ? searchKeyPredicate : criteriaBuilder.and(predicate, searchKeyPredicate);
-                    }
-
-                    if (predicate != null) {
-                        criteriaQuery.where(predicate);
-                    } else {
-                        criteriaQuery.select(marksEntityRoot);
-                    }
-
-                    Query query = em.createQuery(criteriaQuery);
-                    List<MarksEntity> finalMarks = marks;
-                    query.getResultList().forEach(o -> {
-                        if (!finalMarks.contains((MarksEntity)o)) {
-                            finalMarks.add((MarksEntity)o);
-                        }
-                    });
-                    marks = finalMarks;
-                }
-            }
-        } finally {
-            em.close();
         }
 
+        if (row < 0) {
+            marks = buildQuery(semesterId, subjectId, searchKey);
+        } else {
+            for (int i = 0; i < row + 1; i++) {
+                semesterId = realSemesters.get(i).getId().toString();
+                List<MarksEntity> finalMarks = marks;
+                buildQuery(semesterId, subjectId, searchKey).forEach(o -> {
+                    if (!finalMarks.contains((MarksEntity) o)) {
+                        finalMarks.add((MarksEntity) o);
+                    }
+                });
+                marks = finalMarks;
+            }
+        }
         return marks;
     }
 
+    private List<MarksEntity> buildQuery(String semesterId, String subjectId, String searchKey) {
+        EntityManager em = null;
+        List<MarksEntity> marks = new ArrayList<>();
+        try {
+            em = getEntityManager();
+
+            //Create criteria builder
+            CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+            CriteriaQuery criteriaQuery = criteriaBuilder.createQuery();
+
+            Root<MarksEntity> marksEntityRoot = criteriaQuery.from(MarksEntity.class);
+            Predicate predicate = null;
+
+            // Semester Name condition
+            Predicate semesterNamePredicate = null;
+            if (!semesterId.equals("0")) {
+                Expression<Integer> semesterExpression = marksEntityRoot.get("semesterId").get("id");
+                semesterNamePredicate = criteriaBuilder.equal(semesterExpression, Integer.parseInt(semesterId));
+                predicate = predicate == null ? semesterNamePredicate : criteriaBuilder.and(predicate, semesterNamePredicate);
+            }
+
+            // Subject Component Id Condition
+            Predicate subjectComponentPredicate = null;
+            if (!subjectId.equals("0")) {
+                Expression<String> subjectExpression = marksEntityRoot.get("subjectId").get("subjectId");
+                subjectComponentPredicate = criteriaBuilder.equal(subjectExpression, subjectId);
+                predicate = predicate == null ? subjectComponentPredicate : criteriaBuilder.and(predicate, subjectComponentPredicate);
+            }
+
+            // User's search keys condition
+            Predicate searchKeyPredicate = null;
+            if (searchKey != null && !searchKey.isEmpty()) {
+                Expression<String> studentFullnameExpression = marksEntityRoot.get("studentId").get("fullName");
+                Expression<String> studentRollNumberExpression = marksEntityRoot.get("studentId").get("rollNumber");
+                Expression<String> classExpression = marksEntityRoot.get("courseId").get("class1");
+                Predicate fullNamePredicate = criteriaBuilder.like(studentFullnameExpression, "%" + searchKey + "%");
+                Predicate rollNumberPredicate = criteriaBuilder.like(studentRollNumberExpression, "%" + searchKey + "%");
+                Predicate classPredicate = criteriaBuilder.like(classExpression, "%" + searchKey + "%");
+
+                searchKeyPredicate = criteriaBuilder.or(fullNamePredicate, rollNumberPredicate, classPredicate);
+                predicate = predicate == null ? searchKeyPredicate : criteriaBuilder.and(predicate, searchKeyPredicate);
+            }
+
+            if (predicate != null) {
+                criteriaQuery.where(predicate);
+            } else {
+                criteriaQuery.select(marksEntityRoot);
+            }
+
+            Query query = em.createQuery(criteriaQuery);
+            marks = query.getResultList();
+        } finally {
+            em.close();
+        }
+        return marks;
+    }
 
     public List<MarksEntity> getStudentMarksById(int stuId) {
         EntityManager em = getEntityManager();
