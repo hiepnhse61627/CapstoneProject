@@ -50,7 +50,7 @@
     <script src="/Resources/plugins/daterangepicker-2.1.25/daterangepicker.js"></script>
 </head>
 <body class="hold-transition skin-black-light sidebar-mini">
-<div class="wrapper">
+<div class="wrapper" style="position: relative">
 
     <!-- Main Header -->
     <header class="main-header">
