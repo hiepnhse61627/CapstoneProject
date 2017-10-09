@@ -43,18 +43,18 @@
                         <h4>Thông tin chi tiết</h4>
                     </div>
                     <div class="my-content">
-                        <div class="my-input-group">
+                        <div class="my-input-group p-l-30">
                             <div class="left-content">
-                                <label>Tên:</label>
+                                <label class="p-t-8">Tên:</label>
                             </div>
                             <div class="right-content">
                                 <input id="name" type="text" class="form-control" value="${data.name}"/>
                             </div>
                         </div>
 
-                        <div class="my-input-group">
+                        <div class="my-input-group p-l-30">
                             <div class="left-content">
-                                <label>Mô tả:</label>
+                                <label class="p-t-8">Mô tả:</label>
                             </div>
                             <div class="right-content">
                                 <input id="des" type="text" class="form-control" value="${data.description}"/>

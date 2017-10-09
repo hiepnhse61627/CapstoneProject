@@ -2,62 +2,80 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <style>
-    a {
-        cursor: pointer;
+    .my-tbl-wrapper {
+        width: 100%;
+        padding: 10px;
     }
 </style>
 
-<section class="content-header">
-    <h1>
-        Thông tin sinh viên
-    </h1>
-</section>
 <section class="content">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="box">
-                <div class="form-group">
-                    <label>Chọn sinh viên</label>
-                    <select id="select" class="select">
-                        <c:forEach var="stu" items="${students}">
-                            <option value="${stu.id}">${stu.rollNumber} - ${stu.fullName}</option>
-                        </c:forEach>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <button type="button" class="btn btn-primary" onclick="RefreshTable()">Xem</button>
-                </div>
-            </div>
+    <div class="box">
+        <div class="b-header">
+            <h1>Thông tin sinh viên</h1>
+            <hr>
         </div>
-        <div class="row">
-            <div class="col-md-12">
-                <div class="col-md-6">
-                    <div class="box">
+        <div class="b-body">
+            <div class="form-group">
+                <div class="row">
+                    <div class="my-content">
+                        <div class="my-input-group">
+                            <div class="left-content m-r-5">
+                                <label class="p-t-5">Chọn sinh viên:</label>
+                            </div>
+                            <div class="right-content">
+                                <select id="select" class="select">
+                                    <c:forEach var="stu" items="${students}">
+                                        <option value="${stu.id}">${stu.rollNumber} - ${stu.fullName}</option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                        </div>
                         <div class="form-group">
-                            <label>Danh sách môn còn nợ</label>
-                            <table id="table"></table>
+                            <div class="col-md-12">
+                                <button type="button" class="btn btn-primary" onclick="RefreshTable()">Xem</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="box">
-                        <div class="form-group">
-                            <label>Danh sách môn học tiếp theo</label>
-                            <table id="nextCourseTable">
-                                <thead>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-6 p-l-5 p-r-5">
+                        <div class="my-tbl-wrapper bg-gray-light">
+                            <div class="title text-center">
+                                <h4>Danh sách môn còn nợ</h4>
+                            </div>
+                            <div class="my-content">
+                                <table id="table"></table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 p-l-5 p-r-5">
+                        <div class="my-tbl-wrapper bg-gray-light">
+                            <div class="title text-center">
+                                <h4>Danh sách môn học tiếp theo</h4>
+                            </div>
+                            <div class="my-content">
+                                <table id="nextCourseTable">
+                                    <thead>
                                     <tr>
                                         <th>Mã môn</th>
                                         <th>Tên môn</th>
                                     </tr>
-                                </thead>
-                            </table>
+                                    </thead>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
 </section>
+
+
 
 <script>
     var table = null;
