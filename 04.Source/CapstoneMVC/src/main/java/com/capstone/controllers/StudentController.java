@@ -49,7 +49,7 @@ public class StudentController {
         ModelAndView view = new ModelAndView("DisplayStudentPassFail");
 
         IRealSemesterService service = new RealSemesterServiceImpl();
-        view.addObject("semesters", service.getAllSemester());
+        view.addObject("semesters", Ultilities.SortSemesters(service.getAllSemester()));
         ISubjectService service2 = new SubjectServiceImpl();
         view.addObject("subjects", service2.getAllSubjects());
 
@@ -118,7 +118,7 @@ public class StudentController {
             @Override
             public int compare(MarksEntity o1, MarksEntity o2) {
                 return new CompareToBuilder()
-                        .append(o1.getSubjectId().getSubjectId().toUpperCase(), o2.getSubjectId().getSubjectId().toUpperCase())
+                        .append(o1.getSubjectId() == null ? "" : o1.getSubjectId().getSubjectId().toUpperCase(), o2.getSubjectId() == null ? "" : o2.getSubjectId().getSubjectId().toUpperCase())
                         .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
                         .toComparison();
             }
@@ -135,7 +135,7 @@ public class StudentController {
         // remove duplicate
         
         for (MarksEntity marksEntity : comparedList) {
-            if (!resultList.stream().anyMatch(r -> r.getSubjectId().getSubjectId().toUpperCase().equals(marksEntity.getSubjectId().getSubjectId().toUpperCase())
+            if (marksEntity.getSubjectId() != null && !resultList.stream().anyMatch(r -> r.getSubjectId().getSubjectId().toUpperCase().equals(marksEntity.getSubjectId().getSubjectId().toUpperCase())
                                                 && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
                 resultList.add(marksEntity);
             }
