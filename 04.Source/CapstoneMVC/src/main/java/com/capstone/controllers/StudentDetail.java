@@ -131,7 +131,8 @@ public class StudentDetail {
         try {
             String sqlString = "SELECT distinct Curriculum_Mapping.term FROM Student " +
                     "INNER JOIN Marks on student.ID = Marks.StudentId and Student.ID =" + stuId +
-                    " INNER JOIN Curriculum_Mapping on Marks.SubjectId = Curriculum_Mapping.SubId";
+                    " INNER JOIN Curriculum_Mapping on Marks.SubjectId = Curriculum_Mapping.SubId " +
+                    "order by Curriculum_Mapping.Term desc";
             Query query = em.createNativeQuery(sqlString);
             query.getResultList().stream().findFirst().ifPresent(c -> currentTerm[0] = c.toString());
 

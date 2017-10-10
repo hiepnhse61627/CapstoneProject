@@ -119,16 +119,17 @@ public class Ultilities {
                                     if (subject.get(s) != null && !subject.get(s).isEmpty()) {
                                         List<MarksEntity> g = subject.get(s);
                                         boolean isPass = false;
+                                        MarksEntity tmp = null;
                                         for (MarksEntity k2 : g) {
-                                            if (k2.getStatus().toLowerCase().contains("pass")) {
+                                            tmp = k2;
+                                            if (k2.getAverageMark() > 4) {
                                                 isPass = true;
                                                 break;
                                             }
                                         }
 
                                         if (!isPass) {
-                                            result.add(new FailPrequisiteModel(g.stream().filter(c -> c.getStatus().toLowerCase().contains("fail") ||
-                                                    c.getStatus().toLowerCase().contains("suspended")).findFirst().get(), k1.getSubjectId().getSubjectId()));
+                                            result.add(new FailPrequisiteModel(tmp, k1.getSubjectId().getSubjectId()));
                                         }
                                     }
                                 }
