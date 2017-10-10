@@ -92,7 +92,7 @@ public class Ultilities {
         return set;
     }
 
-    public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, String prequisiteId) {
+    public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, String prequisiteId, int mark) {
         List<FailPrequisiteModel> result = new ArrayList<>();
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
         if (!list.isEmpty()) {
@@ -120,7 +120,7 @@ public class Ultilities {
                                 MarksEntity tmp = null;
                                 for (MarksEntity k2 : g) {
                                     tmp = k2;
-                                    if (k2.getAverageMark() > 4) {
+                                    if (k2.getAverageMark() > mark) {
                                         isPass = true;
                                         break;
                                     }

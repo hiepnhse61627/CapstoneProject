@@ -20,7 +20,7 @@ public class SubjectServiceImpl implements ISubjectService {
 
     @Override
     public List<SubjectEntity> getAllSubjects() {
-        return controller.findSubjectEntityEntities();
+        return controller.findAllSubjects();
     }
 
     @Override

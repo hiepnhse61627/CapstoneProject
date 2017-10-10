@@ -7,7 +7,18 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 /**
  *
@@ -16,11 +27,15 @@ import javax.persistence.*;
 @Entity
 @Table(name = "Subject_Curriculum")
 @NamedQueries({
-    @NamedQuery(name = "SubjectCurriculumEntity.findAll", query = "SELECT s FROM SubjectCurriculumEntity s")})
+    @NamedQuery(name = "SubjectCurriculumEntity.findAll", query = "SELECT s FROM SubjectCurriculumEntity s")
+    , @NamedQuery(name = "SubjectCurriculumEntity.findById", query = "SELECT s FROM SubjectCurriculumEntity s WHERE s.id = :id")
+    , @NamedQuery(name = "SubjectCurriculumEntity.findByName", query = "SELECT s FROM SubjectCurriculumEntity s WHERE s.name = :name")
+    , @NamedQuery(name = "SubjectCurriculumEntity.findByDescription", query = "SELECT s FROM SubjectCurriculumEntity s WHERE s.description = :description")})
 public class SubjectCurriculumEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -28,7 +43,7 @@ public class SubjectCurriculumEntity implements Serializable {
     private String name;
     @Column(name = "Description")
     private String description;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectCurriculumEntity", fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectCurriculumEntity")
     private List<CurriculumMappingEntity> curriculumMappingEntityList;
 
     public SubjectCurriculumEntity() {
