@@ -89,10 +89,9 @@ public class StudentFailPrequisite {
 
             String[] p = pres.split(",");
 
-            List<FailPrequisiteModel> result;
+            List<FailPrequisiteModel> result = new ArrayList<>();
             if (sub.equals("0")) {
                 ISubjectService service = new SubjectServiceImpl();
-                result = new ArrayList<>();
                 if (p.length > 0) {
                     for (String i : p) {
                         SubjectEntity pre = service.findSubjectById(i);
@@ -100,7 +99,7 @@ public class StudentFailPrequisite {
                             for (SubjectEntity s: pre.getSubjectEntityList1()) {
                                 TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
                                 List<MarksEntity> list = query.setParameter("sub", s.getId()).setParameter("sList", Arrays.asList(p)).getResultList();
-                                Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getId(), p).forEach(c -> {
+                                Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getId(), i).forEach(c -> {
                                     if(!result.contains(c)) {
                                         result.add(c);
                                     }
@@ -112,7 +111,15 @@ public class StudentFailPrequisite {
             } else {
                 TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
                 List<MarksEntity> list = query.setParameter("sub", sub).setParameter("sList", Arrays.asList(p)).getResultList();
-                result = Ultilities.FilterStudentPassedSubFailPrequisite(list, sub, p);
+                if (p.length > 0) {
+                    for (String i : p) {
+                        Ultilities.FilterStudentPassedSubFailPrequisite(list, sub, i).forEach(c -> {
+                            if(!result.contains(c)) {
+                                result.add(c);
+                            }
+                        });
+                    }
+                }
             }
 
             List<FailPrequisiteModel> displayList = new ArrayList<>();
