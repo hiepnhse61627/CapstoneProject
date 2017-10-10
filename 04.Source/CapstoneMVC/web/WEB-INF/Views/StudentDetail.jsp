@@ -181,7 +181,13 @@
             "aoColumnDefs": [
                 {
                     "aTargets": [0, 1],
-                    "bSortable": false,
+                    "mRender": function (data, type, row) {
+                        if (row[3] == '1') {
+                            return "<span style='text-decoration: line-through'>" + data + "</span>";
+                        } else {
+                            return data;
+                        }
+                    }
                 },
             ],
             "bAutoWidth": false,

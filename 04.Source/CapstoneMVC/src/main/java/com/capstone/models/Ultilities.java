@@ -138,6 +138,16 @@ public class Ultilities {
         return result;
     }
 
+    public static boolean CheckStudentSubjectFailOrPass(List<MarksEntity> list) {
+        boolean passed = false;
+        for (MarksEntity m : list) {
+            if (m.getStatus().contains("pass")) {
+                passed = true;
+            }
+        }
+        return passed;
+    }
+
 
     public static Connection getConnection() {
         String connectionString = "jdbc:sqlserver://localhost:1433;database=CapstoneProject";
