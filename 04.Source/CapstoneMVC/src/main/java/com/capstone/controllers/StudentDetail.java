@@ -14,6 +14,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -32,10 +33,7 @@ import javax.persistence.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -58,35 +56,41 @@ public class StudentDetail {
 
         try {
             List<MarksEntity> list = service2.getStudentMarksById(Integer.parseInt(params.get("stuId")));
-
-            Map<String, List<MarksEntity>> map = new HashMap<>();
-            List<MarksEntity> set = new ArrayList<>();
-            List<MarksEntity> set2 = new ArrayList<>();
-            if (!list.isEmpty()) {
-                List<MarksEntity> filtered = list.stream().filter(a -> a.getSubjectId() != null).collect(Collectors.toList());
-                for (MarksEntity m : filtered) {
-                    if (map.get(m.getSubjectId().getSubjectId()) == null) {
-                        List<MarksEntity> tmp = new ArrayList<>();
-                        tmp.add(m);
-                        map.put(m.getSubjectId().getSubjectId(), Ultilities.SortMarkBySemester(tmp));
-                    } else {
-                        map.get(m.getSubjectId().getSubjectId()).add(m);
-                        Ultilities.SortMarkBySemester(map.get(m.getSubjectId().getSubjectId()));
-                    }
+            // Init students passed and failed
+            List<MarksEntity> listPassed = list.stream().filter(p -> p.getStatus().contains("Passed")).collect(Collectors.toList());
+            List<MarksEntity> listFailed = list.stream().filter(f -> !f.getStatus().contains("Passed")).collect(Collectors.toList());
+            // compared list
+            List<MarksEntity> comparedList = new ArrayList<>();
+            // make comparator
+            Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
+                @Override
+                public int compare(MarksEntity o1, MarksEntity o2) {
+                    return new CompareToBuilder()
+                            .append(o1.getSubjectId() == null ? "" : o1.getSubjectId().getSubjectId().toUpperCase(), o2.getSubjectId() == null ? "" : o2.getSubjectId().getSubjectId().toUpperCase())
+                            .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
+                            .toComparison();
                 }
-
-                for (Map.Entry<String, List<MarksEntity>> cell : map.entrySet()) {
-                    if (cell.getValue().get(cell.getValue().size() - 1).getStatus().equals("Fail")) {
-                        set.add(cell.getValue().get(cell.getValue().size() - 1));
-                    }
+            };
+            Collections.sort(listPassed, comparator);
+            // start compare failed list to passed list
+            for (int i = 0; i < listFailed.size(); i++) {
+                MarksEntity keySearch = listFailed.get(i);
+                int index = Collections.binarySearch(listPassed, keySearch, comparator);
+                if (index < 0) {
+                    comparedList.add(keySearch);
                 }
-
-                set.stream().filter(a -> a.getSubjectId() == null).forEach(c -> {
-                    if (c.getStatus().equals("Fail")) set.add(c);
-                });
-
-                set2 = set.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
             }
+            // result list
+            List<MarksEntity> resultList = new ArrayList<>();
+            // remove duplicate
+            for (MarksEntity marksEntity : comparedList) {
+                if (marksEntity.getSubjectId() != null && !resultList.stream().anyMatch(r -> r.getSubjectId().getSubjectId().toUpperCase().equals(marksEntity.getSubjectId().getSubjectId().toUpperCase())
+                        && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
+                    resultList.add(marksEntity);
+                }
+            }
+            List<MarksEntity> set2 = new ArrayList<>();
+            set2 = resultList.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
             ArrayList<ArrayList<String>> parent = new ArrayList<>();
             if (!set2.isEmpty()) {
@@ -106,8 +110,8 @@ public class StudentDetail {
             JsonArray result = (JsonArray) new Gson().toJsonTree(parent, new TypeToken<List<MarksEntity>>() {
             }.getType());
 
-            data.addProperty("iTotalRecords", set.size());
-            data.addProperty("iTotalDisplayRecords", set.size());
+            data.addProperty("iTotalRecords", resultList.size());
+            data.addProperty("iTotalDisplayRecords", resultList.size());
             data.add("aaData", result);
             data.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {
