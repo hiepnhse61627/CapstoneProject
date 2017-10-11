@@ -2,7 +2,11 @@ package com.capstone.controllers;
 
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.RealSemesterEntity;
+import com.capstone.models.FailPrequisiteModel;
+import com.capstone.models.Ultilities;
 import com.capstone.services.*;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -44,43 +48,105 @@ public class PercentFailController {
         String subjectId = params.get("subject");
         String courseId = params.get("course");
 
+        Comparator<MarksEntity> comparator = (o1, o2) -> new CompareToBuilder()
+                .append(o1.getSubjectId() == null ? "" : o1.getSubjectId().getSubjectId().toUpperCase(), o2.getSubjectId() == null ? "" : o2.getSubjectId().getSubjectId().toUpperCase())
+                .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
+                .toComparison();
+
         EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager manager = fac.createEntityManager();
 
-        Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
-            @Override
-            public int compare(MarksEntity o1, MarksEntity o2) {
-                return new CompareToBuilder()
-                        .append(o1.getSubjectId().getSubjectId().toUpperCase(), o2.getSubjectId().getSubjectId().toUpperCase())
-                        .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
-                        .toComparison();
-            }
-        };
-
         ArrayList<ArrayList<String>> parent = new ArrayList<>();
 
-        IRealSemesterService service1 = new RealSemesterServiceImpl();
-        for (RealSemesterEntity r : service1.getAllSemester()) {
-            TypedQuery<MarksEntity> query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
-                    "m.subjectId.subjectId = :sub " +
-                    "AND m.courseId.class1 LIKE :course " +
-                    "AND m.semesterId.id = :semester", MarksEntity.class);
-            query.setParameter("sub", subjectId);
-            query.setParameter("course", "%" + courseId + "%");
-            query.setParameter("semester", r.getId());
-            List<MarksEntity> list = query.getResultList();
-            if (!list.isEmpty()) {
-                List<MarksEntity> filtered = FillterPassFailList(list, comparator);
-                long failed = filtered.stream().filter(c -> !c.getStatus().toLowerCase().contains("pass")).count();
-                ArrayList<String> tmp = new ArrayList<>();
-                tmp.add(subjectId);
-                tmp.add(r.getSemester());
-                tmp.add(courseId);
+        try {
+            IRealSemesterService service1 = new RealSemesterServiceImpl();
+            for (RealSemesterEntity r : Ultilities.SortSemesters(service1.getAllSemester())) {
 
-                float percent = ((float)failed / (float)filtered.stream().count()) * 100f;
-                tmp.add(String.valueOf(Math.round(percent) + "%"));
-                parent.add(tmp);
+                TypedQuery<MarksEntity> query;
+
+                if (subjectId.equals("0") && courseId.equals("0")) {
+                    query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
+                            "m.semesterId.id = :semester", MarksEntity.class);
+                    query.setParameter("semester", r.getId());
+                } else if (!subjectId.equals("0") && courseId.equals("0")) {
+                    query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
+                            "m.subjectId.subjectId = :sub " +
+                            "AND m.semesterId.id = :semester", MarksEntity.class);
+                    query.setParameter("sub", subjectId);
+                    query.setParameter("semester", r.getId());
+                } else if (subjectId.equals("0") && !courseId.equals("0")) {
+                    query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
+                            "m.courseId.class1 LIKE :course " +
+                            "AND m.semesterId.id = :semester", MarksEntity.class);
+                    query.setParameter("course", "%" + courseId + "%");
+                    query.setParameter("semester", r.getId());
+                } else {
+                    query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
+                            "m.subjectId.subjectId = :sub " +
+                            "AND m.courseId.class1 LIKE :course " +
+                            "AND m.semesterId.id = :semester", MarksEntity.class);
+                    query.setParameter("sub", subjectId);
+                    query.setParameter("course", "%" + courseId + "%");
+                    query.setParameter("semester", r.getId());
+                }
+
+                List<MarksEntity> list = query.getResultList();
+                if (!list.isEmpty()) {
+                    Table<String, String, List<MarksEntity>> filtered = FillterPassFailList(list);
+
+                    String sem = "";
+                    String sub = "";
+                    String class1 = "";
+                    int percent = 0;
+
+                    Set<String> l = filtered.rowKeySet();
+                    for (String semester : l) {
+                        sem = semester;
+                        Map<String, List<MarksEntity>> subject = filtered.row(semester);
+                        for (Map.Entry<String, List<MarksEntity>> m : subject.entrySet()) {
+                            sub = m.getKey();
+
+                            Map<String, List<String>> map = new HashMap<>();
+                            for (MarksEntity mark : m.getValue()) {
+                                if (map.get(mark.getCourseId().getClass1().trim()) != null) {
+                                    map.get(mark.getCourseId().getClass1().trim()).add(mark.getStatus());
+                                } else {
+                                    List<String> tmp2 = new ArrayList<>();
+                                    tmp2.add(mark.getStatus());
+                                    map.put(mark.getCourseId().getClass1().trim(), tmp2);
+                                }
+                            }
+
+                            for (Map.Entry<String, List<String>> last : map.entrySet()) {
+                                class1 = last.getKey();
+
+                                float total = (float)last.getValue().stream().count();
+                                float failed = (float)last.getValue().stream().filter(c -> !c.toLowerCase().contains("pass")).count();
+                                percent = Math.round((failed / total) * 100f);
+
+                                ArrayList<String> tmp = new ArrayList<>();
+                                tmp.add(sem);
+                                tmp.add(sub);
+                                tmp.add(class1);
+                                tmp.add(String.valueOf(percent) + "% failed");
+                                parent.add(tmp);
+                            }
+                        }
+                    }
+
+//                long failed = filtered.stream().filter(c -> !c.getStatus().toLowerCase().contains("pass")).count();
+//                ArrayList<String> tmp = new ArrayList<>();
+//                tmp.add(subjectId);
+//                tmp.add(r.getSemester());
+//                tmp.add(courseId);
+//
+//                float percent = ((float) failed / (float) filtered.stream().count()) * 100f;
+//                tmp.add(String.valueOf(Math.round(percent) + "%"));
+//                parent.add(tmp);
+                }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         JsonArray output = (JsonArray) new Gson().toJsonTree(parent.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList()));
@@ -93,31 +159,19 @@ public class PercentFailController {
         return data;
     }
 
-    public List<MarksEntity> FillterPassFailList(List<MarksEntity> list, Comparator comparator) {
-        Map<String, List<MarksEntity>> map = new HashMap<>();
-        for (MarksEntity m : list) {
-            if (map.get(m.getStudentId().getRollNumber()) != null)  {
-                map.get(m.getStudentId().getRollNumber()).add(m);
-            } else {
+    public Table<String, String, List<MarksEntity>> FillterPassFailList(List<MarksEntity> list) {
+        List<MarksEntity> removed = list.stream().filter(c -> c.getSubjectId() != null).collect(Collectors.toList());
+        Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
+        for (MarksEntity m : removed) {
+            if (map.get(m.getSemesterId().getSemester(), m.getSubjectId().getSubjectId()) == null) {
                 List<MarksEntity> tmp = new ArrayList<>();
                 tmp.add(m);
-                map.put(m.getStudentId().getRollNumber(), tmp);
+                map.put(m.getSemesterId().getSemester(), m.getSubjectId().getSubjectId(), tmp);
+            } else {
+                map.get(m.getSemesterId().getSemester(), m.getSubjectId().getSubjectId()).add(m);
             }
         }
 
-        List<MarksEntity> result = new ArrayList<>();
-        for (Map.Entry<String, List<MarksEntity>> entry : map.entrySet()) {
-            MarksEntity tmp = null;
-            for (MarksEntity e: entry.getValue()) {
-                tmp = e;
-                if (e.getStatus().contains("passs")) {
-                    break;
-                }
-            }
-
-            result.add(tmp);
-        }
-
-        return result;
+        return map;
     }
 }
