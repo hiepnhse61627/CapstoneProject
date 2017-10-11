@@ -10,7 +10,8 @@
                     <h1>Các khung chương trình</h1>
                 </div>
                 <div class="col-md-3 text-right">
-                    <input class="btn btn-primary" type="button" value="Nhập dữ liệu" onclick="ShowImportModal()"/>
+                    <input class="btn btn-warning" type="button" value="Nhập dữ liệu" onclick="ShowImportModal()"/>
+                    <a class="btn btn-success" href="/createcurriculum">Tạo mới</a>
                 </div>
             </div>
             <hr>
@@ -320,7 +321,7 @@
                     "aTargets": [2],
                     "mRender": function (data, type, row) {
                         return "<a class='btn btn-success tbl-btn' href='/editcurriculum/" + data + "'>" +
-                            "<i class='fa fa-eye'></i></a>";
+                            "<i class='glyphicon glyphicon-pencil'></i></a>";
                     }
                 },
                 {
