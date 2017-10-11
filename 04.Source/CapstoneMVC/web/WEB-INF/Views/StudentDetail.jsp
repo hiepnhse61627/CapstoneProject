@@ -33,6 +33,7 @@
                         <div class="form-group">
                             <div class="col-md-12">
                                 <button type="button" class="btn btn-primary" onclick="RefreshTable()">Xem</button>
+                                <button type="button" class="btn btn-success" onclick="ExportExcel()">Xuất dữ liệu</button>
                             </div>
                         </div>
                     </div>
@@ -75,6 +76,9 @@
 
 </section>
 
+<form id="export-excel" action="/exportExcel" hidden>
+    <input name="objectType"/>
+</form>
 
 
 <script>
@@ -193,6 +197,11 @@
             "bAutoWidth": false,
         }).fnSetFilteringDelay(1000);
     });
+
+    function ExportExcel() {
+        $("input[name='objectType']").val(2);
+        $("#export-excel").submit();
+    }
 
     function RefreshTable() {
         if (table != null) {
