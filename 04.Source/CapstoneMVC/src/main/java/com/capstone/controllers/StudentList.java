@@ -5,8 +5,6 @@ import com.capstone.entities.StudentEntity;
 import com.capstone.models.MarkModel;
 import com.capstone.models.StudentMarkModel;
 import com.capstone.models.Ultilities;
-import com.capstone.services.IStudentService;
-import com.capstone.services.StudentServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;

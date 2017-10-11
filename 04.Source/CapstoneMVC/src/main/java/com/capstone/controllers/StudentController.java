@@ -6,17 +6,13 @@ import com.capstone.models.MarkModel;
 import com.capstone.models.StudentMarkModel;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -27,8 +23,6 @@ import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 import javax.servlet.ServletContext;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Controller
