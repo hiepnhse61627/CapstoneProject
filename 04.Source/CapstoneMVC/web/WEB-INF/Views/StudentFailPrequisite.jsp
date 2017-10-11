@@ -66,8 +66,9 @@
                             <div id="prequisite" class="m-b-7"></div>
                         </div>
                         <div class="col-md-12">
-                            <button id="btn-search" type="button" class="btn btn-success m-r-2" onclick="GetStudents()">Tìm kiếm</button>
+                            <button id="btn-search" type="button" class="btn btn-default m-r-2" onclick="GetStudents()">Tìm kiếm</button>
                             <button id="btn-display-subject" data-display="show" type="button" class="btn btn-primary">Ẩn môn</button>
+                            <button type="button" class="btn btn-success" onclick="ExportExcel()">Xuất dữ liệu</button>
                         </div>
                     </div>
                 </div>
@@ -144,6 +145,13 @@
         <div class="text"></div>
     </div>
 </div>
+
+<form id="export-excel" action="/exportExcel" hidden>
+    <input name="objectType"/>
+    <input name="subId"/>
+    <input name="prequisiteId"/>
+    <input name="sSearch"/>
+</form>
 
 <script>
     var table = null;
@@ -384,6 +392,24 @@
         }
 
         return template.html();
+    }
+
+    function ExportExcel() {
+        var jsonString = [];
+        $("#prequisite input:checked").each(function () {
+            if ($(this).val() != -1) {
+                jsonString.push($(this).val());
+            }
+        });
+
+        $('#hidden').val(jsonString.join(','));
+
+        $("input[name='objectType']").val(3);
+        $("input[name='subId']").val($('#select').val());
+        $("input[name='prequisiteId']").val($('#hidden').val());
+        $("input[name='sSearch']").val(table.api().context[0].oPreviousSearch.sSearch);
+
+        $("#export-excel").submit();
     }
 </script>
 

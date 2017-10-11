@@ -44,7 +44,8 @@ public class ExportController {
         final String[] CLASSNAME_EXPORTER = {
                 "",
                 "com.capstone.exporters.ExportStudentsFailImpl", // 1 = Export students fail
-                "com.capstone.exporters.ExportStudentFailedAndNextSubjectImpl" // 2 = export failed subject of each student and next subject
+                "com.capstone.exporters.ExportStudentFailedAndNextSubjectImpl", // 2 = export failed subject of each student and next subject
+                "com.capstone.exporters.ExportStudentFailedPrerequisiteImpl" // 3 = Export student fail prerequisite
         };
 
         try {
