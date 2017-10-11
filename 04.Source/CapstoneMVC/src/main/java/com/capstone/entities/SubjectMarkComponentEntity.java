@@ -11,6 +11,7 @@ import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
@@ -25,11 +26,14 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "Subject_MarkComponent")
 @NamedQueries({
-    @NamedQuery(name = "SubjectMarkComponentEntity.findAll", query = "SELECT s FROM SubjectMarkComponentEntity s")})
+    @NamedQuery(name = "SubjectMarkComponentEntity.findAll", query = "SELECT s FROM SubjectMarkComponentEntity s")
+    , @NamedQuery(name = "SubjectMarkComponentEntity.findBySubjectId", query = "SELECT s FROM SubjectMarkComponentEntity s WHERE s.subjectId = :subjectId")
+    , @NamedQuery(name = "SubjectMarkComponentEntity.findByComponentPercent", query = "SELECT s FROM SubjectMarkComponentEntity s WHERE s.componentPercent = :componentPercent")})
 public class SubjectMarkComponentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "SubjectId")
     private String subjectId;
     @Column(name = "ComponentPercent")

@@ -92,7 +92,7 @@ public class Ultilities {
         return set;
     }
 
-    public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, String[] prequisiteId) {
+    public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, String prequisiteId, int mark) {
         List<FailPrequisiteModel> result = new ArrayList<>();
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
         if (!list.isEmpty()) {
@@ -114,35 +114,40 @@ public class Ultilities {
                     List<MarksEntity> f = subject.get(subId);
                     for (MarksEntity k1 : f) {
                         if (k1.getStatus().toLowerCase().contains("pass")) {
-                            if (prequisiteId.length > 0) {
-                                for (String s : prequisiteId) {
-                                    if (subject.get(s) != null && !subject.get(s).isEmpty()) {
-                                        List<MarksEntity> g = subject.get(s);
-                                        boolean isPass = false;
-                                        MarksEntity tmp = null;
-                                        for (MarksEntity k2 : g) {
-                                            tmp = k2;
-                                            if (k2.getAverageMark() > 4) {
-                                                isPass = true;
-                                                break;
-                                            }
-                                        }
-
-                                        if (!isPass) {
-                                            result.add(new FailPrequisiteModel(tmp, k1.getSubjectId().getSubjectId()));
-                                        }
+                            if (subject.get(prequisiteId) != null && !subject.get(prequisiteId).isEmpty()) {
+                                List<MarksEntity> g = subject.get(prequisiteId);
+                                boolean isPass = false;
+                                MarksEntity tmp = null;
+                                for (MarksEntity k2 : g) {
+                                    tmp = k2;
+                                    if (k2.getAverageMark() > mark) {
+                                        isPass = true;
+                                        break;
                                     }
                                 }
+
+                                if (!isPass) {
+                                    result.add(new FailPrequisiteModel(tmp, k1.getSubjectId().getSubjectId()));
+                                }
                             }
-                            break;
                         }
                     }
                 }
             }
         }
-
         return result;
     }
+
+    public static boolean CheckStudentSubjectFailOrPass(List<MarksEntity> list) {
+        boolean passed = false;
+        for (MarksEntity m : list) {
+            if (m.getStatus().contains("pass")) {
+                passed = true;
+            }
+        }
+        return passed;
+    }
+
 
     public static Connection getConnection() {
         String connectionString = "jdbc:sqlserver://localhost:1433;database=CapstoneProject";

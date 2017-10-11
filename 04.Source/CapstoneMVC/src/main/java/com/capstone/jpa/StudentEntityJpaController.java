@@ -5,15 +5,17 @@
  */
 package com.capstone.jpa;
 
-import com.capstone.entities.*;
 import com.capstone.jpa.exceptions.*;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import com.capstone.entities.DocumentStudentEntity;
 import java.util.ArrayList;
 import java.util.List;
+import com.capstone.entities.MarksEntity;
+import com.capstone.entities.StudentEntity;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
@@ -32,7 +34,7 @@ public class StudentEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(StudentEntity studentEntity) throws PreexistingEntityException, Exception {
+    public void create(StudentEntity studentEntity) {
         if (studentEntity.getDocumentStudentEntityList() == null) {
             studentEntity.setDocumentStudentEntityList(new ArrayList<DocumentStudentEntity>());
         }
@@ -75,11 +77,6 @@ public class StudentEntityJpaController implements Serializable {
                 }
             }
             em.getTransaction().commit();
-        } catch (Exception ex) {
-            if (findStudentEntity(studentEntity.getId()) != null) {
-                throw new PreexistingEntityException("StudentEntity " + studentEntity + " already exists.", ex);
-            }
-            throw ex;
         } finally {
             if (em != null) {
                 em.close();

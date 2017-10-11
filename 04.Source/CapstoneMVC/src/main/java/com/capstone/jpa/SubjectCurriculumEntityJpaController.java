@@ -5,13 +5,15 @@
  */
 package com.capstone.jpa;
 
-import com.capstone.entities.*;
-import com.capstone.jpa.exceptions.*;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import com.capstone.entities.CurriculumMappingEntity;
+import com.capstone.entities.SubjectCurriculumEntity;
+import com.capstone.jpa.exceptions.*;
+
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -32,7 +34,7 @@ public class SubjectCurriculumEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(SubjectCurriculumEntity subjectCurriculumEntity) throws PreexistingEntityException, Exception {
+    public void create(SubjectCurriculumEntity subjectCurriculumEntity) {
         if (subjectCurriculumEntity.getCurriculumMappingEntityList() == null) {
             subjectCurriculumEntity.setCurriculumMappingEntityList(new ArrayList<CurriculumMappingEntity>());
         }
@@ -57,11 +59,6 @@ public class SubjectCurriculumEntityJpaController implements Serializable {
                 }
             }
             em.getTransaction().commit();
-        } catch (Exception ex) {
-            if (findSubjectCurriculumEntity(subjectCurriculumEntity.getId()) != null) {
-                throw new PreexistingEntityException("SubjectCurriculumEntity " + subjectCurriculumEntity + " already exists.", ex);
-            }
-            throw ex;
         } finally {
             if (em != null) {
                 em.close();

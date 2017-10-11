@@ -11,6 +11,7 @@ import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -26,7 +27,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "Program")
 @NamedQueries({
-    @NamedQuery(name = "ProgramEntity.findAll", query = "SELECT p FROM ProgramEntity p")})
+    @NamedQuery(name = "ProgramEntity.findAll", query = "SELECT p FROM ProgramEntity p")
+    , @NamedQuery(name = "ProgramEntity.findById", query = "SELECT p FROM ProgramEntity p WHERE p.id = :id")
+    , @NamedQuery(name = "ProgramEntity.findByName", query = "SELECT p FROM ProgramEntity p WHERE p.name = :name")})
 public class ProgramEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -9,6 +9,7 @@ import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
@@ -22,7 +23,11 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "Curriculum_Mapping")
 @NamedQueries({
-    @NamedQuery(name = "CurriculumMappingEntity.findAll", query = "SELECT c FROM CurriculumMappingEntity c")})
+    @NamedQuery(name = "CurriculumMappingEntity.findAll", query = "SELECT c FROM CurriculumMappingEntity c")
+    , @NamedQuery(name = "CurriculumMappingEntity.findByCurId", query = "SELECT c FROM CurriculumMappingEntity c WHERE c.curriculumMappingEntityPK.curId = :curId")
+    , @NamedQuery(name = "CurriculumMappingEntity.findBySubId", query = "SELECT c FROM CurriculumMappingEntity c WHERE c.curriculumMappingEntityPK.subId = :subId")
+    , @NamedQuery(name = "CurriculumMappingEntity.findByTerm", query = "SELECT c FROM CurriculumMappingEntity c WHERE c.term = :term")
+    , @NamedQuery(name = "CurriculumMappingEntity.findByOrdering", query = "SELECT c FROM CurriculumMappingEntity c WHERE c.ordering = :ordering")})
 public class CurriculumMappingEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -66,6 +71,14 @@ public class CurriculumMappingEntity implements Serializable {
         this.term = term;
     }
 
+    public Integer getOrdering() {
+        return ordering;
+    }
+
+    public void setOrdering(Integer ordering) {
+        this.ordering = ordering;
+    }
+
     public SubjectEntity getSubjectEntity() {
         return subjectEntity;
     }
@@ -106,12 +119,5 @@ public class CurriculumMappingEntity implements Serializable {
     public String toString() {
         return "entities.CurriculumMappingEntity[ curriculumMappingEntityPK=" + curriculumMappingEntityPK + " ]";
     }
-
-    public Integer getOrdering() {
-        return ordering;
-    }
-
-    public void setOrdering(Integer ordering) {
-        this.ordering = ordering;
-    }
+    
 }

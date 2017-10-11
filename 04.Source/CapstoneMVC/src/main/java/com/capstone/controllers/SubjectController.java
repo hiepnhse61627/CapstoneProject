@@ -1,5 +1,7 @@
 package com.capstone.controllers;
 
+import com.capstone.entities.PrequisiteEntity;
+import com.capstone.entities.PrequisiteEntityPK;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.models.ReadAndSaveFileToServer;
 import com.capstone.services.ISubjectService;
@@ -20,7 +22,6 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletContext;
 import java.io.*;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Controller
@@ -118,36 +119,42 @@ public class SubjectController {
                                     }
 
                                     if (preCode.contains(",")) {
-                                        List<SubjectEntity> prequisites = new ArrayList<>();
-                                        SubjectEntity pre = new SubjectEntity();
+                                        List<PrequisiteEntity> prequisites = new ArrayList<>();
+                                        PrequisiteEntity pre = new PrequisiteEntity();
 
                                         String[] code = preCode.split(",");
                                         for (String c: code) {
                                             if (c != null && !c.isEmpty()) {
-                                                pre = new SubjectEntity();
-                                                pre.setId(c.trim());
+                                                pre = new PrequisiteEntity();
+
+                                                PrequisiteEntityPK pk = new PrequisiteEntityPK();
+                                                pk.setSubId(en.getId());
+                                                pk.setPrequisiteSubId(c.trim());
+                                                pre.setPrequisiteEntityPK(pk);
+                                                pre.setFailMark(4);
+
                                                 prequisites.add(pre);
                                             }
                                         }
-                                        en.setSubjectEntityList(prequisites);
+                                        en.setSubOfPrequisiteList(prequisites);
 
-                                        prequisites = new ArrayList<>();
-                                        pre = new SubjectEntity();
-                                        pre.setId(en.getId());
-                                        prequisites.add(pre);
-                                        en.setSubjectEntityList1(prequisites);
+//                                        prequisites = new ArrayList<>();
+//                                        pre = new SubjectEntity();
+//                                        pre.setId(en.getId());
+//                                        prequisites.add(pre);
+//                                        en.setPrequisiteEntityList(prequisites);
                                     } else {
-                                        List<SubjectEntity> prequisites = new ArrayList<>();
-                                        SubjectEntity pre = new SubjectEntity();
-                                        pre.setId(preCode);
-                                        prequisites.add(pre);
-                                        en.setSubjectEntityList(prequisites);
+                                        List<PrequisiteEntity> prequisites = new ArrayList<>();
+                                        PrequisiteEntity pre = new PrequisiteEntity();
 
-                                        prequisites = new ArrayList<>();
-                                        pre = new SubjectEntity();
-                                        pre.setId(en.getId());
+                                        PrequisiteEntityPK pk = new PrequisiteEntityPK();
+                                        pk.setSubId(en.getId());
+                                        pk.setPrequisiteSubId(preCode);
+                                        pre.setPrequisiteEntityPK(pk);
+                                        pre.setFailMark(4);
+
                                         prequisites.add(pre);
-                                        en.setSubjectEntityList1(prequisites);
+                                        en.setSubOfPrequisiteList(prequisites);
                                     }
                                 }
                             }

@@ -9,6 +9,7 @@ import java.io.Serializable;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -25,7 +26,8 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "Document_Student")
 @NamedQueries({
-    @NamedQuery(name = "DocumentStudentEntity.findAll", query = "SELECT d FROM DocumentStudentEntity d")})
+    @NamedQuery(name = "DocumentStudentEntity.findAll", query = "SELECT d FROM DocumentStudentEntity d")
+    , @NamedQuery(name = "DocumentStudentEntity.findById", query = "SELECT d FROM DocumentStudentEntity d WHERE d.id = :id")})
 public class DocumentStudentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;

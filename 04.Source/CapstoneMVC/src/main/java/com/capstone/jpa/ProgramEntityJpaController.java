@@ -5,13 +5,14 @@
  */
 package com.capstone.jpa;
 
-import com.capstone.entities.*;
 import com.capstone.jpa.exceptions.*;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import com.capstone.entities.CurriculumEntity;
+import com.capstone.entities.ProgramEntity;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -32,7 +33,7 @@ public class ProgramEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(ProgramEntity programEntity) throws PreexistingEntityException, Exception {
+    public void create(ProgramEntity programEntity) {
         if (programEntity.getCurriculumEntityList() == null) {
             programEntity.setCurriculumEntityList(new ArrayList<CurriculumEntity>());
         }
@@ -57,11 +58,6 @@ public class ProgramEntityJpaController implements Serializable {
                 }
             }
             em.getTransaction().commit();
-        } catch (Exception ex) {
-            if (findProgramEntity(programEntity.getId()) != null) {
-                throw new PreexistingEntityException("ProgramEntity " + programEntity + " already exists.", ex);
-            }
-            throw ex;
         } finally {
             if (em != null) {
                 em.close();

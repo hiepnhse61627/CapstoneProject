@@ -1,6 +1,7 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.MarksEntity;
+import com.capstone.entities.PrequisiteEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.models.FailPrequisiteModel;
 import com.capstone.models.Ultilities;
@@ -77,6 +78,8 @@ public class StudentFailPrequisite {
     @ResponseBody
     public JsonObject GetStudents(@RequestParam Map<String, String> params) {
         try {
+            ISubjectService service = new SubjectServiceImpl();
+
             String pres = params.get("prequisiteId").trim();
             System.out.println(pres);
 
@@ -89,18 +92,16 @@ public class StudentFailPrequisite {
 
             String[] p = pres.split(",");
 
-            List<FailPrequisiteModel> result;
+            List<FailPrequisiteModel> result = new ArrayList<>();
             if (sub.equals("0")) {
-                ISubjectService service = new SubjectServiceImpl();
-                result = new ArrayList<>();
                 if (p.length > 0) {
                     for (String i : p) {
                         SubjectEntity pre = service.findSubjectById(i);
                         if (pre != null) {
-                            for (SubjectEntity s: pre.getSubjectEntityList1()) {
+                            for (PrequisiteEntity s: pre.getSubOfPrequisiteList()) {
                                 TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
-                                List<MarksEntity> list = query.setParameter("sub", s.getId()).setParameter("sList", Arrays.asList(p)).getResultList();
-                                Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getId(), p).forEach(c -> {
+                                List<MarksEntity> list = query.setParameter("sub", s.getSubjectEntity().getId()).setParameter("sList", Arrays.asList(p)).getResultList();
+                                Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getSubjectEntity().getId(), i, s.getFailMark()).forEach(c -> {
                                     if(!result.contains(c)) {
                                         result.add(c);
                                     }
@@ -110,9 +111,22 @@ public class StudentFailPrequisite {
                     }
                 }
             } else {
-                TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
-                List<MarksEntity> list = query.setParameter("sub", sub).setParameter("sList", Arrays.asList(p)).getResultList();
-                result = Ultilities.FilterStudentPassedSubFailPrequisite(list, sub, p);
+                if (p.length > 0) {
+                    for (String i : p) {
+                        SubjectEntity pre = service.findSubjectById(i);
+                        if (pre != null) {
+                            for (PrequisiteEntity s: pre.getSubOfPrequisiteList()) {
+                                TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
+                                List<MarksEntity> list = query.setParameter("sub", s.getSubjectEntity().getId()).setParameter("sList", Arrays.asList(p)).getResultList();
+                                Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getSubjectEntity().getId(), i, s.getFailMark()).forEach(c -> {
+                                    if(!result.contains(c)) {
+                                        result.add(c);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
             }
 
             List<FailPrequisiteModel> displayList = new ArrayList<>();

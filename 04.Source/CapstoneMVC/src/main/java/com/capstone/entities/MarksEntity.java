@@ -6,7 +6,18 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 
 /**
  *
@@ -15,7 +26,10 @@ import javax.persistence.*;
 @Entity
 @Table(name = "Marks")
 @NamedQueries({
-    @NamedQuery(name = "MarksEntity.findAll", query = "SELECT m FROM MarksEntity m")})
+    @NamedQuery(name = "MarksEntity.findAll", query = "SELECT m FROM MarksEntity m")
+    , @NamedQuery(name = "MarksEntity.findById", query = "SELECT m FROM MarksEntity m WHERE m.id = :id")
+    , @NamedQuery(name = "MarksEntity.findByAverageMark", query = "SELECT m FROM MarksEntity m WHERE m.averageMark = :averageMark")
+    , @NamedQuery(name = "MarksEntity.findByStatus", query = "SELECT m FROM MarksEntity m WHERE m.status = :status")})
 public class MarksEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -30,16 +44,16 @@ public class MarksEntity implements Serializable {
     @Column(name = "Status")
     private String status;
     @JoinColumn(name = "CourseId", referencedColumnName = "Id")
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     private CourseEntity courseId;
     @JoinColumn(name = "SemesterId", referencedColumnName = "Id")
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     private RealSemesterEntity semesterId;
     @JoinColumn(name = "StudentId", referencedColumnName = "ID")
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     private StudentEntity studentId;
     @JoinColumn(name = "SubjectId", referencedColumnName = "SubjectId")
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne
     private SubjectMarkComponentEntity subjectId;
 
     public MarksEntity() {

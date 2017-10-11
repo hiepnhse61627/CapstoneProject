@@ -5,13 +5,16 @@
  */
 package com.capstone.jpa;
 
-import com.capstone.entities.*;
 import com.capstone.jpa.exceptions.*;
+import com.capstone.entities.CurriculumMappingEntity;
+import com.capstone.entities.CurriculumMappingEntityPK;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import com.capstone.entities.SubjectEntity;
+import com.capstone.entities.SubjectCurriculumEntity;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;

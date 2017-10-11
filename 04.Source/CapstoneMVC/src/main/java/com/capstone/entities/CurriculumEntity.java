@@ -11,6 +11,7 @@ import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -28,7 +29,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "Curriculum")
 @NamedQueries({
-    @NamedQuery(name = "CurriculumEntity.findAll", query = "SELECT c FROM CurriculumEntity c")})
+    @NamedQuery(name = "CurriculumEntity.findAll", query = "SELECT c FROM CurriculumEntity c")
+    , @NamedQuery(name = "CurriculumEntity.findById", query = "SELECT c FROM CurriculumEntity c WHERE c.id = :id")
+    , @NamedQuery(name = "CurriculumEntity.findByName", query = "SELECT c FROM CurriculumEntity c WHERE c.name = :name")})
 public class CurriculumEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -40,13 +43,11 @@ public class CurriculumEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "Name")
     private String name;
-    @Column(name = "SubjectCode")
-    private String subjectCode;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "curriculumId")
+    private List<DocumentStudentEntity> documentStudentEntityList;
     @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
     @ManyToOne(optional = false)
     private ProgramEntity programId;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "curriculumId")
-    private List<DocumentStudentEntity> documentStudentEntityList;
 
     public CurriculumEntity() {
     }
@@ -58,14 +59,6 @@ public class CurriculumEntity implements Serializable {
     public CurriculumEntity(Integer id, String name) {
         this.id = id;
         this.name = name;
-    }
-
-    public String getSubjectCode() {
-        return subjectCode;
-    }
-
-    public void setSubjectCode(String subjectCode) {
-        this.subjectCode = subjectCode;
     }
 
     public Integer getId() {
@@ -84,20 +77,20 @@ public class CurriculumEntity implements Serializable {
         this.name = name;
     }
 
-    public ProgramEntity getProgramId() {
-        return programId;
-    }
-
-    public void setProgramId(ProgramEntity programId) {
-        this.programId = programId;
-    }
-
     public List<DocumentStudentEntity> getDocumentStudentEntityList() {
         return documentStudentEntityList;
     }
 
     public void setDocumentStudentEntityList(List<DocumentStudentEntity> documentStudentEntityList) {
         this.documentStudentEntityList = documentStudentEntityList;
+    }
+
+    public ProgramEntity getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(ProgramEntity programId) {
+        this.programId = programId;
     }
 
     @Override

@@ -206,30 +206,30 @@
 
                         $("#prequisite").html(html);
                         $('#comment').html("");
+
+                        $('#prequisite input').iCheck({
+                            checkboxClass: 'icheckbox_square-blue',
+                            radioClass: 'iradio_square-blue',
+                            increaseArea: '20%' // optional
+                        });
+
+                        $('#all').on('ifClicked', function (event) {
+                            console.log($('#all').not(':checked').length);
+                            if ($('#all').not(':checked').length > 0) {
+                                $('#prequisite input[name=pre]').iCheck('check');
+                            } else {
+                                $("#prequisite input[name=pre]").iCheck('uncheck');
+                            }
+                        });
+
+                        $('#prequisite input[name=pre]').on('ifToggled', function (event) {
+                            if ($("#prequisite input[name=pre]:checked").length == $('#prequisite input[name=pre]').length) {
+                                $('#all').iCheck('check');
+                            } else {
+                                $('#all').iCheck('uncheck');
+                            }
+                        });
                     }
-
-                    $('input').iCheck({
-                        checkboxClass: 'icheckbox_square-blue',
-                        radioClass: 'iradio_square-blue',
-                        increaseArea: '20%' // optional
-                    });
-
-                    $('#all').on('ifClicked', function (event) {
-                        console.log($('#all').not(':checked').length);
-                        if ($('#all').not(':checked').length > 0) {
-                            $('#prequisite input[name=pre]').iCheck('check');
-                        } else {
-                            $("#prequisite input[name=pre]").iCheck('uncheck');
-                        }
-                    });
-
-                    $('#prequisite input[name=pre]').on('ifToggled', function (event) {
-                        if ($("#prequisite input[name=pre]:checked").length == $('#prequisite input[name=pre]').length) {
-                            $('#all').iCheck('check');
-                        } else {
-                            $('#all').iCheck('uncheck');
-                        }
-                    });
                 } else {
                     swal('', 'Có lỗi xảy ra, vui lòng thử lại sau', 'error');
                 }

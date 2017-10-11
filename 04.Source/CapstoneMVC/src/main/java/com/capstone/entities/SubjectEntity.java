@@ -7,7 +7,17 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 /**
  *
@@ -16,11 +26,12 @@ import javax.persistence.*;
 @Entity
 @Table(name = "Subject")
 @NamedQueries({
-    @NamedQuery(name = "SubjectEntity.findAll", query = "SELECT s FROM SubjectEntity s")})
+    @NamedQuery(name = "SubjectEntity.findAll", query = "SELECT s FROM SubjectEntity s")
+    , @NamedQuery(name = "SubjectEntity.findById", query = "SELECT s FROM SubjectEntity s WHERE s.id = :id")
+    , @NamedQuery(name = "SubjectEntity.findByName", query = "SELECT s FROM SubjectEntity s WHERE s.name = :name")
+    , @NamedQuery(name = "SubjectEntity.findByAbbreviation", query = "SELECT s FROM SubjectEntity s WHERE s.abbreviation = :abbreviation")
+    , @NamedQuery(name = "SubjectEntity.findByCredits", query = "SELECT s FROM SubjectEntity s WHERE s.credits = :credits")})
 public class SubjectEntity implements Serializable {
-
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
-    private List<CurriculumMappingEntity> curriculumMappingEntityList;
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -33,16 +44,15 @@ public class SubjectEntity implements Serializable {
     private String abbreviation;
     @Column(name = "Credits")
     private Integer credits;
-    @JoinTable(name = "Prequisite", joinColumns = {
-        @JoinColumn(name = "SubId", referencedColumnName = "Id")}, inverseJoinColumns = {
-        @JoinColumn(name = "PrequisiteSubId", referencedColumnName = "Id")})
-    @ManyToMany(fetch = FetchType.EAGER)
-    private List<SubjectEntity> subjectEntityList;
-    @ManyToMany(mappedBy = "subjectEntityList", fetch = FetchType.EAGER)
-    private List<SubjectEntity> subjectEntityList1;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
+    private List<PrequisiteEntity> prequisiteEntityList;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "prequisiteSubjectEntity")
+    private List<PrequisiteEntity> subOfPrequisiteList;
     @JoinColumn(name = "Id", referencedColumnName = "SubjectId", insertable = false, updatable = false)
     @OneToOne(optional = false)
     private SubjectMarkComponentEntity subjectMarkComponentEntity;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
+    private List<CurriculumMappingEntity> curriculumMappingEntityList;
 
     public SubjectEntity() {
     }
@@ -83,20 +93,20 @@ public class SubjectEntity implements Serializable {
         this.credits = credits;
     }
 
-    public List<SubjectEntity> getSubjectEntityList() {
-        return subjectEntityList;
+    public List<PrequisiteEntity> getSubOfPrequisiteList() {
+        return subOfPrequisiteList;
     }
 
-    public void setSubjectEntityList(List<SubjectEntity> subjectEntityList) {
-        this.subjectEntityList = subjectEntityList;
+    public void setSubOfPrequisiteList(List<PrequisiteEntity> subOfPrequisiteList) {
+        this.subOfPrequisiteList = subOfPrequisiteList;
     }
 
-    public List<SubjectEntity> getSubjectEntityList1() {
-        return subjectEntityList1;
+    public List<PrequisiteEntity> getPrequisiteEntityList() {
+        return prequisiteEntityList;
     }
 
-    public void setSubjectEntityList1(List<SubjectEntity> subjectEntityList1) {
-        this.subjectEntityList1 = subjectEntityList1;
+    public void setPrequisiteEntityList(List<PrequisiteEntity> prequisiteEntityList) {
+        this.prequisiteEntityList = prequisiteEntityList;
     }
 
     public SubjectMarkComponentEntity getSubjectMarkComponentEntity() {
@@ -105,6 +115,14 @@ public class SubjectEntity implements Serializable {
 
     public void setSubjectMarkComponentEntity(SubjectMarkComponentEntity subjectMarkComponentEntity) {
         this.subjectMarkComponentEntity = subjectMarkComponentEntity;
+    }
+
+    public List<CurriculumMappingEntity> getCurriculumMappingEntityList() {
+        return curriculumMappingEntityList;
+    }
+
+    public void setCurriculumMappingEntityList(List<CurriculumMappingEntity> curriculumMappingEntityList) {
+        this.curriculumMappingEntityList = curriculumMappingEntityList;
     }
 
     @Override
@@ -130,14 +148,6 @@ public class SubjectEntity implements Serializable {
     @Override
     public String toString() {
         return "entities.SubjectEntity[ id=" + id + " ]";
-    }
-
-    public List<CurriculumMappingEntity> getCurriculumMappingEntityList() {
-        return curriculumMappingEntityList;
-    }
-
-    public void setCurriculumMappingEntityList(List<CurriculumMappingEntity> curriculumMappingEntityList) {
-        this.curriculumMappingEntityList = curriculumMappingEntityList;
     }
     
 }

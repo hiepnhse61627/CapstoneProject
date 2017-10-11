@@ -1,9 +1,6 @@
 package com.capstone.controllers;
 
-import com.capstone.entities.CurriculumMappingEntity;
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.StudentEntity;
-import com.capstone.entities.SubjectEntity;
+import com.capstone.entities.*;
 import com.capstone.models.MarkModel;
 import com.capstone.models.StudentMarkModel;
 import com.capstone.models.Ultilities;
@@ -41,6 +38,7 @@ public class StudentDetail {
 
     IStudentService service = new StudentServiceImpl();
     IMarksService service2 = new MarksServiceImpl();
+    ISubjectService service3 = new SubjectServiceImpl();
 
     @RequestMapping("/studentDetail")
     public ModelAndView Index() {
@@ -127,8 +125,9 @@ public class StudentDetail {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = emf.createEntityManager();
         JsonObject jsonObject = new JsonObject();
-        String[] currentTerm = {"-1"};
-        List<Object> objects = new ArrayList<>();
+        String[] currentTerm = {"0"};
+        int nextTermNumber = 0;
+        List<SubjectEntity> objects = new ArrayList<>();
         int stuId = Integer.parseInt(params.get("stuId"));
         Gson gson = new Gson();
 
@@ -138,20 +137,48 @@ public class StudentDetail {
                     " INNER JOIN Curriculum_Mapping on Marks.SubjectId = Curriculum_Mapping.SubId " +
                     "order by Curriculum_Mapping.Term desc";
             Query query = em.createNativeQuery(sqlString);
-            query.getResultList().stream().findFirst().ifPresent(c -> currentTerm[0] = c.toString());
+            List<String> list = query.getResultList();
+            list.stream().findFirst().ifPresent(c -> currentTerm[0] = list.stream().findFirst().get());
 
-            int currentTermNumber = Integer.parseInt(currentTerm[0].replaceAll("[^0-9]", ""));
-            int nextTermNumber = currentTermNumber + 1;
+            if (!currentTerm[0].equals("0")) {
+                int currentTermNumber = Integer.parseInt(currentTerm[0].replaceAll("[^0-9]", ""));
+                nextTermNumber = currentTermNumber + 1;
+            }
 
-            sqlString = "SELECT c.SubId, s.Name FROM Curriculum_Mapping c, Subject s WHERE c.term LIKE '%"+ nextTermNumber + "' AND c.SubId = s.Id";
-            query = em.createNativeQuery(sqlString);
-            objects = query.getResultList();
+            query = em.createQuery("SELECT s FROM CurriculumMappingEntity c, SubjectEntity s WHERE c.term LIKE '%" + nextTermNumber + "' AND c.subjectEntity.id = s.id", SubjectEntity.class);
+            objects = (List<SubjectEntity>) query.getResultList();
 
-            List<Object> objects2 = objects.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
-            JsonArray aaData = (JsonArray) gson.toJsonTree(objects2);
+            List<SubjectEntity> objects2 = objects.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+
+            ArrayList<ArrayList<String>> parent = new ArrayList<>();
+            if (!objects2.isEmpty()) {
+                objects2.forEach(m -> {
+                    ArrayList<String> tmp = new ArrayList<>();
+                    tmp.add(m.getId());
+                    tmp.add(m.getName());
+
+                    SubjectEntity cur = service3.findSubjectById(m.getId());
+                    boolean exist = false;
+                    for (PrequisiteEntity s : cur.getPrequisiteEntityList()) {
+                        TypedQuery<MarksEntity> q = em.createQuery("SELECT c FROM MarksEntity c WHERE c.studentId.id = :id AND c.subjectId.subjectId = :sub", MarksEntity.class);
+                        List<MarksEntity> l = q.setParameter("sub", s.getSubjectEntity().getId()).setParameter("id", stuId).getResultList();
+                        exist = Ultilities.CheckStudentSubjectFailOrPass(l);
+                    }
+
+                    if (exist) {
+                        tmp.add("1");
+                    } else {
+                        tmp.add("0");
+                    }
+
+                    parent.add(tmp);
+                });
+            }
+
+            JsonArray aaData = (JsonArray) gson.toJsonTree(parent);
 
             jsonObject.addProperty("iTotalRecords", objects.size());
-            jsonObject.addProperty("iTotalDisplayRecords",  objects.size());
+            jsonObject.addProperty("iTotalDisplayRecords", objects.size());
             jsonObject.add("aaData", aaData);
             jsonObject.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception ex) {

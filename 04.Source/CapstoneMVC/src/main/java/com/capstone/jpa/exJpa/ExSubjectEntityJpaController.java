@@ -1,14 +1,12 @@
 package com.capstone.jpa.exJpa;
 
 import com.capstone.entities.MarksEntity;
+import com.capstone.entities.PrequisiteEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.jpa.SubjectEntityJpaController;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import javax.security.auth.Subject;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,6 +28,12 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 
     public int getTotalLine() {
         return totalLine;
+    }
+
+    public List<SubjectEntity> findAllSubjects() {
+        EntityManager em = getEntityManager();
+        TypedQuery<SubjectEntity> query = em.createQuery("SELECT a FROM SubjectEntity a", SubjectEntity.class);
+        return query.getResultList();
     }
 
     public void insertSubjectList(List<SubjectEntity> list) {
@@ -82,10 +86,10 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
     }
 
     private void getPrequisite(SubjectEntity curr, String subId) {
-        List<SubjectEntity> pre = curr.getSubjectEntityList();
+        List<PrequisiteEntity> pre = curr.getPrequisiteEntityList();
         if (!pre.isEmpty()) {
-            for (SubjectEntity s: pre) {
-                getPrequisite(s, subId);
+            for (PrequisiteEntity s: pre) {
+                getPrequisite(s.getPrequisiteSubjectEntity(), subId);
             }
         }
 
