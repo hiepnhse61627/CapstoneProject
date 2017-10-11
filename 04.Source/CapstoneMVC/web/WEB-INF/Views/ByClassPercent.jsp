@@ -46,8 +46,8 @@
             <table id="table">
                 <thead>
                 <tr>
-                    <th>Môn</th>
                     <th>Kỳ</th>
+                    <th>Môn</th>
                     <th>Lớp</th>
                     <th>Tỉ lệ</th>
                 </tr>
