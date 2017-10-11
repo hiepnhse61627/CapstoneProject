@@ -150,4 +150,9 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
         return result;
     }
 
+    public List<String> findAllToString() {
+        EntityManager em = getEntityManager();
+        TypedQuery<String> q = em.createQuery("SELECT distinct c.class1 FROM CourseEntity c", String.class);
+        return q.getResultList();
+    }
 }
