@@ -1,11 +1,8 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.CourseEntity;
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.StudentEntity;
 import com.capstone.models.DatatableModel;
 import com.capstone.models.Logger;
-import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -21,9 +18,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.persistence.TypedQuery;
 import javax.servlet.ServletContext;
-import java.lang.reflect.Type;
 import java.text.SimpleDateFormat;
 import java.util.*;
 

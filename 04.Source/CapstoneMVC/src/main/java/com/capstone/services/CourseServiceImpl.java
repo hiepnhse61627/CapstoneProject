@@ -1,7 +1,6 @@
 package com.capstone.services;
 
 import com.capstone.entities.CourseEntity;
-import com.capstone.jpa.CourseEntityJpaController;
 import com.capstone.jpa.exJpa.ExCourseEntityJpaController;
 import com.capstone.models.DatatableModel;
 
