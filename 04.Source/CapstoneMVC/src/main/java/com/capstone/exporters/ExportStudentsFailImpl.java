@@ -55,7 +55,7 @@ public class ExportStudentsFailImpl implements IExportObject {
 
     private void buildListTitle(SXSSFWorkbook workbook, SXSSFSheet spreadsheet) {
         Row row = spreadsheet.createRow(0);
-        Cell cell = row.createCell(1);
+        Cell cell = row.createCell(3);
         row.setHeight((short) 800);
         cell.setCellValue("Danh sách sinh viên nợ môn");
         // style
@@ -70,8 +70,8 @@ public class ExportStudentsFailImpl implements IExportObject {
         // set style and font
         cellStyle.setFont(font);
         cell.setCellStyle(cellStyle);
-        // merging cell
-        CellRangeAddress range = new CellRangeAddress(0, 0, 1, 7);
+        // merging cell from Cell C1
+        CellRangeAddress range = new CellRangeAddress(0, 3, 3, 8);
         spreadsheet.addMergedRegion(range);
         RegionUtil.setBorderBottom(BorderStyle.THIN.getCode(), range, spreadsheet, workbook);
         RegionUtil.setBorderLeft(BorderStyle.THIN.getCode(), range, spreadsheet, workbook);
@@ -80,7 +80,7 @@ public class ExportStudentsFailImpl implements IExportObject {
     }
 
     private void buildTableHeader(SXSSFWorkbook workbook, SXSSFSheet spreadsheet) {
-        Row row = spreadsheet.createRow(2);
+        Row row = spreadsheet.createRow(4);
         // style
         CellStyle cellStyle = workbook.createCellStyle();
         cellStyle.setBorderBottom(XSSFCellStyle.BORDER_THIN);
@@ -104,7 +104,7 @@ public class ExportStudentsFailImpl implements IExportObject {
         Cell studentNameCell = row.createCell(1);
         studentNameCell.setCellStyle(cellStyle);
         studentNameCell.setCellValue("HỌ VÀ TÊN");
-        CellRangeAddress range1 = new CellRangeAddress(2, 2, 1, 3);
+        CellRangeAddress range1 = new CellRangeAddress(4, 4, 1, 3);
         spreadsheet.addMergedRegion(range1);
         RegionUtil.setBorderBottom(BorderStyle.THIN.getCode(), range1, spreadsheet, workbook);
         RegionUtil.setBorderLeft(BorderStyle.THIN.getCode(), range1, spreadsheet, workbook);
@@ -114,7 +114,7 @@ public class ExportStudentsFailImpl implements IExportObject {
         Cell SubjectCodeCell = row.createCell(4);
         SubjectCodeCell.setCellStyle(cellStyle);
         SubjectCodeCell.setCellValue("MÃ MÔN");
-        CellRangeAddress range2 = new CellRangeAddress(2, 2, 4, 5);
+        CellRangeAddress range2 = new CellRangeAddress(4, 4, 4, 5);
         spreadsheet.addMergedRegion(range2);
         RegionUtil.setBorderBottom(BorderStyle.THIN.getCode(), range2, spreadsheet, workbook);
         RegionUtil.setBorderLeft(BorderStyle.THIN.getCode(), range2, spreadsheet, workbook);
@@ -128,7 +128,7 @@ public class ExportStudentsFailImpl implements IExportObject {
         Cell semesterCell = row.createCell(7);
         semesterCell.setCellStyle(cellStyle);
         semesterCell.setCellValue("HỌC KỲ");
-        CellRangeAddress range3 = new CellRangeAddress(2, 2, 7, 8);
+        CellRangeAddress range3 = new CellRangeAddress(4, 4, 7, 8);
         spreadsheet.addMergedRegion(range3);
         RegionUtil.setBorderBottom(BorderStyle.THIN.getCode(), range3, spreadsheet, workbook);
         RegionUtil.setBorderLeft(BorderStyle.THIN.getCode(), range3, spreadsheet, workbook);
@@ -145,8 +145,8 @@ public class ExportStudentsFailImpl implements IExportObject {
         cellStyle.setBorderTop(XSSFCellStyle.BORDER_THIN);
         cellStyle.setAlignment(XSSFCellStyle.ALIGN_LEFT);
         cellStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);
-
-        int rowIndex = 3;
+        //Start data table row
+        int rowIndex = 5;
         for (MarksEntity mark : marks) {
             Row row = spreadsheet.createRow(rowIndex);
             Cell rollNumberCell = row.createCell(0);
