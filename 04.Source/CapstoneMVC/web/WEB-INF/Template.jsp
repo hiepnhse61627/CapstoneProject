@@ -97,8 +97,34 @@
             <ul class="sidebar-menu">
                 <%--<li class="header">HEADER</li>--%>
                 <!-- Optionally, you can add icons to the links -->
-                <li class="active">
-                    <a href="/dashboard"><i class="fa fa-dashboard"></i> <span>Thống kê</span></a>
+                <li class="treeview">
+                    <a href="#">
+                        <i class="fa fa-users"></i>
+                        <span>Thống kê</span>
+                        <i class="fa fa-angle-left pull-right"></i>
+                    </a>
+                    <ul class="treeview-menu">
+                        <li>
+                            <a href="/dashboard">
+                                <div class="menu-child-wrapper">
+                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                    <div class="child-content col-md-11">
+                                        Dashboard
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/percent/index">
+                                <div class="menu-child-wrapper">
+                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                    <div class="child-content col-md-11">
+                                        Tỷ lệ rớt môn
+                                    </div>
+                                </div>
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                 <li>
                     <a href="/goSQLQueryPage"><i class="fa fa-search"></i> <span>Truy vấn dữ liệu</span></a>

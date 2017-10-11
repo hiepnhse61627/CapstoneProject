@@ -6,19 +6,9 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  *
@@ -43,6 +33,9 @@ public class SubjectCurriculumEntity implements Serializable {
     private String name;
     @Column(name = "Description")
     private String description;
+    @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    private ProgramEntity programId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectCurriculumEntity")
     private List<CurriculumMappingEntity> curriculumMappingEntityList;
 
@@ -78,11 +71,22 @@ public class SubjectCurriculumEntity implements Serializable {
     }
 
     public List<CurriculumMappingEntity> getCurriculumMappingEntityList() {
+        if (this.curriculumMappingEntityList == null) {
+            this.curriculumMappingEntityList = new ArrayList<>();
+        }
         return curriculumMappingEntityList;
     }
 
     public void setCurriculumMappingEntityList(List<CurriculumMappingEntity> curriculumMappingEntityList) {
         this.curriculumMappingEntityList = curriculumMappingEntityList;
+    }
+
+    public ProgramEntity getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(ProgramEntity programId) {
+        this.programId = programId;
     }
 
     @Override

@@ -1,11 +1,9 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.*;
+import com.capstone.models.Logger;
 import com.capstone.models.ReadAndSaveFileToServer;
-import com.capstone.services.ISubjectCurriculumService;
-import com.capstone.services.ISubjectService;
-import com.capstone.services.SubjectCurriculumServiceImpl;
-import com.capstone.services.SubjectServiceImpl;
+import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -52,19 +50,34 @@ public class SubjectCurriculumController {
         return view;
     }
 
+    @RequestMapping("/createcurriculum")
+    public ModelAndView Create() {
+        ModelAndView view = new ModelAndView("CreateSubjectCurriculum");
+        ISubjectService subjectService = new SubjectServiceImpl();
+        IProgramService programService = new ProgramServiceImpl();
+
+        List<SubjectEntity> subjectList = subjectService.getAllSubjects();
+        view.addObject("subs", subjectList);
+
+        List<ProgramEntity> programList = programService.getAllPrograms();
+        view.addObject("programs", programList);
+
+        return view;
+    }
+
     @RequestMapping("/editcurriculum/{curId}")
     public ModelAndView Edit(@PathVariable("curId") int curId) {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = emf.createEntityManager();
 
-        ISubjectCurriculumService service = new SubjectCurriculumServiceImpl();
-        ISubjectService service2 = new SubjectServiceImpl();
+        ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
+        ISubjectService subjectService = new SubjectServiceImpl();
+        IProgramService programService = new ProgramServiceImpl();
 
         ModelAndView view = new ModelAndView("EditSubjectCurriculum");
-        SubjectCurriculumEntity ent = service.getCurriculumById(curId);
+        SubjectCurriculumEntity ent = subjectCurriculumService.getCurriculumById(curId);
         List<CurriculumMappingEntity> sortedList = ent.getCurriculumMappingEntityList();
         sortedList.sort(Comparator.comparing(c -> c.getOrdering()));
-        System.out.println();
         sortedList.forEach(c -> System.out.print(c.getOrdering() + ", "));
         view.addObject("data", ent);
 
@@ -81,30 +94,96 @@ public class SubjectCurriculumController {
         }
         view.addObject("list", map);
 
-        List<SubjectEntity> l2 = service2.getAllSubjects();
-        view.addObject("subs", l2);
+        List<SubjectEntity> subjectList = subjectService.getAllSubjects();
+        view.addObject("subs", subjectList);
+
+        List<ProgramEntity> programList = programService.getAllPrograms();
+        view.addObject("programs", programList);
 
         return view;
     }
 
-    @RequestMapping(value = "/editcurriculum", method = RequestMethod.POST)
+    @RequestMapping(value = "/createcurriculum", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject Edit(@RequestParam() List<String> data, @RequestParam int id, @RequestParam String name, @RequestParam String des) {
+    public JsonObject Create(@RequestParam() List<String> data, @RequestParam String name, @RequestParam String des, @RequestParam int programId) {
         JsonObject obj = new JsonObject();
-        ISubjectCurriculumService service = new SubjectCurriculumServiceImpl();
-        ISubjectService service2 = new SubjectServiceImpl();
+
+        ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
+        ICurriculumMappingService curriculumMappingService = new CurriculumMappingServiceImpl();
+        ISubjectService subjectService = new SubjectServiceImpl();
 
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = emf.createEntityManager();
 
         try {
-            SubjectCurriculumEntity ent = service.getCurriculumById(id);
+            // Create subject curriculum
+            ProgramEntity program = new ProgramEntity();
+            program.setId(programId);
+
+            SubjectCurriculumEntity subjectCurriculum = new SubjectCurriculumEntity();
+            subjectCurriculum.setName(name);
+            subjectCurriculum.setDescription(des);
+            subjectCurriculum.setProgramId(program);
+            subjectCurriculumService.createCurriculum(subjectCurriculum);
+
+            // Create mapping
+            String term = "";
+            int order = 1;
+            for (String str : data) {
+                if (str.toLowerCase().contains("học kỳ")) {
+                    term = str;
+                } else {
+                    SubjectEntity subject = subjectService.findSubjectById(str);
+                    if (subject != null) {
+                        CurriculumMappingEntityPK curriPK = new CurriculumMappingEntityPK();
+                        curriPK.setCurId(subjectCurriculum.getId());
+                        curriPK.setSubId(subject.getId());
+
+                        CurriculumMappingEntity mapping = new CurriculumMappingEntity();
+                        mapping.setCurriculumMappingEntityPK(curriPK);
+                        mapping.setTerm(term);
+                        mapping.setOrdering(order++);
+
+                        mapping = curriculumMappingService.createCurriculumMapping(mapping);
+                        subjectCurriculum.getCurriculumMappingEntityList().add(mapping);
+                    }
+                }
+            }
+
+            em.getTransaction().begin();
+            subjectCurriculum = em.merge(subjectCurriculum);
+            em.flush();
+            em.refresh(subjectCurriculum);
+            em.getTransaction().commit();
+
+            obj.addProperty("success", true);
+        } catch (Exception e) {
+            Logger.writeLog(context, e);
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
+        }
+
+        return obj;
+    }
+
+    @RequestMapping(value = "/editcurriculum", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject Edit(@RequestParam() List<String> data, @RequestParam int id, @RequestParam String name, @RequestParam String des, @RequestParam int programId) {
+        JsonObject obj = new JsonObject();
+        ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
+
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+        EntityManager em = emf.createEntityManager();
+
+        try {
+            SubjectCurriculumEntity ent = subjectCurriculumService.getCurriculumById(id);
 
             if (ent != null) {
                 if (name != null && !name.isEmpty()) ent.setName(name);
                 if (des != null && !des.isEmpty()) ent.setDescription(des);
-
-                System.out.println(ent.getName() + " - " + ent.getDescription());
+                ProgramEntity program = new ProgramEntity();
+                program.setId(programId);
+                ent.setProgramId(program);
 
                 List<CurriculumMappingEntity> l = ent.getCurriculumMappingEntityList();
                 List<CurriculumMappingEntity> notin = new ArrayList<>();

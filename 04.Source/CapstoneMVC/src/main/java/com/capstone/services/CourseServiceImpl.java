@@ -44,4 +44,14 @@ public class CourseServiceImpl implements ICourseService {
         return courseEntityJpaController.getCourseListForDatatable(model);
     }
 
+    @Override
+    public List<CourseEntity> getAllCourse() {
+        return courseEntityJpaController.findCourseEntityEntities();
+    }
+
+    @Override
+    public List<String> getAllCourseToString() {
+        return courseEntityJpaController.findAllToString();
+    }
+
 }

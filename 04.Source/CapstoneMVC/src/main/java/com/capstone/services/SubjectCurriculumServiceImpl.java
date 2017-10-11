@@ -15,8 +15,6 @@ public class SubjectCurriculumServiceImpl implements ISubjectCurriculumService {
     private EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
     ExSubjectCurriculumJpaController controller = new ExSubjectCurriculumJpaController(emf);
 
-
-
     @Override
     public List<SubjectCurriculumEntity> getAllSubjectCurriculum() {
         return controller.findSubjectCurriculumEntityEntities();
@@ -33,7 +31,6 @@ public class SubjectCurriculumServiceImpl implements ISubjectCurriculumService {
 
     @Override
     public SubjectCurriculumEntity createCurriculum(SubjectCurriculumEntity entity) {
-//        return controller.createCurriculum(entity);
-        return null;
+        return controller.createCurriculum(entity);
     }
 }

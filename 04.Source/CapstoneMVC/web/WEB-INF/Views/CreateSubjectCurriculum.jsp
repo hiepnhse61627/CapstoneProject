@@ -24,7 +24,7 @@
         <div class="b-header">
             <div class="row">
                 <div class="col-md-9 title">
-                    <h1>Chỉnh sửa khung chương trình</h1>
+                    <h1>Tạo khung chương trình</h1>
                 </div>
                 <div class="col-md-3 text-right">
                     <a href="/subcurriculum" class="btn btn-danger btn-with-icon">
@@ -48,7 +48,7 @@
                                 <label class="p-t-8">Tên:</label>
                             </div>
                             <div class="right-content">
-                                <input id="name" type="text" class="form-control" value="${data.name}"/>
+                                <input id="name" type="text" class="form-control"/>
                             </div>
                         </div>
 
@@ -57,7 +57,7 @@
                                 <label class="p-t-8">Mô tả:</label>
                             </div>
                             <div class="right-content">
-                                <input id="des" type="text" class="form-control" value="${data.description}"/>
+                                <input id="des" type="text" class="form-control"/>
                             </div>
                         </div>
 
@@ -67,6 +67,7 @@
                             </div>
                             <div class="right-content">
                                 <select id="program" class="form-control">
+                                    <option value="-1">- Chọn ngành -</option>
                                     <c:forEach var="p" items="${programs}">
                                         <c:choose>
                                             <c:when test="${data.programId.id == p.id}">
@@ -116,29 +117,6 @@
                             <div class="scroll-wrapper custom-scrollbar">
                                 <table class="table" id="table">
                                     <tbody>
-                                    <c:forEach var="row" items="${list}">
-                                        <tr id="${row.key}" class="index nodrag">
-                                            <td colspan="2"><b>${row.key}</b></td>
-                                        </tr>
-                                        <c:forEach var="list" items="${row.value}">
-                                            <tr id="${list.subjectEntity.id}" class="draggable">
-                                                <td>${list.subjectEntity.id}</td>
-                                                <td>${list.subjectEntity.name}</td>
-                                                <td>
-                                                    <button class="up btn btn-link" type="button"
-                                                            style="visibility: hidden"><i
-                                                            class="fa fa-arrow-up"></i></button>
-                                                    <button class="down btn btn-link" type="button"
-                                                            style="visibility: hidden">
-                                                        <i
-                                                                class="fa fa-arrow-down"></i></button>
-                                                    <button class="remove btn btn-link" type="button"
-                                                            style="visibility: hidden"><i
-                                                            class="fa fa-times"></i></button>
-                                                </td>
-                                            </tr>
-                                        </c:forEach>
-                                    </c:forEach>
                                     </tbody>
                                 </table>
                             </div>
@@ -172,6 +150,7 @@
             },
         });
 
+        Add();
         IntializeRows();
         GetRowsData();
     });
@@ -259,14 +238,13 @@
     function Send() {
         var form = new FormData();
         form.append("data", data);
-        form.append("id", '${data.id}');
         form.append("name", $('#name').val());
         form.append("des", $('#des').val());
         form.append("programId", $('#program').val());
 
         $.ajax({
             type: "POST",
-            url: "/editcurriculum",
+            url: "/createcurriculum",
             processData: false,
             contentType: false,
             data: form,
@@ -275,10 +253,10 @@
                 if (result.success) {
                     swal({
                         title: 'Thành công',
-                        text: "Đã lưu khung chương trình!",
+                        text: "Tạo khung chương trình thành công!",
                         type: 'success'
                     }).then(function () {
-                        location.reload();
+                        window.location = "/subcurriculum";
                     });
                 } else {
                     swal('Đã xảy ra lỗi!', result.message, 'error');
