@@ -107,6 +107,7 @@
             "bServerSide": true,
             "bFilter": true,
             "bRetrieve": true,
+            "sScrollX": "100%",
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
@@ -179,6 +180,7 @@
         tableMarkDetail = $('#table-mark-detail').dataTable({
             "bFilter": true,
             "bRetrieve": true,
+            "sScrollX": "100%",
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,

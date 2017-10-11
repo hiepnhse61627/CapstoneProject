@@ -16,7 +16,6 @@ public class Logger {
         Date now = new Date();
 
         String realPath = loggerLocation.substring(0, loggerLocation.indexOf("WEB-INF")) + "LoggingFile/";
-        System.out.println(realPath);
         String fileName = "exception." + sdf.format(now) + ".log";
 
         sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss");
