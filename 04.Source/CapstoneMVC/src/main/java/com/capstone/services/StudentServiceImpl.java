@@ -18,6 +18,11 @@ public class StudentServiceImpl implements IStudentService {
     }
 
     @Override
+    public StudentEntity findStudentById(int id) {
+        return studentEntityJpaController.findStudentEntity(id);
+    }
+
+    @Override
     public StudentEntity findStudentByRollNumber(String rollNumber) {
         return studentEntityJpaController.findStudentByRollNumber(rollNumber);
     }

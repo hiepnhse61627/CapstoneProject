@@ -6,6 +6,7 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.*;
 
@@ -28,6 +29,9 @@ public class SubjectCurriculumEntity implements Serializable {
     private String name;
     @Column(name = "Description")
     private String description;
+    @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    private ProgramEntity programId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectCurriculumEntity", fetch = FetchType.EAGER)
     private List<CurriculumMappingEntity> curriculumMappingEntityList;
 
@@ -63,11 +67,22 @@ public class SubjectCurriculumEntity implements Serializable {
     }
 
     public List<CurriculumMappingEntity> getCurriculumMappingEntityList() {
+        if (this.curriculumMappingEntityList == null) {
+            this.curriculumMappingEntityList = new ArrayList<>();
+        }
         return curriculumMappingEntityList;
     }
 
     public void setCurriculumMappingEntityList(List<CurriculumMappingEntity> curriculumMappingEntityList) {
         this.curriculumMappingEntityList = curriculumMappingEntityList;
+    }
+
+    public ProgramEntity getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(ProgramEntity programId) {
+        this.programId = programId;
     }
 
     @Override

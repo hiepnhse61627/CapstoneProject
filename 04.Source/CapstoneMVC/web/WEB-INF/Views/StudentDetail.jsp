@@ -6,6 +6,10 @@
         width: 100%;
         padding: 10px;
     }
+
+    .overflow {
+        overflow: auto;
+    }
 </style>
 
 <section class="content">
@@ -30,29 +34,40 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <div class="col-md-12">
-                                <button type="button" class="btn btn-primary" onclick="RefreshTable()">Xem</button>
-                            </div>
-                        </div>
+                        <%--<div class="form-group">--%>
+                        <%--<div class="col-md-12">--%>
+                        <%--<button type="button" class="btn btn-primary" onclick="RefreshTable()">Xem</button>--%>
+                        <%--</div>--%>
+                        <%--</div>--%>
                     </div>
                 </div>
             </div>
 
             <div class="form-group">
                 <div class="row">
-                    <div class="col-md-6 p-l-5 p-r-5">
-                        <div class="my-tbl-wrapper bg-gray-light">
+                    <div class="col-md-6 p-l-5 p-r-5 m-b-10">
+                        <div class="my-tbl-wrapper bg-gray-light overflow">
                             <div class="title text-center">
                                 <h4>Danh sách môn còn nợ</h4>
                             </div>
                             <div class="my-content">
-                                <table id="table"></table>
+                                <table id="table">
+                                <thead>
+                                <tr>
+                                    <th>Mã môn</th>
+                                    <th>Lớp</th>
+                                    <th>Khóa</th>
+                                    <th>Điểm</th>
+                                    <th>Trạng thái</th>
+                                </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
                             </div>
                         </div>
                     </div>
                     <div class="col-md-6 p-l-5 p-r-5">
-                        <div class="my-tbl-wrapper bg-gray-light">
+                        <div class="my-tbl-wrapper bg-gray-light overflow">
                             <div class="title text-center">
                                 <h4>Danh sách môn học tiếp theo</h4>
                             </div>
@@ -74,7 +89,6 @@
     </div>
 
 </section>
-
 
 
 <script>
@@ -115,6 +129,10 @@
     };
 
     $(document).ready(function () {
+        $('#select').on("change", function () {
+            RefreshTable();
+        });
+
         $('.select').select2();
 
         table = $('#table').dataTable({
@@ -145,8 +163,9 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4, 5, 6],
+                    "aTargets": [0, 1, 2, 3, 4],
                     "bSortable": false,
+                    "sClass": "text-center",
                 },
             ],
             "bAutoWidth": false,
@@ -182,6 +201,10 @@
                 {
                     "aTargets": [0, 1],
                     "bSortable": false,
+                },
+                {
+                  "aTargets": [0],
+                    "sClass": "text-center",
                 },
             ],
             "bAutoWidth": false,

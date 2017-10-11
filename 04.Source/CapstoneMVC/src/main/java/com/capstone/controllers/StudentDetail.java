@@ -1,9 +1,6 @@
 package com.capstone.controllers;
 
-import com.capstone.entities.CurriculumMappingEntity;
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.StudentEntity;
-import com.capstone.entities.SubjectEntity;
+import com.capstone.entities.*;
 import com.capstone.models.MarkModel;
 import com.capstone.models.StudentMarkModel;
 import com.capstone.models.Ultilities;
@@ -96,8 +93,6 @@ public class StudentDetail {
             if (!set2.isEmpty()) {
                 set2.forEach(m -> {
                     ArrayList<String> tmp = new ArrayList<>();
-                    tmp.add(m.getStudentId().getRollNumber());
-                    tmp.add(m.getStudentId().getFullName());
                     tmp.add(m.getSubjectId() == null ? "N/A" : m.getSubjectId().getSubjectId());
                     tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getClass1());
                     tmp.add(m.getSemesterId() == null ? "N/A" : m.getSemesterId().getSemester());
@@ -124,6 +119,9 @@ public class StudentDetail {
     @RequestMapping("/getStudentNextCourse")
     @ResponseBody
     public JsonObject GetStudentNextCourse(@RequestParam Map<String, String> params) {
+        IStudentService studentService = new StudentServiceImpl();
+        IProgramService programService = new ProgramServiceImpl();
+
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = emf.createEntityManager();
         JsonObject jsonObject = new JsonObject();
@@ -133,18 +131,37 @@ public class StudentDetail {
         Gson gson = new Gson();
 
         try {
+            StudentEntity student = studentService.findStudentById(stuId);
+            String programName = "SE";
+            if (student.getRollNumber().matches("\\D+\\d+")) {
+                String[] data = student.getRollNumber().split("(?<=\\D)(?=\\d)");
+                if (data[0] != null && (data[0] = data[0].trim()).length() > 0) {
+                    programName = data[0];
+                }
+            }
+            ProgramEntity program = programService.getProgramByName(programName);
+
             String sqlString = "SELECT distinct Curriculum_Mapping.term FROM Student " +
-                    "INNER JOIN Marks on student.ID = Marks.StudentId and Student.ID =" + stuId +
-                    " INNER JOIN Curriculum_Mapping on Marks.SubjectId = Curriculum_Mapping.SubId " +
-                    "order by Curriculum_Mapping.Term desc";
+                    "INNER JOIN Marks on student.ID = Marks.StudentId AND Student.ID = ?" +
+                    " INNER JOIN Curriculum_Mapping ON Marks.SubjectId = Curriculum_Mapping.SubId " +
+                    " INNER JOIN Subject_Curriculum ON Subject_Curriculum.Id = Curriculum_Mapping.CurId" +
+                    " AND Subject_Curriculum.ProgramId = ?" +
+                    " ORDER BY Curriculum_Mapping.Term desc";
             Query query = em.createNativeQuery(sqlString);
+            query.setParameter(1, stuId);
+            query.setParameter(2, program.getId());
             query.getResultList().stream().findFirst().ifPresent(c -> currentTerm[0] = c.toString());
 
             int currentTermNumber = Integer.parseInt(currentTerm[0].replaceAll("[^0-9]", ""));
             int nextTermNumber = currentTermNumber + 1;
 
-            sqlString = "SELECT c.SubId, s.Name FROM Curriculum_Mapping c, Subject s WHERE c.term LIKE '%"+ nextTermNumber + "' AND c.SubId = s.Id";
+            sqlString = "SELECT c.SubId, s.Name" +
+                    " FROM Curriculum_Mapping c, Subject s, Subject_Curriculum sc" +
+                    " WHERE c.term LIKE ? AND c.SubId = s.Id" +
+                    " AND sc.Id = c.CurId AND sc.ProgramId = ?";
             query = em.createNativeQuery(sqlString);
+            query.setParameter(1, "%" + nextTermNumber);
+            query.setParameter(2, program.getId());
             objects = query.getResultList();
 
             List<Object> objects2 = objects.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
