@@ -8,9 +8,10 @@ import org.springframework.web.servlet.ModelAndView;
 public class DashboardController {
     @RequestMapping("/dashboard")
     public ModelAndView Index() {
-        ModelAndView model = new ModelAndView("Dashboard");
+        ModelAndView view = new ModelAndView("Dashboard");
+        view.addObject("title", "Thống kê");
 
-        return model;
+        return view;
     }
 
 

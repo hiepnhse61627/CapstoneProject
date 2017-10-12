@@ -56,6 +56,7 @@ public class UploadController {
     @RequestMapping(value = "/goUploadStudentList")
     public ModelAndView goUploadStudentListPage() {
         ModelAndView view = new ModelAndView("uploadStudentList");
+        view.addObject("title", "Nhập danh sách sinh viên");
 
         ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
         File[] list = read.readFiles(context, folder);
@@ -216,6 +217,7 @@ public class UploadController {
     @RequestMapping(value = "/goUploadStudentMarks")
     public ModelAndView goUploadStudentMarksPage() {
         ModelAndView view = new ModelAndView("uploadStudentMarks");
+        view.addObject("title", "Nhập danh sách điểm");
 
         ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
         File[] list = read.readFiles(context, marksFolder);
@@ -420,6 +422,7 @@ public class UploadController {
     @RequestMapping(value = "/goUploadCoursePage")
     public ModelAndView goUploadCoursePage() {
         ModelAndView view = new ModelAndView("uploadCourse");
+        view.addObject("title", "Nhập danh sách khóa học");
 
         ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
         File[] list = read.readFiles(context, folder);
@@ -630,6 +633,7 @@ public class UploadController {
     @RequestMapping(value = "/goUploadCurriculumPage")
     public ModelAndView goUploadCurriculumPage() {
         ModelAndView view = new ModelAndView("uploadCurriculum");
+        view.addObject("title", "Nhập chương trình đào tạo");
 
         ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
         File[] list = read.readFiles(context, folder);

@@ -73,7 +73,13 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         prequisiteList = new ArrayList<>();
         EntityManager manager = getEntityManager();
         SubjectEntity currSub = manager.find(SubjectEntity.class, subId);
-        getPrequisite(currSub, currSub.getId());
+//        getPrequisite(currSub, currSub.getId());
+
+        List<PrequisiteEntity> preList = currSub.getPrequisiteEntityList();
+        for (PrequisiteEntity entity : preList) {
+            prequisiteList.add(entity.getPrequisiteSubjectEntity());
+        }
+
         return prequisiteList;
     }
 
@@ -88,7 +94,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
     private void getPrequisite(SubjectEntity curr, String subId) {
         List<PrequisiteEntity> pre = curr.getPrequisiteEntityList();
         if (!pre.isEmpty()) {
-            for (PrequisiteEntity s: pre) {
+            for (PrequisiteEntity s : pre) {
                 getPrequisite(s.getPrequisiteSubjectEntity(), subId);
             }
         }

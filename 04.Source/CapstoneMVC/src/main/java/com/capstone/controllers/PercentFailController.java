@@ -32,9 +32,11 @@ public class PercentFailController {
 
     @RequestMapping("/index")
     public ModelAndView Index() {
+        ModelAndView view = new ModelAndView("ByClassPercent");
+        view.addObject("title", "Tỉ lệ sinh viên rớt môn");
+
         ISubjectService service1 = new SubjectServiceImpl();
         ICourseService service2 = new CourseServiceImpl();
-        ModelAndView view = new ModelAndView("ByClassPercent");
         view.addObject("subjects", service1.getAllSubjects());
         view.addObject("classes", service2.getAllCourseToString());
         return view;

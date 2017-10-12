@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,9 +21,12 @@ public class SqlQueryController {
 
     IBaseService baseService = new BaseServiceImpl();
 
-    @RequestMapping(value = "/goSQLQueryPage")
-    public String goSqlQueryPage() {
-        return "sqlQueryPage";
+    @RequestMapping("/goSQLQueryPage")
+    public ModelAndView goSqlQueryPage() {
+        ModelAndView view = new ModelAndView("sqlQueryPage");
+        view.addObject("title", "Truy vấn dữ liệu");
+
+        return view;
     }
 
     @RequestMapping(value = "/get-table-properties", method = RequestMethod.POST)

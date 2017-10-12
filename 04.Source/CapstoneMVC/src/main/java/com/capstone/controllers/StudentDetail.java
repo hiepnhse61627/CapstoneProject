@@ -43,7 +43,9 @@ public class StudentDetail {
     @RequestMapping("/studentDetail")
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("StudentDetail");
+        view.addObject("title", "Thông tin sinh viên");
         view.addObject("students", service.findAllStudents());
+
         return view;
     }
 
