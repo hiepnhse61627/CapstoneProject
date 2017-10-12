@@ -1,23 +1,24 @@
 <beans:beans xmlns="http://www.springframework.org/schema/security"
-    xmlns:beans="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
-    http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd">
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:jdbc="http://www.springframework.org/schema/jdbc"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+    http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd http://www.springframework.org/schema/jdbc http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
 
-    <http auto-config="true">
-        <intercept-url pattern="/login" access="isAnonymous()" />
-        <intercept-url pattern="/Resources/**" access="permitAll()" />
-        <intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />
+    <http auto-config="true" disable-url-rewriting="true" use-expressions="true">
+        <intercept-url pattern="/login" access="isAnonymous()"/>
+        <intercept-url pattern="/Resources/**" access="permitAll()"/>
+        <intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')"/>
 
         <!-- Student detail for student and api related -->
         <intercept-url pattern="/studentDetail**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
         <intercept-url pattern="/getStudentNextCourse**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
         <intercept-url pattern="/getStudentDetail**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
 
-        <intercept-url pattern="/" access="isAuthenticated()" />
+        <intercept-url pattern="/" access="isAuthenticated()"/>
 
         <!-- All other links -->
-        <intercept-url pattern="/**" access="hasRole('ROLE_ADMIN')" />
+        <intercept-url pattern="/**" access="hasRole('ROLE_ADMIN')"/>
         <form-login login-page="/login"
                     login-processing-url="/processlogin"
                     username-parameter="username"
@@ -26,16 +27,44 @@
                     default-target-url="/"/>
         <csrf disabled="true"/>
         <access-denied-handler error-page="/deny"/>
+
+        <remember-me remember-me-parameter="remember-me"
+                     remember-me-cookie="remember-me"
+                     token-validity-seconds="86400"
+                     data-source-ref="dataSource"/>
     </http>
 
-    <authentication-manager >
-        <authentication-provider>
-            <user-service>
-                <user name="user" password="user" authorities="ROLE_STUDENT" />
-                <user name="admin" password="admin" authorities="ROLE_ADMIN" />
-            </user-service>
+    <authentication-manager>
+        <authentication-provider user-service-ref="customService">
+            <password-encoder hash="bcrypt"/>
         </authentication-provider>
     </authentication-manager>
 
+    <beans:bean id="customService" class="com.capstone.services.CustomLoginService"/>
 
+    <beans:bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <beans:property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+        <beans:property name="url" value="jdbc:sqlserver://localhost:58148;databaseName=CapstoneProject"/>
+        <beans:property name="username" value="sa"/>
+        <beans:property name="password" value="namlai120"/>
+    </beans:bean>
+
+    <!-- If request parameter "targetUrl" is existed, then forward to this url -->
+    <!-- For update login form -->
+    <!--<beans:bean id="savedRequestAwareAuthenticationSuccessHandler"-->
+          <!--class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">-->
+        <!--<beans:property name="targetUrlParameter" value="targetUrl"/>-->
+    <!--</beans:bean>-->
+
+    <beans:bean id="rememberMeAuthenticationProvider" class="org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices">
+        <beans:constructor-arg value="851E6AB9C57A64C208AB7CEE232D0A45AB8B711DCA052E15EB9976994F596E368BA7BD8BBD4B8524E8B58B83CECB01EFA990C81C81E78C11627BC8B3858A1074" />
+        <beans:constructor-arg ref="jdbcTokenRepository" />
+        <beans:constructor-arg ref="customService" />
+    </beans:bean>
+
+    <!-- Uses a database table to maintain a set of persistent login data -->
+    <beans:bean id="jdbcTokenRepository" class="org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl">
+        <beans:property name="createTableOnStartup" value="false" />
+        <beans:property name="dataSource" ref="dataSource" />
+    </beans:bean>
 </beans:beans>

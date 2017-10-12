@@ -14,6 +14,11 @@ import javax.servlet.http.HttpServletResponse;
 @Controller
 public class LoginController {
 
+    @RequestMapping("/favicon.ico")
+    public String Redirect() {
+        return "redirect:/";
+    }
+
     @RequestMapping("/admin/index")
     public String Admin() {
         return "Admin";
@@ -25,21 +30,8 @@ public class LoginController {
     }
 
     @RequestMapping(value = "/login")
-    public ModelAndView Login(@RequestParam(value = "error", required = false) String error,
-                              @RequestParam(value = "logout", required = false) String logout) {
-
-        ModelAndView model = new ModelAndView();
-        if (error != null) {
-            model.addObject("error", "Invalid username and password!");
-        }
-
-        if (logout != null) {
-            model.addObject("msg", "You've been logged out successfully.");
-        }
-        model.setViewName("Login");
-
-        return model;
-
+    public String Login() {
+        return "Login";
     }
 
     @RequestMapping(value="/logout")

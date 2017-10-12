@@ -85,11 +85,15 @@
     <!-- /.login-logo -->
     <div class="login-box-body">
         <p class="login-box-msg">Sign in to start your session</p>
-        <c:if test="${not empty error}">
-            <div class="error">${error}</div>
+        <c:if test="${param.error != null}">
+            <div class="alert alert-danger">
+                <p>Invalid username and password.</p>
+            </div>
         </c:if>
-        <c:if test="${not empty msg}">
-            <div class="msg">${msg}</div>
+        <c:if test="${param.logout != null}">
+            <div class="alert alert-success">
+                <p>You have been logged out successfully.</p>
+            </div>
         </c:if>
 
         <form action="/processlogin" method="post">
@@ -105,15 +109,13 @@
                 <div class="col-xs-8">
                     <div class="checkbox icheck">
                         <label>
-                            <input type="checkbox"> Remember Me
+                            <input id="rememberme" name="remember-me" type="checkbox"> Remember Me
                         </label>
                     </div>
                 </div>
-                <!-- /.col -->
                 <div class="col-xs-4">
                     <button type="submit" class="btn btn-primary btn-block btn-flat">Sign In</button>
                 </div>
-                <!-- /.col -->
             </div>
         </form>
 
