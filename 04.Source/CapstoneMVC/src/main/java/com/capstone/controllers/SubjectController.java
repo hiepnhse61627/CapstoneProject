@@ -35,6 +35,7 @@ public class SubjectController {
     @RequestMapping("/subject")
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("UploadSubject");
+        view.addObject("title", "Nhập môn học");
 
         File dir = new File(context.getRealPath("/") + "UploadedFiles/UploadedSubjectTemplate/");
         System.out.println(context.getRealPath("/"));

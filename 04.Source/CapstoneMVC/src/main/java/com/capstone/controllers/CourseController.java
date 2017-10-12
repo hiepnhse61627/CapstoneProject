@@ -34,6 +34,7 @@ public class CourseController {
     @RequestMapping("/course")
     public ModelAndView CoursePage() {
         ModelAndView view = new ModelAndView("CoursePage");
+        view.addObject("title", "Danh sách khóa học");
 
         ISubjectService subjectService = new SubjectServiceImpl();
         view.addObject("subjects", subjectService.getAllSubjects());

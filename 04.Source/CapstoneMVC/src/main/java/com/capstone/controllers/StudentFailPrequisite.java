@@ -37,6 +37,7 @@ public class StudentFailPrequisite {
         ISubjectService service = new SubjectServiceImpl();
 
         ModelAndView view = new ModelAndView("StudentFailPrequisite");
+        view.addObject("title", "Danh sách sinh viên rớt môn tiên quyết");
         view.addObject("subs", service.getAllSubjects());
 
         return view;

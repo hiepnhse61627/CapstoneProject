@@ -44,6 +44,8 @@ public class SubjectCurriculumController {
     @RequestMapping("/subcurriculum")
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("SubjectCurriculum");
+        view.addObject("title", "Các khung chương trình");
+
         ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
         File[] list = read.readFiles(context, folder);
         view.addObject("files", list);
