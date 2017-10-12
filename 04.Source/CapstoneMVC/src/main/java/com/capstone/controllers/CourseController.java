@@ -82,7 +82,7 @@ public class CourseController {
             jsonObj.add("aaData", aaData);
             jsonObj.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {
-            Logger.writeLog(context, e);
+            Logger.writeLog(e);
         }
 
         return jsonObj;
@@ -111,7 +111,7 @@ public class CourseController {
 
             jsonObj.addProperty("success", true);
         } catch (Exception e) {
-            Logger.writeLog(context, e);
+            Logger.writeLog(e);
             jsonObj.addProperty("false", false);
             jsonObj.addProperty("message", e.getMessage());
         }
@@ -142,7 +142,7 @@ public class CourseController {
             courseService.updateCourse(model);
             jsonObj.addProperty("success", true);
         } catch (Exception e) {
-            Logger.writeLog(context, e);
+            Logger.writeLog(e);
             jsonObj.addProperty("false", false);
             jsonObj.addProperty("message", e.getMessage());
         }
@@ -169,7 +169,7 @@ public class CourseController {
                 jsonObj.addProperty("success", true);
             }
         } catch (Exception e) {
-            Logger.writeLog(context, e);
+            Logger.writeLog(e);
             jsonObj.addProperty("success", false);
             jsonObj.addProperty("message", e.getMessage());
         }

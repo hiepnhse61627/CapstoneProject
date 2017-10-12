@@ -158,7 +158,7 @@ public class SubjectCurriculumController {
 
             obj.addProperty("success", true);
         } catch (Exception e) {
-            Logger.writeLog(context, e);
+            Logger.writeLog(e);
             obj.addProperty("success", false);
             obj.addProperty("message", e.getMessage());
         }

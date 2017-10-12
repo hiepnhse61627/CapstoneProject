@@ -7,9 +7,6 @@
         padding: 10px;
     }
 
-    .overflow {
-        overflow: auto;
-    }
 </style>
 
 <section class="content">
@@ -55,7 +52,7 @@
             <div class="form-group">
                 <div class="row">
                     <div class="col-md-6 p-l-5 p-r-5 m-b-10">
-                        <div class="my-tbl-wrapper bg-gray-light overflow">
+                        <div class="my-tbl-wrapper bg-gray-light">
                             <div class="title text-center">
                                 <h4>Danh sách môn còn nợ</h4>
                             </div>
@@ -151,6 +148,7 @@
             "bServerSide": true,
             "bFilter": true,
             "bRetrieve": true,
+            "sScrollX": "100%",
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
@@ -187,6 +185,7 @@
             "bServerSide": true,
             "bFilter": true,
             "bRetrieve": true,
+            "sScrollX": "100%",
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,

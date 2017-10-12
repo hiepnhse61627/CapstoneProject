@@ -78,11 +78,15 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 // failed subject
                 List<MarksEntity> marks = processFailedSubject(student);
                 if (marks != null && !marks.isEmpty()) {
+                    String failedSubject = "";
                     for (MarksEntity mark : marks) {
-                        Cell failedSubjectCell = row.createCell(2);
-                        failedSubjectCell.setCellStyle(cellStyle);
-                        failedSubjectCell.setCellValue(mark.getSubjectId().getSubjectId());
+                        failedSubject += mark.getSubjectId().getSubjectId();
+                        failedSubject += ",";
                     }
+                    failedSubject = Character.toString(failedSubject.charAt(failedSubject.length() - 1)).equals(",") ? failedSubject.substring(0, failedSubject.length() - 1) : failedSubject;
+                    Cell failedSubjectCell = row.createCell(2);
+                    failedSubjectCell.setCellStyle(cellStyle);
+                    failedSubjectCell.setCellValue(failedSubject);
                 } else {
                     Cell failedSubjectCell = row.createCell(2);
                     failedSubjectCell.setCellStyle(cellStyle);
@@ -96,10 +100,10 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                     for (List<String> subjects : nextSubjects) {
                         String subjectId = subjects.get(0);
                         String subjectType = subjects.get(2);
-                        if (subjectType.equals("1")) {
+                        if (subjectType.equals("0")) {
                             next += subjectId;
                             next += ",";
-                        } else if (subjectType.equals("0")) {
+                        } else if (subjectType.equals("1")) {
                             notQualified += subjectId;
                             notQualified += ",";
                         }
@@ -112,6 +116,9 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                     if (notQualified.equals("")) {
                         notQualified = "N/A";
                     }
+
+                    next = Character.toString(next.charAt(next.length() - 1)).equals(",") ? next.substring(0, next.length() - 1) : next;
+                    notQualified = Character.toString(notQualified.charAt(notQualified.length() - 1)).equals(",") ? notQualified.substring(0, notQualified.length() - 1) : notQualified;
 
                     Cell nextSubjectCell = row.createCell(3);
                     nextSubjectCell.setCellStyle(cellStyle);

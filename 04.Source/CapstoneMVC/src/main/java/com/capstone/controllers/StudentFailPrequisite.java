@@ -76,7 +76,7 @@ public class StudentFailPrequisite {
 
     @RequestMapping(value = "/getFailStudents")
     @ResponseBody
-    public JsonObject GetStudents(@RequestParam Map<String, String> params) {
+    public JsonObject GetStudentsFailPrequisite(@RequestParam Map<String, String> params) {
         try {
             ISubjectService service = new SubjectServiceImpl();
 
