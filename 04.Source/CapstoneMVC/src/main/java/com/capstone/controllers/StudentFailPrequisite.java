@@ -78,17 +78,14 @@ public class StudentFailPrequisite {
     @ResponseBody
     public JsonObject GetStudentsFailPrequisite(@RequestParam Map<String, String> params) {
         try {
+            JsonObject jsonObj = new JsonObject();
             ISubjectService service = new SubjectServiceImpl();
 
+            String sub = params.get("subId").trim();
             String pres = params.get("prequisiteId").trim();
-            System.out.println(pres);
-
-            JsonObject data = new JsonObject();
 
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager manager = emf.createEntityManager();
-
-            String sub = params.get("subId").trim();
 
             String[] p = pres.split(",");
 
@@ -116,13 +113,15 @@ public class StudentFailPrequisite {
                         SubjectEntity pre = service.findSubjectById(i);
                         if (pre != null) {
                             for (PrequisiteEntity s: pre.getSubOfPrequisiteList()) {
-                                TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
-                                List<MarksEntity> list = query.setParameter("sub", s.getSubjectEntity().getId()).setParameter("sList", Arrays.asList(p)).getResultList();
-                                Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getSubjectEntity().getId(), i, s.getFailMark()).forEach(c -> {
-                                    if(!result.contains(c)) {
-                                        result.add(c);
-                                    }
-                                });
+                                if (s.getSubjectEntity().getId().equals(sub)) {
+                                    TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
+                                    List<MarksEntity> list = query.setParameter("sub", s.getSubjectEntity().getId()).setParameter("sList", Arrays.asList(p)).getResultList();
+                                    Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getSubjectEntity().getId(), i, s.getFailMark()).forEach(c -> {
+                                        if(!result.contains(c)) {
+                                            result.add(c);
+                                        }
+                                    });
+                                }
                             }
                         }
                     }
@@ -154,12 +153,12 @@ public class StudentFailPrequisite {
             JsonArray output = (JsonArray) new Gson().toJsonTree(parent, new TypeToken<List<MarksEntity>>() {
             }.getType());
 
-            data.addProperty("iTotalRecords", result.size());
-            data.addProperty("iTotalDisplayRecords", result.size());
-            data.add("aaData", output);
-            data.addProperty("sEcho", params.get("sEcho"));
+            jsonObj.addProperty("iTotalRecords", result.size());
+            jsonObj.addProperty("iTotalDisplayRecords", result.size());
+            jsonObj.add("aaData", output);
+            jsonObj.addProperty("sEcho", params.get("sEcho"));
 
-            return data;
+            return jsonObj;
         } catch (Exception e) {
             e.printStackTrace();
         }
