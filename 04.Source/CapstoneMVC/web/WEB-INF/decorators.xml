@@ -1,4 +1,7 @@
 <decorators defaultdir="/WEB-INF">
+    <excludes>
+        <pattern>/login**</pattern>
+    </excludes>
     <decorator name="template" page="Template.jsp">
         <pattern>/*</pattern>
     </decorator>

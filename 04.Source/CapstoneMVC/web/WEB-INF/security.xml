@@ -7,7 +7,12 @@
     <http auto-config="true" >
         <intercept-url pattern="/" access="permitAll" />
         <intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />
-        <form-login authentication-failure-url="/deny"/>
+        <form-login login-page="/login"
+                    login-processing-url="/processlogin"
+                    username-parameter="username"
+                    password-parameter="password"
+                    authentication-failure-url="/login?error"/>
+        <csrf/>
     </http>
 
     <authentication-manager >
