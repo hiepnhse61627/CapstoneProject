@@ -115,7 +115,6 @@
                 </div>
                 <!-- /.col -->
             </div>
-            <input type="hidden" name="${_csrf.parameterName}"   value="${_csrf.token}" />
         </form>
 
         <div class="social-auth-links text-center">
