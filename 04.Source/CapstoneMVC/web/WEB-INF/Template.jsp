@@ -6,7 +6,12 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="dec" uri="http://www.opensymphony.com/sitemesh/decorator" %>
+<%@ taglib prefix="security" uri="http://www.springframework.org/security/tags" %>
+
+<c:set var="admin" value="ROLE_ADMIN"/>
+<c:set var="student" value="ROLE_STUDENT"/>
 
 <html>
 <head>
@@ -92,233 +97,248 @@
                     <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
                 </div>
             </div>
-
             <!-- Sidebar Menu -->
             <ul class="sidebar-menu">
                 <%--<li class="header">HEADER</li>--%>
                 <!-- Optionally, you can add icons to the links -->
-                <li class="treeview">
-                    <a href="#">
-                        <i class="fa fa-users"></i>
-                        <span>Thống kê</span>
-                        <i class="fa fa-angle-left pull-right"></i>
-                    </a>
-                    <ul class="treeview-menu">
-                        <li>
-                            <a href="/dashboard">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Dashboard
+                <security:authorize access="hasRole('${admin}')">
+                    <li class="treeview">
+                        <a href="#">
+                            <i class="fa fa-users"></i>
+                            <span>Thống kê</span>
+                            <i class="fa fa-angle-left pull-right"></i>
+                        </a>
+                        <ul class="treeview-menu">
+                            <li>
+                                <a href="/dashboard">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Dashboard
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/percent/index">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Tỷ lệ rớt môn
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/percent/index">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Tỷ lệ rớt môn
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                <li>
-                    <a href="/goSQLQueryPage"><i class="fa fa-search"></i> <span>Truy vấn dữ liệu</span></a>
-                </li>
-                <li class="treeview">
-                    <a href="#">
-                        <i class="fa fa-users"></i>
-                        <span>Quản lý sinh viên</span>
-                        <i class="fa fa-angle-left pull-right"></i>
-                    </a>
-                    <ul class="treeview-menu">
-                        <li>
-                            <a href="/studentList">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Danh sách sinh viên
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="/goSQLQueryPage"><i class="fa fa-search"></i> <span>Truy vấn dữ liệu</span></a>
+                    </li>
+                    <li class="treeview">
+                        <a href="#">
+                            <i class="fa fa-users"></i>
+                            <span>Quản lý sinh viên</span>
+                            <i class="fa fa-angle-left pull-right"></i>
+                        </a>
+                        <ul class="treeview-menu">
+                            <li>
+                                <a href="/studentList">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách sinh viên
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Trạng thái sinh viên
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Trạng thái sinh viên
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/create">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Enroll sinh viên
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/create">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Enroll sinh viên
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                <li>
-                    <a href="/course"><i class="fa fa-list"></i> <span>Quản lý khóa học</span></a>
-                </li>
-                <li class="treeview">
-                    <a href="#">
-                        <i class="glyphicon glyphicon-save"></i>
-                        <span>Nhập dữ liệu</span>
-                        <i class="fa fa-angle-left pull-right"></i>
-                    </a>
-                    <ul class="treeview-menu">
-                        <li>
-                            <a href="/goUploadStudentList">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Danh sách sinh viên
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="/course"><i class="fa fa-list"></i> <span>Quản lý khóa học</span></a>
+                    </li>
+
+                    <li class="treeview">
+                        <a href="#">
+                            <i class="glyphicon glyphicon-save"></i>
+                            <span>Nhập dữ liệu</span>
+                            <i class="fa fa-angle-left pull-right"></i>
+                        </a>
+                        <ul class="treeview-menu">
+                            <li>
+                                <a href="/goUploadStudentList">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách sinh viên
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/goUploadStudentMarks">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Danh sách điểm
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/goUploadStudentMarks">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách điểm
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/subject">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Danh sách môn học
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/subject">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách môn học
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/goUploadCoursePage">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Danh sách khóa học
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/goUploadCoursePage">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách khóa học
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/subcurriculum">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Khung chương trình
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/subcurriculum">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Khung chương trình
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-                <li class="treeview">
-                    <a href="#">
-                        <i class="glyphicon glyphicon-open"></i>
-                        <span>Xuất dữ liệu</span>
-                        <i class="fa fa-angle-left pull-right"></i>
-                    </a>
-                    <ul class="treeview-menu">
-                        <li>
-                            <a href="/studentDetail">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Xem sinh viên nợ môn
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="treeview">
+                        <a href="#">
+                            <i class="glyphicon glyphicon-open"></i>
+                            <span>Xuất dữ liệu</span>
+                            <i class="fa fa-angle-left pull-right"></i>
+                        </a>
+                        <ul class="treeview-menu">
+                            <li>
+                                <a href="/studentDetail">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Xem sinh viên nợ môn
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Danh sách đi OJT
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách đi OJT
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Danh sách làm đồ án
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách làm đồ án
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Danh sách tốt nghiệp
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách tốt nghiệp
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Danh sách đóng học phí
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách đóng học phí
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/checkPrequisite">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Danh sách pass môn nhưng chưa pass môn tiên quyết
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/checkPrequisite">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách pass môn nhưng chưa pass môn tiên quyết
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/display">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Danh sách học lại
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/display">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách học lại
+                                        </div>
                                     </div>
-                                </div>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#">
-                                <div class="menu-child-wrapper">
-                                    <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                    <div class="child-content col-md-11">
-                                        Danh sách chậm tiến độ
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách chậm tiến độ
+                                        </div>
                                     </div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </security:authorize>
+
+                <security:authorize access="hasRole('${student}')">
+                    <li>
+                        <a href="/studentDetail">
+                            <div class="menu-child-wrapper">
+                                <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                <div class="child-content col-md-11">
+                                    Xem sinh viên nợ môn
                                 </div>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
+                            </div>
+                        </a>
+                    </li>
+                </security:authorize>
             </ul><!-- /.sidebar-menu -->
         </section>
         <!-- /.sidebar -->

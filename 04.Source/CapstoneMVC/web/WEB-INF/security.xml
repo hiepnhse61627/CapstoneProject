@@ -4,11 +4,20 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
     http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-4.2.xsd">
 
-    <http auto-config="true" >
-        <intercept-url pattern="/login" access="permitAll()" />
+    <http auto-config="true">
+        <intercept-url pattern="/login" access="isAnonymous()" />
         <intercept-url pattern="/Resources/**" access="permitAll()" />
         <intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />
-        <intercept-url pattern="/**" access="isAuthenticated()" />
+
+        <!-- Student detail for student and api related -->
+        <intercept-url pattern="/studentDetail**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
+        <intercept-url pattern="/getStudentNextCourse**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
+        <intercept-url pattern="/getStudentDetail**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
+
+        <intercept-url pattern="/" access="isAuthenticated()" />
+
+        <!-- All other links -->
+        <intercept-url pattern="/**" access="hasRole('ROLE_ADMIN')" />
         <form-login login-page="/login"
                     login-processing-url="/processlogin"
                     username-parameter="username"
@@ -22,7 +31,7 @@
     <authentication-manager >
         <authentication-provider>
             <user-service>
-                <user name="user" password="user" authorities="ROLE_USER" />
+                <user name="user" password="user" authorities="ROLE_STUDENT" />
                 <user name="admin" password="admin" authorities="ROLE_ADMIN" />
             </user-service>
         </authentication-provider>
