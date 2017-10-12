@@ -49,11 +49,38 @@
     <script src="/Resources/plugins/daterangepicker-2.1.25/moment.min.js"></script>
     <script src="/Resources/plugins/daterangepicker-2.1.25/daterangepicker.js"></script>
 
+    <style>
+        .error {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            color: #a94442;
+            background-color: #f2dede;
+            border-color: #ebccd1;
+        }
+
+        .msg {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            color: #31708f;
+            background-color: #d9edf7;
+            border-color: #bce8f1;
+        }
+    </style>
 </head>
 <body class="hold-transition login-page">
 <div class="login-box">
     <div class="login-logo">
-        <a href="../../index2.html"><b>Admin</b>LTE</a>
+        <%--<div class="logo-mini">--%>
+            <%--<img src="/Resources/plugins/dist/img/logo/logo-fpt-2.png">--%>
+        <%--</div>--%>
+        <!-- logo for regular state and mobile devices -->
+        <div class="logo-lg">
+            <img src="/Resources/plugins/dist/img/logo/logo-fpt-1.png">
+        </div>
     </div>
     <!-- /.login-logo -->
     <div class="login-box-body">
@@ -93,8 +120,6 @@
 
         <div class="social-auth-links text-center">
             <p>- OR -</p>
-            <a href="#" class="btn btn-block btn-social btn-facebook btn-flat"><i class="fa fa-facebook"></i> Sign in using
-                Facebook</a>
             <a href="#" class="btn btn-block btn-social btn-google btn-flat"><i class="fa fa-google-plus"></i> Sign in using
                 Google+</a>
         </div>
