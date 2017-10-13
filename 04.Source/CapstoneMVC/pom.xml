@@ -106,5 +106,13 @@
             <artifactId>spring-security-taglibs</artifactId>
             <version>4.2.3.RELEASE</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
+        <!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.195</version>
+            <scope>runtime</scope>
+        </dependency>
     </dependencies>
 </project>

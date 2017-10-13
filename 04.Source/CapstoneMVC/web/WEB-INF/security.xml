@@ -7,6 +7,7 @@
 
     <http auto-config="true" disable-url-rewriting="true" use-expressions="true">
         <intercept-url pattern="/login" access="isAnonymous()"/>
+        <intercept-url pattern="/favicon.ico" access="permitAll()"/>
         <intercept-url pattern="/Resources/**" access="permitAll()"/>
         <intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')"/>
 
@@ -32,6 +33,10 @@
                      remember-me-cookie="remember-me"
                      token-validity-seconds="86400"
                      data-source-ref="dataSource"/>
+
+        <headers>
+            <frame-options policy="SAMEORIGIN"/>
+        </headers>
     </http>
 
     <authentication-manager>
@@ -41,20 +46,6 @@
     </authentication-manager>
 
     <beans:bean id="customService" class="com.capstone.services.CustomLoginService"/>
-
-    <beans:bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-        <beans:property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
-        <beans:property name="url" value="jdbc:sqlserver://localhost:58148;databaseName=CapstoneProject"/>
-        <beans:property name="username" value="sa"/>
-        <beans:property name="password" value="namlai120"/>
-    </beans:bean>
-
-    <!-- If request parameter "targetUrl" is existed, then forward to this url -->
-    <!-- For update login form -->
-    <!--<beans:bean id="savedRequestAwareAuthenticationSuccessHandler"-->
-          <!--class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">-->
-        <!--<beans:property name="targetUrlParameter" value="targetUrl"/>-->
-    <!--</beans:bean>-->
 
     <beans:bean id="rememberMeAuthenticationProvider" class="org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices">
         <beans:constructor-arg value="851E6AB9C57A64C208AB7CEE232D0A45AB8B711DCA052E15EB9976994F596E368BA7BD8BBD4B8524E8B58B83CECB01EFA990C81C81E78C11627BC8B3858A1074" />
@@ -66,5 +57,16 @@
     <beans:bean id="jdbcTokenRepository" class="org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl">
         <beans:property name="createTableOnStartup" value="false" />
         <beans:property name="dataSource" ref="dataSource" />
+    </beans:bean>
+
+    <jdbc:embedded-database id="dataSource" type="H2">
+        <jdbc:script location="WEB-INF/persistence_login.sql"/>
+    </jdbc:embedded-database>
+
+    <beans:bean id="h2Server" class="org.h2.tools.Server" factory-method="createTcpServer" init-method="start" destroy-method="stop" depends-on="h2WebServer">
+        <beans:constructor-arg value="-tcp,-tcpAllowOthers,-tcpPort,9092"/>
+    </beans:bean>
+    <beans:bean id="h2WebServer" class="org.h2.tools.Server" factory-method="createWebServer" init-method="start" destroy-method="stop">
+        <beans:constructor-arg value="-web,-webAllowOthers,-webPort,8082"/>
     </beans:bean>
 </beans:beans>
