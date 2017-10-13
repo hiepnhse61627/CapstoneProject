@@ -119,12 +119,11 @@
             </div>
         </form>
 
-        <form name='google' action="auth/google" method='POST'>
-            <button type="submit">
-                <span class="btn btn-block btn-social btn-google btn-flat"><i class="fa fa-google-plus"></i> Sign in using
-                    Google+</span>
-            </button>
-        </form>
+        <div class="social-auth-links text-center">
+            <p>- OR -</p>
+            <a href="#" class="btn btn-block btn-social btn-google btn-flat"><i class="fa fa-google-plus"></i> Sign in using
+                Google+</a>
+        </div>
     </div>
 </div>
 
