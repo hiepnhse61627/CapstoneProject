@@ -7,6 +7,7 @@
 
     <http auto-config="true" disable-url-rewriting="true" use-expressions="true">
         <intercept-url pattern="/login" access="isAnonymous()"/>
+        <intercept-url pattern="/auth/**" access="isAnonymous()"/>
         <intercept-url pattern="/favicon.ico" access="isAnonymous()"/>
         <intercept-url pattern="/Resources/**" access="permitAll()"/>
 
@@ -32,9 +33,12 @@
                      remember-me-cookie="remember-me"
                      token-validity-seconds="86400"
                      data-source-ref="dataSource"/>
+
+        <custom-filter before="PRE_AUTH_FILTER" ref="socialAuthenticationFilter"/>
     </http>
 
-    <authentication-manager>
+    <authentication-manager alias="authenticationManager">
+        <authentication-provider ref="socialAuthenticationProvider"/>
         <authentication-provider user-service-ref="customService">
             <password-encoder hash="bcrypt"/>
         </authentication-provider>
@@ -51,10 +55,10 @@
     <!-- Uses a database table to maintain a set of persistent login data -->
     <beans:bean id="jdbcTokenRepository" class="org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl">
         <beans:property name="createTableOnStartup" value="false" />
-        <beans:property name="dataSource" ref="dataSource" />
+        <beans:property name="dataSource" ref="h2Source" />
     </beans:bean>
 
-    <jdbc:embedded-database id="dataSource" type="H2">
+    <jdbc:embedded-database id="h2Source" type="H2">
         <jdbc:script location="WEB-INF/persistence_login.sql"/>
     </jdbc:embedded-database>
 
@@ -67,5 +71,39 @@
     <!--</beans:bean>-->
 
     <!-- SPRING SOCIAL SECURITY -->
-
+    <beans:bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <beans:property name="driverClassName" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+        <beans:property name="url" value="jdbc:sqlserver://localhost:58148;databaseName=CapstoneProject"/>
+        <beans:property name="username" value="sa"/>
+        <beans:property name="password" value="namlai120"/>
+    </beans:bean>
+    <beans:bean id="socialAuthenticationProvider" class="org.springframework.social.security.SocialAuthenticationProvider">
+        <beans:constructor-arg ref="inMemoryUsersConnectionRepository"/>
+        <beans:constructor-arg ref="socialUserDetailService"/>
+    </beans:bean>
+    <beans:bean id="socialAuthenticationFilter" class="org.springframework.social.security.SocialAuthenticationFilter">
+        <beans:constructor-arg name="authManager" ref="authenticationManager"/>
+        <beans:constructor-arg name="userIdSource" ref="userIdSource"/>
+        <beans:constructor-arg name="usersConnectionRepository" ref="inMemoryUsersConnectionRepository"/>
+        <beans:constructor-arg name="authServiceLocator" ref="appSocialAuthenticationServiceRegistry"/>
+    </beans:bean>
+    <beans:bean id="inMemoryUsersConnectionRepository" class="org.springframework.social.connect.mem.InMemoryUsersConnectionRepository">
+        <beans:constructor-arg name="connectionFactoryLocator" ref="appSocialAuthenticationServiceRegistry"/>
+        <beans:property name="connectionSignUp" ref="connectionSignUp"/>
+    </beans:bean>
+    <beans:bean id="appSocialAuthenticationServiceRegistry" class="com.capstone.registry.AppSocialAuthenticationServiceRegistry">
+        <beans:constructor-arg>
+            <beans:list>
+                <beans:ref bean="googleAuthenticationService"/>
+            </beans:list>
+        </beans:constructor-arg>
+    </beans:bean>
+    <beans:bean id="googleAuthenticationService"
+          class="org.springframework.social.google.security.GoogleAuthenticationService">
+        <beans:constructor-arg name="apiKey" value="415843400023-ksv2qa4air7u3d2tfn1ul5av2c3hjra2.apps.googleusercontent.com"/>
+        <beans:constructor-arg name="appSecret" value="H0FpF5WaB9kFNNAsqDv"/>
+    </beans:bean>
+    <beans:bean id="socialUserDetailService" class="com.capstone.services.SocialUserDetailService"/>
+    <beans:bean id="userIdSource" class="org.springframework.social.security.AuthenticationNameUserIdSource"/>
+    <beans:bean id="connectionSignUp" class="com.capstone.registry.AppConnectionSignUp"/>
 </beans:beans>
