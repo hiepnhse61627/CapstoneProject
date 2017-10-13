@@ -98,36 +98,35 @@ public class Ultilities {
         if (!list.isEmpty()) {
             for (MarksEntity m : list) {
                 if (map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()) == null) {
-                    List<MarksEntity> tmp = new ArrayList<>();
-                    tmp.add(m);
-                    map.put(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId(), SortMarkBySemester(tmp));
+                    List<MarksEntity> newMarkList = new ArrayList<>();
+                    newMarkList.add(m);
+                    map.put(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId(), newMarkList);
                 } else {
                     map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()).add(m);
-                    SortMarkBySemester(map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()));
                 }
             }
 
-            Set<String> l = map.rowKeySet();
-            for (String student : l) {
-                Map<String, List<MarksEntity>> subject = map.row(student);
+            Set<String> studentIds = map.rowKeySet();
+            for (String studentId : studentIds) {
+                Map<String, List<MarksEntity>> subject = map.row(studentId);
                 if (subject.get(subId) != null && !subject.get(subId).isEmpty()) {
-                    List<MarksEntity> f = subject.get(subId);
-                    for (MarksEntity k1 : f) {
-                        if (k1.getStatus().toLowerCase().contains("pass")) {
+                    List<MarksEntity> markList = SortMarkBySemester(subject.get(subId));
+                    for (MarksEntity m : markList) {
+                        if (m.getStatus().toLowerCase().contains("pass")) {
                             if (subject.get(prequisiteId) != null && !subject.get(prequisiteId).isEmpty()) {
                                 List<MarksEntity> g = subject.get(prequisiteId);
                                 boolean isPass = false;
                                 MarksEntity tmp = null;
                                 for (MarksEntity k2 : g) {
                                     tmp = k2;
-                                    if (k2.getAverageMark() > mark) {
+                                    if (k2.getAverageMark() >= mark) {
                                         isPass = true;
                                         break;
                                     }
                                 }
 
                                 if (!isPass) {
-                                    result.add(new FailPrequisiteModel(tmp, k1.getSubjectId().getSubjectId()));
+                                    result.add(new FailPrequisiteModel(tmp, m.getSubjectId().getSubjectId()));
                                 }
                             }
                         }
