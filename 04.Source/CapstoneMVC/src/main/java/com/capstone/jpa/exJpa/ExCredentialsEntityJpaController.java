@@ -32,4 +32,11 @@ public class ExCredentialsEntityJpaController extends CredentialsEntityJpaContro
         if (list.isEmpty()) return null;
         return list.get(0);
     }
+
+    public void CreateCredential(CredentialsEntity entity) {
+        EntityManager manager = getEntityManager();
+        manager.getTransaction().begin();
+        manager.persist(entity);
+        manager.getTransaction().commit();
+    }
 }

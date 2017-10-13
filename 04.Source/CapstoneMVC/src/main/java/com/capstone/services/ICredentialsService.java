@@ -10,4 +10,5 @@ import java.util.List;
 public interface ICredentialsService {
     CredentialsEntity findCredential(String username);
     CredentialsEntity findCredential(String username, String password);
+    void CreateCredentiall(CredentialsEntity entity);
 }

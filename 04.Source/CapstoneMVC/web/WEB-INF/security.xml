@@ -9,7 +9,6 @@
         <intercept-url pattern="/login" access="isAnonymous()"/>
         <intercept-url pattern="/favicon.ico" access="permitAll()"/>
         <intercept-url pattern="/Resources/**" access="permitAll()"/>
-        <intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')"/>
 
         <!-- Student detail for student and api related -->
         <intercept-url pattern="/studentDetail**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
@@ -20,6 +19,7 @@
 
         <!-- All other links -->
         <intercept-url pattern="/**" access="hasRole('ROLE_ADMIN')"/>
+
         <form-login login-page="/login"
                     login-processing-url="/processlogin"
                     username-parameter="username"

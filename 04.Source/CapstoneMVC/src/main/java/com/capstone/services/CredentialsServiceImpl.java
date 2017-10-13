@@ -25,4 +25,9 @@ public class CredentialsServiceImpl implements ICredentialsService {
     public CredentialsEntity findCredential(String username, String password) {
         return controller.findCredential(username, password);
     }
+
+    @Override
+    public void CreateCredentiall(CredentialsEntity entity) {
+        controller.CreateCredential(entity);
+    }
 }
