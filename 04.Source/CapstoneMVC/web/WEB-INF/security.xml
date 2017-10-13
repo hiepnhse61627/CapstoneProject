@@ -7,7 +7,7 @@
 
     <http auto-config="true" disable-url-rewriting="true" use-expressions="true">
         <intercept-url pattern="/login" access="isAnonymous()"/>
-        <intercept-url pattern="/favicon.ico" access="permitAll()"/>
+        <intercept-url pattern="/favicon.ico" access="isAnonymous()"/>
         <intercept-url pattern="/Resources/**" access="permitAll()"/>
 
         <!-- Student detail for student and api related -->
@@ -15,9 +15,8 @@
         <intercept-url pattern="/getStudentNextCourse**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
         <intercept-url pattern="/getStudentDetail**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
 
-        <intercept-url pattern="/" access="isAuthenticated()"/>
-
         <!-- All other links -->
+        <intercept-url pattern="/" access="isAuthenticated()"/>
         <intercept-url pattern="/**" access="hasRole('ROLE_ADMIN')"/>
 
         <form-login login-page="/login"
@@ -66,4 +65,7 @@
     <!--<beans:bean id="h2WebServer" class="org.h2.tools.Server" factory-method="createWebServer" init-method="start" destroy-method="stop">-->
         <!--<beans:constructor-arg value="-web,-webAllowOthers,-webPort,8082"/>-->
     <!--</beans:bean>-->
+
+    <!-- SPRING SOCIAL SECURITY -->
+
 </beans:beans>

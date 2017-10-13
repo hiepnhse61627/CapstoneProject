@@ -76,6 +76,10 @@
           <element id="library" level="project" name="Maven: org.springframework:spring-jdbc:4.3.9.RELEASE" />
           <element id="library" level="project" name="Maven: org.springframework:spring-tx:4.3.9.RELEASE" />
           <element id="library" level="project" name="Maven: com.h2database:h2:1.4.195" />
+          <element id="library" level="project" name="Maven: org.springframework.social:spring-social-config:1.1.4.RELEASE" />
+          <element id="library" level="project" name="Maven: org.springframework.social:spring-social-core:1.1.4.RELEASE" />
+          <element id="library" level="project" name="Maven: org.springframework.social:spring-social-security:1.1.4.RELEASE" />
+          <element id="library" level="project" name="Maven: org.springframework.social:spring-social-web:1.1.4.RELEASE" />
         </element>
       </element>
       <element id="javaee-facet-resources" facet="spring-mvc-quickstart/web/Web" />
