@@ -1,33 +1,32 @@
+
 .login-page {
+    background-color: white;
+
     background-image: url('/Resources/plugins/dist/img/background/orange-bg-2.jpg');
+    background-position: 0% 30%;
+
     /*background-image: url('/Resources/plugins/dist/img/background/orange-bg-3.jpg');*/
-    /*background-image: url('/Resources/plugins/dist/img/background/school-bg.png');*/
+    /*background-position: bottom;*/
+
     background-repeat: no-repeat;
     background-size: cover;
     background-attachment: fixed;
-    background-position: 0% 30%;
 }
 
 .login-box {
     border: 1px #f5b441 solid;
     border-radius: 5px;
     padding: 10px;
-    margin-top: 9%;
 }
 
 @media only screen and (max-width: 768px) {
     .login-page {
+        background-image: url('/Resources/plugins/dist/img/background/orange-bg-2.jpg');
         background-position: bottom right;
-        /*background-position: center;*/
-    }
-
-    .login-box {
-        margin-top: 7%;
     }
 }
 
 .overlay {
-    /*background-color: #fcfcfc;*/
     background-color: rgba(248, 248, 248, 0.7);
 
     border-radius: 5px !important;
