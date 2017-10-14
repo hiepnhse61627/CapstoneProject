@@ -27,7 +27,8 @@
 }
 
 .overlay {
-    background-color: rgba(248, 248, 248, 0.7);
+    /*background-color: rgba(248, 248, 248, 0.7);*/
+    background-color: white;
 
     border-radius: 5px !important;
     position: relative;
