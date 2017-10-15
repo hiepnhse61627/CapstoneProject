@@ -4,6 +4,7 @@ import com.capstone.entities.MarksEntity;
 import com.capstone.entities.RealSemesterEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.jpa.StudentEntityJpaController;
+import com.capstone.models.Logger;
 
 import javax.persistence.*;
 import javax.persistence.criteria.*;
@@ -89,5 +90,26 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
                 em.close();
             }
         }
+    }
+
+    public List<StudentEntity> findStudentsByValue(String value) {
+        EntityManager em = getEntityManager();
+        List<StudentEntity> result = null;
+
+        try {
+            String queryStr = "SELECT s FROM StudentEntity s" +
+                    " WHERE s.fullName LIKE :fullName OR s.rollNumber LIKE :rollNumber";
+            TypedQuery<StudentEntity> query = em.createQuery(queryStr, StudentEntity.class);
+            query.setParameter("fullName", "%" + value + "%");
+            query.setParameter("rollNumber", "%" + value + "%");
+
+            result = query.getResultList();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
     }
 }

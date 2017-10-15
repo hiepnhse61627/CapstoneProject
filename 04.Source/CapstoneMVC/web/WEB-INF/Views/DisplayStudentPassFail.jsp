@@ -4,7 +4,7 @@
 <section class="content">
     <div class="box">
         <div class="b-header">
-            <h1>Danh sách sinh viên nợ môn</h1>
+            <h1>Danh sách sinh viên học lại</h1>
             <hr>
         </div>
 

@@ -86,7 +86,7 @@
                     về bản mẫu
                 </div>
                 <div class="form-group">
-                    <button type="button" onclick="Upload()" class="btn btn-success">Upload</button>
+                    <button type="button" onclick="Upload()" class="btn btn-success">Import</button>
                 </div>
             </div>
             <div class="modal-footer">

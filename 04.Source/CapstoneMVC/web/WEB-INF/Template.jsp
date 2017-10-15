@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="/Resources/plugins/dist/css/skins/_all-skins.css"/>
     <link rel="stylesheet" href="/Resources/plugins/sweetalert2/sweetalert2.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/datatables/datatables.min.css"/>
-    <link rel="stylesheet" href="/Resources/plugins/select2/select2.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/select2-4.0.4/css/select2.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/jQueryUI/jquery-ui.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/iCheck/square/blue.css"/>
     <link rel="stylesheet" href="/Resources/plugins/daterangepicker-2.1.25/daterangepicker.css"/>
@@ -47,12 +47,14 @@
     <script src="/Resources/plugins/dist/js/app.min.js"></script>
     <script src="/Resources/plugins/sweetalert2/sweetalert2.min.js"></script>
     <script src="/Resources/plugins/datatables/datatables.min.js"></script>
-    <script src="/Resources/plugins/select2/select2.min.js"></script>
+    <script src="/Resources/plugins/select2-4.0.4/js/select2.min.js"></script>
     <script src="/Resources/plugins/jQueryUI/jquery-ui.min.js"></script>
     <script src="/Resources/plugins/tablednd/jquery.tablednd.min.js"></script>
     <script src="/Resources/plugins/iCheck/icheck.min.js"></script>
     <script src="/Resources/plugins/daterangepicker-2.1.25/moment.min.js"></script>
     <script src="/Resources/plugins/daterangepicker-2.1.25/daterangepicker.js"></script>
+    <script src="/Resources/plugins/dist/js/template.js"></script>
+
 </head>
 <body class="hold-transition skin-black-light sidebar-mini">
 <div class="wrapper" style="position: relative">
@@ -248,7 +250,7 @@
                                     <div class="menu-child-wrapper">
                                         <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                         <div class="child-content col-md-11">
-                                            Xem sinh viên nợ môn
+                                            Danh sách nợ môn
                                         </div>
                                     </div>
                                 </a>

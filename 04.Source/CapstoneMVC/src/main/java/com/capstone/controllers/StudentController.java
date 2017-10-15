@@ -41,7 +41,7 @@ public class StudentController {
     @RequestMapping("/display")
     public ModelAndView Display() {
         ModelAndView view = new ModelAndView("DisplayStudentPassFail");
-        view.addObject("title", "Danh sách sinh viên nợ môn");
+        view.addObject("title", "Danh sách sinh viên học lại");
 
         IRealSemesterService service = new RealSemesterServiceImpl();
         view.addObject("semesters", Ultilities.SortSemesters(service.getAllSemester()));

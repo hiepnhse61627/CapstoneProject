@@ -1,9 +1,7 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.*;
-import com.capstone.models.MarkModel;
-import com.capstone.models.StudentMarkModel;
-import com.capstone.models.Ultilities;
+import com.capstone.models.*;
 import com.capstone.services.*;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -36,17 +34,47 @@ import java.util.stream.Collectors;
 @Controller
 public class StudentDetail {
 
-    IStudentService service = new StudentServiceImpl();
+    IStudentService studentService = new StudentServiceImpl();
     IMarksService service2 = new MarksServiceImpl();
     ISubjectService service3 = new SubjectServiceImpl();
 
     @RequestMapping("/studentDetail")
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("StudentDetail");
-        view.addObject("title", "Thông tin sinh viên");
-        view.addObject("students", service.findAllStudents());
+        view.addObject("title", "Danh sách sinh viên nợ môn");
+//        view.addObject("students", service.findAllStudents());
 
         return view;
+    }
+
+    @RequestMapping("/getStudentList")
+    @ResponseBody
+    public JsonObject GetStudentList(@RequestParam String searchValue) {
+        JsonObject jsonObj = new JsonObject();
+        searchValue = searchValue == null ? "" : searchValue.trim();
+
+        try {
+            List<StudentEntity> studentList = studentService.findStudentsByValue(searchValue);
+            List<SelectItem> itemList = new ArrayList<>();
+            for (StudentEntity student : studentList) {
+                SelectItem item = new SelectItem();
+                item.setValue(student.getId() + "");
+                item.setText(student.getRollNumber() + " - " + student.getFullName());
+
+                itemList.add(item);
+            }
+
+            JsonArray result = (JsonArray) new Gson().toJsonTree(itemList, new TypeToken<List<SelectItem>>() {
+            }.getType());
+
+            jsonObj.addProperty("success", true);
+            jsonObj.add("items", result);
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            jsonObj.addProperty("success", false);
+        }
+
+        return jsonObj;
     }
 
     @RequestMapping("/getStudentDetail")
