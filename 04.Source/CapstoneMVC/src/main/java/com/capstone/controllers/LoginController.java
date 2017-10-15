@@ -1,24 +1,45 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.CredentialsEntity;
+import com.capstone.models.GoogleProfile;
 import com.capstone.models.Logger;
 import com.capstone.services.CredentialsServiceImpl;
 import com.capstone.services.ICredentialsService;
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import org.apache.commons.codec.binary.Base64;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 public class LoginController {
+
+    @Autowired
+    @Qualifier("rememberMeAuthenticationProvider")
+    private RememberMeServices rememberMeServices;
 
     @RequestMapping("/favicon.ico")
     public String Redirect() {
@@ -70,12 +91,72 @@ public class LoginController {
         return "Login";
     }
 
-    @RequestMapping(value="/logout")
-    public String Logout (HttpServletRequest request, HttpServletResponse response) {
+    @RequestMapping(value = "/logout")
+    public String Logout(HttpServletRequest request, HttpServletResponse response) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null){
+        if (auth != null) {
             new SecurityContextLogoutHandler().logout(request, response, auth);
         }
         return "redirect:/login?logout";
+    }
+
+    @RequestMapping(value = "/auth/google")
+    public String Google(@RequestParam(name = "code") String code, HttpServletRequest request, HttpServletResponse response) {
+        try {
+            URL obj = new URL("https://www.googleapis.com/oauth2/v4/token");
+            HttpURLConnection con = (HttpURLConnection) obj.openConnection();
+            con.setRequestMethod("POST");
+            con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+
+            String POST_PARAMS = "code=" + code +
+                    "&client_id=154261814473-m5o6qqmt4768ij676ore7280qbpgf03u.apps.googleusercontent.com" +
+                    "&client_secret=ZYZPU782sB6P1Q54J7L4tM2z" +
+                    "&redirect_uri=http://localhost:8080/auth/google" +
+                    "&grant_type=authorization_code";
+
+            con.setDoOutput(true);
+            OutputStream os = con.getOutputStream();
+            os.write(POST_PARAMS.getBytes());
+            os.flush();
+            os.close();
+
+            int responseCode = con.getResponseCode();
+            System.out.println("GET Response Code : " + responseCode + ", msg: " + con.getResponseMessage());
+            if (responseCode == HttpURLConnection.HTTP_OK) { // success
+                BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
+                String inputLine;
+                StringBuffer data = new StringBuffer();
+
+                while ((inputLine = in.readLine()) != null) {
+                    data.append(inputLine);
+                }
+                in.close();
+
+                // print result
+                GoogleProfile profile = new Gson().fromJson(data.toString(), GoogleProfile.class);
+                String[] split_string = profile.getId_token().split("\\.");
+                byte[] valueDecoded = Base64.decodeBase64(split_string[1].getBytes());
+                profile = new Gson().fromJson(new String(valueDecoded), GoogleProfile.class);
+                ICredentialsService service = new CredentialsServiceImpl();
+                CredentialsEntity user = service.findCredentialByEmail(profile.getEmail());
+                if (user != null) {
+                    Authentication auth = new UsernamePasswordAuthenticationToken(user, null, getGrantedAuthorities(user));
+                    SecurityContextHolder.getContext().setAuthentication(auth);
+                    rememberMeServices.loginSuccess(request, response, auth);
+                }
+            } else {
+                System.out.println("GET request not worked");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "redirect:/dashboard";
+    }
+
+    private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user) {
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(user.getRole()));
+        return authorities;
     }
 }

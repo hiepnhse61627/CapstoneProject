@@ -39,4 +39,13 @@ public class ExCredentialsEntityJpaController extends CredentialsEntityJpaContro
         manager.persist(entity);
         manager.getTransaction().commit();
     }
+
+    public CredentialsEntity findCredentialByEmail(String email) {
+        EntityManager manager = getEntityManager();
+        TypedQuery<CredentialsEntity> query = manager.createQuery("SELECT a FROM CredentialsEntity a WHERE a.email = :email", CredentialsEntity.class);
+        query.setParameter("email", email);
+        List<CredentialsEntity> list = query.getResultList();
+        if (list.isEmpty()) return null;
+        return list.get(0);
+    }
 }

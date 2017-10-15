@@ -24,6 +24,10 @@
                 <input type="password" id="password" name="password" placeholder="Password"/>
             </div>
             <div class="form-group">
+                <label for="password">Email</label>
+                <input type="email" id="email" name="email" placeholder="Email"/>
+            </div>
+            <div class="form-group">
                 <label for="role">Role</label>
                 <select id="role" name="role">
                     <option value="ROLE_STUDENT">Student</option>

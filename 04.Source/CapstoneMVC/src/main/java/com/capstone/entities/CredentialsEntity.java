@@ -44,6 +44,8 @@ public class CredentialsEntity implements Serializable {
     private String password;
     @Column(name = "Role")
     private String role;
+    @Column(name = "Email")
+    private String email;
 
     public CredentialsEntity() {
     }
@@ -114,5 +116,12 @@ public class CredentialsEntity implements Serializable {
     public String toString() {
         return "com.capstone.entities.CredentialsEntity[ id=" + id + " ]";
     }
-    
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }

@@ -22,6 +22,11 @@ public class CredentialsServiceImpl implements ICredentialsService {
     }
 
     @Override
+    public CredentialsEntity findCredentialByEmail(String email) {
+        return controller.findCredentialByEmail(email);
+    }
+
+    @Override
     public CredentialsEntity findCredential(String username, String password) {
         return controller.findCredential(username, password);
     }

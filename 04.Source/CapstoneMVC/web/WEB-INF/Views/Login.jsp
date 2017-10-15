@@ -98,7 +98,7 @@
 
             <div class="social-auth-links text-center">
                 <p>- Hoặc -</p>
-                <a href="#" class="btn btn-block btn-social btn-google btn-flat">
+                <a href="https://accounts.google.com/o/oauth2/auth?client_id=154261814473-m5o6qqmt4768ij676ore7280qbpgf03u.apps.googleusercontent.com&redirect_uri=http://localhost:8080/auth/google&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto" class="btn btn-block btn-social btn-google btn-flat">
                     <i class="fa fa-google-plus"></i> Đăng nhập bằng Google+
                 </a>
             </div>
