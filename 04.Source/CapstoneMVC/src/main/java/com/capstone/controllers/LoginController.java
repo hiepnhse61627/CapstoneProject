@@ -21,10 +21,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -39,7 +41,7 @@ public class LoginController {
 
     @Autowired
     @Qualifier("rememberMeAuthenticationProvider")
-    private RememberMeServices rememberMeServices;
+    private PersistentTokenBasedRememberMeServices rememberMeServices;
 
     @RequestMapping("/favicon.ico")
     public String Redirect() {
@@ -140,9 +142,12 @@ public class LoginController {
                 ICredentialsService service = new CredentialsServiceImpl();
                 CredentialsEntity user = service.findCredentialByEmail(profile.getEmail());
                 if (user != null) {
-                    Authentication auth = new UsernamePasswordAuthenticationToken(user, null, getGrantedAuthorities(user));
+                    Authentication auth = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword(), getGrantedAuthorities(user));
                     SecurityContextHolder.getContext().setAuthentication(auth);
-                    rememberMeServices.loginSuccess(request, response, auth);
+                    HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
+                        @Override public String getParameter(String name) { return "true"; }
+                    };
+                    rememberMeServices.loginSuccess(wrapper, response, auth);
                 }
             } else {
                 System.out.println("GET request not worked");

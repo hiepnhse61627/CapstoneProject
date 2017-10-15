@@ -59,13 +59,13 @@
         <jdbc:script location="WEB-INF/persistence_login.sql"/>
     </jdbc:embedded-database>
 
-    <!-- WEB SERVER CONSOLE FOR H2 DATABASE -->
-    <!--<beans:bean id="h2Server" class="org.h2.tools.Server" factory-method="createTcpServer" init-method="start" destroy-method="stop" depends-on="h2WebServer">-->
-        <!--<beans:constructor-arg value="-tcp,-tcpAllowOthers,-tcpPort,9092"/>-->
-    <!--</beans:bean>-->
-    <!--<beans:bean id="h2WebServer" class="org.h2.tools.Server" factory-method="createWebServer" init-method="start" destroy-method="stop">-->
-        <!--<beans:constructor-arg value="-web,-webAllowOthers,-webPort,8082"/>-->
-    <!--</beans:bean>-->
+     <!--WEB SERVER CONSOLE FOR H2 DATABASE-->
+    <beans:bean id="h2Server" class="org.h2.tools.Server" factory-method="createTcpServer" init-method="start" destroy-method="stop" depends-on="h2WebServer">
+        <beans:constructor-arg value="-tcp,-tcpAllowOthers,-tcpPort,9092"/>
+    </beans:bean>
+    <beans:bean id="h2WebServer" class="org.h2.tools.Server" factory-method="createWebServer" init-method="start" destroy-method="stop">
+        <beans:constructor-arg value="-web,-webAllowOthers,-webPort,8082"/>
+    </beans:bean>
 
     <!-- SPRING SOCIAL SECURITY -->
 
