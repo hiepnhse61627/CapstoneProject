@@ -12,6 +12,11 @@ a {
     padding-left: 4px;
 }
 
+.dataTables_scroll .dataTables_scrollHead .dataTables_scrollHeadInner,
+.dataTables_scroll .dataTables_scrollHead .dataTables_scrollHeadInner .datatable {
+    width: 100% !important;
+}
+
 .logo-mini img {
     width: 45px;
     height: auto;
