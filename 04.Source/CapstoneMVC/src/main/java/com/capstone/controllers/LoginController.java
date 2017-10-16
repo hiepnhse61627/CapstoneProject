@@ -141,11 +141,11 @@ public class LoginController {
                 CredentialsEntity user = service.findCredentialByEmail(profile.getEmail());
                 if (user != null) {
                     boolean edited = false;
-                    if (!user.getFullname().equals(profile.getName())) {
+                    if (user.getFullname() == null || !user.getFullname().equals(profile.getName())) {
                         user.setFullname(profile.getName());
                         edited = true;
                     }
-                    if (!user.getPicture().equals(profile.getPicture())) {
+                    if (user.getFullname() == null || !user.getPicture().equals(profile.getPicture())) {
                         user.setPicture(profile.getPicture());
                         edited = true;
                     }

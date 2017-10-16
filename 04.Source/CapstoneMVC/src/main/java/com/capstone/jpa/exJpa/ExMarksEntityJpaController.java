@@ -5,6 +5,7 @@ import com.capstone.jpa.MarksEntityJpaController;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
 import com.capstone.models.Ultilities;
 import com.capstone.services.RealSemesterServiceImpl;
+import org.apache.commons.lang3.reflect.Typed;
 
 import javax.persistence.*;
 import javax.persistence.criteria.*;
@@ -186,5 +187,12 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         }
 
         return count;
+    }
+
+    public List<MarksEntity> getAllMarksByStudent(int studentId) {
+        EntityManager manager = getEntityManager();
+        TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.studentId.id = :id", MarksEntity.class);
+        query.setParameter("id", studentId);
+        return query.getResultList();
     }
 }
