@@ -12,7 +12,18 @@
 <section class="content">
     <div class="box">
         <div class="b-header">
-            <h1>Thông tin sinh viên</h1>
+            <div class="row">
+                <div class="col-md-9 title">
+                    <h1>Danh sách sinh viên nợ môn</h1>
+                </div>
+                <div class="col-md-3 text-right">
+                    <button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
+                        <i class="glyphicon glyphicon-open"></i>
+                        <%--<i class="fa fa-upload"></i>--%>
+                        <div>XUẤT DỮ LIỆU</div>
+                    </button>
+                </div>
+            </div>
             <hr>
         </div>
         <div class="b-body">
@@ -24,27 +35,13 @@
                                 <label class="p-t-5">Chọn sinh viên:</label>
                             </div>
                             <div class="right-content">
-                                <select id="select" class="select">
+                                <select id="select" class="select width-60">
                                     <c:forEach var="stu" items="${students}">
-                                        <option value="${stu.id}">${stu.rollNumber} - ${stu.fullName}</option>
+                                        <option value="${stu.rollNumber}">${stu.rollNumber} - ${stu.fullName}</option>
                                     </c:forEach>
                                 </select>
                             </div>
                         </div>
-
-                        <div class="form-group">
-                            <div class="col-md-12">
-                                <button type="button" class="btn btn-primary" onclick="RefreshTable()">Xem</button>
-                                <button type="button" class="btn btn-success" onclick="ExportExcel()">Xuất dữ liệu</button>
-                            </div>
-                        </div>
-
-                        <%--<div class="form-group">--%>
-                        <%--<div class="col-md-12">--%>
-                        <%--<button type="button" class="btn btn-primary" onclick="RefreshTable()">Xem</button>--%>
-                        <%--</div>--%>
-                        <%--</div>--%>
-
                     </div>
                 </div>
             </div>
@@ -58,17 +55,17 @@
                             </div>
                             <div class="my-content">
                                 <table id="table">
-                                <thead>
-                                <tr>
-                                    <th>Mã môn</th>
-                                    <th>Lớp</th>
-                                    <th>Khóa</th>
-                                    <th>Điểm</th>
-                                    <th>Trạng thái</th>
-                                </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
+                                    <thead>
+                                    <tr>
+                                        <th>Mã môn</th>
+                                        <th>Lớp</th>
+                                        <th>Khóa</th>
+                                        <th>Điểm</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -141,9 +138,43 @@
         $('#select').on("change", function () {
             RefreshTable();
         });
+        CreateSelect();
 
-        $('.select').select2();
+        CreateEmptyDataTable('#table');
+        CreateEmptyDataTable('#nextCourseTable');
+    });
 
+    function CreateSelect() {
+        $('#select').select2({
+            width: 'resolve',
+            minimumInputLength: 2,
+            ajax: {
+                url: '/getStudentList',
+                data: function (params) {
+                    var queryParameters = {
+                        searchValue: params.term
+                    }
+                    return queryParameters;
+                },
+                processResults: function (result) {
+                    if (result.success) {
+                        return {
+                            results: $.map(result.items, function (item) {
+                                return {
+                                    id: item.value,
+                                    text: item.text,
+                                }
+                            })
+                        };
+                    } else {
+                        swal('', 'Có lỗi xảy ra, vui lòng thử lại', 'warning');
+                    }
+                }
+            }
+        });
+    }
+
+    function CreateDebtTable() {
         table = $('#table').dataTable({
             "bServerSide": true,
             "bFilter": true,
@@ -180,7 +211,9 @@
             ],
             "bAutoWidth": false,
         }).fnSetFilteringDelay(1000);
+    }
 
+    function CreateNextCourseTable() {
         nextCourseTable = $('#nextCourseTable').dataTable({
             "bServerSide": true,
             "bFilter": true,
@@ -220,13 +253,13 @@
                     }
                 },
                 {
-                  "aTargets": [0],
+                    "aTargets": [0],
                     "sClass": "text-center",
                 },
             ],
             "bAutoWidth": false,
         }).fnSetFilteringDelay(1000);
-    });
+    }
 
     function ExportExcel() {
         $("input[name='objectType']").val(2);
@@ -237,11 +270,19 @@
         if (table != null) {
             table._fnPageChange(0);
             table._fnAjaxUpdate();
+        } else {
+            // Delete empty table
+            $('#table').dataTable().fnDestroy();
+            CreateDebtTable();
         }
 
         if (nextCourseTable != null) {
             nextCourseTable._fnPageChange(0);
             nextCourseTable._fnAjaxUpdate();
+        } else {
+            // Delete empty table
+            $('#nextCourseTable').dataTable().fnDestroy();
+            CreateNextCourseTable();
         }
     }
 </script>

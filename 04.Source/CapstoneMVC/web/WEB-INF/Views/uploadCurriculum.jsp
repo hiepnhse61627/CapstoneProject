@@ -46,7 +46,7 @@
                     về bản mẫu
                 </div>
                 <div class="form-group">
-                    <button type="button" onclick="Add()" class="btn btn-success">Upload</button>
+                    <button type="button" onclick="Add()" class="btn btn-success">Import</button>
                 </div>
             </div>
         </div>

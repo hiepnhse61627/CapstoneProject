@@ -1,58 +1,68 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%--
-  Created by IntelliJ IDEA.
-  User: Rem
-  Date: 10/11/2017
-  Time: 9:24 AM
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
-<section class="content-header">
-    <h1>Tỉ lệ sinh viên rớt môn</h1>
-</section>
 <section class="content">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="box">
-                <div class="form-group">
-                    <div class="box-header">
-                        <h4 class="box-title">Môn học</h4>
+    <div class="box">
+        <div class="b-header">
+            <h1>Tỉ lệ sinh viên rớt môn</h1>
+            <hr>
+        </div>
+        <div class="b-body">
+            <div class="form-group">
+                <div class="row">
+                    <div class="title">
+                        <h4>Môn học</h4>
                     </div>
-                    <select id="subject" class="select form-control">
-                        <option value="0">All</option>
-                        <c:forEach var="s" items="${subjects}">
-                            <option value="${s.id}">${s.id} - ${s.abbreviation} - ${s.name}</option>
-                        </c:forEach>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <div class="box-header">
-                        <h4 class="box-title">Lớp</h4>
+                    <div class="my-content">
+                        <div class="col-md-12">
+                            <select id="subject" class="select form-control">
+                                <option value="0">All</option>
+                                <c:forEach var="s" items="${subjects}">
+                                    <option value="${s.id}">${s.id} - ${s.abbreviation} - ${s.name}</option>
+                                </c:forEach>
+                            </select>
+                        </div>
                     </div>
-                    <select id="class" class="select form-control">
-                        <option value="0">All</option>
-                        <c:forEach var="s" items="${classes}">
-                            <option value="${s}">${s}</option>
-                        </c:forEach>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <button type="button" class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>
                 </div>
             </div>
-        </div>
-        <div class="col-md-12">
-            <table id="table">
-                <thead>
-                <tr>
-                    <th>Kỳ</th>
-                    <th>Môn</th>
-                    <th>Lớp</th>
-                    <th>Tỉ lệ</th>
-                </tr>
-                </thead>
-            </table>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="title">
+                        <h4>Lớp</h4>
+                    </div>
+                    <div class="my-content">
+                        <div class="col-md-12">
+                            <select id="class" class="select form-control">
+                                <option value="0">All</option>
+                                <c:forEach var="s" items="${classes}">
+                                    <option value="${s}">${s}</option>
+                                </c:forEach>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <button type="button" class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <table id="table">
+                        <thead>
+                        <tr>
+                            <th>Kỳ</th>
+                            <th>Môn</th>
+                            <th>Lớp</th>
+                            <th>Tỉ lệ</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </div>
 </section>

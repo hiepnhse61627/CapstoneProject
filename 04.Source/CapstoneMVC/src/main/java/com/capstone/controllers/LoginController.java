@@ -1,6 +1,7 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.CredentialsEntity;
+import com.capstone.models.CustomUser;
 import com.capstone.models.GoogleProfile;
 import com.capstone.models.Logger;
 import com.capstone.services.CredentialsServiceImpl;
@@ -10,8 +11,6 @@ import com.google.gson.JsonObject;
 import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,7 +18,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.stereotype.Controller;
@@ -123,7 +121,7 @@ public class LoginController {
             os.close();
 
             int responseCode = con.getResponseCode();
-            System.out.println("GET Response Code : " + responseCode + ", msg: " + con.getResponseMessage());
+            System.out.println("POST Response Code : " + responseCode + ", msg: " + con.getResponseMessage());
             if (responseCode == HttpURLConnection.HTTP_OK) { // success
                 BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
                 String inputLine;
@@ -142,18 +140,31 @@ public class LoginController {
                 ICredentialsService service = new CredentialsServiceImpl();
                 CredentialsEntity user = service.findCredentialByEmail(profile.getEmail());
                 if (user != null) {
-                    Authentication auth = new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword(), getGrantedAuthorities(user));
+                    boolean edited = false;
+                    if (!user.getFullname().equals(profile.getName())) {
+                        user.setFullname(profile.getName());
+                        edited = true;
+                    }
+                    if (!user.getPicture().equals(profile.getPicture())) {
+                        user.setPicture(profile.getPicture());
+                        edited = true;
+                    }
+
+                    if (edited) service.SaveCredential(user, false);
+
+                    Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(user.getUsername(), user.getPassword(), getGrantedAuthorities(user), user.getFullname(),user.getPicture()),
+                            user.getPassword(),
+                            getGrantedAuthorities(user));
                     SecurityContextHolder.getContext().setAuthentication(auth);
                     HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
                         @Override public String getParameter(String name) { return "true"; }
                     };
                     rememberMeServices.loginSuccess(wrapper, response, auth);
                 }
-            } else {
-                System.out.println("GET request not worked");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("Error occured: " + e.getMessage() + " (more details at logs)");
+            Logger.writeLog(e);
         }
 
         return "redirect:/dashboard";

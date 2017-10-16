@@ -10,6 +10,7 @@ public interface IStudentService {
     void createStudentList(List<StudentEntity> studentEntityList);
     StudentEntity findStudentById(int id);
     StudentEntity findStudentByRollNumber(String rollNumber);
+    List<StudentEntity> findStudentsByValue(String value);
     List<StudentEntity> findAllStudents();
     List<StudentEntity> findStudentsByProgramName(String programName);
 }
