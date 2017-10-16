@@ -121,7 +121,7 @@ public class LoginController {
             os.close();
 
             int responseCode = con.getResponseCode();
-            System.out.println("GET Response Code : " + responseCode + ", msg: " + con.getResponseMessage());
+            System.out.println("POST Response Code : " + responseCode + ", msg: " + con.getResponseMessage());
             if (responseCode == HttpURLConnection.HTTP_OK) { // success
                 BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
                 String inputLine;
@@ -140,9 +140,17 @@ public class LoginController {
                 ICredentialsService service = new CredentialsServiceImpl();
                 CredentialsEntity user = service.findCredentialByEmail(profile.getEmail());
                 if (user != null) {
-                    user.setFullname(profile.getName());
-                    user.setPicture(profile.getPicture());
-                    service.SaveCredential(user, false);
+                    boolean edited = false;
+                    if (!user.getFullname().equals(profile.getName())) {
+                        user.setFullname(profile.getName());
+                        edited = true;
+                    }
+                    if (!user.getPicture().equals(profile.getPicture())) {
+                        user.setPicture(profile.getPicture());
+                        edited = true;
+                    }
+
+                    if (edited) service.SaveCredential(user, false);
 
                     Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(user.getUsername(), user.getPassword(), getGrantedAuthorities(user), user.getFullname(),user.getPicture()),
                             user.getPassword(),
