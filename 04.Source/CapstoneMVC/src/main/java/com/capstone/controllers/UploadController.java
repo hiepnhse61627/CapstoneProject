@@ -274,7 +274,7 @@ public class UploadController {
 
             XSSFRow row;
             int excelDataIndex = startRowNumber < 0 ? 0 : startRowNumber;
-            this.totalLine = endRowNumber - startRowNumber;
+            this.totalLine = endRowNumber;
 
             int semesterNameIndex = 0;
             int rollNumberIndex = 1;
@@ -283,7 +283,7 @@ public class UploadController {
             int averageMarkIndex = 4;
             int statusIndex = 5;
 
-            this.currentLine = 1;
+            this.currentLine = 0;
             SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
             for (int rowIndex = excelDataIndex; rowIndex <= endRowNumber; rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
@@ -356,44 +356,7 @@ public class UploadController {
                 this.currentLine++;
             }
             is.close();
-            // Check student same semester, same subject but in different class
-            List<MarksEntity> list1 = marksEntities.stream().filter(
-                          m -> m.getCourseId().getClass1().toUpperCase().contains("_SPRING")
-                            || m.getCourseId().getClass1().toUpperCase().contains("_FALL")
-                            || m.getCourseId().getClass1().toUpperCase().contains("_SUMMER")).collect(Collectors.toList());
-            List<MarksEntity> list2 = marksEntities.stream().filter(
-                    m -> !m.getCourseId().getClass1().toUpperCase().contains("_SPRING")
-                            && !m.getCourseId().getClass1().toUpperCase().contains("_FALL")
-                            && !m.getCourseId().getClass1().toUpperCase().contains("_SUMMER")).collect(Collectors.toList());
-            // make comparator
-            Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
-                @Override
-                public int compare(MarksEntity o1, MarksEntity o2) {
-                    return new CompareToBuilder()
-                                .append(o1.getSemesterId().getSemester().toUpperCase(), o2.getSemesterId().getSemester().toUpperCase())
-                                .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
-                                .append(o1.getSubjectId() != null ? o1.getSubjectId().getSubjectId().toUpperCase() : "",
-                                        o2.getSubjectId() != null ? o2.getSubjectId().getSubjectId().toUpperCase() : "")
-                                .append(o1.getAverageMark().toString().toUpperCase(), o2.getAverageMark().toString().toUpperCase())
-                                .toComparison();
-                }
-            };
-            // start compare
-            Collections.sort(list2, comparator);
-            for (int i = 0; i < list1.size(); i++) {
-                MarksEntity keySearch = list1.get(i);
-                int index = Collections.binarySearch(list2, keySearch, comparator);
-                System.out.println(index);
-                if (index >= 0) {
-                    list1.remove(i);
-                }
-            }
-
-            // result list
-            List<MarksEntity> resultList = new ArrayList<>();
-            resultList.addAll(list1);
-            resultList.addAll(list2);
-            marksService.createMarks(resultList);
+            marksService.createMarks(marksEntities);
         } catch (Exception ex) {
             ex.printStackTrace();
             jsonObject.addProperty("success", false);
