@@ -35,7 +35,11 @@
                                 <label class="p-t-5">Chọn sinh viên:</label>
                             </div>
                             <div class="right-content">
-                                <select id="select" class="select width-60"></select>
+                                <select id="select" class="select width-60">
+                                    <c:forEach var="stu" items="${students}">
+                                        <option value="${stu.rollNumber}">${stu.rollNumber} - ${stu.fullName}</option>
+                                    </c:forEach>
+                                </select>
                             </div>
                         </div>
                     </div>

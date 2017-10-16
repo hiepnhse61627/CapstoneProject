@@ -35,4 +35,9 @@ public class CredentialsServiceImpl implements ICredentialsService {
     public void CreateCredentiall(CredentialsEntity entity) {
         controller.CreateCredential(entity);
     }
+
+    @Override
+    public void SaveCredential(CredentialsEntity entity, boolean persist) {
+        controller.saveCredential(entity, persist);
+    }
 }

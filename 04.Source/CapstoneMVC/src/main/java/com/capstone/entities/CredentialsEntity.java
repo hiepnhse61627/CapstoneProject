@@ -46,6 +46,10 @@ public class CredentialsEntity implements Serializable {
     private String role;
     @Column(name = "Email")
     private String email;
+    @Column(name = "Fullname")
+    private String fullname;
+    @Column(name = "Picture")
+    private String picture;
 
     public CredentialsEntity() {
     }
@@ -123,5 +127,21 @@ public class CredentialsEntity implements Serializable {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getFullname() {
+        return fullname;
+    }
+
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
+    }
+
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
     }
 }

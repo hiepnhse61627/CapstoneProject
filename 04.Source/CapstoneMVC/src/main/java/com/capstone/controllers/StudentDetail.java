@@ -42,7 +42,7 @@ public class StudentDetail {
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("StudentDetail");
         view.addObject("title", "Danh sách sinh viên nợ môn");
-//        view.addObject("students", service.findAllStudents());
+        view.addObject("students", studentService.findAllStudents());
 
         return view;
     }

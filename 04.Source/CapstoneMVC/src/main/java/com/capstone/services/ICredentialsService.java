@@ -12,4 +12,5 @@ public interface ICredentialsService {
     CredentialsEntity findCredentialByEmail(String email);
     CredentialsEntity findCredential(String username, String password);
     void CreateCredentiall(CredentialsEntity entity);
+    void SaveCredential(CredentialsEntity entity, boolean persist);
 }

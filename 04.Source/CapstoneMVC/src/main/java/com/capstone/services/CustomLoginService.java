@@ -1,6 +1,7 @@
 package com.capstone.services;
 
 import com.capstone.entities.CredentialsEntity;
+import com.capstone.models.CustomUser;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,7 +25,7 @@ public class CustomLoginService implements UserDetailsService {
             System.out.println("User: " + user.getUsername());
         }
 
-        return new org.springframework.security.core.userdetails.User(user.getUsername(), user.getPassword(), getGrantedAuthorities(user));
+        return new CustomUser(user.getUsername(), user.getPassword(), getGrantedAuthorities(user), user.getFullname(),user.getPicture());
     }
 
     private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user){
