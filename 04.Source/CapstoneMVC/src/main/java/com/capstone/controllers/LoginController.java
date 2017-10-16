@@ -136,7 +136,7 @@ public class LoginController {
                 GoogleProfile profile = new Gson().fromJson(data.toString(), GoogleProfile.class);
                 String[] split_string = profile.getId_token().split("\\.");
                 byte[] valueDecoded = Base64.decodeBase64(split_string[1].getBytes());
-                profile = new Gson().fromJson(new String(valueDecoded), GoogleProfile.class);
+                profile = new Gson().fromJson(new String(valueDecoded, "UTF-8"), GoogleProfile.class);
                 ICredentialsService service = new CredentialsServiceImpl();
                 CredentialsEntity user = service.findCredentialByEmail(profile.getEmail());
                 if (user != null) {
@@ -161,7 +161,7 @@ public class LoginController {
                     };
                     rememberMeServices.loginSuccess(wrapper, response, auth);
                 } else {
-                    return "redirect:/register?email=" + profile.getEmail();
+                    return "redirect:/register?email=" + profile.getEmail() + "&disable=true";
                 }
             }
         } catch (Exception e) {

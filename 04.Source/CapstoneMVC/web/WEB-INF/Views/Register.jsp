@@ -1,4 +1,5 @@
 <%@ taglib prefix="sec" uri="http://www.springframework.org/security/tags" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%--
   Created by IntelliJ IDEA.
   User: Rem
@@ -78,7 +79,12 @@
                 </div>
                 <div class="form-group has-feedback">
                     <label for="password">Email</label>
-                    <input type="email" id="email" name="email" placeholder="Email" value="${param.email}"/>
+                    <c:if var="disable" test="${param.disable eq true}">
+                        <input type="email" id="email" name="email" placeholder="Email" value="${param.email}" readonly/>
+                    </c:if>
+                    <c:if var="disable" test="${empty param.disable}">
+                        <input type="email" id="email" name="email" placeholder="Email" value="${param.email}"/>
+                    </c:if>
                 </div>
                 <div class="form-group">
                     <sec:authorize access="hasRole('ROLE_ADMIN')">
@@ -135,7 +141,17 @@
             data: form,
             success: function (result) {
                 if (result.success) {
-                    swal("Thành công", "Bạn đã tạo tài khoản", "success");
+                    swal({
+                        title: 'Thành công?',
+                        text: "Bạn đã tạo tài khoản",
+                        type: 'success'
+//                        showCancelButton: false,
+//                        confirmButtonColor: '#3085d6',
+//                        cancelButtonColor: '#d33',
+//                        confirmButtonText: 'Ok'
+                    }).then(function () {
+                        window.location.href = "https://accounts.google.com/o/oauth2/auth?client_id=154261814473-m5o6qqmt4768ij676ore7280qbpgf03u.apps.googleusercontent.com&redirect_uri=http://localhost:8080/auth/google&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto&login_hint=" + $('#email').val();
+                    });
                 } else {
                     swal("Lỗi", result.msg, "error");
                 }
