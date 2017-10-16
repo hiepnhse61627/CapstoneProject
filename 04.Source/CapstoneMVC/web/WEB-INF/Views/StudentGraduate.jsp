@@ -1,10 +1,3 @@
-<%--
-  Created by IntelliJ IDEA.
-  User: Rem
-  Date: 10/16/2017
-  Time: 1:43 PM
-  To change this template use File | Settings | File Templates.
---%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
 <section class="content">
@@ -17,23 +10,32 @@
                 <div class="col-md-3 text-right">
                     <button type="button" class="btn btn-success btn-with-icon">
                         <i class="glyphicon glyphicon-open"></i>
-                        <%--<i class="fa fa-upload"></i>--%>
                         <div>XUẤT DỮ LIỆU</div>
                     </button>
                 </div>
             </div>
             <hr>
         </div>
-        <div class="form-group">
-            <div class="col-md-12">
-                Số tín chỉ <input id="number" type="number" value="145" min="1"/>
-                <button type="button" class="btn btn-default" onclick="Refresh()">Refresh</button>
+
+        <div class="b-body">
+            <div class="form-group">
+                <div class="row">
+                    <div class="my-content">
+                        <div class="my-input-group">
+                            <div class="left-content m-r-5">
+                                <label class="p-t-8">Số tín chỉ:</label>
+                            </div>
+                            <div class="right-content width-20 width-m-50">
+                                <input class="form-control bfh-number" id="number" type="number" value="145" min="1"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="form-group">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="bg-gray-light">
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-12">
                         <table id="table">
                             <thead>
                             <tr>
@@ -53,8 +55,24 @@
 
 <script>
     var table = null;
+    var timeOut = 0;
 
     $(document).ready(function () {
+        $('#number').on("keypress change", function (e) {
+            if (e.keyCode === 13) {
+                e.preventDefault();
+            } else {
+                clearTimeout(timeOut);
+                timeOut = setTimeout(Refresh, 250);
+            }
+        });
+
+        $('#number').keyup(function (e) {
+            if ($(this).val().length == 0) {
+                $(this).val("1");
+            }
+        });
+
         table = $('#table').dataTable({
             "bServerSide": true,
             "bFilter": true,

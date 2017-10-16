@@ -29,6 +29,31 @@ a {
     margin: 0 auto;
 }
 
+
+.user-panel > .image > img {
+   max-width: 40px;
+}
+
+.user-panel > .info {
+    padding: 5px;
+    left: 52px;
+}
+
+.user-panel > .info > p {
+    white-space: normal;
+    margin-bottom: 5px;
+    width: 165px;
+
+    line-height: 15px;
+    max-height: 30px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+}
+
+
 .main-header .logo {
     padding: 0px;
 }
@@ -606,43 +631,85 @@ a {
 
 /*  ------------- Width -------------*/
 .width-10 {
-    width: 10%;
+    width: 10% !important;
 }
 
 .width-20 {
-    width: 20%;
+    width: 20% !important;
 }
 
 .width-30 {
-    width: 30%;
+    width: 30% !important;
 }
 
 .width-40 {
-    width: 40%;
+    width: 40% !important;
 }
 
 .width-50 {
-    width: 50%;
+    width: 50% !important;
 }
 
 .width-60 {
-    width: 60%;
+    width: 60% !important;
 }
 
 .width-70 {
-    width: 70%;
+    width: 70% !important;
 }
 
 .width-80 {
-    width: 80%;
+    width: 80% !important;
 }
 
 .width-90 {
-    width: 90%;
+    width: 90% !important;
 }
 
 .width-100 {
-    width: 100%;
+    width: 100% !important;
+}
+
+@media (max-width: 768px) {
+    .width-m-10 {
+        width: 10% !important;
+    }
+
+    .width-m-20 {
+        width: 20% !important;
+    }
+
+    .width-m-30 {
+        width: 30% !important;
+    }
+
+    .width-m-40 {
+        width: 40% !important;
+    }
+
+    .width-m-50 {
+        width: 50% !important;
+    }
+
+    .width-60 {
+        width: 60% !important;
+    }
+
+    .width-m-70 {
+        width: 70% !important;
+    }
+
+    .width-m-80 {
+        width: 80% !important;
+    }
+
+    .width-m-90 {
+        width: 90% !important;
+    }
+
+    .width-m-100 {
+        width: 100% !important;
+    }
 }
 
 

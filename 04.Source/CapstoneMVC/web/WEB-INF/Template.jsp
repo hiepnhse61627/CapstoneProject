@@ -98,7 +98,15 @@
                         <security:authentication property="principal.fullname"/>
                     </p>
                     <!-- Status -->
-                    <a href="#"><i class="fa fa-circle text-success"></i> Online</a>
+                    <a href="#">
+                        <i class="fa fa-circle text-success"></i>
+                        <security:authorize access="hasRole('${admin}')">
+                            <span> Admin</span>
+                        </security:authorize>
+                        <security:authorize access="hasRole('${student}')">
+                            <span> Student</span>
+                        </security:authorize>
+                    </a>
                 </div>
             </div>
             <!-- Sidebar Menu -->
