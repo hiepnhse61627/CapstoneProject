@@ -11,4 +11,5 @@ public interface IStudentService {
     StudentEntity findStudentById(int id);
     StudentEntity findStudentByRollNumber(String rollNumber);
     List<StudentEntity> findAllStudents();
+    List<StudentEntity> findStudentsByProgramName(String programName);
 }

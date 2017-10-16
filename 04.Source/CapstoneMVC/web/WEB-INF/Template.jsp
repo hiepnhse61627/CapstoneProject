@@ -254,7 +254,7 @@
                                 </a>
                             </li>
                             <li>
-                                <a href="#">
+                                <a href="/studentsOJT">
                                     <div class="menu-child-wrapper">
                                         <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                         <div class="child-content col-md-11">

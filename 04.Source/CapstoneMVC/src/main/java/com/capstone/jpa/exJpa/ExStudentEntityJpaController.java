@@ -90,4 +90,24 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
             }
         }
     }
+
+    public List<StudentEntity> findStudentByProgramName(String programName) {
+        EntityManager em = getEntityManager();
+        List<StudentEntity> students = new ArrayList<>();
+        try {
+            String sqlString = "SELECT s FROM StudentEntity s WHERE s.rollNumber LIKE :rollNumber";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("rollNumber", programName + "%");
+
+            students = query.getResultList();
+
+            return students;
+        } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
 }

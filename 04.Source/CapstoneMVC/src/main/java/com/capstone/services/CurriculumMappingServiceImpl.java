@@ -15,4 +15,9 @@ public class CurriculumMappingServiceImpl implements ICurriculumMappingService {
     public CurriculumMappingEntity createCurriculumMapping(CurriculumMappingEntity entity) {
         return controller.createCurriculumMapping(entity);
     }
+
+    @Override
+    public String getSemesterTermByStudentIdAndProgramId(int studentId, int programId) {
+        return controller.getSemesterTermByStudentIdAndProgramId(studentId, programId);
+    }
 }

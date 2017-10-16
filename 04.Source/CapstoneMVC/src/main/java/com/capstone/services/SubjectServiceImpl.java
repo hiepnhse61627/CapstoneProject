@@ -43,4 +43,9 @@ public class SubjectServiceImpl implements ISubjectService {
 
     @Override
     public int getTotalLine() { return controller.getTotalLine(); }
+
+    @Override
+    public int countStudentCredits(int studentId) {
+        return controller.countStudentCredits(studentId);
+    }
 }

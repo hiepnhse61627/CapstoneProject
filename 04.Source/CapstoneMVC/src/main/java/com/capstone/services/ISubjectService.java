@@ -13,4 +13,5 @@ public interface ISubjectService {
     SubjectEntity findSubjectById(String id);
     int getCurrentLine();
     int getTotalLine();
+    int countStudentCredits(int studentId);
 }

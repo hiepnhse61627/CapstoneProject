@@ -103,4 +103,23 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
             prequisiteList.add(curr);
         }
     }
+
+    public int countStudentCredits(int studentId) {
+        EntityManager em = getEntityManager();
+        Object totalCredits = 0;
+        try {
+            String sqlString = "select SUM(s.Credits) from Marks m, Subject s \n" +
+                    "where m.SubjectId = s.Id and m.StudentId = ? and m.Status = 'Passed' and m.SubjectId is not null \n" +
+                    "and m.SubjectId in\n" +
+                    "(select SubId from Curriculum_Mapping)";
+            Query query = em.createNativeQuery(sqlString);
+            query.setParameter(1, studentId);
+
+            totalCredits = query.getSingleResult();
+            return totalCredits != null ? Integer.parseInt(totalCredits.toString()) : -1;
+        } catch (NoResultException ex) {
+            ex.printStackTrace();
+            return -1;
+        }
+    }
 }

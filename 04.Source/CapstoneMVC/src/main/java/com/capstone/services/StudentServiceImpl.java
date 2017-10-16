@@ -32,6 +32,11 @@ public class StudentServiceImpl implements IStudentService {
     }
 
     @Override
+    public List<StudentEntity> findStudentsByProgramName(String programName) {
+        return studentEntityJpaController.findStudentByProgramName(programName);
+    }
+
+    @Override
     public int getCurrentLine() {
         return studentEntityJpaController.getCurrentLine();
     }
