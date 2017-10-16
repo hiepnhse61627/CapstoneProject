@@ -18,42 +18,4 @@ public class HomeController {
         map.addAttribute("title", "Dashboard");
         return "Dashboard";
     }
-
-    @RequestMapping("/next")
-    public String Next() throws IOException {
-        return "Search";
-    }
-
-    @RequestMapping("/status")
-    @ResponseBody
-    public int getProgress() {
-        return progress;
-    }
-
-    @RequestMapping("/runstatus")
-    @ResponseBody
-    public JsonObject Run() {
-        try {
-            Thread t = new Thread(() -> {
-                progress = 0;
-                while(progress < 100) {
-                    try {
-                        progress++;
-                        System.out.print(progress + ",");
-                        Thread.sleep(100);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            t.start();
-            t.join();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        JsonObject obj = new JsonObject();
-        obj.addProperty("success", "true");
-        return obj;
-    }
 }

@@ -248,6 +248,16 @@
                         </a>
                         <ul class="treeview-menu">
                             <li>
+                                <a href="/graduate">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách sinh viên được xét tốt nghiệp
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
                                 <a href="/studentDetail">
                                     <div class="menu-child-wrapper">
                                         <div class="child-icon"><i class="fa fa-circle-o"></i></div>
