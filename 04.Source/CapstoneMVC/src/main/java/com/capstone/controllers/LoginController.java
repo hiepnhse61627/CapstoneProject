@@ -145,7 +145,7 @@ public class LoginController {
                         user.setFullname(profile.getName());
                         edited = true;
                     }
-                    if (user.getFullname() == null || !user.getPicture().equals(profile.getPicture())) {
+                    if (user.getPicture() == null || !user.getPicture().equals(profile.getPicture())) {
                         user.setPicture(profile.getPicture());
                         edited = true;
                     }
@@ -160,6 +160,8 @@ public class LoginController {
                         @Override public String getParameter(String name) { return "true"; }
                     };
                     rememberMeServices.loginSuccess(wrapper, response, auth);
+                } else {
+                    return "redirect:/register?email=" + profile.getEmail();
                 }
             }
         } catch (Exception e) {

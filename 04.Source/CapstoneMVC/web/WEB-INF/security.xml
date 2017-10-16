@@ -7,8 +7,12 @@
 
     <http auto-config="true" disable-url-rewriting="true" use-expressions="true">
         <intercept-url pattern="/login" access="isAnonymous()"/>
+        <intercept-url pattern="/register**" access="isAnonymous()"/>
+
         <intercept-url pattern="/auth/google" access="isAnonymous()"/>
         <intercept-url pattern="/favicon.ico" access="isAnonymous()"/>
+
+        <!-- Resources allow access -->
         <intercept-url pattern="/Resources/**" access="permitAll()"/>
 
         <!-- Student detail for student and api related -->

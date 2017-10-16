@@ -2,6 +2,7 @@
     <excludes>
         <pattern>/login**</pattern>
         <pattern>/deny</pattern>
+        <pattern>/register**</pattern>
     </excludes>
     <decorator name="template" page="Template.jsp">
         <pattern>/*</pattern>
