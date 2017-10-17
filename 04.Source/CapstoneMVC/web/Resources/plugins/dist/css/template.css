@@ -27,6 +27,10 @@ a {
     width: 100% !important;
 }
 
+.dataTables_processing {
+    z-index: 100;
+}
+
 .logo-mini img {
     width: 45px;
     height: auto;

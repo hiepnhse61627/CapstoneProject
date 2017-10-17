@@ -116,12 +116,18 @@
 //                timeOut = setTimeout(Refresh, 250);
 //            }
 //        });
-//
-//        $('#credit').keyup(function (e) {
-//            if ($(this).val().length == 0) {
-//                $(this).val("1");
-//            }
-//        });
+
+        $('#credit').keyup(function (e) {
+            if ($(this).val().length == 0) {
+                $(this).val("1");
+            }
+        });
+
+        $('#sCredit').keyup(function (e) {
+            if ($(this).val().length == 0) {
+                $(this).val("1");
+            }
+        });
 
         table = $('#table').dataTable({
             "bServerSide": true,
