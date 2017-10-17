@@ -53,8 +53,18 @@ public class SubjectEntity implements Serializable {
     private SubjectMarkComponentEntity subjectMarkComponentEntity;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
     private List<CurriculumMappingEntity> curriculumMappingEntityList;
+    @Column(name = "ReplacementId")
+    private String replacementid;
 
     public SubjectEntity() {
+    }
+
+    public String getReplacementid() {
+        return replacementid;
+    }
+
+    public void setReplacementid(String replacementid) {
+        this.replacementid = replacementid;
     }
 
     public SubjectEntity(String id) {
