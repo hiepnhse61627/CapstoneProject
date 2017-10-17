@@ -228,6 +228,8 @@ public class UploadController {
     @RequestMapping(value = "/upload-exist-marks-file", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject chooseExistMarkFile(@RequestParam("file") String file,  @RequestParam("startRow") int startRow, @RequestParam("endRow") int endRow) {
+        this.totalLine = 0;
+        this.currentLine = 0;
         startRowNumber = startRow;
         endRowNumber = endRow;
         JsonObject jsonObject;
@@ -246,6 +248,8 @@ public class UploadController {
     @RequestMapping(value = "/uploadStudentMarks", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject uploadStudentMarks(@RequestParam("file") MultipartFile file, @RequestParam("startRow") int startRow, @RequestParam("endRow") int endRow) throws IOException {
+        this.totalLine = 0;
+        this.currentLine = 0;
         startRowNumber = startRow;
         endRowNumber = endRow;
         JsonObject jsonObject = readMarkFile(file, null, true);
@@ -274,7 +278,8 @@ public class UploadController {
 
             XSSFRow row;
             int excelDataIndex = startRowNumber < 0 ? 0 : startRowNumber;
-            this.totalLine = endRowNumber;
+            int lastRow = endRowNumber < 0 ? spreadsheet.getLastRowNum() : endRowNumber;
+            this.totalLine = lastRow - startRowNumber;
 
             int semesterNameIndex = 0;
             int rollNumberIndex = 1;
@@ -285,7 +290,7 @@ public class UploadController {
 
             this.currentLine = 0;
             SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
-            for (int rowIndex = excelDataIndex; rowIndex <= endRowNumber; rowIndex++) {
+            for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
 
                 Cell rollNumberCell = row.getCell(rollNumberIndex);

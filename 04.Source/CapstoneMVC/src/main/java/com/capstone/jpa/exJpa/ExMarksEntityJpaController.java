@@ -16,8 +16,8 @@ import static org.bouncycastle.asn1.x500.style.RFC4519Style.o;
 
 public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
-    private int totalExistStudent;
-    private int successSavedStudent;
+    private int totalExistStudent = 0;
+    private int successSavedStudent = 0;
     private List<RealSemesterEntity> realSemesters;
 
     public int getTotalExistMarks() {return totalExistStudent;}
@@ -77,6 +77,8 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                 em.close();
             }
         }
+        this.totalExistStudent = 0;
+        this.successSavedStudent = 0;
     }
 
     public List<MarksEntity> getMarksByConditions(String semesterId, String subjectId, String searchKey) {
