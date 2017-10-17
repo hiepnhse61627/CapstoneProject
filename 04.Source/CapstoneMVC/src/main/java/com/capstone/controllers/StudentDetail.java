@@ -181,15 +181,15 @@ public class StudentDetail {
                     " ORDER BY Curriculum_Mapping.Term desc";
             Query query = em.createNativeQuery(sqlString);
 
-            List<String> list = query.getResultList();
-            list.stream().findFirst().ifPresent(c -> currentTerm[0] = list.stream().findFirst().get());
+//            List<String> list = query.getResultList();
+//            list.stream().findFirst().ifPresent(c -> currentTerm[0] = list.stream().findFirst().get());
             query.setParameter(1, stuId);
             query.setParameter(2, program.getId());
             query.getResultList().stream().findFirst().ifPresent(c -> currentTerm[0] = c.toString());
 
             if (!currentTerm[0].equals("0")) {
-                int currentTermNumber = Integer.parseInt(currentTerm[0].replaceAll("[^0-9]", ""));
-                nextTermNumber = currentTermNumber + 2;
+                int currentTermNumber = Integer.parseInt(currentTerm[0].replaceAll("[^0-9]", "")) + 1;
+                nextTermNumber = currentTermNumber + 1;
             }
 
             query = em.createQuery("SELECT s FROM CurriculumMappingEntity c, SubjectEntity s WHERE c.term LIKE '%" + nextTermNumber + "' AND c.subjectEntity.id = s.id", SubjectEntity.class);
