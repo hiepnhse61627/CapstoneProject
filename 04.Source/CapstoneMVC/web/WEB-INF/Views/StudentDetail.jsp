@@ -32,7 +32,7 @@
                     <div class="my-content">
                         <div class="my-input-group">
                             <div class="left-content m-r-5">
-                                <label class="p-t-5">Chọn sinh viên:</label>
+                                <label class="p-t-8">Chọn sinh viên:</label>
                             </div>
                             <div class="right-content">
                                 <select id="select" class="select width-60">

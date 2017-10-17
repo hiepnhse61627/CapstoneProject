@@ -4,6 +4,9 @@ import com.capstone.entities.*;
 import com.capstone.jpa.MarksEntityJpaController;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
 import com.capstone.models.Ultilities;
+import com.capstone.services.IProgramService;
+import com.capstone.services.IRealSemesterService;
+import com.capstone.services.ProgramServiceImpl;
 import com.capstone.services.RealSemesterServiceImpl;
 import org.apache.commons.lang3.reflect.Typed;
 
@@ -20,9 +23,13 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
     private int successSavedStudent = 0;
     private List<RealSemesterEntity> realSemesters;
 
-    public int getTotalExistMarks() {return totalExistStudent;}
+    public int getTotalExistMarks() {
+        return totalExistStudent;
+    }
 
-    public int getSuccessSavedMark() {return successSavedStudent;}
+    public int getSuccessSavedMark() {
+        return successSavedStudent;
+    }
 
     public ExMarksEntityJpaController(EntityManagerFactory emf) {
         super(emf);
@@ -165,6 +172,57 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             em.close();
         }
         return marks;
+    }
+
+    public List<MarksEntity> getMarkByProgramAndSemester(int programId, int semesterId) {
+        List<MarksEntity> result = null;
+        EntityManager em = null;
+        boolean createWhere = false;
+
+        try {
+            em = getEntityManager();
+            String queryStr = "SELECT m FROM MarksEntity m";
+
+            ProgramEntity program = null;
+            if (programId != 0) {
+                IProgramService programService = new ProgramServiceImpl();
+                program = programService.getProgramById(programId);
+                queryStr += " WHERE m.studentId.rollNumber LIKE :rollNumber";
+                createWhere = true;
+            }
+
+            List<Integer> semesterIds = null;
+            if (semesterId != 0) {
+                IRealSemesterService semesterService = new RealSemesterServiceImpl();
+                List<RealSemesterEntity> semesterList = semesterService.getAllSemester();
+                semesterList = Ultilities.SortSemesters(semesterList);
+
+                semesterIds = new ArrayList<>();
+                boolean isFound = false;
+                for (RealSemesterEntity s : semesterList) {
+                    if (s.getId().equals(semesterId)) {
+                        isFound = true;
+                    }
+
+                    if (isFound) {
+                        semesterIds.add(s.getId());
+                    }
+                }
+
+                queryStr += !createWhere ? " WHERE" : " AND";
+                queryStr += " m.semesterId.id IN :semesterIds";
+            }
+
+            TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
+            if (programId != 0) query.setParameter("rollNumber", program.getName() + "%");
+            if (semesterId != 0) query.setParameter("semesterIds", semesterIds);
+
+            result = query.getResultList();
+        } finally {
+            em.close();
+        }
+
+        return result;
     }
 
     public List<MarksEntity> getStudentMarksById(int stuId) {

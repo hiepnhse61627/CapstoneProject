@@ -7,9 +7,19 @@ a {
     width: 100%;
 }
 
+.select2-container--default .select2-selection--single {
+    border-color: #d2d6de;
+    border-radius: 0px;
+    height: 34px;
+}
+
 .select2-container .select2-selection--single .select2-selection__rendered {
-    margin-top: -7px;
-    padding-left: 4px;
+    /*margin-top: -7px;*/
+    padding-left: 0px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    top: 4px;
 }
 
 .dataTables_scroll .dataTables_scrollHead .dataTables_scrollHeadInner,
