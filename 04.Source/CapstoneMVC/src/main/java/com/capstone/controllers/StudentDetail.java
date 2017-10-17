@@ -189,7 +189,7 @@ public class StudentDetail {
 
             if (!currentTerm[0].equals("0")) {
                 int currentTermNumber = Integer.parseInt(currentTerm[0].replaceAll("[^0-9]", ""));
-                nextTermNumber = currentTermNumber + 1;
+                nextTermNumber = currentTermNumber + 2;
             }
 
             query = em.createQuery("SELECT s FROM CurriculumMappingEntity c, SubjectEntity s WHERE c.term LIKE '%" + nextTermNumber + "' AND c.subjectEntity.id = s.id", SubjectEntity.class);
