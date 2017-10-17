@@ -144,8 +144,8 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
     private List<MarksEntity> processFailedSubject(StudentEntity student) {
         List<MarksEntity> marks = marksService.getStudentMarksById(student.getId());
         // Init students passed and failed
-        List<MarksEntity> listPassed = marks.stream().filter(p -> p.getStatus().contains("Passed")).collect(Collectors.toList());
-        List<MarksEntity> listFailed = marks.stream().filter(f -> !f.getStatus().contains("Passed")).collect(Collectors.toList());
+        List<MarksEntity> listPassed = marks.stream().filter(p -> p.getStatus().contains("Passed") || p.getStatus().contains("Exempt")).collect(Collectors.toList());
+        List<MarksEntity> listFailed = marks.stream().filter(f -> !f.getStatus().contains("Passed") || !f.getStatus().contains("Exempt")).collect(Collectors.toList());
         // compared list
         List<MarksEntity> comparedList = new ArrayList<>();
         // make comparator

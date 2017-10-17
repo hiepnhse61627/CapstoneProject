@@ -106,8 +106,8 @@ public class StudentController {
         // compared list
         List<MarksEntity> comparedList = new ArrayList<>();
         // Init students passed and failed
-        List<MarksEntity> listPassed = markList.stream().filter(p -> p.getStatus().contains("Passed")).collect(Collectors.toList());
-        List<MarksEntity> listFailed = markList.stream().filter(f -> !f.getStatus().contains("Passed")).collect(Collectors.toList());
+        List<MarksEntity> listPassed = markList.stream().filter(p -> p.getStatus().contains("Passed") || p.getStatus().contains("Exempt")).collect(Collectors.toList());
+        List<MarksEntity> listFailed = markList.stream().filter(f -> !f.getStatus().contains("Passed") || !f.getStatus().contains("Exempt")).collect(Collectors.toList());
         // make comparator
         Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
             @Override

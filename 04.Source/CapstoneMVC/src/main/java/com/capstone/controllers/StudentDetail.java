@@ -85,8 +85,8 @@ public class StudentDetail {
         try {
             List<MarksEntity> list = service2.getStudentMarksById(Integer.parseInt(params.get("stuId")));
             // Init students passed and failed
-            List<MarksEntity> listPassed = list.stream().filter(p -> p.getStatus().contains("Passed")).collect(Collectors.toList());
-            List<MarksEntity> listFailed = list.stream().filter(f -> !f.getStatus().contains("Passed")).collect(Collectors.toList());
+            List<MarksEntity> listPassed = list.stream().filter(p -> p.getStatus().contains("Passed") || p.getStatus().contains("Exempt")).collect(Collectors.toList());
+            List<MarksEntity> listFailed = list.stream().filter(f -> !f.getStatus().contains("Passed") || !f.getStatus().contains("Exempt")).collect(Collectors.toList());
             // compared list
             List<MarksEntity> comparedList = new ArrayList<>();
             // make comparator

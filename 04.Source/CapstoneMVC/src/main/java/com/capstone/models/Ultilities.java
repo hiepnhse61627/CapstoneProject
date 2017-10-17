@@ -112,14 +112,14 @@ public class Ultilities {
                 if (subject.get(subId) != null && !subject.get(subId).isEmpty()) {
                     List<MarksEntity> markList = SortMarkBySemester(subject.get(subId));
                     for (MarksEntity m : markList) {
-                        if (m.getStatus().toLowerCase().contains("pass")) {
+                        if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt")) {
                             if (subject.get(prequisiteId) != null && !subject.get(prequisiteId).isEmpty()) {
                                 List<MarksEntity> g = subject.get(prequisiteId);
                                 boolean isPass = false;
                                 MarksEntity tmp = null;
                                 for (MarksEntity k2 : g) {
                                     tmp = k2;
-                                    if (k2.getAverageMark() >= mark) {
+                                    if (k2.getAverageMark() >= mark || k2.getStatus().toLowerCase().contains("exempt")) {
                                         isPass = true;
                                         break;
                                     }
