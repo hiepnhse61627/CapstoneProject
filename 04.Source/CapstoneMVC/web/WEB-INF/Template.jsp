@@ -372,6 +372,13 @@
         <dec:body/>
     </div><!-- /.content-wrapper -->
 </div><!-- ./wrapper -->
+
+<script>
+    $(document).ready(function() {
+        $(".select2-selection span").attr('title', '');
+    });
+</script>
+
 </body>
 
 </html>

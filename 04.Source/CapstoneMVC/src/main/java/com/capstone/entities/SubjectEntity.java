@@ -44,6 +44,8 @@ public class SubjectEntity implements Serializable {
     private String abbreviation;
     @Column(name = "Credits")
     private Integer credits;
+    @Column(name = "IsSpecialized")
+    private Boolean specialized;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
     private List<PrequisiteEntity> prequisiteEntityList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "prequisiteSubjectEntity")
@@ -123,6 +125,14 @@ public class SubjectEntity implements Serializable {
 
     public void setCurriculumMappingEntityList(List<CurriculumMappingEntity> curriculumMappingEntityList) {
         this.curriculumMappingEntityList = curriculumMappingEntityList;
+    }
+
+    public Boolean isSpecialized() {
+        return specialized;
+    }
+
+    public void setSpecialized(Boolean specialized) {
+        this.specialized = specialized;
     }
 
     @Override

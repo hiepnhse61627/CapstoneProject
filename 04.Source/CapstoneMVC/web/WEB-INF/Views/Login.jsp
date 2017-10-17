@@ -67,11 +67,11 @@
                     <p>Sai tên đăng nhập hoặc mật khẩu.</p>
                 </div>
             </c:if>
-            <c:if test="${param.logout != null}">
-                <div class="alert alert-success">
-                    <p>Đăng xuất thành công.</p>
-                </div>
-            </c:if>
+            <%--<c:if test="${param.logout != null}">--%>
+                <%--<div class="alert alert-success">--%>
+                    <%--<p>Đăng xuất thành công.</p>--%>
+                <%--</div>--%>
+            <%--</c:if>--%>
 
             <form action="/processlogin" method="post">
                 <div class="form-group has-feedback">
