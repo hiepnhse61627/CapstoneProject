@@ -25,10 +25,13 @@ import java.io.*;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 @Controller
 public class UploadController {
+
+    private boolean isCancel;
 
     private final String xlsExcelExtension = "xls";
     private final String xlsxExcelExtension = "xlsx";
@@ -225,9 +228,65 @@ public class UploadController {
         return view;
     }
 
+    public boolean isCancel() {
+        return isCancel;
+    }
+
+    public void setCancel(boolean cancel) {
+        isCancel = cancel;
+    }
+
+    @RequestMapping(value = "/cancel", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject Cancel(@RequestParam boolean exit) {
+        setCancel(exit);
+        JsonObject obj = new JsonObject();
+        obj.addProperty("success", true);
+        return obj;
+    }
+
+    @RequestMapping("/async")
+    @ResponseBody
+    public Callable<JsonObject> AsyncTest() {
+        setCancel(false);
+        Callable<JsonObject> asyncTask = new Callable<JsonObject>() {
+            @Override
+            public JsonObject call() {
+                JsonObject obj = new JsonObject();
+                try {
+                    doSlowWork();
+                    obj.addProperty("success", "true");
+                } catch (Exception e) {
+                    obj.addProperty("success", "false");
+                    obj.addProperty("msg", e.getMessage());
+                }
+                return obj;
+            }
+        };
+
+        return asyncTask;
+    }
+
+    public void doSlowWork() {
+        System.out.println("Start  slow work");
+        try {
+            int i = 0;
+            while(!isCancel) {
+                System.out.println(String.valueOf(i++));
+                Thread.sleep(1000);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println("finish slow work");
+    }
+
     @RequestMapping(value = "/upload-exist-marks-file", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject chooseExistMarkFile(@RequestParam("file") String file,  @RequestParam("startRow") int startRow, @RequestParam("endRow") int endRow) {
+        setCancel(false);
+        System.out.println("Cancel is " + String.valueOf(isCancel()));
+
         this.totalLine = 0;
         this.currentLine = 0;
         startRowNumber = startRow;
@@ -248,6 +307,9 @@ public class UploadController {
     @RequestMapping(value = "/uploadStudentMarks", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject uploadStudentMarks(@RequestParam("file") MultipartFile file, @RequestParam("startRow") int startRow, @RequestParam("endRow") int endRow) throws IOException {
+        setCancel(false);
+        System.out.println("Cancel is " + String.valueOf(isCancel()));
+
         this.totalLine = 0;
         this.currentLine = 0;
         startRowNumber = startRow;
@@ -291,77 +353,84 @@ public class UploadController {
             this.currentLine = 0;
             SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
-                row = spreadsheet.getRow(rowIndex);
+                if (!isCancel) {
+                    row = spreadsheet.getRow(rowIndex);
 
-                Cell rollNumberCell = row.getCell(rollNumberIndex);
-                if (rollNumberCell != null) {
-                    StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumberCell.getStringCellValue().trim());
-                    if (studentEntity != null) {
-                        MarksEntity marksEntity = new MarksEntity();
-                        marksEntity.setStudentId(studentEntity);
+                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    if (rollNumberCell != null) {
+                        StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumberCell.getStringCellValue().trim());
+                        if (studentEntity != null) {
+                            MarksEntity marksEntity = new MarksEntity();
+                            marksEntity.setStudentId(studentEntity);
 
-                        Cell semesterNameCell = row.getCell(semesterNameIndex);
-                        Cell subjectCodeCell = row.getCell(subjectCodeIndex);
-                        Cell classNameCell = row.getCell(classNameIndex);
-                        Cell averageMarkCell = row.getCell(averageMarkIndex);
-                        Cell statusCell = row.getCell(statusIndex);
+                            Cell semesterNameCell = row.getCell(semesterNameIndex);
+                            Cell subjectCodeCell = row.getCell(subjectCodeIndex);
+                            Cell classNameCell = row.getCell(classNameIndex);
+                            Cell averageMarkCell = row.getCell(averageMarkIndex);
+                            Cell statusCell = row.getCell(statusIndex);
 
-                        String semesterName = "";
-                        if (semesterNameCell != null) {
-                            semesterName = semesterNameCell.getStringCellValue().trim().toUpperCase().replaceAll(" ", "");
-                            if (semesterName.contains("_H2")) {
-                                semesterName = semesterName.substring(0, semesterName.indexOf("_"));
+                            String semesterName = "";
+                            if (semesterNameCell != null) {
+                                semesterName = semesterNameCell.getStringCellValue().trim().toUpperCase().replaceAll(" ", "");
+                                if (semesterName.contains("_H2")) {
+                                    semesterName = semesterName.substring(0, semesterName.indexOf("_"));
+                                }
+                                RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(semesterName);
+                                if (realSemesterEntity != null) {
+                                    marksEntity.setSemesterId(realSemesterEntity);
+                                } else {
+                                    realSemesterEntity = new RealSemesterEntity();
+                                    realSemesterEntity.setSemester(semesterName);
+                                    marksEntity.setSemesterId(realSemesterService.createRealSemester(realSemesterEntity));
+                                }
                             }
-                            RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(semesterName);
-                            if (realSemesterEntity != null) {
-                                marksEntity.setSemesterId(realSemesterEntity);
-                            } else {
-                                realSemesterEntity = new RealSemesterEntity();
-                                realSemesterEntity.setSemester(semesterName);
-                                marksEntity.setSemesterId(realSemesterService.createRealSemester(realSemesterEntity));
+
+                            if (classNameCell != null && subjectCodeCell != null) {
+                                String cla = classNameCell.getStringCellValue().trim();
+                                String subjectCd = subjectCodeCell.getStringCellValue().trim();
+                                // find subject mark component
+                                SubjectMarkComponentEntity subjectMarkComponentEntity =
+                                        subjectMarkComponentService.findSubjectMarkComponentById(subjectCd.toUpperCase());
+
+                                if (subjectMarkComponentEntity != null) {
+                                    marksEntity.setSubjectId(subjectMarkComponentEntity);
+                                }
+                                // find course
+                                CourseEntity courseEntity = courseService.findCourseByClassAndSubjectCode(cla.toUpperCase(), subjectCd.toUpperCase());
+                                if (courseEntity != null) {
+                                    marksEntity.setCourseId(courseEntity);
+                                } else { // create new course entity
+                                    courseEntity = new CourseEntity();
+                                    courseEntity.setClass1(cla.toUpperCase());
+                                    courseEntity.setSubjectCode(subjectCd.toUpperCase());
+                                    courseEntity.setStartDate(sdf.parse(String.valueOf(new Date("01/01/1970"))));
+                                    courseEntity.setEndDate(sdf.parse(String.valueOf(new Date("01/30/1970"))));
+                                    courseEntity = courseService.createCourse(courseEntity);
+                                    marksEntity.setCourseId(courseEntity);
+                                }
                             }
-                        }
 
-                        if (classNameCell != null && subjectCodeCell != null) {
-                            String cla = classNameCell.getStringCellValue().trim();
-                            String subjectCd = subjectCodeCell.getStringCellValue().trim();
-                            // find subject mark component
-                            SubjectMarkComponentEntity subjectMarkComponentEntity =
-                                    subjectMarkComponentService.findSubjectMarkComponentById(subjectCd.toUpperCase());
-
-                            if (subjectMarkComponentEntity != null) {
-                                marksEntity.setSubjectId(subjectMarkComponentEntity);
+                            if (averageMarkCell != null) {
+                                marksEntity.setAverageMark(averageMarkCell.getNumericCellValue());
                             }
-                            // find course
-                            CourseEntity courseEntity = courseService.findCourseByClassAndSubjectCode(cla.toUpperCase(), subjectCd.toUpperCase());
-                            if (courseEntity != null) {
-                                marksEntity.setCourseId(courseEntity);
-                            } else { // create new course entity
-                                courseEntity = new CourseEntity();
-                                courseEntity.setClass1(cla.toUpperCase());
-                                courseEntity.setSubjectCode(subjectCd.toUpperCase());
-                                courseEntity.setStartDate(sdf.parse(String.valueOf(new Date("01/01/1970"))));
-                                courseEntity.setEndDate(sdf.parse(String.valueOf(new Date("01/30/1970"))));
-                                courseEntity = courseService.createCourse(courseEntity);
-                                marksEntity.setCourseId(courseEntity);
+
+                            if (statusCell != null) {
+                                marksEntity.setStatus(statusCell.getStringCellValue());
                             }
+                            // Add mark entity to list
+                            marksEntities.add(marksEntity);
                         }
-
-                        if (averageMarkCell != null) {
-                            marksEntity.setAverageMark(averageMarkCell.getNumericCellValue());
-                        }
-
-                        if (statusCell != null) {
-                            marksEntity.setStatus(statusCell.getStringCellValue());
-                        }
-                        // Add mark entity to list
-                        marksEntities.add(marksEntity);
                     }
+                    this.currentLine++;
+                } else {
+                    break;
                 }
-                this.currentLine++;
             }
-            is.close();
-            marksService.createMarks(marksEntities);
+
+            if (!isCancel) {
+                is.close();
+                marksService.createMarks(marksEntities);
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
             jsonObject.addProperty("success", false);

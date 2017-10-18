@@ -44,7 +44,7 @@
                     <div class="my-content">
                         <div class="col-md-12">
                             <label for="file" hidden></label>
-                            <input type="file" accept=".xlsx, .xls" id="file" name="file" />
+                            <input type="file" accept=".xlsx, .xls" id="file" name="file"/>
                         </div>
                     </div>
                 </div>
@@ -57,9 +57,9 @@
 
             <div class="form-group">
                 <button type="button" onclick="Add()" class="btn btn-success">Import</button>
+                <button type="button" onclick="asynctest()">async</button>
             </div>
         </div>
-
     </div>
 </section>
 
@@ -92,16 +92,16 @@
                 swal({
                     title: 'Nhập dòng bắt đầu và dòng kết thúc',
                     html:
-                        '<input id="startRow" class="swal2-input">' +
-                        '<input id="endRow" class="swal2-input">',
+                    '<input id="startRow" class="swal2-input">' +
+                    '<input id="endRow" class="swal2-input">',
                     showCancelButton: true,
                     confirmButtonText: 'Gửi',
                     showLoaderOnConfirm: true,
                     preConfirm: function () {
                         return new Promise(function (resolve, reject) {
                             resolve([
-                                    $('#startRow').val(),
-                                    $('#endRow').val()
+                                $('#startRow').val(),
+                                $('#endRow').val()
                             ]);
                         })
                     },
@@ -117,7 +117,8 @@
                     swal({
                         title: 'Đang xử lý',
                         html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>' +
-                        '<div class="form-group" id="progress"></div>',
+                        '<div class="form-group" id="progress"></div>' +
+                        '<div><button type="button" onclick="Cancel()">Hủy</button></div>',
                         type: 'info',
                         onOpen: function () {
                             swal.showLoading();
@@ -157,8 +158,8 @@
         swal({
             title: 'Nhập dòng bắt đầu và dòng kết thúc',
             html:
-                   '<input id="startRow" class="swal2-input">' +
-                   '<input id="endRow" class="swal2-input">',
+            '<input id="startRow" class="swal2-input">' +
+            '<input id="endRow" class="swal2-input">',
             showCancelButton: true,
             confirmButtonText: 'Gửi',
             showLoaderOnConfirm: true,
@@ -181,7 +182,9 @@
 
             swal({
                 title: 'Đang xử lý',
-                html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div><div id="progress" class="form-group"></div>',
+                html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>' +
+                '<div id="progress" class="form-group"></div>' +
+                '<div><button type="button" onclick="Cancel()">Hủy</button></div>',
                 type: 'info',
                 onOpen: function () {
                     swal.showLoading();
@@ -224,6 +227,50 @@
                     setTimeout("updateSuccessSavedMarks(isrunning)", 50);
                 }
             }
+        });
+    }
+
+    function asynctest() {
+        swal({
+            title: 'Đang xử lý',
+            html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>' +
+            '<div id="progress" class="form-group"></div>' +
+            '<div><button type="button" id="cancel">Hủy</button></div>',
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                $.ajax({
+                    type: 'GET',
+                    url: '/async',
+                    success: function (result) {
+                        if (result.success) {
+                            swal(
+                                'Thành công!',
+                                'Đã import danh sách điểm!',
+                                'success'
+                            );
+                        } else {
+                            swal('Đã xảy ra lỗi!', result.message, 'error');
+                        }
+                    }
+                });
+                $('#cancel').click(function () {
+                    var form = new FormData();
+                    form.append("exit", true);
+
+                    $.ajax({
+                        type: 'POST',
+                        url: '/cancel',
+                        processData: false,
+                        contentType: false,
+                        data: form,
+                        success: function (result) {
+                            console.log(result);
+                        }
+                    });
+                });
+            },
+            allowOutsideClick: false
         });
     }
 </script>

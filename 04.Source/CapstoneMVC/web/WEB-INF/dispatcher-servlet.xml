@@ -10,7 +10,19 @@
         <property name="suffix" value=".jsp"/>
     </bean>
     <mvc:resources mapping="/Resources/**" location="/Resources/"/>
-    <mvc:annotation-driven />
+    <!-- ================================== -->
+    <!-- 0. Set up task executor for async  -->
+    <!-- ================================== -->
+    <mvc:annotation-driven>
+        <mvc:async-support default-timeout="0" task-executor="taskExecutor"/>
+    </mvc:annotation-driven>
+    <!-- modify the parameters of thread pool -->
+    <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="5"/>
+        <property name="maxPoolSize" value="50"/>
+        <property name="queueCapacity" value="10"/>
+        <property name="keepAliveSeconds" value="120"/>
+    </bean>
     <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
         <property name="maxUploadSize" value="10000000" />
     </bean>
