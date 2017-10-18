@@ -1,5 +1,6 @@
 package com.capstone.controllers;
 
+import com.capstone.models.Logger;
 import com.capstone.models.ReadAndSaveFileToServer;
 import com.capstone.services.*;
 import com.google.gson.JsonObject;
@@ -245,82 +246,54 @@ public class UploadController {
         return obj;
     }
 
-    @RequestMapping("/async")
-    @ResponseBody
-    public Callable<JsonObject> AsyncTest() {
-        setCancel(false);
-        Callable<JsonObject> asyncTask = new Callable<JsonObject>() {
-            @Override
-            public JsonObject call() {
-                JsonObject obj = new JsonObject();
-                try {
-                    doSlowWork();
-                    obj.addProperty("success", "true");
-                } catch (Exception e) {
-                    obj.addProperty("success", "false");
-                    obj.addProperty("msg", e.getMessage());
-                }
-                return obj;
-            }
-        };
-
-        return asyncTask;
-    }
-
-    public void doSlowWork() {
-        System.out.println("Start  slow work");
-        try {
-            int i = 0;
-            while(!isCancel) {
-                System.out.println(String.valueOf(i++));
-                Thread.sleep(1000);
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        System.out.println("finish slow work");
-    }
-
     @RequestMapping(value = "/upload-exist-marks-file", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject chooseExistMarkFile(@RequestParam("file") String file,  @RequestParam("startRow") int startRow, @RequestParam("endRow") int endRow) {
+    public Callable<JsonObject> chooseExistMarkFile(@RequestParam("file") String file,  @RequestParam("startRow") int startRow, @RequestParam("endRow") int endRow) {
         setCancel(false);
         System.out.println("Cancel is " + String.valueOf(isCancel()));
 
-        this.totalLine = 0;
-        this.currentLine = 0;
-        startRowNumber = startRow;
-        endRowNumber = endRow;
-        JsonObject jsonObject;
-        try {
-            File f = new File(context.getRealPath("/") + "UploadedFiles/" + marksFolder + "/" + file);
-            jsonObject = readMarkFile(null, f, false);
-        } catch (Exception ex) {
-            jsonObject = new JsonObject();
-            jsonObject.addProperty("success", false);
-            jsonObject.addProperty("message", ex.getMessage());
-        }
+        Callable<JsonObject> callable = () -> {
+            this.totalLine = 0;
+            this.currentLine = 0;
+            startRowNumber = startRow;
+            endRowNumber = endRow;
+            JsonObject jsonObject;
+            try {
+                File f = new File(context.getRealPath("/") + "UploadedFiles/" + marksFolder + "/" + file);
+                jsonObject = readMarkFile(null, f, false);
+            } catch (Exception ex) {
+                jsonObject = new JsonObject();
+                jsonObject.addProperty("success", false);
+                jsonObject.addProperty("message", ex.getMessage());
+            }
 
-        return jsonObject;
+            return jsonObject;
+        };
+
+        return callable;
     }
 
     @RequestMapping(value = "/uploadStudentMarks", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject uploadStudentMarks(@RequestParam("file") MultipartFile file, @RequestParam("startRow") int startRow, @RequestParam("endRow") int endRow) throws IOException {
+    public Callable<JsonObject> uploadStudentMarks(@RequestParam("file") MultipartFile file, @RequestParam("startRow") int startRow, @RequestParam("endRow") int endRow) throws IOException {
         setCancel(false);
         System.out.println("Cancel is " + String.valueOf(isCancel()));
 
-        this.totalLine = 0;
-        this.currentLine = 0;
-        startRowNumber = startRow;
-        endRowNumber = endRow;
-        JsonObject jsonObject = readMarkFile(file, null, true);
-        if (jsonObject.get("success").getAsBoolean()) {
-            ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
-            read.saveFile(context, file, marksFolder);
-        }
+        Callable<JsonObject> callable = () -> {
+            this.totalLine = 0;
+            this.currentLine = 0;
+            startRowNumber = startRow;
+            endRowNumber = endRow;
+            JsonObject jsonObject = readMarkFile(file, null, true);
+            if (jsonObject.get("success").getAsBoolean()) {
+                ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+                read.saveFile(context, file, marksFolder);
+            }
 
-        return jsonObject;
+            return jsonObject;
+        };
+
+        return callable;
     }
 
     private JsonObject readMarkFile(MultipartFile file, File file2, boolean isNewFile) {
@@ -427,18 +400,24 @@ public class UploadController {
                 }
             }
 
+            is.close();
+            marksService.createMarks(marksEntities);
+
             if (!isCancel) {
-                is.close();
-                marksService.createMarks(marksEntities);
+                jsonObject.addProperty("success", true);
+            } else {
+                jsonObject.addProperty("success", false);
+                jsonObject.addProperty("message", "Đã hủy tiến trình!");
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+
+            jsonObject = new JsonObject();
             jsonObject.addProperty("success", false);
             jsonObject.addProperty("message", ex.getMessage());
-            return jsonObject;
         }
 
-        jsonObject.addProperty("success", true);
         return jsonObject;
     }
 
