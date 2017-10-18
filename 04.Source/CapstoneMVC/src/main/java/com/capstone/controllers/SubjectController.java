@@ -1,5 +1,6 @@
 package com.capstone.controllers;
 
+import com.capstone.entities.PrequisiteEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.models.ReadAndSaveFileToServer;
 import com.capstone.services.ISubjectService;
@@ -9,6 +10,8 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -85,10 +88,10 @@ public class SubjectController {
                 is = new FileInputStream(file2);
             }
 
-            HSSFWorkbook workbook = new HSSFWorkbook(is);
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
 
             for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-                HSSFSheet sheet = workbook.getSheetAt(i);
+                XSSFSheet sheet = workbook.getSheetAt(i);
                 Iterator<Row> rowIterator = sheet.iterator();
 
                 while (rowIterator.hasNext()) {
@@ -112,7 +115,30 @@ public class SubjectController {
                                 }
                             } else if (cell.getColumnIndex() == 4) { // Prerequisite
                                 String prequisite = cell.getStringCellValue().trim();
-
+                                en.setPrequisiteEntityList(null);
+                                if (prequisite != null && !prequisite.isEmpty()) {
+                                    List<PrequisiteEntity> pres = new ArrayList<>();
+                                    String[] split = prequisite.split("OR");
+                                    if (split.length > 1) {
+                                        for (String s: split) {
+                                            PrequisiteEntity entity = new PrequisiteEntity();
+                                            entity.setFailMark(4);
+                                            String data = s.replaceAll("\\(", "").replaceAll("\\)", "").trim();
+                                            entity.setPrequisiteSubs(data);
+                                            entity.setSubId(en);
+                                            pres.add(entity);
+                                        }
+                                        en.setPrequisiteEntityList(pres);
+                                    } else {
+                                        PrequisiteEntity entity = new PrequisiteEntity();
+                                        entity.setFailMark(4);
+                                        entity.setSubId(en);
+                                        String data = split[0].replaceAll("\\(", "").replaceAll("\\)", "").trim();
+                                        entity.setPrequisiteSubs(data);
+                                        pres.add(entity);
+                                        en.setPrequisiteEntityList(pres);
+                                    }
+                                }
                             } else if (cell.getColumnIndex() == 5) {
                                 String replacementId = cell.getStringCellValue().trim();
                                 if (!replacementId.isEmpty()) {
