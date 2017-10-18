@@ -5,27 +5,24 @@
  */
 package com.capstone.jpa;
 
-import com.capstone.jpa.exceptions.*;
-
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-
 import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.entities.PrequisiteEntity;
-
+import com.capstone.entities.SubjectEntity;
+import com.capstone.jpa.exceptions.IllegalOrphanException;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.capstone.entities.CurriculumMappingEntity;
-import com.capstone.entities.SubjectEntity;
-
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
 /**
+ *
  * @author Rem
  */
 public class SubjectEntityJpaController implements Serializable {
@@ -33,7 +30,6 @@ public class SubjectEntityJpaController implements Serializable {
     public SubjectEntityJpaController(EntityManagerFactory emf) {
         this.emf = emf;
     }
-
     private EntityManagerFactory emf = null;
 
     public EntityManager getEntityManager() {
@@ -41,14 +37,8 @@ public class SubjectEntityJpaController implements Serializable {
     }
 
     public void create(SubjectEntity subjectEntity) throws IllegalOrphanException, PreexistingEntityException, Exception {
-        if (subjectEntity.getSubOfPrequisiteList() == null) {
-            subjectEntity.setSubOfPrequisiteList(new ArrayList<PrequisiteEntity>());
-        }
-        if (subjectEntity.getSubOfPrequisiteList() == null) {
-            subjectEntity.setSubOfPrequisiteList(new ArrayList<PrequisiteEntity>());
-        }
-        if (subjectEntity.getCurriculumMappingEntityList() == null) {
-            subjectEntity.setCurriculumMappingEntityList(new ArrayList<CurriculumMappingEntity>());
+        if (subjectEntity.getPrequisiteEntityList() == null) {
+            subjectEntity.setPrequisiteEntityList(new ArrayList<PrequisiteEntity>());
         }
         List<String> illegalOrphanMessages = null;
         SubjectMarkComponentEntity subjectMarkComponentEntityOrphanCheck = subjectEntity.getSubjectMarkComponentEntity();
@@ -73,54 +63,24 @@ public class SubjectEntityJpaController implements Serializable {
                 subjectMarkComponentEntity = em.getReference(subjectMarkComponentEntity.getClass(), subjectMarkComponentEntity.getSubjectId());
                 subjectEntity.setSubjectMarkComponentEntity(subjectMarkComponentEntity);
             }
-            List<PrequisiteEntity> attachedSubOfPrequisiteList = new ArrayList<PrequisiteEntity>();
-            for (PrequisiteEntity subOfPrequisiteListPrequisiteEntityToAttach : subjectEntity.getSubOfPrequisiteList()) {
-                subOfPrequisiteListPrequisiteEntityToAttach = em.getReference(subOfPrequisiteListPrequisiteEntityToAttach.getClass(), subOfPrequisiteListPrequisiteEntityToAttach.getPrequisiteEntityPK());
-                attachedSubOfPrequisiteList.add(subOfPrequisiteListPrequisiteEntityToAttach);
-            }
-            subjectEntity.setSubOfPrequisiteList(attachedSubOfPrequisiteList);
             List<PrequisiteEntity> attachedPrequisiteEntityList = new ArrayList<PrequisiteEntity>();
-            for (PrequisiteEntity prequisiteEntityListPrequisiteEntityToAttach : subjectEntity.getSubOfPrequisiteList()) {
-                prequisiteEntityListPrequisiteEntityToAttach = em.getReference(prequisiteEntityListPrequisiteEntityToAttach.getClass(), prequisiteEntityListPrequisiteEntityToAttach.getPrequisiteEntityPK());
+            for (PrequisiteEntity prequisiteEntityListPrequisiteEntityToAttach : subjectEntity.getPrequisiteEntityList()) {
+                prequisiteEntityListPrequisiteEntityToAttach = em.getReference(prequisiteEntityListPrequisiteEntityToAttach.getClass(), prequisiteEntityListPrequisiteEntityToAttach.getId());
                 attachedPrequisiteEntityList.add(prequisiteEntityListPrequisiteEntityToAttach);
             }
-            subjectEntity.setSubOfPrequisiteList(attachedPrequisiteEntityList);
-            List<CurriculumMappingEntity> attachedCurriculumMappingEntityList = new ArrayList<CurriculumMappingEntity>();
-            for (CurriculumMappingEntity curriculumMappingEntityListCurriculumMappingEntityToAttach : subjectEntity.getCurriculumMappingEntityList()) {
-                curriculumMappingEntityListCurriculumMappingEntityToAttach = em.getReference(curriculumMappingEntityListCurriculumMappingEntityToAttach.getClass(), curriculumMappingEntityListCurriculumMappingEntityToAttach.getCurriculumMappingEntityPK());
-                attachedCurriculumMappingEntityList.add(curriculumMappingEntityListCurriculumMappingEntityToAttach);
-            }
-            subjectEntity.setCurriculumMappingEntityList(attachedCurriculumMappingEntityList);
+            subjectEntity.setPrequisiteEntityList(attachedPrequisiteEntityList);
             em.persist(subjectEntity);
             if (subjectMarkComponentEntity != null) {
                 subjectMarkComponentEntity.setSubjectEntity(subjectEntity);
                 subjectMarkComponentEntity = em.merge(subjectMarkComponentEntity);
             }
-            for (PrequisiteEntity subOfPrequisiteListPrequisiteEntity : subjectEntity.getSubOfPrequisiteList()) {
-                SubjectEntity oldSubjectEntityOfSubOfPrequisiteListPrequisiteEntity = subOfPrequisiteListPrequisiteEntity.getSubjectEntity();
-                subOfPrequisiteListPrequisiteEntity.setSubjectEntity(subjectEntity);
-                subOfPrequisiteListPrequisiteEntity = em.merge(subOfPrequisiteListPrequisiteEntity);
-                if (oldSubjectEntityOfSubOfPrequisiteListPrequisiteEntity != null) {
-                    oldSubjectEntityOfSubOfPrequisiteListPrequisiteEntity.getSubOfPrequisiteList().remove(subOfPrequisiteListPrequisiteEntity);
-                    oldSubjectEntityOfSubOfPrequisiteListPrequisiteEntity = em.merge(oldSubjectEntityOfSubOfPrequisiteListPrequisiteEntity);
-                }
-            }
-            for (PrequisiteEntity prequisiteEntityListPrequisiteEntity : subjectEntity.getSubOfPrequisiteList()) {
-                SubjectEntity oldPrequisiteSubjectEntityOfPrequisiteEntityListPrequisiteEntity = prequisiteEntityListPrequisiteEntity.getPrequisiteSubjectEntity();
-                prequisiteEntityListPrequisiteEntity.setPrequisiteSubjectEntity(subjectEntity);
+            for (PrequisiteEntity prequisiteEntityListPrequisiteEntity : subjectEntity.getPrequisiteEntityList()) {
+                SubjectEntity oldSubIdOfPrequisiteEntityListPrequisiteEntity = prequisiteEntityListPrequisiteEntity.getSubId();
+                prequisiteEntityListPrequisiteEntity.setSubId(subjectEntity);
                 prequisiteEntityListPrequisiteEntity = em.merge(prequisiteEntityListPrequisiteEntity);
-                if (oldPrequisiteSubjectEntityOfPrequisiteEntityListPrequisiteEntity != null) {
-                    oldPrequisiteSubjectEntityOfPrequisiteEntityListPrequisiteEntity.getSubOfPrequisiteList().remove(prequisiteEntityListPrequisiteEntity);
-                    oldPrequisiteSubjectEntityOfPrequisiteEntityListPrequisiteEntity = em.merge(oldPrequisiteSubjectEntityOfPrequisiteEntityListPrequisiteEntity);
-                }
-            }
-            for (CurriculumMappingEntity curriculumMappingEntityListCurriculumMappingEntity : subjectEntity.getCurriculumMappingEntityList()) {
-                SubjectEntity oldSubjectEntityOfCurriculumMappingEntityListCurriculumMappingEntity = curriculumMappingEntityListCurriculumMappingEntity.getSubjectEntity();
-                curriculumMappingEntityListCurriculumMappingEntity.setSubjectEntity(subjectEntity);
-                curriculumMappingEntityListCurriculumMappingEntity = em.merge(curriculumMappingEntityListCurriculumMappingEntity);
-                if (oldSubjectEntityOfCurriculumMappingEntityListCurriculumMappingEntity != null) {
-                    oldSubjectEntityOfCurriculumMappingEntityListCurriculumMappingEntity.getCurriculumMappingEntityList().remove(curriculumMappingEntityListCurriculumMappingEntity);
-                    oldSubjectEntityOfCurriculumMappingEntityListCurriculumMappingEntity = em.merge(oldSubjectEntityOfCurriculumMappingEntityListCurriculumMappingEntity);
+                if (oldSubIdOfPrequisiteEntityListPrequisiteEntity != null) {
+                    oldSubIdOfPrequisiteEntityListPrequisiteEntity.getPrequisiteEntityList().remove(prequisiteEntityListPrequisiteEntity);
+                    oldSubIdOfPrequisiteEntityListPrequisiteEntity = em.merge(oldSubIdOfPrequisiteEntityListPrequisiteEntity);
                 }
             }
             em.getTransaction().commit();
@@ -144,12 +104,8 @@ public class SubjectEntityJpaController implements Serializable {
             SubjectEntity persistentSubjectEntity = em.find(SubjectEntity.class, subjectEntity.getId());
             SubjectMarkComponentEntity subjectMarkComponentEntityOld = persistentSubjectEntity.getSubjectMarkComponentEntity();
             SubjectMarkComponentEntity subjectMarkComponentEntityNew = subjectEntity.getSubjectMarkComponentEntity();
-            List<PrequisiteEntity> subOfPrequisiteListOld = persistentSubjectEntity.getSubOfPrequisiteList();
-            List<PrequisiteEntity> subOfPrequisiteListNew = subjectEntity.getSubOfPrequisiteList();
-            List<PrequisiteEntity> prequisiteEntityListOld = persistentSubjectEntity.getSubOfPrequisiteList();
-            List<PrequisiteEntity> prequisiteEntityListNew = subjectEntity.getSubOfPrequisiteList();
-            List<CurriculumMappingEntity> curriculumMappingEntityListOld = persistentSubjectEntity.getCurriculumMappingEntityList();
-            List<CurriculumMappingEntity> curriculumMappingEntityListNew = subjectEntity.getCurriculumMappingEntityList();
+            List<PrequisiteEntity> prequisiteEntityListOld = persistentSubjectEntity.getPrequisiteEntityList();
+            List<PrequisiteEntity> prequisiteEntityListNew = subjectEntity.getPrequisiteEntityList();
             List<String> illegalOrphanMessages = null;
             if (subjectMarkComponentEntityNew != null && !subjectMarkComponentEntityNew.equals(subjectMarkComponentEntityOld)) {
                 SubjectEntity oldSubjectEntityOfSubjectMarkComponentEntity = subjectMarkComponentEntityNew.getSubjectEntity();
@@ -160,28 +116,12 @@ public class SubjectEntityJpaController implements Serializable {
                     illegalOrphanMessages.add("The SubjectMarkComponentEntity " + subjectMarkComponentEntityNew + " already has an item of type SubjectEntity whose subjectMarkComponentEntity column cannot be null. Please make another selection for the subjectMarkComponentEntity field.");
                 }
             }
-            for (PrequisiteEntity subOfPrequisiteListOldPrequisiteEntity : subOfPrequisiteListOld) {
-                if (!subOfPrequisiteListNew.contains(subOfPrequisiteListOldPrequisiteEntity)) {
-                    if (illegalOrphanMessages == null) {
-                        illegalOrphanMessages = new ArrayList<String>();
-                    }
-                    illegalOrphanMessages.add("You must retain PrequisiteEntity " + subOfPrequisiteListOldPrequisiteEntity + " since its subjectEntity field is not nullable.");
-                }
-            }
             for (PrequisiteEntity prequisiteEntityListOldPrequisiteEntity : prequisiteEntityListOld) {
                 if (!prequisiteEntityListNew.contains(prequisiteEntityListOldPrequisiteEntity)) {
                     if (illegalOrphanMessages == null) {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
-                    illegalOrphanMessages.add("You must retain PrequisiteEntity " + prequisiteEntityListOldPrequisiteEntity + " since its prequisiteSubjectEntity field is not nullable.");
-                }
-            }
-            for (CurriculumMappingEntity curriculumMappingEntityListOldCurriculumMappingEntity : curriculumMappingEntityListOld) {
-                if (!curriculumMappingEntityListNew.contains(curriculumMappingEntityListOldCurriculumMappingEntity)) {
-                    if (illegalOrphanMessages == null) {
-                        illegalOrphanMessages = new ArrayList<String>();
-                    }
-                    illegalOrphanMessages.add("You must retain CurriculumMappingEntity " + curriculumMappingEntityListOldCurriculumMappingEntity + " since its subjectEntity field is not nullable.");
+                    illegalOrphanMessages.add("You must retain PrequisiteEntity " + prequisiteEntityListOldPrequisiteEntity + " since its subId field is not nullable.");
                 }
             }
             if (illegalOrphanMessages != null) {
@@ -191,27 +131,13 @@ public class SubjectEntityJpaController implements Serializable {
                 subjectMarkComponentEntityNew = em.getReference(subjectMarkComponentEntityNew.getClass(), subjectMarkComponentEntityNew.getSubjectId());
                 subjectEntity.setSubjectMarkComponentEntity(subjectMarkComponentEntityNew);
             }
-            List<PrequisiteEntity> attachedSubOfPrequisiteListNew = new ArrayList<PrequisiteEntity>();
-            for (PrequisiteEntity subOfPrequisiteListNewPrequisiteEntityToAttach : subOfPrequisiteListNew) {
-                subOfPrequisiteListNewPrequisiteEntityToAttach = em.getReference(subOfPrequisiteListNewPrequisiteEntityToAttach.getClass(), subOfPrequisiteListNewPrequisiteEntityToAttach.getPrequisiteEntityPK());
-                attachedSubOfPrequisiteListNew.add(subOfPrequisiteListNewPrequisiteEntityToAttach);
-            }
-            subOfPrequisiteListNew = attachedSubOfPrequisiteListNew;
-            subjectEntity.setSubOfPrequisiteList(subOfPrequisiteListNew);
             List<PrequisiteEntity> attachedPrequisiteEntityListNew = new ArrayList<PrequisiteEntity>();
             for (PrequisiteEntity prequisiteEntityListNewPrequisiteEntityToAttach : prequisiteEntityListNew) {
-                prequisiteEntityListNewPrequisiteEntityToAttach = em.getReference(prequisiteEntityListNewPrequisiteEntityToAttach.getClass(), prequisiteEntityListNewPrequisiteEntityToAttach.getPrequisiteEntityPK());
+                prequisiteEntityListNewPrequisiteEntityToAttach = em.getReference(prequisiteEntityListNewPrequisiteEntityToAttach.getClass(), prequisiteEntityListNewPrequisiteEntityToAttach.getId());
                 attachedPrequisiteEntityListNew.add(prequisiteEntityListNewPrequisiteEntityToAttach);
             }
             prequisiteEntityListNew = attachedPrequisiteEntityListNew;
-            subjectEntity.setSubOfPrequisiteList(prequisiteEntityListNew);
-            List<CurriculumMappingEntity> attachedCurriculumMappingEntityListNew = new ArrayList<CurriculumMappingEntity>();
-            for (CurriculumMappingEntity curriculumMappingEntityListNewCurriculumMappingEntityToAttach : curriculumMappingEntityListNew) {
-                curriculumMappingEntityListNewCurriculumMappingEntityToAttach = em.getReference(curriculumMappingEntityListNewCurriculumMappingEntityToAttach.getClass(), curriculumMappingEntityListNewCurriculumMappingEntityToAttach.getCurriculumMappingEntityPK());
-                attachedCurriculumMappingEntityListNew.add(curriculumMappingEntityListNewCurriculumMappingEntityToAttach);
-            }
-            curriculumMappingEntityListNew = attachedCurriculumMappingEntityListNew;
-            subjectEntity.setCurriculumMappingEntityList(curriculumMappingEntityListNew);
+            subjectEntity.setPrequisiteEntityList(prequisiteEntityListNew);
             subjectEntity = em.merge(subjectEntity);
             if (subjectMarkComponentEntityOld != null && !subjectMarkComponentEntityOld.equals(subjectMarkComponentEntityNew)) {
                 subjectMarkComponentEntityOld.setSubjectEntity(null);
@@ -221,36 +147,14 @@ public class SubjectEntityJpaController implements Serializable {
                 subjectMarkComponentEntityNew.setSubjectEntity(subjectEntity);
                 subjectMarkComponentEntityNew = em.merge(subjectMarkComponentEntityNew);
             }
-            for (PrequisiteEntity subOfPrequisiteListNewPrequisiteEntity : subOfPrequisiteListNew) {
-                if (!subOfPrequisiteListOld.contains(subOfPrequisiteListNewPrequisiteEntity)) {
-                    SubjectEntity oldSubjectEntityOfSubOfPrequisiteListNewPrequisiteEntity = subOfPrequisiteListNewPrequisiteEntity.getSubjectEntity();
-                    subOfPrequisiteListNewPrequisiteEntity.setSubjectEntity(subjectEntity);
-                    subOfPrequisiteListNewPrequisiteEntity = em.merge(subOfPrequisiteListNewPrequisiteEntity);
-                    if (oldSubjectEntityOfSubOfPrequisiteListNewPrequisiteEntity != null && !oldSubjectEntityOfSubOfPrequisiteListNewPrequisiteEntity.equals(subjectEntity)) {
-                        oldSubjectEntityOfSubOfPrequisiteListNewPrequisiteEntity.getSubOfPrequisiteList().remove(subOfPrequisiteListNewPrequisiteEntity);
-                        oldSubjectEntityOfSubOfPrequisiteListNewPrequisiteEntity = em.merge(oldSubjectEntityOfSubOfPrequisiteListNewPrequisiteEntity);
-                    }
-                }
-            }
             for (PrequisiteEntity prequisiteEntityListNewPrequisiteEntity : prequisiteEntityListNew) {
                 if (!prequisiteEntityListOld.contains(prequisiteEntityListNewPrequisiteEntity)) {
-                    SubjectEntity oldPrequisiteSubjectEntityOfPrequisiteEntityListNewPrequisiteEntity = prequisiteEntityListNewPrequisiteEntity.getPrequisiteSubjectEntity();
-                    prequisiteEntityListNewPrequisiteEntity.setPrequisiteSubjectEntity(subjectEntity);
+                    SubjectEntity oldSubIdOfPrequisiteEntityListNewPrequisiteEntity = prequisiteEntityListNewPrequisiteEntity.getSubId();
+                    prequisiteEntityListNewPrequisiteEntity.setSubId(subjectEntity);
                     prequisiteEntityListNewPrequisiteEntity = em.merge(prequisiteEntityListNewPrequisiteEntity);
-                    if (oldPrequisiteSubjectEntityOfPrequisiteEntityListNewPrequisiteEntity != null && !oldPrequisiteSubjectEntityOfPrequisiteEntityListNewPrequisiteEntity.equals(subjectEntity)) {
-                        oldPrequisiteSubjectEntityOfPrequisiteEntityListNewPrequisiteEntity.getSubOfPrequisiteList().remove(prequisiteEntityListNewPrequisiteEntity);
-                        oldPrequisiteSubjectEntityOfPrequisiteEntityListNewPrequisiteEntity = em.merge(oldPrequisiteSubjectEntityOfPrequisiteEntityListNewPrequisiteEntity);
-                    }
-                }
-            }
-            for (CurriculumMappingEntity curriculumMappingEntityListNewCurriculumMappingEntity : curriculumMappingEntityListNew) {
-                if (!curriculumMappingEntityListOld.contains(curriculumMappingEntityListNewCurriculumMappingEntity)) {
-                    SubjectEntity oldSubjectEntityOfCurriculumMappingEntityListNewCurriculumMappingEntity = curriculumMappingEntityListNewCurriculumMappingEntity.getSubjectEntity();
-                    curriculumMappingEntityListNewCurriculumMappingEntity.setSubjectEntity(subjectEntity);
-                    curriculumMappingEntityListNewCurriculumMappingEntity = em.merge(curriculumMappingEntityListNewCurriculumMappingEntity);
-                    if (oldSubjectEntityOfCurriculumMappingEntityListNewCurriculumMappingEntity != null && !oldSubjectEntityOfCurriculumMappingEntityListNewCurriculumMappingEntity.equals(subjectEntity)) {
-                        oldSubjectEntityOfCurriculumMappingEntityListNewCurriculumMappingEntity.getCurriculumMappingEntityList().remove(curriculumMappingEntityListNewCurriculumMappingEntity);
-                        oldSubjectEntityOfCurriculumMappingEntityListNewCurriculumMappingEntity = em.merge(oldSubjectEntityOfCurriculumMappingEntityListNewCurriculumMappingEntity);
+                    if (oldSubIdOfPrequisiteEntityListNewPrequisiteEntity != null && !oldSubIdOfPrequisiteEntityListNewPrequisiteEntity.equals(subjectEntity)) {
+                        oldSubIdOfPrequisiteEntityListNewPrequisiteEntity.getPrequisiteEntityList().remove(prequisiteEntityListNewPrequisiteEntity);
+                        oldSubIdOfPrequisiteEntityListNewPrequisiteEntity = em.merge(oldSubIdOfPrequisiteEntityListNewPrequisiteEntity);
                     }
                 }
             }
@@ -284,26 +188,12 @@ public class SubjectEntityJpaController implements Serializable {
                 throw new NonexistentEntityException("The subjectEntity with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
-            List<PrequisiteEntity> subOfPrequisiteListOrphanCheck = subjectEntity.getSubOfPrequisiteList();
-            for (PrequisiteEntity subOfPrequisiteListOrphanCheckPrequisiteEntity : subOfPrequisiteListOrphanCheck) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("This SubjectEntity (" + subjectEntity + ") cannot be destroyed since the PrequisiteEntity " + subOfPrequisiteListOrphanCheckPrequisiteEntity + " in its subOfPrequisiteList field has a non-nullable subjectEntity field.");
-            }
-            List<PrequisiteEntity> prequisiteEntityListOrphanCheck = subjectEntity.getSubOfPrequisiteList();
+            List<PrequisiteEntity> prequisiteEntityListOrphanCheck = subjectEntity.getPrequisiteEntityList();
             for (PrequisiteEntity prequisiteEntityListOrphanCheckPrequisiteEntity : prequisiteEntityListOrphanCheck) {
                 if (illegalOrphanMessages == null) {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
-                illegalOrphanMessages.add("This SubjectEntity (" + subjectEntity + ") cannot be destroyed since the PrequisiteEntity " + prequisiteEntityListOrphanCheckPrequisiteEntity + " in its prequisiteEntityList field has a non-nullable prequisiteSubjectEntity field.");
-            }
-            List<CurriculumMappingEntity> curriculumMappingEntityListOrphanCheck = subjectEntity.getCurriculumMappingEntityList();
-            for (CurriculumMappingEntity curriculumMappingEntityListOrphanCheckCurriculumMappingEntity : curriculumMappingEntityListOrphanCheck) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("This SubjectEntity (" + subjectEntity + ") cannot be destroyed since the CurriculumMappingEntity " + curriculumMappingEntityListOrphanCheckCurriculumMappingEntity + " in its curriculumMappingEntityList field has a non-nullable subjectEntity field.");
+                illegalOrphanMessages.add("This SubjectEntity (" + subjectEntity + ") cannot be destroyed since the PrequisiteEntity " + prequisiteEntityListOrphanCheckPrequisiteEntity + " in its prequisiteEntityList field has a non-nullable subId field.");
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
@@ -341,13 +231,9 @@ public class SubjectEntityJpaController implements Serializable {
                 q.setFirstResult(firstResult);
             }
             return q.getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
         } finally {
             em.close();
         }
-
-        return null;
     }
 
     public SubjectEntity findSubjectEntity(String id) {
@@ -371,5 +257,5 @@ public class SubjectEntityJpaController implements Serializable {
             em.close();
         }
     }
-
+    
 }

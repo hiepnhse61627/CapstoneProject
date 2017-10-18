@@ -1,7 +1,5 @@
 package com.capstone.controllers;
 
-import com.capstone.entities.PrequisiteEntity;
-import com.capstone.entities.PrequisiteEntityPK;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.models.ReadAndSaveFileToServer;
 import com.capstone.services.ISubjectService;
@@ -113,55 +111,12 @@ public class SubjectController {
                                     en.setCredits(null);
                                 }
                             } else if (cell.getColumnIndex() == 4) { // Prerequisite
-                                String preCode = cell.getStringCellValue().trim();
-                                if (!preCode.isEmpty()) {
-                                    if (preCode.contains("/")) {
-                                        preCode = preCode.split("/")[0];
-                                    }
+                                String prequisite = cell.getStringCellValue().trim();
 
-                                    if (preCode.contains(",")) {
-                                        List<PrequisiteEntity> prequisites = new ArrayList<>();
-                                        PrequisiteEntity pre = new PrequisiteEntity();
-
-                                        String[] code = preCode.split(",");
-                                        for (String c: code) {
-                                            if (c != null && !c.isEmpty()) {
-                                                pre = new PrequisiteEntity();
-
-                                                PrequisiteEntityPK pk = new PrequisiteEntityPK();
-                                                pk.setSubId(en.getId());
-                                                pk.setPrequisiteSubId(c.trim());
-                                                pre.setPrequisiteEntityPK(pk);
-                                                pre.setFailMark(4);
-
-                                                prequisites.add(pre);
-                                            }
-                                        }
-                                        en.setSubOfPrequisiteList(prequisites);
-
-//                                        prequisites = new ArrayList<>();
-//                                        pre = new SubjectEntity();
-//                                        pre.setId(en.getId());
-//                                        prequisites.add(pre);
-//                                        en.setPrequisiteEntityList(prequisites);
-                                    } else {
-                                        List<PrequisiteEntity> prequisites = new ArrayList<>();
-                                        PrequisiteEntity pre = new PrequisiteEntity();
-
-                                        PrequisiteEntityPK pk = new PrequisiteEntityPK();
-                                        pk.setSubId(en.getId());
-                                        pk.setPrequisiteSubId(preCode);
-                                        pre.setPrequisiteEntityPK(pk);
-                                        pre.setFailMark(4);
-
-                                        prequisites.add(pre);
-                                        en.setSubOfPrequisiteList(prequisites);
-                                    }
-                                }
                             } else if (cell.getColumnIndex() == 5) {
                                 String replacementId = cell.getStringCellValue().trim();
                                 if (!replacementId.isEmpty()) {
-                                    en.setReplacementid(replacementId);
+                                    en.setReplacementId(replacementId);
                                 }
                             }
                         }

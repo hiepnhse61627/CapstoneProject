@@ -74,7 +74,7 @@ public class GraduateController {
                         System.out.println(c.getSubjectId().getSubjectId());
                         int curCredit = c.getSubjectId().getSubjectEntity().getCredits();
                         credits += curCredit;
-                        if (c.getSubjectId().getSubjectEntity().isSpecialized()) {
+                        if (c.getSubjectId().getSubjectEntity().getIsSpecialized()) {
                             specializedCredits += curCredit;
                         }
                     }
