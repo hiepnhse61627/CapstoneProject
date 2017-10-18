@@ -91,11 +91,29 @@
             <!-- Sidebar user panel (optional) -->
             <div class="user-panel">
                 <div class="pull-left image">
-                    <img src="<security:authentication property="principal.picture"/>" class="img-circle" alt="User Image">
+                    <security:authentication var="imageUrl" property="principal.picture"/>
+                    <c:choose>
+                        <c:when test="${imageUrl} != ''">
+                            <img src="${imageUrl}" class="img-circle" alt="User Image">
+                        </c:when>
+                        <c:otherwise>
+                            <img src="/Resources/plugins/dist/img/anonymous.jpg" class="img-circle" alt="User Image">
+                        </c:otherwise>
+                    </c:choose>
+
                 </div>
                 <div class="pull-left info">
                     <p>
-                        <security:authentication property="principal.fullname"/>
+                        <security:authentication var="username" property="principal.fullname"/>
+                        <c:choose>
+                            <c:when test="${username} != ''">
+                                ${username}
+                            </c:when>
+                            <c:otherwise>
+                                Ẩn danh
+                            </c:otherwise>
+                        </c:choose>
+
                     </p>
                     <!-- Status -->
                     <a href="#">
