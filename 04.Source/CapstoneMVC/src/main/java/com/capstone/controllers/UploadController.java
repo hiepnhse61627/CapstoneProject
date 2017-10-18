@@ -33,6 +33,7 @@ import java.util.stream.Collectors;
 public class UploadController {
 
     private boolean isCancel;
+    private boolean isPause;
 
     private final String xlsExcelExtension = "xls";
     private final String xlsxExcelExtension = "xlsx";
@@ -229,18 +230,29 @@ public class UploadController {
         return view;
     }
 
-    public boolean isCancel() {
-        return isCancel;
-    }
+    @RequestMapping(value = "/threadmili", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject Threadmili(@RequestParam boolean thread) {
+        JsonObject obj = new JsonObject();
 
-    public void setCancel(boolean cancel) {
-        isCancel = cancel;
+        try {
+            if (thread) {
+                isPause = true;
+            } else {
+                isPause = false;
+            }
+            obj.addProperty("success", true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return obj;
     }
 
     @RequestMapping(value = "/cancel", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject Cancel(@RequestParam boolean exit) {
-        setCancel(exit);
+        isCancel = exit;
         JsonObject obj = new JsonObject();
         obj.addProperty("success", true);
         return obj;
@@ -248,9 +260,10 @@ public class UploadController {
 
     @RequestMapping(value = "/upload-exist-marks-file", method = RequestMethod.POST)
     @ResponseBody
-    public Callable<JsonObject> chooseExistMarkFile(@RequestParam("file") String file,  @RequestParam("startRow") int startRow, @RequestParam("endRow") int endRow) {
-        setCancel(false);
-        System.out.println("Cancel is " + String.valueOf(isCancel()));
+    public Callable<JsonObject> chooseExistMarkFile(@RequestParam("file") String file, @RequestParam("startRow") int startRow, @RequestParam("endRow") int endRow) {
+        isCancel = false;
+        isPause = false;
+        System.out.println("Cancel is " + String.valueOf(isCancel));
 
         Callable<JsonObject> callable = () -> {
             this.totalLine = 0;
@@ -276,8 +289,9 @@ public class UploadController {
     @RequestMapping(value = "/uploadStudentMarks", method = RequestMethod.POST)
     @ResponseBody
     public Callable<JsonObject> uploadStudentMarks(@RequestParam("file") MultipartFile file, @RequestParam("startRow") int startRow, @RequestParam("endRow") int endRow) throws IOException {
-        setCancel(false);
-        System.out.println("Cancel is " + String.valueOf(isCancel()));
+        isCancel = false;
+        isPause = false;
+        System.out.println("Cancel is " + String.valueOf(isCancel));
 
         Callable<JsonObject> callable = () -> {
             this.totalLine = 0;
@@ -327,6 +341,14 @@ public class UploadController {
             SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
                 if (!isCancel) {
+                    while (isPause) {
+                        if (isCancel) break;
+                        System.out.println("is Pausing");
+                        Thread.sleep(1000);
+                    }
+
+                    if (isCancel) break;
+
                     row = spreadsheet.getRow(rowIndex);
 
                     Cell rollNumberCell = row.getCell(rollNumberIndex);
