@@ -71,9 +71,11 @@ public class GraduateController {
                 int specializedCredits = 0;
                 for (MarksEntity c : entry.getValue()) {
                     if (c.getStatus().toLowerCase().contains("pass") && c.getSubjectId() != null) {
-                        credits += c.getSubjectId().getSubjectEntity().getCredits();
+                        System.out.println(c.getSubjectId().getSubjectId());
+                        int curCredit = c.getSubjectId().getSubjectEntity().getCredits();
+                        credits += curCredit;
                         if (c.getSubjectId().getSubjectEntity().isSpecialized()) {
-                            specializedCredits += c.getSubjectId().getSubjectEntity().getCredits();
+                            specializedCredits += curCredit;
                         }
                     }
                 }
@@ -99,7 +101,7 @@ public class GraduateController {
             obj.add("aaData", aaData);
             obj.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            e.printStackTrace();
             Logger.writeLog(e);
         }
 

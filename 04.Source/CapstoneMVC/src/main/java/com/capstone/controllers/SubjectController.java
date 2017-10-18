@@ -100,19 +100,19 @@ public class SubjectController {
                     while (cellIterator.hasNext()) {
                         Cell cell = cellIterator.next();
                         if (row.getRowNum() > 3) { //To filter column headings
-                            if (cell.getColumnIndex() == 1) { // Subject code
+                            if (cell.getColumnIndex() == 0) { // Subject code
                                 en.setId(cell.getStringCellValue().trim());
-                            } else if (cell.getColumnIndex() == 2) { // Abbreviation
+                            } else if (cell.getColumnIndex() == 1) { // Abbreviation
                                 en.setAbbreviation(cell.getStringCellValue().trim());
-                            } else if (cell.getColumnIndex() == 3) { // Subject name
+                            } else if (cell.getColumnIndex() == 2) { // Subject name
                                 en.setName(cell.getStringCellValue().trim());
-                            } else if (cell.getColumnIndex() == 4) { // No. of credits
+                            } else if (cell.getColumnIndex() == 3) { // No. of credits
                                 try {
                                     en.setCredits((int)cell.getNumericCellValue());
                                 } catch (Exception e) {
                                     en.setCredits(null);
                                 }
-                            } else if (cell.getColumnIndex() == 5) { // Prerequisite
+                            } else if (cell.getColumnIndex() == 4) { // Prerequisite
                                 String preCode = cell.getStringCellValue().trim();
                                 if (!preCode.isEmpty()) {
                                     if (preCode.contains("/")) {
@@ -157,6 +157,11 @@ public class SubjectController {
                                         prequisites.add(pre);
                                         en.setSubOfPrequisiteList(prequisites);
                                     }
+                                }
+                            } else if (cell.getColumnIndex() == 5) {
+                                String replacementId = cell.getStringCellValue().trim();
+                                if (!replacementId.isEmpty()) {
+                                    en.setReplacementid(replacementId);
                                 }
                             }
                         }

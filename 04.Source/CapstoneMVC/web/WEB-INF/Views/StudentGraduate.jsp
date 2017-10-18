@@ -12,7 +12,7 @@
         <div class="b-header">
             <div class="row">
                 <div class="col-md-9 title">
-                    <h1>Danh sách sinh viên được xét tốt nghiệp</h1>
+                    <h1>Danh sách sinh viên được xét tốt nghiệp </h1>
                 </div>
                 <div class="col-md-3 text-right">
                     <button type="button" class="btn btn-success btn-with-icon">
