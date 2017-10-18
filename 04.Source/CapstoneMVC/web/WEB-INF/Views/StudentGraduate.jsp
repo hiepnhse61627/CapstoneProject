@@ -5,6 +5,118 @@
     .form-group .my-content .my-input-group .left-content {
         min-width: 70px;
     }
+
+    .arrow-up {
+        width: 0;
+        height: 0;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+
+        border-bottom: 5px solid #00a65a;
+        position: absolute;
+        left: 70%;
+    }
+
+    .btn-excel:hover ~ .excel-modal {
+        /*opacity: 1;*/
+        /*transition-delay: 0.5s;*/
+    }
+
+    .excel-modal {
+        width: 100%;
+        position: absolute;
+        z-index: 100;
+        right: 0;
+        /*display: none;*/
+
+        /*transition: 0s;*/
+        /*opacity: 0;*/
+    }
+
+    .excel-modal .my-content-wrap {
+        padding-top: 4px;
+        position: relative;
+
+    }
+
+    .excel-modal {
+        visibility: hidden;
+        opacity: 0;
+        transform: translateY(-2px);
+        transition: all 0.3s ease-in-out 0s, visibility 0s linear 0.3s, z-index 0s linear 0.01s;
+    }
+
+    .export-content:hover .excel-modal {
+        visibility: visible;
+        opacity: 1;
+        transform: translateY(0%);
+        transition-delay: 0.3s;
+    }
+
+    .excel-modal .my-content-wrap .content {
+        min-height: 0px !important;
+        width: 150px;
+        padding: 10px;
+        float: right;
+        display: block;
+        border-radius: 5px;
+        border: 1px #00a65a solid;
+        background: white;
+
+    }
+
+    .excel-modal .my-content-wrap .content .item,
+    .excel-modal .my-content-wrap .sub-item-wrapper .item {
+        width: 100%;
+        color: black;
+        text-align: left;
+        min-height: 30px;
+        vertical-align: middle;
+        line-height: 26px;
+        display: flex;
+        font-weight: 600;
+        cursor: pointer;
+
+    }
+
+    .excel-modal .my-content-wrap .content .item:hover,
+    .excel-modal .my-content-wrap .sub-item-wrapper .item:hover {
+        /*border-bottom: 1px #4CAF50 solid;*/
+        color: #dc2929;
+    }
+
+    .excel-modal .my-content-wrap .content .item .fa {
+        display: flex;
+        font-size: 15px;
+        margin-right: 10px;
+        margin-top: 5px;
+    }
+
+    .excel-modal .my-content-wrap .sub-item-wrapper {
+        min-width: 75px;
+        position: absolute;
+        background: white;
+        border: 1px #00a65a solid;
+        padding: 5px 15px 5px 15px;
+        border-radius: 25px 0px;
+        /*display: none;*/
+    }
+
+    .excel-modal .my-content-wrap .sub-item-wrapper .item {
+        text-align: center;
+        display: block;
+    }
+
+    .sub-item-1 {
+        right: 151px;
+        top: 10px;
+    }
+
+    .sub-item-2 {
+        right: 151px;
+        top: 37px;
+    }
+
 </style>
 
 <section class="content">
@@ -15,10 +127,42 @@
                     <h1>Danh sách sinh viên được xét tốt nghiệp </h1>
                 </div>
                 <div class="col-md-3 text-right">
-                    <button type="button" class="btn btn-success btn-with-icon">
-                        <i class="glyphicon glyphicon-open"></i>
-                        <div>XUẤT DỮ LIỆU</div>
-                    </button>
+                    <div class="export-content">
+                        <div class="btn btn-success btn-with-icon btn-excel">
+                            <i class="glyphicon glyphicon-open"></i>
+                            <div>XUẤT DỮ LIỆU</div>
+                        </div>
+                        <div class="excel-modal">
+                            <div class="arrow-up"></div>
+                            <div class="my-content-wrap">
+                                <div class="content">
+                                    <div class="item">
+                                        <i class="fa fa-angle-left"></i>
+                                        <span>In tất cả sinh viên</span>
+                                        <div class="sub-item-wrapper">
+                                            <div class="item"><span>Word</span></div>
+                                            <div class="item"><span>PDF</span></div>
+                                            <div class="item"><span>Excel</span></div>
+                                        </div>
+                                    </div>
+                                    <div class="item">
+                                        <i class="fa fa-angle-left"></i>
+                                        <span>In một sinh viên</span>
+                                    </div>
+                                </div>
+                                <%--<div class="sub-item-wrapper sub-item-1">--%>
+                                <%--<div class="item"><span>Word</span></div>--%>
+                                <%--<div class="item"><span>PDF</span></div>--%>
+                                <%--<div class="item"><span>Excel</span></div>--%>
+                                <%--</div>--%>
+                                <%--<div class="sub-item-wrapper sub-item-2">--%>
+                                <%--<div class="item">Word</div>--%>
+                                <%--<div class="item">PDF</div>--%>
+                                <%--<div class="item">Excel</div>--%>
+                                <%--</div>--%>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <hr>
@@ -35,7 +179,7 @@
                             <div class="left-content m-r-5">
                                 <label class="p-t-8">Tín chỉ:</label>
                             </div>
-                            <div class="right-content width-20 width-m-70">
+                            <div class="right-content width-30 width-m-70">
                                 <input class="form-control bfh-number" id="credit" type="number" value="145" min="1"/>
                             </div>
                         </div>
@@ -43,7 +187,7 @@
                             <div class="left-content m-r-5">
                                 <label class="p-t-8">Tín chỉ CN:</label>
                             </div>
-                            <div class="right-content width-20 width-m-70">
+                            <div class="right-content width-30 width-m-70">
                                 <input class="form-control bfh-number" id="sCredit" type="number" value="145" min="1"/>
                             </div>
                         </div>
