@@ -34,8 +34,8 @@
                             <div class="left-content m-r-5">
                                 <label class="p-t-8">Chọn sinh viên:</label>
                             </div>
-                            <div class="right-content">
-                                <select id="select" class="select width-60">
+                            <div class="right-content width-30 width-m-70">
+                                <select id="select" class="select">
                                     <c:forEach var="stu" items="${students}">
                                         <option value="${stu.rollNumber}">${stu.rollNumber} - ${stu.fullName}</option>
                                     </c:forEach>
@@ -88,6 +88,26 @@
                     </div>
                 </div>
             </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="title">
+                        <h4>Danh sách môn đang học trong kỳ</h4>
+                    </div>
+                    <div class="my-content">
+                        <div class="col-md-12">
+                            <table id="curCourseTable">
+                                <thead>
+                                <tr>
+                                    <th>Mã môn</th>
+                                    <th>Tên môn</th>
+                                </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -100,6 +120,7 @@
 <script>
     var table = null;
     var nextCourseTable = null;
+    var curCourseTable = null;
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -142,6 +163,7 @@
 
         CreateEmptyDataTable('#table');
         CreateEmptyDataTable('#nextCourseTable');
+        CreateEmptyDataTable('#curCourseTable');
     });
 
     function CreateSelect() {
@@ -261,6 +283,54 @@
         }).fnSetFilteringDelay(1000);
     }
 
+    function CreateCurrentCourseTable() {
+        curCourseTable = $('#curCourseTable').dataTable({
+            "bServerSide": true,
+            "bFilter": true,
+            "bRetrieve": true,
+            "sScrollX": "100%",
+            "bScrollCollapse": true,
+            "bProcessing": true,
+            "bSort": false,
+            "sAjaxSource": "/getStudentCurrentCourse", // url getData.php etc
+            "fnServerParams": function (aoData) {
+                aoData.push({"name": "stuId", "value": $('#select').val()})
+            },
+            "oLanguage": {
+                "sSearchPlaceholder": "",
+                "sSearch": "Tìm kiếm:",
+                "sZeroRecords": "Không có dữ liệu phù hợp",
+                "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
+                "sEmptyTable": "Không có dữ liệu",
+                "sInfoFiltered": " - lọc ra từ _MAX_ dòng",
+                "sLengthMenu": "Hiển thị _MENU_ dòng",
+                "sProcessing": "Đang xử lý...",
+                "oPaginate": {
+                    "sNext": "<i class='fa fa-chevron-right'></i>",
+                    "sPrevious": "<i class='fa fa-chevron-left'></i>"
+                }
+
+            },
+            "aoColumnDefs": [
+                {
+                    "aTargets": [0, 1],
+                    "mRender": function (data, type, row) {
+                        if (row[3] == '1') {
+                            return "<span style='text-decoration: line-through'>" + data + "</span>";
+                        } else {
+                            return data;
+                        }
+                    }
+                },
+                {
+                    "aTargets": [0],
+                    "sClass": "text-center",
+                },
+            ],
+            "bAutoWidth": false,
+        }).fnSetFilteringDelay(1000);
+    }
+
     function ExportExcel() {
         $("input[name='objectType']").val(2);
         $("#export-excel").submit();
@@ -283,6 +353,15 @@
             // Delete empty table
             $('#nextCourseTable').dataTable().fnDestroy();
             CreateNextCourseTable();
+        }
+
+        if (curCourseTable != null) {
+            curCourseTable._fnPageChange(0);
+            curCourseTable._fnAjaxUpdate();
+        } else {
+            // Delete empty table
+            $('#curCourseTable').dataTable().fnDestroy();
+            CreateCurrentCourseTable();
         }
     }
 </script>
