@@ -60,8 +60,8 @@ public class ExportStudentsFailImpl implements IExportObject {
         cell.setCellValue("Danh sách sinh viên nợ môn");
         // style
         CellStyle cellStyle = workbook.createCellStyle();
-        cellStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);
-        cellStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);
+        cellStyle.setAlignment(HorizontalAlignment.LEFT);
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         // font
         Font font = workbook.createFont();
         font.setBold(true);
@@ -73,22 +73,22 @@ public class ExportStudentsFailImpl implements IExportObject {
         // merging cell from Cell C1
         CellRangeAddress range = new CellRangeAddress(0, 3, 3, 8);
         spreadsheet.addMergedRegion(range);
-        RegionUtil.setBorderBottom(BorderStyle.THIN.getCode(), range, spreadsheet, workbook);
-        RegionUtil.setBorderLeft(BorderStyle.THIN.getCode(), range, spreadsheet, workbook);
-        RegionUtil.setBorderRight(BorderStyle.THIN.getCode(), range, spreadsheet, workbook);
-        RegionUtil.setBorderTop(BorderStyle.THIN.getCode(), range, spreadsheet, workbook);
+        RegionUtil.setBorderBottom(BorderStyle.THIN, range, spreadsheet);
+        RegionUtil.setBorderLeft(BorderStyle.THIN, range, spreadsheet);
+        RegionUtil.setBorderRight(BorderStyle.THIN, range, spreadsheet);
+        RegionUtil.setBorderTop(BorderStyle.THIN, range, spreadsheet);
     }
 
     private void buildTableHeader(SXSSFWorkbook workbook, SXSSFSheet spreadsheet) {
         Row row = spreadsheet.createRow(4);
         // style
         CellStyle cellStyle = workbook.createCellStyle();
-        cellStyle.setBorderBottom(XSSFCellStyle.BORDER_THIN);
-        cellStyle.setBorderLeft(XSSFCellStyle.BORDER_THIN);
-        cellStyle.setBorderRight(XSSFCellStyle.BORDER_THIN);
-        cellStyle.setBorderTop(XSSFCellStyle.BORDER_THIN);
-        cellStyle.setAlignment(XSSFCellStyle.ALIGN_CENTER);
-        cellStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        cellStyle.setBorderTop(BorderStyle.THIN);
+        cellStyle.setAlignment(HorizontalAlignment.LEFT);
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         // font
         Font font = workbook.createFont();
         font.setBold(true);
@@ -106,20 +106,20 @@ public class ExportStudentsFailImpl implements IExportObject {
         studentNameCell.setCellValue("HỌ VÀ TÊN");
         CellRangeAddress range1 = new CellRangeAddress(4, 4, 1, 3);
         spreadsheet.addMergedRegion(range1);
-        RegionUtil.setBorderBottom(BorderStyle.THIN.getCode(), range1, spreadsheet, workbook);
-        RegionUtil.setBorderLeft(BorderStyle.THIN.getCode(), range1, spreadsheet, workbook);
-        RegionUtil.setBorderRight(BorderStyle.THIN.getCode(), range1, spreadsheet, workbook);
-        RegionUtil.setBorderTop(BorderStyle.THIN.getCode(), range1, spreadsheet, workbook);
+        RegionUtil.setBorderBottom(BorderStyle.THIN.getCode(), range1, spreadsheet);
+        RegionUtil.setBorderLeft(BorderStyle.THIN.getCode(), range1, spreadsheet);
+        RegionUtil.setBorderRight(BorderStyle.THIN.getCode(), range1, spreadsheet);
+        RegionUtil.setBorderTop(BorderStyle.THIN.getCode(), range1, spreadsheet);
 
         Cell SubjectCodeCell = row.createCell(4);
         SubjectCodeCell.setCellStyle(cellStyle);
         SubjectCodeCell.setCellValue("MÃ MÔN");
         CellRangeAddress range2 = new CellRangeAddress(4, 4, 4, 5);
         spreadsheet.addMergedRegion(range2);
-        RegionUtil.setBorderBottom(BorderStyle.THIN.getCode(), range2, spreadsheet, workbook);
-        RegionUtil.setBorderLeft(BorderStyle.THIN.getCode(), range2, spreadsheet, workbook);
-        RegionUtil.setBorderRight(BorderStyle.THIN.getCode(), range2, spreadsheet, workbook);
-        RegionUtil.setBorderTop(BorderStyle.THIN.getCode(), range2, spreadsheet, workbook);
+        RegionUtil.setBorderBottom(BorderStyle.THIN, range2, spreadsheet);
+        RegionUtil.setBorderLeft(BorderStyle.THIN, range2, spreadsheet);
+        RegionUtil.setBorderRight(BorderStyle.THIN, range2, spreadsheet);
+        RegionUtil.setBorderTop(BorderStyle.THIN, range2, spreadsheet);
 
         Cell classCell = row.createCell(6);
         classCell.setCellStyle(cellStyle);
@@ -130,21 +130,21 @@ public class ExportStudentsFailImpl implements IExportObject {
         semesterCell.setCellValue("HỌC KỲ");
         CellRangeAddress range3 = new CellRangeAddress(4, 4, 7, 8);
         spreadsheet.addMergedRegion(range3);
-        RegionUtil.setBorderBottom(BorderStyle.THIN.getCode(), range3, spreadsheet, workbook);
-        RegionUtil.setBorderLeft(BorderStyle.THIN.getCode(), range3, spreadsheet, workbook);
-        RegionUtil.setBorderRight(BorderStyle.THIN.getCode(), range3, spreadsheet, workbook);
-        RegionUtil.setBorderTop(BorderStyle.THIN.getCode(), range3, spreadsheet, workbook);
+        RegionUtil.setBorderBottom(BorderStyle.THIN, range3, spreadsheet);
+        RegionUtil.setBorderLeft(BorderStyle.THIN, range3, spreadsheet);
+        RegionUtil.setBorderRight(BorderStyle.THIN, range3, spreadsheet);
+        RegionUtil.setBorderTop(BorderStyle.THIN, range3, spreadsheet);
     }
 
     private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, List<MarksEntity> marks) throws IOException {
         // style
         CellStyle cellStyle = workbook.createCellStyle();
-        cellStyle.setBorderBottom(XSSFCellStyle.BORDER_THIN);
-        cellStyle.setBorderLeft(XSSFCellStyle.BORDER_THIN);
-        cellStyle.setBorderRight(XSSFCellStyle.BORDER_THIN);
-        cellStyle.setBorderTop(XSSFCellStyle.BORDER_THIN);
-        cellStyle.setAlignment(XSSFCellStyle.ALIGN_LEFT);
-        cellStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);
+        cellStyle.setBorderBottom(BorderStyle.THIN);
+        cellStyle.setBorderLeft(BorderStyle.THIN);
+        cellStyle.setBorderRight(BorderStyle.THIN);
+        cellStyle.setBorderTop(BorderStyle.THIN);
+        cellStyle.setAlignment(HorizontalAlignment.LEFT);
+        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         //Start data table row
         int rowIndex = 5;
         for (MarksEntity mark : marks) {
@@ -158,20 +158,20 @@ public class ExportStudentsFailImpl implements IExportObject {
             studentNameCell.setCellValue(mark.getStudentId().getFullName());
             CellRangeAddress range1 = new CellRangeAddress(rowIndex, rowIndex, 1, 3);
             spreadsheet.addMergedRegion(range1);
-            RegionUtil.setBorderBottom(BorderStyle.THIN.getCode(), range1, spreadsheet, workbook);
-            RegionUtil.setBorderLeft(BorderStyle.THIN.getCode(), range1, spreadsheet, workbook);
-            RegionUtil.setBorderRight(BorderStyle.THIN.getCode(), range1, spreadsheet, workbook);
-            RegionUtil.setBorderTop(BorderStyle.THIN.getCode(), range1, spreadsheet, workbook);
+            RegionUtil.setBorderBottom(BorderStyle.THIN, range1, spreadsheet);
+            RegionUtil.setBorderLeft(BorderStyle.THIN, range1, spreadsheet);
+            RegionUtil.setBorderRight(BorderStyle.THIN, range1, spreadsheet);
+            RegionUtil.setBorderTop(BorderStyle.THIN, range1, spreadsheet);
 
             Cell SubjectCodeCell = row.createCell(4);
             SubjectCodeCell.setCellStyle(cellStyle);
             SubjectCodeCell.setCellValue(mark.getSubjectId().getSubjectId());
             CellRangeAddress range2 = new CellRangeAddress(rowIndex, rowIndex, 4, 5);
             spreadsheet.addMergedRegion(range2);
-            RegionUtil.setBorderBottom(BorderStyle.THIN.getCode(), range2, spreadsheet, workbook);
-            RegionUtil.setBorderLeft(BorderStyle.THIN.getCode(), range2, spreadsheet, workbook);
-            RegionUtil.setBorderRight(BorderStyle.THIN.getCode(), range2, spreadsheet, workbook);
-            RegionUtil.setBorderTop(BorderStyle.THIN.getCode(), range2, spreadsheet, workbook);
+            RegionUtil.setBorderBottom(BorderStyle.THIN, range2, spreadsheet);
+            RegionUtil.setBorderLeft(BorderStyle.THIN, range2, spreadsheet);
+            RegionUtil.setBorderRight(BorderStyle.THIN, range2, spreadsheet);
+            RegionUtil.setBorderTop(BorderStyle.THIN, range2, spreadsheet);
 
             Cell classCell = row.createCell(6);
             classCell.setCellStyle(cellStyle);
@@ -182,10 +182,10 @@ public class ExportStudentsFailImpl implements IExportObject {
             semesterCell.setCellValue(mark.getSemesterId().getSemester());
             CellRangeAddress range3 = new CellRangeAddress(rowIndex, rowIndex, 7, 8);
             spreadsheet.addMergedRegion(range3);
-            RegionUtil.setBorderBottom(BorderStyle.THIN.getCode(), range3, spreadsheet, workbook);
-            RegionUtil.setBorderLeft(BorderStyle.THIN.getCode(), range3, spreadsheet, workbook);
-            RegionUtil.setBorderRight(BorderStyle.THIN.getCode(), range3, spreadsheet, workbook);
-            RegionUtil.setBorderTop(BorderStyle.THIN.getCode(), range3, spreadsheet, workbook);
+            RegionUtil.setBorderBottom(BorderStyle.THIN, range3, spreadsheet);
+            RegionUtil.setBorderLeft(BorderStyle.THIN, range3, spreadsheet);
+            RegionUtil.setBorderRight(BorderStyle.THIN, range3, spreadsheet);
+            RegionUtil.setBorderTop(BorderStyle.THIN, range3, spreadsheet);
 
             rowIndex++;
         }

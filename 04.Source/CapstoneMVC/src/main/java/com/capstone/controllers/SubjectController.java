@@ -11,6 +11,8 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -87,10 +89,10 @@ public class SubjectController {
                 is = new FileInputStream(file2);
             }
 
-            HSSFWorkbook workbook = new HSSFWorkbook(is);
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
 
             for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-                HSSFSheet sheet = workbook.getSheetAt(i);
+                XSSFSheet sheet = workbook.getSheetAt(i);
                 Iterator<Row> rowIterator = sheet.iterator();
 
                 while (rowIterator.hasNext()) {
@@ -100,6 +102,7 @@ public class SubjectController {
                     while (cellIterator.hasNext()) {
                         Cell cell = cellIterator.next();
                         if (row.getRowNum() > 3) { //To filter column headings
+                            System.out.println(row.getRowNum());
                             if (cell.getColumnIndex() == 0) { // Subject code
                                 en.setId(cell.getStringCellValue().trim());
                             } else if (cell.getColumnIndex() == 1) { // Abbreviation
@@ -113,51 +116,7 @@ public class SubjectController {
                                     en.setCredits(null);
                                 }
                             } else if (cell.getColumnIndex() == 4) { // Prerequisite
-                                String preCode = cell.getStringCellValue().trim();
-                                if (!preCode.isEmpty()) {
-                                    if (preCode.contains("/")) {
-                                        preCode = preCode.split("/")[0];
-                                    }
 
-                                    if (preCode.contains(",")) {
-                                        List<PrequisiteEntity> prequisites = new ArrayList<>();
-                                        PrequisiteEntity pre = new PrequisiteEntity();
-
-                                        String[] code = preCode.split(",");
-                                        for (String c: code) {
-                                            if (c != null && !c.isEmpty()) {
-                                                pre = new PrequisiteEntity();
-
-                                                PrequisiteEntityPK pk = new PrequisiteEntityPK();
-                                                pk.setSubId(en.getId());
-                                                pk.setPrequisiteSubId(c.trim());
-                                                pre.setPrequisiteEntityPK(pk);
-                                                pre.setFailMark(4);
-
-                                                prequisites.add(pre);
-                                            }
-                                        }
-                                        en.setSubOfPrequisiteList(prequisites);
-
-//                                        prequisites = new ArrayList<>();
-//                                        pre = new SubjectEntity();
-//                                        pre.setId(en.getId());
-//                                        prequisites.add(pre);
-//                                        en.setPrequisiteEntityList(prequisites);
-                                    } else {
-                                        List<PrequisiteEntity> prequisites = new ArrayList<>();
-                                        PrequisiteEntity pre = new PrequisiteEntity();
-
-                                        PrequisiteEntityPK pk = new PrequisiteEntityPK();
-                                        pk.setSubId(en.getId());
-                                        pk.setPrequisiteSubId(preCode);
-                                        pre.setPrequisiteEntityPK(pk);
-                                        pre.setFailMark(4);
-
-                                        prequisites.add(pre);
-                                        en.setSubOfPrequisiteList(prequisites);
-                                    }
-                                }
                             } else if (cell.getColumnIndex() == 5) {
                                 String replacementId = cell.getStringCellValue().trim();
                                 if (!replacementId.isEmpty()) {

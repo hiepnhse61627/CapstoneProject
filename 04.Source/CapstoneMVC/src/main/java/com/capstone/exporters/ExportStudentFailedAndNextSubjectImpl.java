@@ -7,9 +7,7 @@ import com.capstone.entities.SubjectEntity;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import org.apache.commons.lang.builder.CompareToBuilder;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
@@ -58,12 +56,12 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
         if (students != null && !students.isEmpty()) {
             // style
             CellStyle cellStyle = workbook.createCellStyle();
-            cellStyle.setBorderBottom(XSSFCellStyle.BORDER_THIN);
-            cellStyle.setBorderLeft(XSSFCellStyle.BORDER_THIN);
-            cellStyle.setBorderRight(XSSFCellStyle.BORDER_THIN);
-            cellStyle.setBorderTop(XSSFCellStyle.BORDER_THIN);
-            cellStyle.setAlignment(XSSFCellStyle.ALIGN_LEFT);
-            cellStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);
+            cellStyle.setBorderBottom(BorderStyle.THIN);
+            cellStyle.setBorderLeft(BorderStyle.THIN);
+            cellStyle.setBorderRight(BorderStyle.THIN);
+            cellStyle.setBorderTop(BorderStyle.THIN);
+            cellStyle.setAlignment(HorizontalAlignment.LEFT);
+            cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
             int rowIndex = 6;
             for (StudentEntity student : students) {
