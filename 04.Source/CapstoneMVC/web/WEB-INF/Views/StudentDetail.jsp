@@ -34,8 +34,8 @@
                             <div class="left-content m-r-5">
                                 <label class="p-t-8">Chọn sinh viên:</label>
                             </div>
-                            <div class="right-content">
-                                <select id="select" class="select width-60">
+                            <div class="right-content width-30 width-m-70">
+                                <select id="select" class="select">
                                     <c:forEach var="stu" items="${students}">
                                         <option value="${stu.rollNumber}">${stu.rollNumber} - ${stu.fullName}</option>
                                     </c:forEach>

@@ -291,6 +291,7 @@ public class StudentDetail {
             }
             ProgramEntity program = programService.getProgramByName(programName);
 
+            // Query lấy list các "Học kỳ" và đếm số "Môn học" mà sv học trong kỳ đó
             String sqlString = "SELECT Curriculum_Mapping.Term, COUNT(*) FROM Student " +
                     "INNER JOIN Marks on student.ID = Marks.StudentId AND Student.ID = ?" +
                     " INNER JOIN Curriculum_Mapping ON Marks.SubjectId = Curriculum_Mapping.SubId " +
@@ -310,7 +311,9 @@ public class StudentDetail {
                 String lastestTerm = lastestData[0].toString();
                 int numOfStudyingSubjects = (int) lastestData[1];
                 currentTermNumber = Integer.parseInt(lastestTerm.replaceAll("[^0-9]", ""));
+                nextTermNumber = currentTermNumber + 1;
 
+                // Query đếm tổng số môn trong 1 kỳ
                 sqlString = "SELECT COUNT(*) FROM Subject_Curriculum" +
                         " INNER JOIN Curriculum_Mapping ON Subject_Curriculum.Id = Curriculum_Mapping.CurId" +
                         " AND Subject_Curriculum.ProgramId = ? AND Curriculum_Mapping.Term LIKE ?";
@@ -321,7 +324,7 @@ public class StudentDetail {
                 int maxNumOfSubjectsInTerm = (int) query.getSingleResult();
                 if (numOfStudyingSubjects == maxNumOfSubjectsInTerm) {
                     currentTermNumber++;
-                    nextTermNumber = currentTermNumber + 1;
+                    nextTermNumber++;
                 }
             }
 
