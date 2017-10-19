@@ -6,9 +6,12 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
+import javax.persistence.Basic;
 import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
@@ -23,40 +26,46 @@ import javax.persistence.Table;
 @Table(name = "Prequisite")
 @NamedQueries({
     @NamedQuery(name = "PrequisiteEntity.findAll", query = "SELECT p FROM PrequisiteEntity p")
-    , @NamedQuery(name = "PrequisiteEntity.findBySubId", query = "SELECT p FROM PrequisiteEntity p WHERE p.prequisiteEntityPK.subId = :subId")
-    , @NamedQuery(name = "PrequisiteEntity.findByPrequisiteSubId", query = "SELECT p FROM PrequisiteEntity p WHERE p.prequisiteEntityPK.prequisiteSubId = :prequisiteSubId")
+    , @NamedQuery(name = "PrequisiteEntity.findById", query = "SELECT p FROM PrequisiteEntity p WHERE p.id = :id")
+    , @NamedQuery(name = "PrequisiteEntity.findByPrequisiteSubs", query = "SELECT p FROM PrequisiteEntity p WHERE p.prequisiteSubs = :prequisiteSubs")
     , @NamedQuery(name = "PrequisiteEntity.findByFailMark", query = "SELECT p FROM PrequisiteEntity p WHERE p.failMark = :failMark")})
 public class PrequisiteEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @EmbeddedId
-    protected PrequisiteEntityPK prequisiteEntityPK;
+    @Id
+    @Basic(optional = false)
+    @Column(name = "Id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    @Column(name = "PrequisiteSubs")
+    private String prequisiteSubs;
     @Column(name = "FailMark")
     private Integer failMark;
-    @JoinColumn(name = "SubId", referencedColumnName = "Id", insertable = false, updatable = false)
+    @JoinColumn(name = "SubId", referencedColumnName = "Id")
     @ManyToOne(optional = false)
-    private SubjectEntity subjectEntity;
-    @JoinColumn(name = "PrequisiteSubId", referencedColumnName = "Id", insertable = false, updatable = false)
-    @ManyToOne(optional = false)
-    private SubjectEntity prequisiteSubjectEntity;
+    private SubjectEntity subId;
 
     public PrequisiteEntity() {
     }
 
-    public PrequisiteEntity(PrequisiteEntityPK prequisiteEntityPK) {
-        this.prequisiteEntityPK = prequisiteEntityPK;
+    public PrequisiteEntity(Integer id) {
+        this.id = id;
     }
 
-    public PrequisiteEntity(String subId, String prequisiteSubId) {
-        this.prequisiteEntityPK = new PrequisiteEntityPK(subId, prequisiteSubId);
+    public Integer getId() {
+        return id;
     }
 
-    public PrequisiteEntityPK getPrequisiteEntityPK() {
-        return prequisiteEntityPK;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    public void setPrequisiteEntityPK(PrequisiteEntityPK prequisiteEntityPK) {
-        this.prequisiteEntityPK = prequisiteEntityPK;
+    public String getPrequisiteSubs() {
+        return prequisiteSubs;
+    }
+
+    public void setPrequisiteSubs(String prequisiteSubs) {
+        this.prequisiteSubs = prequisiteSubs;
     }
 
     public Integer getFailMark() {
@@ -67,26 +76,18 @@ public class PrequisiteEntity implements Serializable {
         this.failMark = failMark;
     }
 
-    public SubjectEntity getSubjectEntity() {
-        return subjectEntity;
+    public SubjectEntity getSubId() {
+        return subId;
     }
 
-    public void setSubjectEntity(SubjectEntity subjectEntity) {
-        this.subjectEntity = subjectEntity;
-    }
-
-    public SubjectEntity getPrequisiteSubjectEntity() {
-        return prequisiteSubjectEntity;
-    }
-
-    public void setPrequisiteSubjectEntity(SubjectEntity prequisiteSubjectEntity) {
-        this.prequisiteSubjectEntity = prequisiteSubjectEntity;
+    public void setSubId(SubjectEntity subId) {
+        this.subId = subId;
     }
 
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (prequisiteEntityPK != null ? prequisiteEntityPK.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -97,7 +98,7 @@ public class PrequisiteEntity implements Serializable {
             return false;
         }
         PrequisiteEntity other = (PrequisiteEntity) object;
-        if ((this.prequisiteEntityPK == null && other.prequisiteEntityPK != null) || (this.prequisiteEntityPK != null && !this.prequisiteEntityPK.equals(other.prequisiteEntityPK))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -105,7 +106,7 @@ public class PrequisiteEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.PrequisiteEntity[ prequisiteEntityPK=" + prequisiteEntityPK + " ]";
+        return "com.capstone.entities.PrequisiteEntity[ id=" + id + " ]";
     }
     
 }

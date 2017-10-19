@@ -90,7 +90,7 @@ public class StudentFailPrequisite {
 
             String[] prequisiteArr = prequisiteStr.split(",");
 
-            String queryStr = "SELECT p FROM PrequisiteEntity p WHERE p.prequisiteSubjectEntity.id IN :sList";
+            String queryStr = "SELECT p FROM PrequisiteEntity p WHERE p.prequisiteSubs IN :sList";
             TypedQuery<PrequisiteEntity> prequisiteQuery;
             if (!subjectId.equals("0") && !subjectId.isEmpty()) {
                 queryStr += " AND p.subjectEntity.id = :subjectId";
@@ -106,10 +106,10 @@ public class StudentFailPrequisite {
             List<FailPrequisiteModel> result = new ArrayList<>();
             for (PrequisiteEntity prequisite : prequisiteList) {
                 TypedQuery<MarksEntity> query = em.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub1 OR c.subjectId.subjectId = :sub2", MarksEntity.class);
-                query.setParameter("sub1", prequisite.getSubjectEntity().getId());
-                query.setParameter("sub2", prequisite.getPrequisiteSubjectEntity().getId());
+                query.setParameter("sub1", prequisite.getId());
+                query.setParameter("sub2", prequisite.getId());
                 List<MarksEntity> list = query.getResultList();
-                Ultilities.FilterStudentPassedSubFailPrequisite(list, prequisite.getSubjectEntity().getId(),  prequisite.getPrequisiteSubjectEntity().getId(), prequisite.getFailMark()).forEach(c -> {
+                Ultilities.FilterStudentPassedSubFailPrequisite(list, prequisite.getSubId().getId(),  prequisite.getSubId().getId(), prequisite.getFailMark()).forEach(c -> {
                     if (!result.contains(c)) {
                         result.add(c);
                     }

@@ -1,7 +1,6 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.PrequisiteEntity;
-import com.capstone.entities.PrequisiteEntityPK;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.models.ReadAndSaveFileToServer;
 import com.capstone.services.ISubjectService;
@@ -116,11 +115,35 @@ public class SubjectController {
                                     en.setCredits(null);
                                 }
                             } else if (cell.getColumnIndex() == 4) { // Prerequisite
-
+                                String prequisite = cell.getStringCellValue().trim();
+                                en.setPrequisiteEntityList(null);
+                                if (prequisite != null && !prequisite.isEmpty()) {
+                                    List<PrequisiteEntity> pres = new ArrayList<>();
+                                    String[] split = prequisite.split("OR");
+                                    if (split.length > 1) {
+                                        for (String s: split) {
+                                            PrequisiteEntity entity = new PrequisiteEntity();
+                                            entity.setFailMark(4);
+                                            String data = s.replaceAll("\\(", "").replaceAll("\\)", "").trim();
+                                            entity.setPrequisiteSubs(data);
+                                            entity.setSubId(en);
+                                            pres.add(entity);
+                                        }
+                                        en.setPrequisiteEntityList(pres);
+                                    } else {
+                                        PrequisiteEntity entity = new PrequisiteEntity();
+                                        entity.setFailMark(4);
+                                        entity.setSubId(en);
+                                        String data = split[0].replaceAll("\\(", "").replaceAll("\\)", "").trim();
+                                        entity.setPrequisiteSubs(data);
+                                        pres.add(entity);
+                                        en.setPrequisiteEntityList(pres);
+                                    }
+                                }
                             } else if (cell.getColumnIndex() == 5) {
                                 String replacementId = cell.getStringCellValue().trim();
                                 if (!replacementId.isEmpty()) {
-                                    en.setReplacementid(replacementId);
+                                    en.setReplacementId(replacementId);
                                 }
                             }
                         }

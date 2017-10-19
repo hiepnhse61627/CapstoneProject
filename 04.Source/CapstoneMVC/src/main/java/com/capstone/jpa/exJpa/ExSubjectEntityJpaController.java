@@ -77,7 +77,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 
         List<PrequisiteEntity> preList = currSub.getPrequisiteEntityList();
         for (PrequisiteEntity entity : preList) {
-            prequisiteList.add(entity.getPrequisiteSubjectEntity());
+            prequisiteList.add(entity.getSubId());
         }
 
         return prequisiteList;
@@ -95,7 +95,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         List<PrequisiteEntity> pre = curr.getPrequisiteEntityList();
         if (!pre.isEmpty()) {
             for (PrequisiteEntity s : pre) {
-                getPrequisite(s.getPrequisiteSubjectEntity(), subId);
+                getPrequisite(s.getSubId(), subId);
             }
         }
 

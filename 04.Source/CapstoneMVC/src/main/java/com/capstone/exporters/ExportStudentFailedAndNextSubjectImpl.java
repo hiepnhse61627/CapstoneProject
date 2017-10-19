@@ -215,7 +215,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 boolean exist = false;
                 for (PrequisiteEntity s : cur.getPrequisiteEntityList()) {
                     TypedQuery<MarksEntity> q = em.createQuery("SELECT c FROM MarksEntity c WHERE c.studentId.id = :id AND c.subjectId.subjectId = :sub", MarksEntity.class);
-                    List<MarksEntity> l = q.setParameter("sub", s.getSubjectEntity().getId()).setParameter("id", studentId).getResultList();
+                    List<MarksEntity> l = q.setParameter("sub", s.getId()).setParameter("id", studentId).getResultList();
                     exist = Ultilities.CheckStudentSubjectFailOrPass(l);
                 }
 
