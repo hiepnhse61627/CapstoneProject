@@ -253,7 +253,7 @@
             }
         });
 
-        $('#hidden').val(jsonString.join(','));
+        $('#hidden').val(jsonString.join(';'));
 
         if (table == null || table == 'undefined') {
             table = $('#table').dataTable({

@@ -1,7 +1,6 @@
 package com.capstone.services;
 
 import com.capstone.entities.SubjectEntity;
-import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.models.ReplacementSubject;
 
 import java.util.List;

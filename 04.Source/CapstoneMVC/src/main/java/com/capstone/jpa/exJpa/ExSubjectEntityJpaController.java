@@ -87,6 +87,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
                 }
             }
         }
+
         return prequisiteList;
     }
 
@@ -112,6 +113,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
                 }
             }
         }
+
         return prequisiteList;
     }
 

@@ -92,7 +92,7 @@ public class Ultilities {
         return set;
     }
 
-    public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, String prequisiteId, int mark) {
+    public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, List<String> prequisiteRow, int mark) {
         List<FailPrequisiteModel> result = new ArrayList<>();
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
         if (!list.isEmpty()) {
@@ -113,38 +113,44 @@ public class Ultilities {
                     List<MarksEntity> markList = SortMarkBySemester(subject.get(subId));
                     for (MarksEntity m : markList) {
                         if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt")) {
-                            if (subject.get(prequisiteId) != null && !subject.get(prequisiteId).isEmpty()) {
-                                List<MarksEntity> g = subject.get(prequisiteId);
-                                boolean isPass = false;
-                                MarksEntity tmp = null;
-                                for (MarksEntity k2 : g) {
-                                    tmp = k2;
-                                    if (k2.getAverageMark() >= mark || k2.getStatus().toLowerCase().contains("exempt")) {
-                                        isPass = true;
+                            boolean isPass = false;
+                            for (String row : prequisiteRow) {
+                                String[] cell = row.trim().split(",");
+                                for (String prequisite : cell) {
+                                    prequisite = prequisite.trim();
+
+                                    // HANDLE LOGIC HERE
+                                    if (subject.get(prequisite) != null && !subject.get(prequisite).isEmpty()) {
+                                        List<MarksEntity> g = SortMarkBySemester(subject.get(prequisite));
+                                        MarksEntity tmp = null;
+                                        for (MarksEntity k2 : g) {
+                                            tmp = k2;
+                                            if (k2.getAverageMark() >= mark || k2.getStatus().toLowerCase().contains("exempt")) {
+                                                isPass = true;
+                                                break;
+                                            }
+                                        }
+
+                                        if (!isPass) {
+                                            result.add(new FailPrequisiteModel(tmp, m.getSubjectId().getSubjectId()));
+                                            break;
+                                        }
+                                    }
+                                    //////////////////////
+
+                                    if (!isPass) {
                                         break;
                                     }
                                 }
-
-                                if (!isPass) {
-                                    result.add(new FailPrequisiteModel(tmp, m.getSubjectId().getSubjectId()));
-                                }
                             }
+                            break;
                         }
                     }
                 }
             }
         }
-        return result;
-    }
 
-    public static boolean CheckStudentSubjectFailOrPass(List<MarksEntity> list) {
-        boolean passed = false;
-        for (MarksEntity m : list) {
-            if (m.getStatus().contains("pass")) {
-                passed = true;
-            }
-        }
-        return passed;
+        return result;
     }
 
     public static Connection getConnection() {
