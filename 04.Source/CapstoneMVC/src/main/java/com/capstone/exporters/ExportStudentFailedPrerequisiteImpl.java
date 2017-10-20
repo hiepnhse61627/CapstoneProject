@@ -7,9 +7,7 @@ import com.capstone.models.FailPrequisiteModel;
 import com.capstone.models.Ultilities;
 import com.capstone.services.ISubjectService;
 import com.capstone.services.SubjectServiceImpl;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
-import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
@@ -65,12 +63,12 @@ public class ExportStudentFailedPrerequisiteImpl implements IExportObject {
         if (models != null && !models.isEmpty()) {
             // style
             CellStyle cellStyle = workbook.createCellStyle();
-            cellStyle.setBorderBottom(XSSFCellStyle.BORDER_THIN);
-            cellStyle.setBorderLeft(XSSFCellStyle.BORDER_THIN);
-            cellStyle.setBorderRight(XSSFCellStyle.BORDER_THIN);
-            cellStyle.setBorderTop(XSSFCellStyle.BORDER_THIN);
-            cellStyle.setAlignment(XSSFCellStyle.ALIGN_LEFT);
-            cellStyle.setVerticalAlignment(XSSFCellStyle.VERTICAL_CENTER);
+            cellStyle.setBorderBottom(BorderStyle.THIN);
+            cellStyle.setBorderLeft(BorderStyle.THIN);
+            cellStyle.setBorderRight(BorderStyle.THIN);
+            cellStyle.setBorderTop(BorderStyle.THIN);
+            cellStyle.setAlignment(HorizontalAlignment.LEFT);
+            cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
             // write data
             int rowIndex = 6;
             for (FailPrequisiteModel model : models) {

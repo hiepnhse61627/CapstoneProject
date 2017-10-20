@@ -106,6 +106,7 @@ public class SubjectController {
                     while (cellIterator.hasNext()) {
                         Cell cell = cellIterator.next();
                         if (row.getRowNum() > 3) { //To filter column headings
+                            System.out.println(row.getRowNum());
                             if (cell.getColumnIndex() == 0) { // Subject code
                                 en.setId(cell.getStringCellValue().trim());
                                 // set sub code

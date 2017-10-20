@@ -91,6 +91,11 @@
           <element id="library" level="project" name="Maven: org.eclipse.persistence:eclipselink:2.7.0" />
           <element id="library" level="project" name="Maven: org.eclipse.persistence:javax.persistence:2.2.0" />
           <element id="library" level="project" name="Maven: org.glassfish:javax.json:1.0.4" />
+          <element id="library" level="project" name="Maven: org.apache.poi:poi-ooxml-schemas:3.17" />
+          <element id="library" level="project" name="Maven: org.apache.poi:poi-ooxml:3.17" />
+          <element id="library" level="project" name="Maven: org.apache.poi:poi:3.17" />
+          <element id="library" level="project" name="Maven: com.itextpdf:itextpdf:5.5.12" />
+          <element id="library" level="project" name="Maven: com.aspose:aspose-cells:17.9" />
         </element>
       </element>
       <element id="javaee-facet-resources" facet="spring-mvc-quickstart/web/Web" />

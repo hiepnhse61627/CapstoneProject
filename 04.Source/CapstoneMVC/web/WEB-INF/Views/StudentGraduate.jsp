@@ -1,120 +1,10 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<link rel="stylesheet" href="/Resources/plugins/dist/css/excel-sub-menu.css">
 
 <style>
     .form-group .my-content .my-input-group .left-content {
         min-width: 70px;
-    }
-
-    .arrow-up {
-        width: 0;
-        height: 0;
-        border-left: 5px solid transparent;
-        border-right: 5px solid transparent;
-
-        border-bottom: 5px solid #00a65a;
-        position: absolute;
-        left: 70%;
-    }
-
-    .btn-excel:hover ~ .excel-modal {
-        /*opacity: 1;*/
-        /*transition-delay: 0.5s;*/
-    }
-
-    .excel-modal {
-        width: 100%;
-        position: absolute;
-        z-index: 100;
-        right: 0;
-        /*display: none;*/
-
-        /*transition: 0s;*/
-        /*opacity: 0;*/
-    }
-
-    .excel-modal .my-content-wrap {
-        padding-top: 4px;
-        position: relative;
-
-    }
-
-    .excel-modal {
-        visibility: hidden;
-        opacity: 0;
-        transform: translateY(-2px);
-        transition: all 0.3s ease-in-out 0s, visibility 0s linear 0.3s, z-index 0s linear 0.01s;
-    }
-
-    .export-content:hover .excel-modal {
-        visibility: visible;
-        opacity: 1;
-        transform: translateY(0%);
-        transition-delay: 0.3s;
-    }
-
-    .excel-modal .my-content-wrap .content {
-        min-height: 0px !important;
-        width: 150px;
-        padding: 10px;
-        float: right;
-        display: block;
-        border-radius: 5px;
-        border: 1px #00a65a solid;
-        background: white;
-
-    }
-
-    .excel-modal .my-content-wrap .content .item,
-    .excel-modal .my-content-wrap .sub-item-wrapper .item {
-        width: 100%;
-        color: black;
-        text-align: left;
-        min-height: 30px;
-        vertical-align: middle;
-        line-height: 26px;
-        display: flex;
-        font-weight: 600;
-        cursor: pointer;
-
-    }
-
-    .excel-modal .my-content-wrap .content .item:hover,
-    .excel-modal .my-content-wrap .sub-item-wrapper .item:hover {
-        /*border-bottom: 1px #4CAF50 solid;*/
-        color: #dc2929;
-    }
-
-    .excel-modal .my-content-wrap .content .item .fa {
-        display: flex;
-        font-size: 15px;
-        margin-right: 10px;
-        margin-top: 5px;
-    }
-
-    .excel-modal .my-content-wrap .sub-item-wrapper {
-        min-width: 75px;
-        position: absolute;
-        background: white;
-        border: 1px #00a65a solid;
-        padding: 5px 15px 5px 15px;
-        border-radius: 25px 0px;
-        /*display: none;*/
-    }
-
-    .excel-modal .my-content-wrap .sub-item-wrapper .item {
-        text-align: center;
-        display: block;
-    }
-
-    .sub-item-1 {
-        right: 151px;
-        top: 10px;
-    }
-
-    .sub-item-2 {
-        right: 151px;
-        top: 37px;
     }
 
 </style>
@@ -140,26 +30,21 @@
                                         <i class="fa fa-angle-left"></i>
                                         <span>In tất cả sinh viên</span>
                                         <div class="sub-item-wrapper">
-                                            <div class="item"><span>Word</span></div>
-                                            <div class="item"><span>PDF</span></div>
-                                            <div class="item"><span>Excel</span></div>
+                                            <%--<div class="item"><span>Word</span></div>--%>
+                                            <div class="item" onclick="Test(1)"><span>PDF</span></div>
+                                            <div class="item" onclick="Test(2)"><span>Excel</span></div>
                                         </div>
                                     </div>
                                     <div class="item">
                                         <i class="fa fa-angle-left"></i>
                                         <span>In một sinh viên</span>
+                                        <div class="sub-item-wrapper">
+                                            <%--<div class="item"><span>Word</span></div>--%>
+                                            <div class="item" onclick="Test(3)"><span>PDF</span></div>
+                                            <div class="item" onclick="Test(4)"><span>Excel</span></div>
+                                        </div>
                                     </div>
                                 </div>
-                                <%--<div class="sub-item-wrapper sub-item-1">--%>
-                                <%--<div class="item"><span>Word</span></div>--%>
-                                <%--<div class="item"><span>PDF</span></div>--%>
-                                <%--<div class="item"><span>Excel</span></div>--%>
-                                <%--</div>--%>
-                                <%--<div class="sub-item-wrapper sub-item-2">--%>
-                                <%--<div class="item">Word</div>--%>
-                                <%--<div class="item">PDF</div>--%>
-                                <%--<div class="item">Excel</div>--%>
-                                <%--</div>--%>
                             </div>
                         </div>
                     </div>
@@ -220,6 +105,7 @@
                     </div>
                     <div class="col-md-12">
                         <button class="btn btn-success" onclick="Refresh()">Tìm kiếm</button>
+                        <button type="button" class="btn btn-primary" onclick="ExportExcel()">Xuất dữ liệu</button>
                     </div>
                 </div>
             </div>
@@ -244,6 +130,15 @@
         </div>
     </div>
 </section>
+
+<form id="export-excel" action="/exportExcel" hidden>
+    <input name="objectType"/>
+    <input name="credit"/>
+    <input name="sCredit" />
+    <input name="programId" />
+    <input name="semesterId"/>
+    <input name="sSearch"/>
+</form>
 
 <script>
     var table = null;
@@ -314,8 +209,23 @@
         });
     });
 
+    function ExportExcel() {
+        $("input[name='objectType']").val(4);
+        $("input[name='credit']").val($('#credit').val());
+        $("input[name='sCredit']").val($('#sCredit').val());
+        $("input[name='programId']").val($('#program').val());
+        $("input[name='semesterId']").val($('#semester').val());
+        $("input[name='sSearch']").val(table.api().context[0].oPreviousSearch.sSearch);
+
+        $("#export-excel").submit();
+    }
+
     function Refresh() {
         table._fnPageChange(0);
         table._fnAjaxUpdate();
+    }
+
+    function Test(param) {
+        alert("yasss" + param);
     }
 </script>

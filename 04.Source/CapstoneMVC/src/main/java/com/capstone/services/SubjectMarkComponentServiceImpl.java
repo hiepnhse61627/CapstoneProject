@@ -9,10 +9,10 @@ import javax.persistence.Persistence;
 public class SubjectMarkComponentServiceImpl implements ISubjectMarkComponentService {
 
     private EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-    ExSubjectMarkComponentJpaController realSemesterEntityJpaController = new ExSubjectMarkComponentJpaController(emf);
+    ExSubjectMarkComponentJpaController subjectMarkComponentJpaController = new ExSubjectMarkComponentJpaController(emf);
 
     @Override
     public SubjectMarkComponentEntity findSubjectMarkComponentById(String id) {
-        return realSemesterEntityJpaController.findSubjectMarkComponentEntity(id);
+        return subjectMarkComponentJpaController.findSubjectMarkComponentEntity(id);
     }
 }
