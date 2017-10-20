@@ -1,17 +1,12 @@
 package com.capstone.jpa.exJpa;
 
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.PrequisiteEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.jpa.SubjectEntityJpaController;
+import com.capstone.models.ReplacementSubject;
 
 import javax.persistence.*;
-import javax.security.auth.Subject;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 
@@ -70,38 +65,40 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
     private List<SubjectEntity> prequisiteList;
 
     public List<SubjectEntity> getAllPrequisiteSubjects(String subId) {
-        prequisiteList = new ArrayList<>();
-        EntityManager manager = getEntityManager();
-        SubjectEntity currSub = manager.find(SubjectEntity.class, subId);
-//        getPrequisite(currSub, currSub.getId());
-
-        List<PrequisiteEntity> preList = currSub.getPrequisiteEntityList();
-        for (PrequisiteEntity entity : preList) {
-            prequisiteList.add(entity.getSubId());
-        }
-
-        return prequisiteList;
+//        prequisiteList = new ArrayList<>();
+//        EntityManager manager = getEntityManager();
+//        SubjectEntity currSub = manager.find(SubjectEntity.class, subId);
+////        getPrequisite(currSub, currSub.getId());
+//
+//        List<PrequisiteEntity> preList = currSub.getPrequisiteEntityList();
+//        for (PrequisiteEntity entity : preList) {
+//            prequisiteList.add(entity.getSubId());
+//        }
+//
+//        return prequisiteList;
+        return null;
     }
 
     public List<SubjectEntity> getAllPrequisite() {
-        prequisiteList = new ArrayList<>();
-        for (SubjectEntity currSub : this.findSubjectEntityEntities()) {
-            getPrequisite(currSub, currSub.getId());
-        }
-        return prequisiteList;
+//        prequisiteList = new ArrayList<>();
+//        for (SubjectEntity currSub : this.findSubjectEntityEntities()) {
+//            getPrequisite(currSub, currSub.getId());
+//        }
+//        return prequisiteList;
+        return null;
     }
 
     private void getPrequisite(SubjectEntity curr, String subId) {
-        List<PrequisiteEntity> pre = curr.getPrequisiteEntityList();
-        if (!pre.isEmpty()) {
-            for (PrequisiteEntity s : pre) {
-                getPrequisite(s.getSubId(), subId);
-            }
-        }
-
-        if (!curr.getId().equals(subId) && !prequisiteList.stream().anyMatch(a -> a.getId().equals(curr.getId()))) {
-            prequisiteList.add(curr);
-        }
+//        List<PrequisiteEntity> pre = curr.getPrequisiteEntityList();
+//        if (!pre.isEmpty()) {
+//            for (PrequisiteEntity s : pre) {
+//                getPrequisite(s.getSubId(), subId);
+//            }
+//        }
+//
+//        if (!curr.getId().equals(subId) && !prequisiteList.stream().anyMatch(a -> a.getId().equals(curr.getId()))) {
+//            prequisiteList.add(curr);
+//        }
     }
 
     public int countStudentCredits(int studentId) {
@@ -121,5 +118,27 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
             ex.printStackTrace();
             return -1;
         }
+    }
+
+    public void insertReplacementList(List<ReplacementSubject> list) {
+        EntityManager manager = getEntityManager();
+        manager.getTransaction().begin();
+        for (ReplacementSubject replacer : list) {
+            if (replacer.getReplaceCode() != null && !replacer.getReplaceCode().isEmpty()) {
+                SubjectEntity sub = manager.find(SubjectEntity.class, replacer.getSubCode());
+                if (sub != null) {
+                    String[] rep = replacer.getReplaceCode().split("OR");
+                    for (String r : rep ) {
+                        SubjectEntity replace = manager.find(SubjectEntity.class, r.trim());
+                        if (!sub.getReplacementSubjectList().contains(replace)) {
+                            sub.getReplacementSubjectList().add(replace);
+                        }
+                    }
+                    manager.merge(sub);
+                    manager.flush();
+                }
+            }
+        }
+        manager.getTransaction().commit();
     }
 }

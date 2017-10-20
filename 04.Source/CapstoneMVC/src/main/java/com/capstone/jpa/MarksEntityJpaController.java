@@ -5,7 +5,6 @@
  */
 package com.capstone.jpa;
 
-import com.capstone.jpa.exceptions.*;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
@@ -16,6 +15,8 @@ import com.capstone.entities.MarksEntity;
 import com.capstone.entities.RealSemesterEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.entities.SubjectMarkComponentEntity;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -35,7 +36,7 @@ public class MarksEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(MarksEntity marksEntity) {
+    public void create(MarksEntity marksEntity) throws PreexistingEntityException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -78,6 +79,11 @@ public class MarksEntityJpaController implements Serializable {
                 subjectId = em.merge(subjectId);
             }
             em.getTransaction().commit();
+        } catch (Exception ex) {
+            if (findMarksEntity(marksEntity.getId()) != null) {
+                throw new PreexistingEntityException("MarksEntity " + marksEntity + " already exists.", ex);
+            }
+            throw ex;
         } finally {
             if (em != null) {
                 em.close();

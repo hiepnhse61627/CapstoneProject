@@ -12,7 +12,10 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import com.capstone.entities.SubjectEntity;
+import com.capstone.jpa.exceptions.IllegalOrphanException;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -32,22 +35,41 @@ public class PrequisiteEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(PrequisiteEntity prequisiteEntity) {
+    public void create(PrequisiteEntity prequisiteEntity) throws IllegalOrphanException, PreexistingEntityException, Exception {
+        List<String> illegalOrphanMessages = null;
+        SubjectEntity subjectEntityOrphanCheck = prequisiteEntity.getSubjectEntity();
+        if (subjectEntityOrphanCheck != null) {
+            PrequisiteEntity oldPrequisiteOfSubjectEntity = subjectEntityOrphanCheck.getPrequisiteEntity();
+            if (oldPrequisiteOfSubjectEntity != null) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("The SubjectEntity " + subjectEntityOrphanCheck + " already has an item of type PrequisiteEntity whose subjectEntity column cannot be null. Please make another selection for the subjectEntity field.");
+            }
+        }
+        if (illegalOrphanMessages != null) {
+            throw new IllegalOrphanException(illegalOrphanMessages);
+        }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            SubjectEntity subId = prequisiteEntity.getSubId();
-            if (subId != null) {
-                subId = em.getReference(subId.getClass(), subId.getId());
-                prequisiteEntity.setSubId(subId);
+            SubjectEntity subjectEntity = prequisiteEntity.getSubjectEntity();
+            if (subjectEntity != null) {
+                subjectEntity = em.getReference(subjectEntity.getClass(), subjectEntity.getId());
+                prequisiteEntity.setSubjectEntity(subjectEntity);
             }
             em.persist(prequisiteEntity);
-            if (subId != null) {
-                subId.getPrequisiteEntityList().add(prequisiteEntity);
-                subId = em.merge(subId);
+            if (subjectEntity != null) {
+                subjectEntity.setPrequisiteEntity(prequisiteEntity);
+                subjectEntity = em.merge(subjectEntity);
             }
             em.getTransaction().commit();
+        } catch (Exception ex) {
+            if (findPrequisiteEntity(prequisiteEntity.getSubId()) != null) {
+                throw new PreexistingEntityException("PrequisiteEntity " + prequisiteEntity + " already exists.", ex);
+            }
+            throw ex;
         } finally {
             if (em != null) {
                 em.close();
@@ -55,32 +77,45 @@ public class PrequisiteEntityJpaController implements Serializable {
         }
     }
 
-    public void edit(PrequisiteEntity prequisiteEntity) throws NonexistentEntityException, Exception {
+    public void edit(PrequisiteEntity prequisiteEntity) throws IllegalOrphanException, NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            PrequisiteEntity persistentPrequisiteEntity = em.find(PrequisiteEntity.class, prequisiteEntity.getId());
-            SubjectEntity subIdOld = persistentPrequisiteEntity.getSubId();
-            SubjectEntity subIdNew = prequisiteEntity.getSubId();
-            if (subIdNew != null) {
-                subIdNew = em.getReference(subIdNew.getClass(), subIdNew.getId());
-                prequisiteEntity.setSubId(subIdNew);
+            PrequisiteEntity persistentPrequisiteEntity = em.find(PrequisiteEntity.class, prequisiteEntity.getSubId());
+            SubjectEntity subjectEntityOld = persistentPrequisiteEntity.getSubjectEntity();
+            SubjectEntity subjectEntityNew = prequisiteEntity.getSubjectEntity();
+            List<String> illegalOrphanMessages = null;
+            if (subjectEntityNew != null && !subjectEntityNew.equals(subjectEntityOld)) {
+                PrequisiteEntity oldPrequisiteOfSubjectEntity = subjectEntityNew.getPrequisiteEntity();
+                if (oldPrequisiteOfSubjectEntity != null) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("The SubjectEntity " + subjectEntityNew + " already has an item of type PrequisiteEntity whose subjectEntity column cannot be null. Please make another selection for the subjectEntity field.");
+                }
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
+            }
+            if (subjectEntityNew != null) {
+                subjectEntityNew = em.getReference(subjectEntityNew.getClass(), subjectEntityNew.getId());
+                prequisiteEntity.setSubjectEntity(subjectEntityNew);
             }
             prequisiteEntity = em.merge(prequisiteEntity);
-            if (subIdOld != null && !subIdOld.equals(subIdNew)) {
-                subIdOld.getPrequisiteEntityList().remove(prequisiteEntity);
-                subIdOld = em.merge(subIdOld);
+            if (subjectEntityOld != null && !subjectEntityOld.equals(subjectEntityNew)) {
+                subjectEntityOld.setPrequisiteEntity(null);
+                subjectEntityOld = em.merge(subjectEntityOld);
             }
-            if (subIdNew != null && !subIdNew.equals(subIdOld)) {
-                subIdNew.getPrequisiteEntityList().add(prequisiteEntity);
-                subIdNew = em.merge(subIdNew);
+            if (subjectEntityNew != null && !subjectEntityNew.equals(subjectEntityOld)) {
+                subjectEntityNew.setPrequisiteEntity(prequisiteEntity);
+                subjectEntityNew = em.merge(subjectEntityNew);
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
-                Integer id = prequisiteEntity.getId();
+                String id = prequisiteEntity.getSubId();
                 if (findPrequisiteEntity(id) == null) {
                     throw new NonexistentEntityException("The prequisiteEntity with id " + id + " no longer exists.");
                 }
@@ -93,7 +128,7 @@ public class PrequisiteEntityJpaController implements Serializable {
         }
     }
 
-    public void destroy(Integer id) throws NonexistentEntityException {
+    public void destroy(String id) throws NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -101,14 +136,14 @@ public class PrequisiteEntityJpaController implements Serializable {
             PrequisiteEntity prequisiteEntity;
             try {
                 prequisiteEntity = em.getReference(PrequisiteEntity.class, id);
-                prequisiteEntity.getId();
+                prequisiteEntity.getSubId();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The prequisiteEntity with id " + id + " no longer exists.", enfe);
             }
-            SubjectEntity subId = prequisiteEntity.getSubId();
-            if (subId != null) {
-                subId.getPrequisiteEntityList().remove(prequisiteEntity);
-                subId = em.merge(subId);
+            SubjectEntity subjectEntity = prequisiteEntity.getSubjectEntity();
+            if (subjectEntity != null) {
+                subjectEntity.setPrequisiteEntity(null);
+                subjectEntity = em.merge(subjectEntity);
             }
             em.remove(prequisiteEntity);
             em.getTransaction().commit();
@@ -143,7 +178,7 @@ public class PrequisiteEntityJpaController implements Serializable {
         }
     }
 
-    public PrequisiteEntity findPrequisiteEntity(Integer id) {
+    public PrequisiteEntity findPrequisiteEntity(String id) {
         EntityManager em = getEntityManager();
         try {
             return em.find(PrequisiteEntity.class, id);

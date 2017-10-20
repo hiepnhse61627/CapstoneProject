@@ -5,16 +5,19 @@
  */
 package com.capstone.jpa;
 
-import com.capstone.jpa.exceptions.*;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.capstone.entities.CurriculumEntity;
-import com.capstone.entities.ProgramEntity;
+import com.capstone.entities.SubjectCurriculumEntity;
 import java.util.ArrayList;
 import java.util.List;
+import com.capstone.entities.CurriculumEntity;
+import com.capstone.entities.ProgramEntity;
+import com.capstone.jpa.exceptions.IllegalOrphanException;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
@@ -33,7 +36,10 @@ public class ProgramEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(ProgramEntity programEntity) {
+    public void create(ProgramEntity programEntity) throws PreexistingEntityException, Exception {
+        if (programEntity.getSubjectCurriculumEntityList() == null) {
+            programEntity.setSubjectCurriculumEntityList(new ArrayList<SubjectCurriculumEntity>());
+        }
         if (programEntity.getCurriculumEntityList() == null) {
             programEntity.setCurriculumEntityList(new ArrayList<CurriculumEntity>());
         }
@@ -41,6 +47,12 @@ public class ProgramEntityJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            List<SubjectCurriculumEntity> attachedSubjectCurriculumEntityList = new ArrayList<SubjectCurriculumEntity>();
+            for (SubjectCurriculumEntity subjectCurriculumEntityListSubjectCurriculumEntityToAttach : programEntity.getSubjectCurriculumEntityList()) {
+                subjectCurriculumEntityListSubjectCurriculumEntityToAttach = em.getReference(subjectCurriculumEntityListSubjectCurriculumEntityToAttach.getClass(), subjectCurriculumEntityListSubjectCurriculumEntityToAttach.getId());
+                attachedSubjectCurriculumEntityList.add(subjectCurriculumEntityListSubjectCurriculumEntityToAttach);
+            }
+            programEntity.setSubjectCurriculumEntityList(attachedSubjectCurriculumEntityList);
             List<CurriculumEntity> attachedCurriculumEntityList = new ArrayList<CurriculumEntity>();
             for (CurriculumEntity curriculumEntityListCurriculumEntityToAttach : programEntity.getCurriculumEntityList()) {
                 curriculumEntityListCurriculumEntityToAttach = em.getReference(curriculumEntityListCurriculumEntityToAttach.getClass(), curriculumEntityListCurriculumEntityToAttach.getId());
@@ -48,6 +60,15 @@ public class ProgramEntityJpaController implements Serializable {
             }
             programEntity.setCurriculumEntityList(attachedCurriculumEntityList);
             em.persist(programEntity);
+            for (SubjectCurriculumEntity subjectCurriculumEntityListSubjectCurriculumEntity : programEntity.getSubjectCurriculumEntityList()) {
+                ProgramEntity oldProgramIdOfSubjectCurriculumEntityListSubjectCurriculumEntity = subjectCurriculumEntityListSubjectCurriculumEntity.getProgramId();
+                subjectCurriculumEntityListSubjectCurriculumEntity.setProgramId(programEntity);
+                subjectCurriculumEntityListSubjectCurriculumEntity = em.merge(subjectCurriculumEntityListSubjectCurriculumEntity);
+                if (oldProgramIdOfSubjectCurriculumEntityListSubjectCurriculumEntity != null) {
+                    oldProgramIdOfSubjectCurriculumEntityListSubjectCurriculumEntity.getSubjectCurriculumEntityList().remove(subjectCurriculumEntityListSubjectCurriculumEntity);
+                    oldProgramIdOfSubjectCurriculumEntityListSubjectCurriculumEntity = em.merge(oldProgramIdOfSubjectCurriculumEntityListSubjectCurriculumEntity);
+                }
+            }
             for (CurriculumEntity curriculumEntityListCurriculumEntity : programEntity.getCurriculumEntityList()) {
                 ProgramEntity oldProgramIdOfCurriculumEntityListCurriculumEntity = curriculumEntityListCurriculumEntity.getProgramId();
                 curriculumEntityListCurriculumEntity.setProgramId(programEntity);
@@ -58,6 +79,11 @@ public class ProgramEntityJpaController implements Serializable {
                 }
             }
             em.getTransaction().commit();
+        } catch (Exception ex) {
+            if (findProgramEntity(programEntity.getId()) != null) {
+                throw new PreexistingEntityException("ProgramEntity " + programEntity + " already exists.", ex);
+            }
+            throw ex;
         } finally {
             if (em != null) {
                 em.close();
@@ -71,6 +97,8 @@ public class ProgramEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             ProgramEntity persistentProgramEntity = em.find(ProgramEntity.class, programEntity.getId());
+            List<SubjectCurriculumEntity> subjectCurriculumEntityListOld = persistentProgramEntity.getSubjectCurriculumEntityList();
+            List<SubjectCurriculumEntity> subjectCurriculumEntityListNew = programEntity.getSubjectCurriculumEntityList();
             List<CurriculumEntity> curriculumEntityListOld = persistentProgramEntity.getCurriculumEntityList();
             List<CurriculumEntity> curriculumEntityListNew = programEntity.getCurriculumEntityList();
             List<String> illegalOrphanMessages = null;
@@ -85,6 +113,13 @@ public class ProgramEntityJpaController implements Serializable {
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
+            List<SubjectCurriculumEntity> attachedSubjectCurriculumEntityListNew = new ArrayList<SubjectCurriculumEntity>();
+            for (SubjectCurriculumEntity subjectCurriculumEntityListNewSubjectCurriculumEntityToAttach : subjectCurriculumEntityListNew) {
+                subjectCurriculumEntityListNewSubjectCurriculumEntityToAttach = em.getReference(subjectCurriculumEntityListNewSubjectCurriculumEntityToAttach.getClass(), subjectCurriculumEntityListNewSubjectCurriculumEntityToAttach.getId());
+                attachedSubjectCurriculumEntityListNew.add(subjectCurriculumEntityListNewSubjectCurriculumEntityToAttach);
+            }
+            subjectCurriculumEntityListNew = attachedSubjectCurriculumEntityListNew;
+            programEntity.setSubjectCurriculumEntityList(subjectCurriculumEntityListNew);
             List<CurriculumEntity> attachedCurriculumEntityListNew = new ArrayList<CurriculumEntity>();
             for (CurriculumEntity curriculumEntityListNewCurriculumEntityToAttach : curriculumEntityListNew) {
                 curriculumEntityListNewCurriculumEntityToAttach = em.getReference(curriculumEntityListNewCurriculumEntityToAttach.getClass(), curriculumEntityListNewCurriculumEntityToAttach.getId());
@@ -93,6 +128,23 @@ public class ProgramEntityJpaController implements Serializable {
             curriculumEntityListNew = attachedCurriculumEntityListNew;
             programEntity.setCurriculumEntityList(curriculumEntityListNew);
             programEntity = em.merge(programEntity);
+            for (SubjectCurriculumEntity subjectCurriculumEntityListOldSubjectCurriculumEntity : subjectCurriculumEntityListOld) {
+                if (!subjectCurriculumEntityListNew.contains(subjectCurriculumEntityListOldSubjectCurriculumEntity)) {
+                    subjectCurriculumEntityListOldSubjectCurriculumEntity.setProgramId(null);
+                    subjectCurriculumEntityListOldSubjectCurriculumEntity = em.merge(subjectCurriculumEntityListOldSubjectCurriculumEntity);
+                }
+            }
+            for (SubjectCurriculumEntity subjectCurriculumEntityListNewSubjectCurriculumEntity : subjectCurriculumEntityListNew) {
+                if (!subjectCurriculumEntityListOld.contains(subjectCurriculumEntityListNewSubjectCurriculumEntity)) {
+                    ProgramEntity oldProgramIdOfSubjectCurriculumEntityListNewSubjectCurriculumEntity = subjectCurriculumEntityListNewSubjectCurriculumEntity.getProgramId();
+                    subjectCurriculumEntityListNewSubjectCurriculumEntity.setProgramId(programEntity);
+                    subjectCurriculumEntityListNewSubjectCurriculumEntity = em.merge(subjectCurriculumEntityListNewSubjectCurriculumEntity);
+                    if (oldProgramIdOfSubjectCurriculumEntityListNewSubjectCurriculumEntity != null && !oldProgramIdOfSubjectCurriculumEntityListNewSubjectCurriculumEntity.equals(programEntity)) {
+                        oldProgramIdOfSubjectCurriculumEntityListNewSubjectCurriculumEntity.getSubjectCurriculumEntityList().remove(subjectCurriculumEntityListNewSubjectCurriculumEntity);
+                        oldProgramIdOfSubjectCurriculumEntityListNewSubjectCurriculumEntity = em.merge(oldProgramIdOfSubjectCurriculumEntityListNewSubjectCurriculumEntity);
+                    }
+                }
+            }
             for (CurriculumEntity curriculumEntityListNewCurriculumEntity : curriculumEntityListNew) {
                 if (!curriculumEntityListOld.contains(curriculumEntityListNewCurriculumEntity)) {
                     ProgramEntity oldProgramIdOfCurriculumEntityListNewCurriculumEntity = curriculumEntityListNewCurriculumEntity.getProgramId();
@@ -143,6 +195,11 @@ public class ProgramEntityJpaController implements Serializable {
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
+            }
+            List<SubjectCurriculumEntity> subjectCurriculumEntityList = programEntity.getSubjectCurriculumEntityList();
+            for (SubjectCurriculumEntity subjectCurriculumEntityListSubjectCurriculumEntity : subjectCurriculumEntityList) {
+                subjectCurriculumEntityListSubjectCurriculumEntity.setProgramId(null);
+                subjectCurriculumEntityListSubjectCurriculumEntity = em.merge(subjectCurriculumEntityListSubjectCurriculumEntity);
             }
             em.remove(programEntity);
             em.getTransaction().commit();

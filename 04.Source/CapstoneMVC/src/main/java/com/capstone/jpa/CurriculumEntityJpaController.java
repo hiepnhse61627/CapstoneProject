@@ -5,7 +5,6 @@
  */
 package com.capstone.jpa;
 
-import com.capstone.jpa.exceptions.*;
 import com.capstone.entities.CurriculumEntity;
 import java.io.Serializable;
 import javax.persistence.Query;
@@ -14,6 +13,9 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import com.capstone.entities.ProgramEntity;
 import com.capstone.entities.DocumentStudentEntity;
+import com.capstone.jpa.exceptions.IllegalOrphanException;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -34,7 +36,7 @@ public class CurriculumEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(CurriculumEntity curriculumEntity) {
+    public void create(CurriculumEntity curriculumEntity) throws PreexistingEntityException, Exception {
         if (curriculumEntity.getDocumentStudentEntityList() == null) {
             curriculumEntity.setDocumentStudentEntityList(new ArrayList<DocumentStudentEntity>());
         }
@@ -68,6 +70,11 @@ public class CurriculumEntityJpaController implements Serializable {
                 }
             }
             em.getTransaction().commit();
+        } catch (Exception ex) {
+            if (findCurriculumEntity(curriculumEntity.getId()) != null) {
+                throw new PreexistingEntityException("CurriculumEntity " + curriculumEntity + " already exists.", ex);
+            }
+            throw ex;
         } finally {
             if (em != null) {
                 em.close();

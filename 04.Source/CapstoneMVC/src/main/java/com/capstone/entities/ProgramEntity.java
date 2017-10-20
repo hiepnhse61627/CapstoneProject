@@ -7,17 +7,7 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  *
@@ -26,9 +16,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "Program")
 @NamedQueries({
-    @NamedQuery(name = "ProgramEntity.findAll", query = "SELECT p FROM ProgramEntity p")
-    , @NamedQuery(name = "ProgramEntity.findById", query = "SELECT p FROM ProgramEntity p WHERE p.id = :id")
-    , @NamedQuery(name = "ProgramEntity.findByName", query = "SELECT p FROM ProgramEntity p WHERE p.name = :name")})
+    @NamedQuery(name = "ProgramEntity.findAll", query = "SELECT p FROM ProgramEntity p")})
 public class ProgramEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -40,6 +28,8 @@ public class ProgramEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "Name")
     private String name;
+    @OneToMany(mappedBy = "programId")
+    private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "programId")
     private List<CurriculumEntity> curriculumEntityList;
 
@@ -69,6 +59,14 @@ public class ProgramEntity implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<SubjectCurriculumEntity> getSubjectCurriculumEntityList() {
+        return subjectCurriculumEntityList;
+    }
+
+    public void setSubjectCurriculumEntityList(List<SubjectCurriculumEntity> subjectCurriculumEntityList) {
+        this.subjectCurriculumEntityList = subjectCurriculumEntityList;
     }
 
     public List<CurriculumEntity> getCurriculumEntityList() {
@@ -101,7 +99,7 @@ public class ProgramEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.ProgramEntity[ id=" + id + " ]";
+        return "com.capstone.entities.ProgramEntity[ id=" + id + " ]";
     }
     
 }

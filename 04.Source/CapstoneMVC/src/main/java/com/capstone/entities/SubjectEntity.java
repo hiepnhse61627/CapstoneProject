@@ -13,6 +13,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -26,17 +28,8 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "Subject")
 @NamedQueries({
-    @NamedQuery(name = "SubjectEntity.findAll", query = "SELECT s FROM SubjectEntity s")
-    , @NamedQuery(name = "SubjectEntity.findById", query = "SELECT s FROM SubjectEntity s WHERE s.id = :id")
-    , @NamedQuery(name = "SubjectEntity.findByName", query = "SELECT s FROM SubjectEntity s WHERE s.name = :name")
-    , @NamedQuery(name = "SubjectEntity.findByAbbreviation", query = "SELECT s FROM SubjectEntity s WHERE s.abbreviation = :abbreviation")
-    , @NamedQuery(name = "SubjectEntity.findByCredits", query = "SELECT s FROM SubjectEntity s WHERE s.credits = :credits")
-    , @NamedQuery(name = "SubjectEntity.findByReplacementId", query = "SELECT s FROM SubjectEntity s WHERE s.replacementId = :replacementId")
-    , @NamedQuery(name = "SubjectEntity.findByIsSpecialized", query = "SELECT s FROM SubjectEntity s WHERE s.isSpecialized = :isSpecialized")})
+    @NamedQuery(name = "SubjectEntity.findAll", query = "SELECT s FROM SubjectEntity s")})
 public class SubjectEntity implements Serializable {
-
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
-    private List<CurriculumMappingEntity> curriculumMappingEntityList;
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -49,15 +42,22 @@ public class SubjectEntity implements Serializable {
     private String abbreviation;
     @Column(name = "Credits")
     private Integer credits;
-    @Column(name = "ReplacementId")
-    private String replacementId;
     @Column(name = "IsSpecialized")
     private Boolean isSpecialized;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subId")
-    private List<PrequisiteEntity> prequisiteEntityList;
+    @JoinTable(name = "Replacement_Subject", joinColumns = {
+        @JoinColumn(name = "SubId", referencedColumnName = "Id")}, inverseJoinColumns = {
+        @JoinColumn(name = "ReplacementId", referencedColumnName = "Id")})
+    @ManyToMany
+    private List<SubjectEntity> replacementSubjectList;
+    @ManyToMany(mappedBy = "replacementSubjectList")
+    private List<SubjectEntity> subjectEntityList;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
+    private PrequisiteEntity prequisiteEntity;
     @JoinColumn(name = "Id", referencedColumnName = "SubjectId", insertable = false, updatable = false)
     @OneToOne(optional = false)
     private SubjectMarkComponentEntity subjectMarkComponentEntity;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
+    private List<CurriculumMappingEntity> curriculumMappingEntityList;
 
     public SubjectEntity() {
     }
@@ -98,14 +98,6 @@ public class SubjectEntity implements Serializable {
         this.credits = credits;
     }
 
-    public String getReplacementId() {
-        return replacementId;
-    }
-
-    public void setReplacementId(String replacementId) {
-        this.replacementId = replacementId;
-    }
-
     public Boolean getIsSpecialized() {
         return isSpecialized;
     }
@@ -114,12 +106,28 @@ public class SubjectEntity implements Serializable {
         this.isSpecialized = isSpecialized;
     }
 
-    public List<PrequisiteEntity> getPrequisiteEntityList() {
-        return prequisiteEntityList;
+    public List<SubjectEntity> getReplacementSubjectList() {
+        return replacementSubjectList;
     }
 
-    public void setPrequisiteEntityList(List<PrequisiteEntity> prequisiteEntityList) {
-        this.prequisiteEntityList = prequisiteEntityList;
+    public void setReplacementSubjectList(List<SubjectEntity> subjectEntityList) {
+        this.replacementSubjectList = subjectEntityList;
+    }
+
+    public List<SubjectEntity> getSubjectEntityList() {
+        return subjectEntityList;
+    }
+
+    public void setSubjectEntityList(List<SubjectEntity> subjectEntityList1) {
+        this.subjectEntityList = subjectEntityList1;
+    }
+
+    public PrequisiteEntity getPrequisiteEntity() {
+        return prequisiteEntity;
+    }
+
+    public void setPrequisiteEntity(PrequisiteEntity prequisite) {
+        this.prequisiteEntity = prequisite;
     }
 
     public SubjectMarkComponentEntity getSubjectMarkComponentEntity() {
@@ -128,6 +136,14 @@ public class SubjectEntity implements Serializable {
 
     public void setSubjectMarkComponentEntity(SubjectMarkComponentEntity subjectMarkComponentEntity) {
         this.subjectMarkComponentEntity = subjectMarkComponentEntity;
+    }
+
+    public List<CurriculumMappingEntity> getCurriculumMappingEntityList() {
+        return curriculumMappingEntityList;
+    }
+
+    public void setCurriculumMappingEntityList(List<CurriculumMappingEntity> curriculumMappingEntityList) {
+        this.curriculumMappingEntityList = curriculumMappingEntityList;
     }
 
     @Override
@@ -153,14 +169,6 @@ public class SubjectEntity implements Serializable {
     @Override
     public String toString() {
         return "com.capstone.entities.SubjectEntity[ id=" + id + " ]";
-    }
-
-    public List<CurriculumMappingEntity> getCurriculumMappingEntityList() {
-        return curriculumMappingEntityList;
-    }
-
-    public void setCurriculumMappingEntityList(List<CurriculumMappingEntity> curriculumMappingEntityList) {
-        this.curriculumMappingEntityList = curriculumMappingEntityList;
     }
     
 }

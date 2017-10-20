@@ -5,18 +5,21 @@
  */
 package com.capstone.jpa;
 
-import com.capstone.jpa.exceptions.*;
 import java.io.Serializable;
-import javax.persistence.*;
+import javax.persistence.Query;
+import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.SubjectMarkComponentEntity;
-import com.capstone.models.Logger;
-
+import com.capstone.jpa.exceptions.IllegalOrphanException;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 
 /**
  *
@@ -223,21 +226,10 @@ public class SubjectMarkComponentEntityJpaController implements Serializable {
     public SubjectMarkComponentEntity findSubjectMarkComponentEntity(String id) {
         EntityManager em = getEntityManager();
         try {
-            TypedQuery<SubjectEntity> query = em.createQuery("SELECT a FROM SubjectEntity a WHERE a.id = :id OR a.replacementid LIKE :replacement", SubjectEntity.class);
-            query.setParameter("id", id);
-            query.setParameter("replacement", "%" + id + "%");
-            SubjectEntity data = query.getSingleResult();
-            return data.getSubjectMarkComponentEntity();
-        } catch (NoResultException e) {
-            return null;
-        } catch (Exception e) {
-            Logger.writeLog(e);
-            System.out.println("Error: " + e.getMessage());
+            return em.find(SubjectMarkComponentEntity.class, id);
         } finally {
             em.close();
         }
-
-        return null;
     }
 
     public int getSubjectMarkComponentEntityCount() {

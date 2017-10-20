@@ -5,7 +5,6 @@
  */
 package com.capstone.jpa;
 
-import com.capstone.jpa.exceptions.*;
 import com.capstone.entities.DocTypeEntity;
 import java.io.Serializable;
 import javax.persistence.Query;
@@ -13,6 +12,9 @@ import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import com.capstone.entities.DocumentEntity;
+import com.capstone.jpa.exceptions.IllegalOrphanException;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -33,7 +35,7 @@ public class DocTypeEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(DocTypeEntity docTypeEntity) {
+    public void create(DocTypeEntity docTypeEntity) throws PreexistingEntityException, Exception {
         if (docTypeEntity.getDocumentEntityList() == null) {
             docTypeEntity.setDocumentEntityList(new ArrayList<DocumentEntity>());
         }
@@ -58,6 +60,11 @@ public class DocTypeEntityJpaController implements Serializable {
                 }
             }
             em.getTransaction().commit();
+        } catch (Exception ex) {
+            if (findDocTypeEntity(docTypeEntity.getId()) != null) {
+                throw new PreexistingEntityException("DocTypeEntity " + docTypeEntity + " already exists.", ex);
+            }
+            throw ex;
         } finally {
             if (em != null) {
                 em.close();

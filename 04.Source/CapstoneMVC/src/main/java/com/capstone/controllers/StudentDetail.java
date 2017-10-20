@@ -206,11 +206,11 @@ public class StudentDetail {
 
                     SubjectEntity cur = service3.findSubjectById(m.getId());
                     boolean exist = false;
-                    for (PrequisiteEntity s : cur.getPrequisiteEntityList()) {
-                        TypedQuery<MarksEntity> q = em.createQuery("SELECT c FROM MarksEntity c WHERE c.studentId.id = :id AND c.subjectId.subjectId = :sub", MarksEntity.class);
-                        List<MarksEntity> l = q.setParameter("sub", s.getId()).setParameter("id", stuId).getResultList();
-                        exist = Ultilities.CheckStudentSubjectFailOrPass(l);
-                    }
+//                    for (PrequisiteEntity s : cur.getPrequisiteEntityList()) {
+//                        TypedQuery<MarksEntity> q = em.createQuery("SELECT c FROM MarksEntity c WHERE c.studentId.id = :id AND c.subjectId.subjectId = :sub", MarksEntity.class);
+//                        List<MarksEntity> l = q.setParameter("sub", s.getId()).setParameter("id", stuId).getResultList();
+//                        exist = Ultilities.CheckStudentSubjectFailOrPass(l);
+//                    }
 
                     if (exist) {
                         tmp.add("1");

@@ -3,11 +3,13 @@ package com.capstone.controllers;
 import com.capstone.entities.PrequisiteEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.models.ReadAndSaveFileToServer;
+import com.capstone.models.ReplacementSubject;
 import com.capstone.services.ISubjectService;
 import com.capstone.services.SubjectServiceImpl;
 import com.google.gson.JsonObject;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.formula.functions.Replace;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -90,6 +92,8 @@ public class SubjectController {
 
             XSSFWorkbook workbook = new XSSFWorkbook(is);
 
+            List<ReplacementSubject> replace = new ArrayList<>();
+
             for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
                 XSSFSheet sheet = workbook.getSheetAt(i);
                 Iterator<Row> rowIterator = sheet.iterator();
@@ -98,11 +102,14 @@ public class SubjectController {
                     Row row = rowIterator.next();
                     Iterator<Cell> cellIterator = row.cellIterator();
                     SubjectEntity en = new SubjectEntity();
+                    ReplacementSubject re = new ReplacementSubject();
                     while (cellIterator.hasNext()) {
                         Cell cell = cellIterator.next();
                         if (row.getRowNum() > 3) { //To filter column headings
                             if (cell.getColumnIndex() == 0) { // Subject code
                                 en.setId(cell.getStringCellValue().trim());
+                                // set sub code
+                                re.setSubCode(en.getId());
                             } else if (cell.getColumnIndex() == 1) { // Abbreviation
                                 en.setAbbreviation(cell.getStringCellValue().trim());
                             } else if (cell.getColumnIndex() == 2) { // Subject name
@@ -115,41 +122,23 @@ public class SubjectController {
                                 }
                             } else if (cell.getColumnIndex() == 4) { // Prerequisite
                                 String prequisite = cell.getStringCellValue().trim();
-                                en.setPrequisiteEntityList(null);
+                                PrequisiteEntity prequisiteEntity = new PrequisiteEntity();
+                                prequisiteEntity.setSubId(en.getId());
                                 if (prequisite != null && !prequisite.isEmpty()) {
-                                    List<PrequisiteEntity> pres = new ArrayList<>();
-                                    String[] split = prequisite.split("OR");
-                                    if (split.length > 1) {
-                                        for (String s: split) {
-                                            PrequisiteEntity entity = new PrequisiteEntity();
-                                            entity.setFailMark(4);
-                                            String data = s.replaceAll("\\(", "").replaceAll("\\)", "").trim();
-                                            entity.setPrequisiteSubs(data);
-                                            entity.setSubId(en);
-                                            pres.add(entity);
-                                        }
-                                        en.setPrequisiteEntityList(pres);
-                                    } else {
-                                        PrequisiteEntity entity = new PrequisiteEntity();
-                                        entity.setFailMark(4);
-                                        entity.setSubId(en);
-                                        String data = split[0].replaceAll("\\(", "").replaceAll("\\)", "").trim();
-                                        entity.setPrequisiteSubs(data);
-                                        pres.add(entity);
-                                        en.setPrequisiteEntityList(pres);
-                                    }
+                                    prequisiteEntity.setFailMark(4);
+                                    prequisiteEntity.setPrequisiteSubs(prequisite);
                                 }
-                            } else if (cell.getColumnIndex() == 5) {
-                                String replacementId = cell.getStringCellValue().trim();
-                                if (!replacementId.isEmpty()) {
-                                    en.setReplacementId(replacementId);
-                                }
+                                en.setPrequisiteEntity(prequisiteEntity);
+                            } else if (cell.getColumnIndex() == 5) { // Replacement
+                                String replacers = cell.getStringCellValue().trim();
+                                re.setReplaceCode(replacers);
                             }
                         }
                     }
 
                     if (en.getName() != null && !en.getName().isEmpty() && !columndata.stream().anyMatch(c -> c.getId().equals(en.getId()))) {
                         columndata.add(en);
+                        replace.add(re);
                     }
                 }
             }
@@ -157,6 +146,7 @@ public class SubjectController {
             is.close();
 
             subjectService.insertSubjectList(columndata);
+            subjectService.insertReplacementList(replace);
         } catch (Exception e) {
             e.printStackTrace();
             obj.addProperty("success", false);

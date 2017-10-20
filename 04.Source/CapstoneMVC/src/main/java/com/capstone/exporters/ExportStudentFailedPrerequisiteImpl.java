@@ -107,15 +107,15 @@ public class ExportStudentFailedPrerequisiteImpl implements IExportObject {
                 for (String i : p) {
                     SubjectEntity pre = service.findSubjectById(i);
                     if (pre != null) {
-                        for (PrequisiteEntity s: pre.getPrequisiteEntityList()) {
-                            TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
-                            List<MarksEntity> list = query.setParameter("sub", s.getSubId().getId()).setParameter("sList", Arrays.asList(p)).getResultList();
-                            Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getSubId().getId(), i, s.getFailMark()).forEach(c -> {
-                                if(!result.contains(c)) {
-                                    result.add(c);
-                                }
-                            });
-                        }
+//                        for (PrequisiteEntity s: pre.getPrequisiteEntityList()) {
+//                            TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
+//                            List<MarksEntity> list = query.setParameter("sub", s.getSubId().getId()).setParameter("sList", Arrays.asList(p)).getResultList();
+//                            Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getSubId().getId(), i, s.getFailMark()).forEach(c -> {
+//                                if(!result.contains(c)) {
+//                                    result.add(c);
+//                                }
+//                            });
+//                        }
                     }
                 }
             }
@@ -124,15 +124,15 @@ public class ExportStudentFailedPrerequisiteImpl implements IExportObject {
                 for (String i : p) {
                     SubjectEntity pre = service.findSubjectById(i);
                     if (pre != null) {
-                        for (PrequisiteEntity s: pre.getPrequisiteEntityList()) {
-                            TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
-                            List<MarksEntity> list = query.setParameter("sub", s.getSubId().getId()).setParameter("sList", Arrays.asList(p)).getResultList();
-                            Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getSubId().getId(), i, s.getFailMark()).forEach(c -> {
-                                if(!result.contains(c)) {
-                                    result.add(c);
-                                }
-                            });
-                        }
+//                        for (PrequisiteEntity s: pre.getPrequisiteEntityList()) {
+//                            TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
+//                            List<MarksEntity> list = query.setParameter("sub", s.getSubId().getId()).setParameter("sList", Arrays.asList(p)).getResultList();
+//                            Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getSubId().getId(), i, s.getFailMark()).forEach(c -> {
+//                                if(!result.contains(c)) {
+//                                    result.add(c);
+//                                }
+//                            });
+//                        }
                     }
                 }
             }
