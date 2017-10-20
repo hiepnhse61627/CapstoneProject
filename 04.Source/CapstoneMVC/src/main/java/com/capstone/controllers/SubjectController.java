@@ -92,7 +92,7 @@ public class SubjectController {
 
             XSSFWorkbook workbook = new XSSFWorkbook(is);
 
-            List<ReplacementSubject> replace = new ArrayList<>();
+//            List<ReplacementSubject> replace = new ArrayList<>();
 
             for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
                 XSSFSheet sheet = workbook.getSheetAt(i);
@@ -102,7 +102,7 @@ public class SubjectController {
                     Row row = rowIterator.next();
                     Iterator<Cell> cellIterator = row.cellIterator();
                     SubjectEntity en = new SubjectEntity();
-                    ReplacementSubject re = new ReplacementSubject();
+//                    ReplacementSubject re = new ReplacementSubject();
                     while (cellIterator.hasNext()) {
                         Cell cell = cellIterator.next();
                         if (row.getRowNum() > 3) { //To filter column headings
@@ -110,7 +110,7 @@ public class SubjectController {
                             if (cell.getColumnIndex() == 0) { // Subject code
                                 en.setId(cell.getStringCellValue().trim());
                                 // set sub code
-                                re.setSubCode(en.getId());
+//                                re.setSubCode(en.getId());
                             } else if (cell.getColumnIndex() == 1) { // Abbreviation
                                 en.setAbbreviation(cell.getStringCellValue().trim());
                             } else if (cell.getColumnIndex() == 2) { // Subject name
@@ -132,14 +132,25 @@ public class SubjectController {
                                 en.setPrequisiteEntity(prequisiteEntity);
                             } else if (cell.getColumnIndex() == 5) { // Replacement
                                 String replacers = cell.getStringCellValue().trim();
-                                re.setReplaceCode(replacers);
+//                                re.setReplaceCode(replacers);
+                                if (replacers != null && !replacers.isEmpty()) {
+                                    String processed = "";
+                                    String[] data = replacers.split("OR");
+                                    for (String d : data) {
+                                        processed += d.trim() + ",";
+                                    }
+                                    if (processed.lastIndexOf(",") == processed.length() - 1) {
+                                        processed = processed.substring(0, processed.lastIndexOf(","));
+                                    }
+                                    en.setReplacementId(processed.trim());
+                                }
                             }
                         }
                     }
 
                     if (en.getName() != null && !en.getName().isEmpty() && !columndata.stream().anyMatch(c -> c.getId().equals(en.getId()))) {
                         columndata.add(en);
-                        replace.add(re);
+//                        replace.add(re);
                     }
                 }
             }
@@ -147,7 +158,7 @@ public class SubjectController {
             is.close();
 
             subjectService.insertSubjectList(columndata);
-            subjectService.insertReplacementList(replace);
+//            subjectService.insertReplacementList(replace);
         } catch (Exception e) {
             e.printStackTrace();
             obj.addProperty("success", false);

@@ -18,6 +18,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Ultilities {
+
+    public static List<String> notexist = new ArrayList<>();
+
     public static List<MarksEntity> SortMarkBySemester(List<MarksEntity> set) {
         ArrayList<String> seasons = new ArrayList<String>() {{
             add("spring");

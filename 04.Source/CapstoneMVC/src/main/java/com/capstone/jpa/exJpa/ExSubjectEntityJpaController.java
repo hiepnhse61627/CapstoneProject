@@ -91,6 +91,33 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         return prequisiteList;
     }
 
+    @Override
+    public SubjectEntity findSubjectEntity(String id) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<SubjectEntity> query = em.createQuery("SELECT a FROM SubjectEntity a WHERE a.id = :sub", SubjectEntity.class);
+            query.setParameter("sub", id);
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            try {
+                TypedQuery<SubjectEntity> query = em.createQuery("SELECT a FROM SubjectEntity a WHERE a.replacementId LIKE :replace", SubjectEntity.class);
+                query.setParameter("replace", "%" + id + "%");
+                return query.getSingleResult();
+            } catch (NoResultException ex) {
+                System.out.println("Subject " + id + " not found!");
+                return null;
+            } catch (NonUniqueResultException ex) {
+                System.out.println("Subject " + id + " more than one result!");
+                return null;
+            }
+        } catch (NonUniqueResultException e) {
+            System.out.println("Subject " + id + " more than one result!");
+            return null;
+        } finally {
+            em.close();
+        }
+    }
+
     public List<List<SubjectEntity>> getAllPrequisite() {
         prequisiteList = new ArrayList<>();
         EntityManager manager = getEntityManager();

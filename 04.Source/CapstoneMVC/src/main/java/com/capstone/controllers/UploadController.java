@@ -2,6 +2,7 @@ package com.capstone.controllers;
 
 import com.capstone.models.Logger;
 import com.capstone.models.ReadAndSaveFileToServer;
+import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang.builder.CompareToBuilder;
@@ -384,11 +385,13 @@ public class UploadController {
                                 String cla = classNameCell.getStringCellValue().trim();
                                 String subjectCd = subjectCodeCell.getStringCellValue().trim();
                                 // find subject mark component
-                                SubjectMarkComponentEntity subjectMarkComponentEntity =
-                                        subjectMarkComponentService.findSubjectMarkComponentById(subjectCd.toUpperCase());
+                                SubjectEntity subjectMarkComponentEntity =
+                                        subjectService.findSubjectById(subjectCd.toUpperCase().trim());
 
                                 if (subjectMarkComponentEntity != null) {
-                                    marksEntity.setSubjectId(subjectMarkComponentEntity);
+                                    marksEntity.setSubjectId(subjectMarkComponentEntity.getSubjectMarkComponentEntity());
+                                } else {
+                                    System.out.println("Subject " + subjectCd + " doesn't exist!");
                                 }
                                 // find course
                                 CourseEntity courseEntity = courseService.findCourseByClassAndSubjectCode(cla.toUpperCase(), subjectCd.toUpperCase());
@@ -440,6 +443,7 @@ public class UploadController {
             jsonObject.addProperty("message", ex.getMessage());
         }
 
+        Ultilities.notexist = new ArrayList<>();
         return jsonObject;
     }
 

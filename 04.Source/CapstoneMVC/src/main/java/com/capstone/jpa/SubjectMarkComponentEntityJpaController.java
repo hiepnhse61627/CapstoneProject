@@ -16,6 +16,8 @@ import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.jpa.exceptions.IllegalOrphanException;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
+import com.capstone.models.Ultilities;
+
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -226,7 +228,8 @@ public class SubjectMarkComponentEntityJpaController implements Serializable {
     public SubjectMarkComponentEntity findSubjectMarkComponentEntity(String id) {
         EntityManager em = getEntityManager();
         try {
-            return em.find(SubjectMarkComponentEntity.class, id);
+            SubjectMarkComponentEntity en = em.find(SubjectMarkComponentEntity.class, id);
+            return en;
         } finally {
             em.close();
         }

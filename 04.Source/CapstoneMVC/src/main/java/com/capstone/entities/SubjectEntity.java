@@ -58,6 +58,8 @@ public class SubjectEntity implements Serializable {
     private SubjectMarkComponentEntity subjectMarkComponentEntity;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
     private List<CurriculumMappingEntity> curriculumMappingEntityList;
+    @Column(name = "ReplacementId")
+    private String replacementId;
 
     public SubjectEntity() {
     }
@@ -144,6 +146,14 @@ public class SubjectEntity implements Serializable {
 
     public void setCurriculumMappingEntityList(List<CurriculumMappingEntity> curriculumMappingEntityList) {
         this.curriculumMappingEntityList = curriculumMappingEntityList;
+    }
+
+    public String getReplacementId() {
+        return replacementId;
+    }
+
+    public void setReplacementId(String replacementId) {
+        this.replacementId = replacementId;
     }
 
     @Override

@@ -62,7 +62,7 @@ public class ReadAndSaveFileToServer {
         File dir = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/");
         if (dir.isDirectory()) {
             files = dir.listFiles();
-            Arrays.sort(files, Comparator.comparingLong(File::lastModified));
+            Arrays.sort(files, Comparator.comparingLong(c -> c.lastModified()));
         }
         return files;
     }
