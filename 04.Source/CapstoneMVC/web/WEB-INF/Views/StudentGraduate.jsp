@@ -106,6 +106,7 @@
                     <div class="col-md-12">
                         <button class="btn btn-success" onclick="Refresh()">Tìm kiếm</button>
                         <button type="button" class="btn btn-primary" onclick="ExportExcel()">Xuất dữ liệu</button>
+                        <button type="button" class="btn btn-warning" onclick="ExportExcelPDF()">Xuất dữ liệu (PDF)</button>
                     </div>
                 </div>
             </div>
@@ -211,6 +212,17 @@
 
     function ExportExcel() {
         $("input[name='objectType']").val(4);
+        $("input[name='credit']").val($('#credit').val());
+        $("input[name='sCredit']").val($('#sCredit').val());
+        $("input[name='programId']").val($('#program').val());
+        $("input[name='semesterId']").val($('#semester').val());
+        $("input[name='sSearch']").val(table.api().context[0].oPreviousSearch.sSearch);
+
+        $("#export-excel").submit();
+    }
+
+    function ExportExcelPDF() {
+        $("input[name='objectType']").val(5);
         $("input[name='credit']").val($('#credit').val());
         $("input[name='sCredit']").val($('#sCredit').val());
         $("input[name='programId']").val($('#program').val());

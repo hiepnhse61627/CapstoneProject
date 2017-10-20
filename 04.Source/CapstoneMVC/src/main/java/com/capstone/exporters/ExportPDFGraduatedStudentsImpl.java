@@ -9,18 +9,25 @@ import com.capstone.services.IMarksService;
 import com.capstone.services.ISubjectService;
 import com.capstone.services.MarksServiceImpl;
 import com.capstone.services.SubjectServiceImpl;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
-import org.apache.poi.xssf.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFCell;
+import org.apache.poi.xssf.usermodel.XSSFRow;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ExportGraduatedStudentsImpl implements IExportObject {
+public class ExportPDFGraduatedStudentsImpl implements IExportObject {
 
     private String EXCEL_TEMPLATE = "template/DSSV-TN.xlsx";
     private IMarksService marksService = new MarksServiceImpl();
@@ -28,7 +35,7 @@ public class ExportGraduatedStudentsImpl implements IExportObject {
 
     @Override
     public String getFileName() {
-        return "Graduated-Students.xlsx";
+        return "Graduated-Students.pdf";
     }
 
     @Override
@@ -37,11 +44,28 @@ public class ExportGraduatedStudentsImpl implements IExportObject {
         InputStream is = classLoader.getResourceAsStream(EXCEL_TEMPLATE);
 
         XSSFWorkbook workbook = new XSSFWorkbook(is);
+        // close input stream
+        is.close();
         XSSFSheet spreadsheet = workbook.getSheetAt(0);
 
         writeDataToTable(workbook, spreadsheet, params);
 
-        workbook.write(os);
+        String realPath = ExportPDFGraduatedStudentsImpl.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        String excelPath = realPath.substring(0, realPath.indexOf("WEB-INF")) + "output.xlsx";
+        OutputStream outputFile = new FileOutputStream(excelPath);
+        workbook.write(outputFile);
+        // close output stream
+        try {
+            Workbook asposeWorkbook = new Workbook(excelPath);
+            // remove file
+            File file = new File(excelPath);
+            file.delete();
+            file = null;
+            asposeWorkbook.save(os, SaveFormat.PDF);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void writeDataToTable(XSSFWorkbook workbook, XSSFSheet sheet, Map<String, String> params) {
@@ -108,6 +132,7 @@ public class ExportGraduatedStudentsImpl implements IExportObject {
                 ordinalNumber++;
             }
         }
+        workbook.removeSheetAt(0);
     }
 
     private Map<StudentEntity, List<MarksEntity>> processData(Map<String, String> params) {
@@ -147,8 +172,8 @@ public class ExportGraduatedStudentsImpl implements IExportObject {
             if (credits >= totalCredit && specializedCredits >= sCredit) {
                 resultMap.put(entry.getKey(),
                         entry.getValue().stream().filter(m -> m.getStatus().toLowerCase().contains("pass")
-                                                      && m.getSubjectId() != null
-                                                      && m.getSubjectId().getSubjectEntity().getIsSpecialized()).collect(Collectors.toList()));
+                                && m.getSubjectId() != null
+                                && m.getSubjectId().getSubjectEntity().getIsSpecialized()).collect(Collectors.toList()));
             }
         }
 
