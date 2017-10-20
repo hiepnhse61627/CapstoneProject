@@ -10,8 +10,8 @@ public interface ISubjectService {
     void insertSubjectList(List<SubjectEntity> list);
     void insertReplacementList(List<ReplacementSubject> list);
     List<SubjectEntity> getAllSubjects();
-    List<SubjectEntity> getAllPrequisiteSubjects(String subId);
-    List<SubjectEntity> getAlllPrequisite();
+    List<List<SubjectEntity>> getAllPrequisiteSubjects(String subId);
+    List<List<SubjectEntity>> getAlllPrequisite();
     SubjectEntity findSubjectById(String id);
     int getCurrentLine();
     int getTotalLine();

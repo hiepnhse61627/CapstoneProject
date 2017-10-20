@@ -30,12 +30,12 @@ public class SubjectServiceImpl implements ISubjectService {
     }
 
     @Override
-    public List<SubjectEntity> getAllPrequisiteSubjects(String subId) {
+    public List<List<SubjectEntity>> getAllPrequisiteSubjects(String subId) {
         return controller.getAllPrequisiteSubjects(subId);
     }
 
     @Override
-    public List<SubjectEntity> getAlllPrequisite() {
+    public List<List<SubjectEntity>> getAlllPrequisite() {
         return controller.getAllPrequisite();
     }
 

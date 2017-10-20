@@ -50,7 +50,7 @@ public class StudentFailPrequisite {
 
         ISubjectService service = new SubjectServiceImpl();
         try {
-            List<SubjectEntity> pres;
+            List<List<SubjectEntity>> pres = new ArrayList<>();
             if (subId.equals("0")) {
                 pres = service.getAlllPrequisite();
             } else {
@@ -58,12 +58,25 @@ public class StudentFailPrequisite {
             }
 
             JsonArray o1 = new JsonArray();
-            for (SubjectEntity p : pres) {
+            for (List<SubjectEntity> p : pres) {
                 JsonObject o2 = new JsonObject();
-                o2.addProperty("value", p.getId());
-                o2.addProperty("name", p.getId() + " - " + p.getName() + " - " + p.getAbbreviation());
+                String value = "";
+                String name = "";
+                int i = 1;
+                for (SubjectEntity s : p) {
+                    value += s.getId();
+                    name += s.getId();
+                    if (i != p.size()) {
+                        value += ",";
+                        name += " AND ";
+                    }
+                    i++;
+                }
+                o2.addProperty("value", value);
+                o2.addProperty("name", name);
                 o1.add(o2);
             }
+
             obj.addProperty("success", true);
             obj.add("data", o1);
         } catch (Exception e) {
@@ -88,22 +101,22 @@ public class StudentFailPrequisite {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em = emf.createEntityManager();
 
-//            String[] prequisiteArr = prequisiteStr.split(",");
-//
-//            String queryStr = "SELECT p FROM PrequisiteEntity p WHERE p.prequisiteSubs IN :sList";
-//            TypedQuery<PrequisiteEntity> prequisiteQuery;
-//            if (!subjectId.equals("0") && !subjectId.isEmpty()) {
-//                queryStr += " AND p.subjectEntity.id = :subjectId";
-//                prequisiteQuery = em.createQuery(queryStr, PrequisiteEntity.class);
-//                prequisiteQuery.setParameter("sList", Arrays.asList(prequisiteArr));
-//                prequisiteQuery.setParameter("subjectId", subjectId);
-//            } else {
-//                prequisiteQuery = em.createQuery(queryStr, PrequisiteEntity.class);
-//                prequisiteQuery.setParameter("sList", Arrays.asList(prequisiteArr));
-//            }
-//            List<PrequisiteEntity> prequisiteList = prequisiteQuery.getResultList();
-//
-//            List<FailPrequisiteModel> result = new ArrayList<>();
+            String[] prequisiteArr = prequisiteStr.split(",");
+
+            String queryStr = "SELECT p FROM PrequisiteEntity p WHERE p.prequisiteSubs IN :sList";
+            TypedQuery<PrequisiteEntity> prequisiteQuery;
+            if (!subjectId.equals("0") && !subjectId.isEmpty()) {
+                queryStr += " AND p.subjectEntity.id = :subjectId";
+                prequisiteQuery = em.createQuery(queryStr, PrequisiteEntity.class);
+                prequisiteQuery.setParameter("sList", Arrays.asList(prequisiteArr));
+                prequisiteQuery.setParameter("subjectId", subjectId);
+            } else {
+                prequisiteQuery = em.createQuery(queryStr, PrequisiteEntity.class);
+                prequisiteQuery.setParameter("sList", Arrays.asList(prequisiteArr));
+            }
+            List<PrequisiteEntity> prequisiteList = prequisiteQuery.getResultList();
+
+            List<FailPrequisiteModel> result = new ArrayList<>();
 //            for (PrequisiteEntity prequisite : prequisiteList) {
 //                TypedQuery<MarksEntity> query = em.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub1 OR c.subjectId.subjectId = :sub2", MarksEntity.class);
 //                query.setParameter("sub1", prequisite.getId());
@@ -115,36 +128,36 @@ public class StudentFailPrequisite {
 //                    }
 //                });
 //            }
-//
-//            List<FailPrequisiteModel> displayList = new ArrayList<>();
-//            if (!result.isEmpty()) {
-//                displayList = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
-//            }
-//
-//            ArrayList<ArrayList<String>> parent = new ArrayList<>();
-//            if (!displayList.isEmpty()) {
-//                displayList.forEach(m -> {
-//                    ArrayList<String> tmp = new ArrayList<>();
-//                    tmp.add(m.getMark().getStudentId().getRollNumber());
-//                    tmp.add(m.getMark().getStudentId().getFullName());
-//                    tmp.add(m.getSubjectWhichPrequisiteFail() == null ? "N/A" : m.getSubjectWhichPrequisiteFail());
-//                    tmp.add(m.getMark().getSubjectId() == null ? "N/A" : m.getMark().getSubjectId().getSubjectId());
-//                    tmp.add(m.getMark().getCourseId() == null ? "N/A" : m.getMark().getCourseId().getClass1());
-//                    tmp.add(m.getMark().getSemesterId() == null ? "N/A" : m.getMark().getSemesterId().getSemester());
-//                    tmp.add(String.valueOf(m.getMark().getAverageMark()));
-//                    tmp.add(m.getMark().getStatus());
-//                    tmp.add(m.getMark().getStudentId().getId() + "");
-//                    parent.add(tmp);
-//                });
-//            }
-//
-//            JsonArray output = (JsonArray) new Gson().toJsonTree(parent, new TypeToken<List<MarksEntity>>() {
-//            }.getType());
-//
-//            jsonObj.addProperty("iTotalRecords", result.size());
-//            jsonObj.addProperty("iTotalDisplayRecords", result.size());
-//            jsonObj.add("aaData", output);
-//            jsonObj.addProperty("sEcho", params.get("sEcho"));
+
+            List<FailPrequisiteModel> displayList = new ArrayList<>();
+            if (!result.isEmpty()) {
+                displayList = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+            }
+
+            ArrayList<ArrayList<String>> parent = new ArrayList<>();
+            if (!displayList.isEmpty()) {
+                displayList.forEach(m -> {
+                    ArrayList<String> tmp = new ArrayList<>();
+                    tmp.add(m.getMark().getStudentId().getRollNumber());
+                    tmp.add(m.getMark().getStudentId().getFullName());
+                    tmp.add(m.getSubjectWhichPrequisiteFail() == null ? "N/A" : m.getSubjectWhichPrequisiteFail());
+                    tmp.add(m.getMark().getSubjectId() == null ? "N/A" : m.getMark().getSubjectId().getSubjectId());
+                    tmp.add(m.getMark().getCourseId() == null ? "N/A" : m.getMark().getCourseId().getClass1());
+                    tmp.add(m.getMark().getSemesterId() == null ? "N/A" : m.getMark().getSemesterId().getSemester());
+                    tmp.add(String.valueOf(m.getMark().getAverageMark()));
+                    tmp.add(m.getMark().getStatus());
+                    tmp.add(m.getMark().getStudentId().getId() + "");
+                    parent.add(tmp);
+                });
+            }
+
+            JsonArray output = (JsonArray) new Gson().toJsonTree(parent, new TypeToken<List<MarksEntity>>() {
+            }.getType());
+
+            jsonObj.addProperty("iTotalRecords", result.size());
+            jsonObj.addProperty("iTotalDisplayRecords", result.size());
+            jsonObj.add("aaData", output);
+            jsonObj.addProperty("sEcho", params.get("sEcho"));
 
             return jsonObj;
         } catch (Exception e) {

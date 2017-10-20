@@ -1,11 +1,13 @@
 package com.capstone.jpa.exJpa;
 
+import com.capstone.entities.PrequisiteEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.jpa.SubjectEntityJpaController;
 import com.capstone.models.ReplacementSubject;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
@@ -62,43 +64,55 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         manager.getTransaction().commit();
     }
 
-    private List<SubjectEntity> prequisiteList;
+    private List<List<SubjectEntity>> prequisiteList;
 
-    public List<SubjectEntity> getAllPrequisiteSubjects(String subId) {
-//        prequisiteList = new ArrayList<>();
-//        EntityManager manager = getEntityManager();
-//        SubjectEntity currSub = manager.find(SubjectEntity.class, subId);
-////        getPrequisite(currSub, currSub.getId());
-//
-//        List<PrequisiteEntity> preList = currSub.getPrequisiteEntityList();
-//        for (PrequisiteEntity entity : preList) {
-//            prequisiteList.add(entity.getSubId());
-//        }
-//
-//        return prequisiteList;
-        return null;
+    public List<List<SubjectEntity>> getAllPrequisiteSubjects(String subId) {
+        prequisiteList = new ArrayList<>();
+        EntityManager manager = getEntityManager();
+        SubjectEntity currSub = manager.find(SubjectEntity.class, subId);
+        PrequisiteEntity prequisite = currSub.getPrequisiteEntity();
+        if (prequisite.getPrequisiteSubs() != null) {
+            String[] prequisitesRow = prequisite.getPrequisiteSubs().split("OR");
+            for (String row : prequisitesRow) {
+                List<SubjectEntity> list = new ArrayList<>();
+                String[] processedRows = row.replaceAll("\\(", "").replaceAll("\\)", "").split(",");
+                for (String sub : processedRows) {
+                    SubjectEntity pre = manager.find(SubjectEntity.class, sub.trim());
+                    if (pre != null) {
+                        list.add(pre);
+                    }
+                }
+                if (!list.isEmpty()) {
+                    prequisiteList.add(list);
+                }
+            }
+        }
+        return prequisiteList;
     }
 
-    public List<SubjectEntity> getAllPrequisite() {
-//        prequisiteList = new ArrayList<>();
-//        for (SubjectEntity currSub : this.findSubjectEntityEntities()) {
-//            getPrequisite(currSub, currSub.getId());
-//        }
-//        return prequisiteList;
-        return null;
-    }
-
-    private void getPrequisite(SubjectEntity curr, String subId) {
-//        List<PrequisiteEntity> pre = curr.getPrequisiteEntityList();
-//        if (!pre.isEmpty()) {
-//            for (PrequisiteEntity s : pre) {
-//                getPrequisite(s.getSubId(), subId);
-//            }
-//        }
-//
-//        if (!curr.getId().equals(subId) && !prequisiteList.stream().anyMatch(a -> a.getId().equals(curr.getId()))) {
-//            prequisiteList.add(curr);
-//        }
+    public List<List<SubjectEntity>> getAllPrequisite() {
+        prequisiteList = new ArrayList<>();
+        EntityManager manager = getEntityManager();
+        for (SubjectEntity currSub : this.findSubjectEntityEntities()) {
+            PrequisiteEntity prequisite = currSub.getPrequisiteEntity();
+            if (prequisite.getPrequisiteSubs() != null) {
+                String[] prequisitesRow = prequisite.getPrequisiteSubs().split("OR");
+                for (String row : prequisitesRow) {
+                    List<SubjectEntity> list = new ArrayList<>();
+                    String[] processedRows = row.replaceAll("\\(", "").replaceAll("\\)", "").split(",");
+                    for (String sub : processedRows) {
+                        SubjectEntity pre = manager.find(SubjectEntity.class, sub.trim());
+                        if (pre != null) {
+                            list.add(pre);
+                        }
+                    }
+                    if (!list.isEmpty()) {
+                        prequisiteList.add(list);
+                    }
+                }
+            }
+        }
+        return prequisiteList;
     }
 
     public int countStudentCredits(int studentId) {

@@ -147,7 +147,6 @@ public class Ultilities {
         return passed;
     }
 
-
     public static Connection getConnection() {
         String connectionString = "jdbc:sqlserver://localhost:1433;database=CapstoneProject";
         Connection connection = null;
