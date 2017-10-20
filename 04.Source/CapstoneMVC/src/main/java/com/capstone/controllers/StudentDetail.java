@@ -227,7 +227,7 @@ public class StudentDetail {
                     boolean exist = false;
                     for (PrequisiteEntity s : cur.getPrequisiteEntityList()) {
                         TypedQuery<MarksEntity> q = em.createQuery("SELECT c FROM MarksEntity c WHERE c.studentId.id = :id AND c.subjectId.subjectId = :sub", MarksEntity.class);
-                        List<MarksEntity> l = q.setParameter("sub", s.getSubjectEntity().getId()).setParameter("id", stuId).getResultList();
+                        List<MarksEntity> l = q.setParameter("sub", s.getSubId().getId()).setParameter("id", stuId).getResultList();
                         exist = Ultilities.CheckStudentSubjectFailOrPass(l);
                     }
 

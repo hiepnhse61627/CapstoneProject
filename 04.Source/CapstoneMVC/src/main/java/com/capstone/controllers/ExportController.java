@@ -47,6 +47,7 @@ public class ExportController {
                 "com.capstone.exporters.ExportStudentFailedAndNextSubjectImpl", // 2 = export failed subject of each student and next subject
                 "com.capstone.exporters.ExportStudentFailedPrerequisiteImpl", // 3 = Export student fail prerequisite
                 "com.capstone.exporters.ExportGraduatedStudentsImpl", // 4 = Export graduated student
+                "com.capstone.exporters.ExportPDFGraduatedStudentsImpl" // 5 = Export PDF graduated student
         };
 
         try {
