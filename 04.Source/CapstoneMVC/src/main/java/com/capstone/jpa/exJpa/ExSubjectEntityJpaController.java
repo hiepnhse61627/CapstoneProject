@@ -1,17 +1,14 @@
 package com.capstone.jpa.exJpa;
 
-import com.capstone.entities.MarksEntity;
 import com.capstone.entities.PrequisiteEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.jpa.SubjectEntityJpaController;
+import com.capstone.models.ReplacementSubject;
 
 import javax.persistence.*;
-import javax.security.auth.Subject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 
@@ -67,41 +64,55 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         manager.getTransaction().commit();
     }
 
-    private List<SubjectEntity> prequisiteList;
+    private List<List<SubjectEntity>> prequisiteList;
 
-    public List<SubjectEntity> getAllPrequisiteSubjects(String subId) {
+    public List<List<SubjectEntity>> getAllPrequisiteSubjects(String subId) {
         prequisiteList = new ArrayList<>();
         EntityManager manager = getEntityManager();
         SubjectEntity currSub = manager.find(SubjectEntity.class, subId);
-//        getPrequisite(currSub, currSub.getId());
-
-        List<PrequisiteEntity> preList = currSub.getPrequisiteEntityList();
-        for (PrequisiteEntity entity : preList) {
-            prequisiteList.add(entity.getSubId());
-        }
-
-        return prequisiteList;
-    }
-
-    public List<SubjectEntity> getAllPrequisite() {
-        prequisiteList = new ArrayList<>();
-        for (SubjectEntity currSub : this.findSubjectEntityEntities()) {
-            getPrequisite(currSub, currSub.getId());
-        }
-        return prequisiteList;
-    }
-
-    private void getPrequisite(SubjectEntity curr, String subId) {
-        List<PrequisiteEntity> pre = curr.getPrequisiteEntityList();
-        if (!pre.isEmpty()) {
-            for (PrequisiteEntity s : pre) {
-                getPrequisite(s.getSubId(), subId);
+        PrequisiteEntity prequisite = currSub.getPrequisiteEntity();
+        if (prequisite.getPrequisiteSubs() != null) {
+            String[] prequisitesRow = prequisite.getPrequisiteSubs().split("OR");
+            for (String row : prequisitesRow) {
+                List<SubjectEntity> list = new ArrayList<>();
+                String[] processedRows = row.replaceAll("\\(", "").replaceAll("\\)", "").split(",");
+                for (String sub : processedRows) {
+                    SubjectEntity pre = manager.find(SubjectEntity.class, sub.trim());
+                    if (pre != null) {
+                        list.add(pre);
+                    }
+                }
+                if (!list.isEmpty()) {
+                    prequisiteList.add(list);
+                }
             }
         }
+        return prequisiteList;
+    }
 
-        if (!curr.getId().equals(subId) && !prequisiteList.stream().anyMatch(a -> a.getId().equals(curr.getId()))) {
-            prequisiteList.add(curr);
+    public List<List<SubjectEntity>> getAllPrequisite() {
+        prequisiteList = new ArrayList<>();
+        EntityManager manager = getEntityManager();
+        for (SubjectEntity currSub : this.findSubjectEntityEntities()) {
+            PrequisiteEntity prequisite = currSub.getPrequisiteEntity();
+            if (prequisite.getPrequisiteSubs() != null) {
+                String[] prequisitesRow = prequisite.getPrequisiteSubs().split("OR");
+                for (String row : prequisitesRow) {
+                    List<SubjectEntity> list = new ArrayList<>();
+                    String[] processedRows = row.replaceAll("\\(", "").replaceAll("\\)", "").split(",");
+                    for (String sub : processedRows) {
+                        SubjectEntity pre = manager.find(SubjectEntity.class, sub.trim());
+                        if (pre != null) {
+                            list.add(pre);
+                        }
+                    }
+                    if (!list.isEmpty()) {
+                        prequisiteList.add(list);
+                    }
+                }
+            }
         }
+        return prequisiteList;
     }
 
     public int countStudentCredits(int studentId) {
@@ -121,5 +132,27 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
             ex.printStackTrace();
             return -1;
         }
+    }
+
+    public void insertReplacementList(List<ReplacementSubject> list) {
+        EntityManager manager = getEntityManager();
+        manager.getTransaction().begin();
+        for (ReplacementSubject replacer : list) {
+            if (replacer.getReplaceCode() != null && !replacer.getReplaceCode().isEmpty()) {
+                SubjectEntity sub = manager.find(SubjectEntity.class, replacer.getSubCode());
+                if (sub != null) {
+                    String[] rep = replacer.getReplaceCode().split("OR");
+                    for (String r : rep ) {
+                        SubjectEntity replace = manager.find(SubjectEntity.class, r.trim());
+                        if (!sub.getReplacementSubjectList().contains(replace)) {
+                            sub.getReplacementSubjectList().add(replace);
+                        }
+                    }
+                    manager.merge(sub);
+                    manager.flush();
+                }
+            }
+        }
+        manager.getTransaction().commit();
     }
 }

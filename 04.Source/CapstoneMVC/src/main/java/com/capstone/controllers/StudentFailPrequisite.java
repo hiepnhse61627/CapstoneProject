@@ -50,7 +50,7 @@ public class StudentFailPrequisite {
 
         ISubjectService service = new SubjectServiceImpl();
         try {
-            List<SubjectEntity> pres;
+            List<List<SubjectEntity>> pres = new ArrayList<>();
             if (subId.equals("0")) {
                 pres = service.getAlllPrequisite();
             } else {
@@ -58,12 +58,25 @@ public class StudentFailPrequisite {
             }
 
             JsonArray o1 = new JsonArray();
-            for (SubjectEntity p : pres) {
+            for (List<SubjectEntity> p : pres) {
                 JsonObject o2 = new JsonObject();
-                o2.addProperty("value", p.getId());
-                o2.addProperty("name", p.getId() + " - " + p.getName() + " - " + p.getAbbreviation());
+                String value = "";
+                String name = "";
+                int i = 1;
+                for (SubjectEntity s : p) {
+                    value += s.getId();
+                    name += s.getId();
+                    if (i != p.size()) {
+                        value += ",";
+                        name += " AND ";
+                    }
+                    i++;
+                }
+                o2.addProperty("value", value);
+                o2.addProperty("name", name);
                 o1.add(o2);
             }
+
             obj.addProperty("success", true);
             obj.add("data", o1);
         } catch (Exception e) {
@@ -104,17 +117,17 @@ public class StudentFailPrequisite {
             List<PrequisiteEntity> prequisiteList = prequisiteQuery.getResultList();
 
             List<FailPrequisiteModel> result = new ArrayList<>();
-            for (PrequisiteEntity prequisite : prequisiteList) {
-                TypedQuery<MarksEntity> query = em.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub1 OR c.subjectId.subjectId = :sub2", MarksEntity.class);
-                query.setParameter("sub1", prequisite.getId());
-                query.setParameter("sub2", prequisite.getId());
-                List<MarksEntity> list = query.getResultList();
-                Ultilities.FilterStudentPassedSubFailPrequisite(list, prequisite.getSubId().getId(),  prequisite.getSubId().getId(), prequisite.getFailMark()).forEach(c -> {
-                    if (!result.contains(c)) {
-                        result.add(c);
-                    }
-                });
-            }
+//            for (PrequisiteEntity prequisite : prequisiteList) {
+//                TypedQuery<MarksEntity> query = em.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub1 OR c.subjectId.subjectId = :sub2", MarksEntity.class);
+//                query.setParameter("sub1", prequisite.getId());
+//                query.setParameter("sub2", prequisite.getId());
+//                List<MarksEntity> list = query.getResultList();
+//                Ultilities.FilterStudentPassedSubFailPrequisite(list, prequisite.getSubId().getId(),  prequisite.getSubId().getId(), prequisite.getFailMark()).forEach(c -> {
+//                    if (!result.contains(c)) {
+//                        result.add(c);
+//                    }
+//                });
+//            }
 
             List<FailPrequisiteModel> displayList = new ArrayList<>();
             if (!result.isEmpty()) {

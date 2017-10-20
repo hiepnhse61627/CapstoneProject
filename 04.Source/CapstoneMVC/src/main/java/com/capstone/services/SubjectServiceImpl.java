@@ -3,6 +3,7 @@ package com.capstone.services;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.jpa.exJpa.ExSubjectEntityJpaController;
+import com.capstone.models.ReplacementSubject;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -19,17 +20,22 @@ public class SubjectServiceImpl implements ISubjectService {
     }
 
     @Override
+    public void insertReplacementList(List<ReplacementSubject> list) {
+        controller.insertReplacementList(list);
+    }
+
+    @Override
     public List<SubjectEntity> getAllSubjects() {
         return controller.findAllSubjects();
     }
 
     @Override
-    public List<SubjectEntity> getAllPrequisiteSubjects(String subId) {
+    public List<List<SubjectEntity>> getAllPrequisiteSubjects(String subId) {
         return controller.getAllPrequisiteSubjects(subId);
     }
 
     @Override
-    public List<SubjectEntity> getAlllPrequisite() {
+    public List<List<SubjectEntity>> getAlllPrequisite() {
         return controller.getAllPrequisite();
     }
 
@@ -39,10 +45,14 @@ public class SubjectServiceImpl implements ISubjectService {
     }
 
     @Override
-    public int getCurrentLine() { return controller.getCurrentLine(); }
+    public int getCurrentLine() {
+        return controller.getCurrentLine();
+    }
 
     @Override
-    public int getTotalLine() { return controller.getTotalLine(); }
+    public int getTotalLine() {
+        return controller.getTotalLine();
+    }
 
     @Override
     public int countStudentCredits(int studentId) {

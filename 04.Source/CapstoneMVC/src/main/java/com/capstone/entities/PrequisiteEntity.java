@@ -9,13 +9,11 @@ import java.io.Serializable;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 /**
@@ -25,39 +23,35 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "Prequisite")
 @NamedQueries({
-    @NamedQuery(name = "PrequisiteEntity.findAll", query = "SELECT p FROM PrequisiteEntity p")
-    , @NamedQuery(name = "PrequisiteEntity.findById", query = "SELECT p FROM PrequisiteEntity p WHERE p.id = :id")
-    , @NamedQuery(name = "PrequisiteEntity.findByPrequisiteSubs", query = "SELECT p FROM PrequisiteEntity p WHERE p.prequisiteSubs = :prequisiteSubs")
-    , @NamedQuery(name = "PrequisiteEntity.findByFailMark", query = "SELECT p FROM PrequisiteEntity p WHERE p.failMark = :failMark")})
+    @NamedQuery(name = "PrequisiteEntity.findAll", query = "SELECT p FROM PrequisiteEntity p")})
 public class PrequisiteEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "Id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @Column(name = "SubId")
+    private String subId;
     @Column(name = "PrequisiteSubs")
     private String prequisiteSubs;
     @Column(name = "FailMark")
     private Integer failMark;
-    @JoinColumn(name = "SubId", referencedColumnName = "Id")
-    @ManyToOne(optional = false)
-    private SubjectEntity subId;
+    @JoinColumn(name = "SubId", referencedColumnName = "Id", insertable = false, updatable = false)
+    @OneToOne(optional = false)
+    private SubjectEntity subjectEntity;
 
     public PrequisiteEntity() {
     }
 
-    public PrequisiteEntity(Integer id) {
-        this.id = id;
+    public PrequisiteEntity(String subId) {
+        this.subId = subId;
     }
 
-    public Integer getId() {
-        return id;
+    public String getSubId() {
+        return subId;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setSubId(String subId) {
+        this.subId = subId;
     }
 
     public String getPrequisiteSubs() {
@@ -76,18 +70,18 @@ public class PrequisiteEntity implements Serializable {
         this.failMark = failMark;
     }
 
-    public SubjectEntity getSubId() {
-        return subId;
+    public SubjectEntity getSubjectEntity() {
+        return subjectEntity;
     }
 
-    public void setSubId(SubjectEntity subId) {
-        this.subId = subId;
+    public void setSubjectEntity(SubjectEntity subjectEntity) {
+        this.subjectEntity = subjectEntity;
     }
 
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (id != null ? id.hashCode() : 0);
+        hash += (subId != null ? subId.hashCode() : 0);
         return hash;
     }
 
@@ -98,7 +92,7 @@ public class PrequisiteEntity implements Serializable {
             return false;
         }
         PrequisiteEntity other = (PrequisiteEntity) object;
-        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
+        if ((this.subId == null && other.subId != null) || (this.subId != null && !this.subId.equals(other.subId))) {
             return false;
         }
         return true;
@@ -106,7 +100,7 @@ public class PrequisiteEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.PrequisiteEntity[ id=" + id + " ]";
+        return "com.capstone.entities.PrequisiteEntity[ subId=" + subId + " ]";
     }
     
 }
