@@ -229,9 +229,9 @@
     }
 
     function Add() {
-        var term = $('.index').length + 1;
-        $('#table').find('tbody').append("<tr id='Học kỳ " + term + "' class='index nodrag'>" +
-            "<td colspan='2'><b>Học kỳ " + term + "</b></td>" +
+        var term = $('.index:last td').html().replace("<b>", "").replace("</b>", "").replace("Học kỳ", "");
+        $('#table').find('tbody').append("<tr id='Học kỳ " + (parseInt(term) + 1) + "' class='index nodrag'>" +
+            "<td colspan='2'><b>Học kỳ " + (parseInt(term) + 1) + "</b></td>" +
             "</tr>");
         IntializeRows();
     }

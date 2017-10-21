@@ -83,8 +83,9 @@ public class SubjectCurriculumController {
         sortedList.forEach(c -> System.out.print(c.getOrdering() + ", "));
         view.addObject("data", ent);
 
-        Map<String, List<CurriculumMappingEntity>> unsortedmap = new HashMap<>();
-        Map<String, List<CurriculumMappingEntity>> map = new TreeMap<>(unsortedmap);
+//        Map<String, List<CurriculumMappingEntity>> unsortedmap = new HashMap<>();
+//        Map<String, List<CurriculumMappingEntity>> map = new TreeMap<>(unsortedmap);
+        Map<String, List<CurriculumMappingEntity>> map = new LinkedHashMap<>();
         for (CurriculumMappingEntity en : sortedList) {
             if (map.get(en.getTerm()) == null) {
                 List<CurriculumMappingEntity> tmp = new ArrayList<>();
@@ -462,17 +463,15 @@ public class SubjectCurriculumController {
 
                             List<CurriculumMappingEntity> list = new ArrayList<>();
 
-                            if (termNo > 0) {
-                                CurriculumMappingEntity mapping = new CurriculumMappingEntity();
-                                mapping.setOrdering(1);
-                                mapping.setTerm("Học kỳ " + (int) termNo);
-                                CurriculumMappingEntityPK pk = new CurriculumMappingEntityPK();
-                                pk.setSubId(subject.getId());
-                                pk.setCurId(entity.getId());
-                                mapping.setCurriculumMappingEntityPK(pk);
+                            CurriculumMappingEntity mapping = new CurriculumMappingEntity();
+                            mapping.setOrdering(1);
+                            mapping.setTerm("Học kỳ " + (int) termNo);
+                            CurriculumMappingEntityPK pk = new CurriculumMappingEntityPK();
+                            pk.setSubId(subject.getId());
+                            pk.setCurId(entity.getId());
+                            mapping.setCurriculumMappingEntityPK(pk);
 
-                                list.add(mapping);
-                            }
+                            list.add(mapping);
 
                             map.put(curriculumCode, list);
                         }
@@ -481,17 +480,15 @@ public class SubjectCurriculumController {
                         if (subject != null) {
                             SubjectCurriculumEntity entity = subjectCurriculumService.getCurriculumByName(curriculumCode);
 
-                            if (termNo > 0) {
-                                CurriculumMappingEntity mapping = new CurriculumMappingEntity();
-                                mapping.setOrdering(map.get(curriculumCode).size() + 1);
-                                mapping.setTerm("Học kỳ " + (int) termNo);
-                                CurriculumMappingEntityPK pk = new CurriculumMappingEntityPK();
-                                pk.setSubId(subject.getId());
-                                pk.setCurId(entity.getId());
-                                mapping.setCurriculumMappingEntityPK(pk);
+                            CurriculumMappingEntity mapping = new CurriculumMappingEntity();
+                            mapping.setOrdering(map.get(curriculumCode).size() + 1);
+                            mapping.setTerm("Học kỳ " + (int) termNo);
+                            CurriculumMappingEntityPK pk = new CurriculumMappingEntityPK();
+                            pk.setSubId(subject.getId());
+                            pk.setCurId(entity.getId());
+                            mapping.setCurriculumMappingEntityPK(pk);
 
-                                map.get(curriculumCode).add(mapping);
-                            }
+                            map.get(curriculumCode).add(mapping);
                         }
                     }
                 }
