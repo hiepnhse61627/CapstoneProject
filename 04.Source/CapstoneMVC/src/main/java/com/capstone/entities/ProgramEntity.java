@@ -40,6 +40,9 @@ public class ProgramEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "Name")
     private String name;
+    @Basic(optional = false)
+    @Column(name = "FullName")
+    private String fullName;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "programId")
     private List<CurriculumEntity> curriculumEntityList;
 
@@ -69,6 +72,14 @@ public class ProgramEntity implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
     }
 
     public List<CurriculumEntity> getCurriculumEntityList() {

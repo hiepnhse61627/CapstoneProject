@@ -45,4 +45,21 @@ public class ExProgramEntityJpaController extends ProgramEntityJpaController {
         return program;
     }
 
+    public ProgramEntity createProgram(ProgramEntity entity) {
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+
+            em.getTransaction().begin();
+            em.persist(entity);
+            em.flush();
+            em.getTransaction().commit();
+        } finally {
+            em.close();
+        }
+
+        return entity;
+    }
+
 }

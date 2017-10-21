@@ -26,4 +26,9 @@ public class ProgramServiceImpl implements IProgramService {
     public ProgramEntity getProgramByName(String name) {
         return controller.getProgramByName(name);
     }
+
+    @Override
+    public ProgramEntity createProgram(ProgramEntity entity) {
+        return controller.createProgram(entity);
+    }
 }

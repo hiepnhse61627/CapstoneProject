@@ -3,7 +3,6 @@ package com.capstone.controllers;
 import com.capstone.models.ReadAndSaveFileToServer;
 import com.capstone.services.*;
 import com.google.gson.JsonObject;
-import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -21,11 +20,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletContext;
+import javax.swing.text.Document;
 import java.io.*;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Controller
 public class UploadController {
@@ -102,6 +101,9 @@ public class UploadController {
     }
 
     private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile) {
+        IProgramService programService = new ProgramServiceImpl();
+        ICurriculumService curriculumService = new CurriculumServiceImpl();
+        IDocumentService documentService = new DocumentServiceImpl();
         JsonObject obj = new JsonObject();
 
         try {
@@ -110,7 +112,25 @@ public class UploadController {
             String originalFileName = isNewFile ? file.getOriginalFilename() : file2.getName();
             String extension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1, originalFileName.length());
 
-            List<StudentEntity> students = new ArrayList<>();
+            List<DocumentStudentEntity> studentList = new ArrayList<>();
+            List<ProgramEntity> programList = programService.getAllPrograms();
+            List<CurriculumEntity> curriculumList = curriculumService.getAllCurriculums();
+
+            // Get template document
+            List<DocumentEntity> docList = documentService.getAllDocuments();
+            DocumentEntity templateDoc = null;
+            if (!docList.isEmpty()) {
+                templateDoc = docList.get(0);
+            } else {
+                DocTypeEntity docType = new DocTypeEntity();
+                docType.setId(1); // <-- Code cứng
+
+                templateDoc = new DocumentEntity();
+                templateDoc.setDocTypeId(docType);
+                templateDoc.setCode("000000");
+
+                documentService.createDocument(templateDoc);
+            }
 
             if (extension.equals(xlsExcelExtension)) {
                 HSSFWorkbook workbook = new HSSFWorkbook(is);
@@ -120,8 +140,16 @@ public class UploadController {
                 int excelDataIndex = 0;
                 int rollNumberIndex = 0;
                 int studentNameIndex = 0;
+                int programFullNameIndex = 0;
+                int programNameIndex = 0;
+                int curriculumIndex = 0;
+
                 boolean rollNumberFlag = false;
                 boolean studentNameFlag = false;
+                boolean programFullNameFlag = false;
+                boolean programNameFlag = false;
+                boolean curriculumFlag = false;
+
 
                 for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
                     row = spreadsheet.getRow(rowIndex);
@@ -129,24 +157,41 @@ public class UploadController {
                         if (rollNumberFlag == false || studentNameFlag == false) {
                             for (int cellIndex = row.getFirstCellNum(); cellIndex <= row.getLastCellNum(); cellIndex++) {
                                 Cell cell = row.getCell(cellIndex);
-                                if (cell != null && cell.getStringCellValue().contains("MSSV")) {
-                                    rollNumberIndex = cellIndex;
-                                    rollNumberFlag = true;
-                                } else if (cell != null && cell.getStringCellValue().contains("tên")) {
-                                    studentNameIndex = cellIndex;
-                                    studentNameFlag = true;
+                                if (cell != null) {
+                                    if (cell.getStringCellValue().contains("MSSV")) {
+                                        rollNumberIndex = cellIndex;
+                                        rollNumberFlag = true;
+                                    } else if (cell.getStringCellValue().contains("tên")) {
+                                        studentNameIndex = cellIndex;
+                                        studentNameFlag = true;
+                                    } else if (cell.getStringCellValue().contains("ngành")) {
+                                        programFullNameIndex = cellIndex;
+                                        programFullNameFlag = true;
+                                    } else if (cell.getStringCellValue().contains("ngành học")) {
+                                        programNameIndex = cellIndex;
+                                        programNameFlag = true;
+                                    } else if (cell.getStringCellValue().contains("khóa ngành hiện tại")) {
+                                        curriculumIndex = cellIndex;
+                                        curriculumFlag = true;
+                                    }
                                 }
                             }
-                            if (rollNumberFlag == true && studentNameFlag == true) {
+                            if (rollNumberFlag && studentNameFlag && programFullNameFlag && programNameFlag && curriculumFlag) {
                                 rowIndex++;
                                 row = spreadsheet.getRow(rowIndex);
                             }
                         }
-                        System.out.println(rowIndex);
-                        if (rollNumberFlag == true && studentNameFlag == true) {
+
+                        if (rollNumberFlag && studentNameFlag && programFullNameFlag && programNameFlag && curriculumFlag) {
                             StudentEntity student = new StudentEntity();
+
                             Cell rollNumberCell = row.getCell(rollNumberIndex);
                             Cell studentNameCell = row.getCell(studentNameIndex);
+                            Cell programNameCell = row.getCell(programNameIndex);
+                            Cell programFullNameCell = row.getCell(programFullNameIndex);
+                            Cell curriculumCell = row.getCell(curriculumIndex);
+
+                            // Get Student Info
                             if (rollNumberCell != null) {
                                 String rollNumber = rollNumberCell.getCellType() == Cell.CELL_TYPE_STRING ?
                                         rollNumberCell.getStringCellValue() : (rollNumberCell.getNumericCellValue() == 0 ?
@@ -155,12 +200,84 @@ public class UploadController {
                                     student.setRollNumber(rollNumber);
                                 }
                             }
-                            if (studentNameCell != null && !studentNameCell.getStringCellValue().isEmpty()) {
-                                student.setFullName(studentNameCell.getStringCellValue());
+
+                            String studentFullName;
+                            if (studentNameCell != null &&
+                                    !(studentFullName = studentNameCell.getStringCellValue().trim()).isEmpty()) {
+                                student.setFullName(studentFullName);
+                            }
+
+                            // Get Program Info
+                            ProgramEntity curProgram = null;
+                            boolean isProgramExist = false;
+                            String programName;
+                            if (programNameCell != null &&
+                                    !(programName = programNameCell.getStringCellValue().trim()).isEmpty()) {
+
+                                boolean isFound = false;
+                                for (ProgramEntity program : programList) {
+                                    if (!isFound && program.getName().equals(programName)) {
+                                        isFound = true;
+                                        isProgramExist = true;
+                                        curProgram = program;
+                                        break;
+                                    }
+                                }
+
+                                if (!isFound) {
+                                    curProgram = new ProgramEntity();
+                                    curProgram.setName(programName);
+                                }
+                            }
+                            String programFullName;
+                            if (!isProgramExist && programFullNameCell != null &&
+                                    !(programFullName = programFullNameCell.getStringCellValue().trim()).isEmpty()) {
+                                curProgram.setFullName(programFullName);
+                            }
+                            if (!isProgramExist && curProgram != null) {
+                                programService.createProgram(curProgram);
+                                programList.add(curProgram);
+                            }
+
+                            // Get Curriculum Info
+                            CurriculumEntity currentCurriculum = null;
+                            if (curProgram != null) {
+                                String curriculumName;
+                                if (curriculumCell != null &&
+                                        !(curriculumName = curriculumCell.getStringCellValue().trim()).isEmpty()) {
+
+                                    int pos = curriculumName.indexOf("_");
+                                    if (pos != -1) {
+                                        curriculumName = curriculumName.substring(pos + 1);
+                                    }
+
+                                    boolean isFound = false;
+                                    for (CurriculumEntity curriculum : curriculumList) {
+                                        if (!isFound && curriculum.getName().equals(curriculumName)
+                                                && curriculum.getProgramId().getName().equals(curProgram.getName())) {
+                                            isFound = true;
+                                            currentCurriculum = curriculum;
+                                            break;
+                                        }
+                                    }
+                                    if (!isFound) {
+                                        currentCurriculum = new CurriculumEntity();
+                                        currentCurriculum.setName(curriculumName);
+                                        currentCurriculum.setProgramId(curProgram);
+                                        curriculumService.createCurriculum(currentCurriculum);
+
+                                        curriculumList.add(currentCurriculum);
+                                    }
+                                }
                             }
 
                             if (student.getRollNumber() != null) {
-                                students.add(student);
+                                DocumentStudentEntity docStd = new DocumentStudentEntity();
+                                docStd.setStudentId(student);
+                                docStd.setCurriculumId(currentCurriculum);
+                                docStd.setDocumentId(templateDoc);
+
+                                studentList.add(docStd);
                             }
                         }
                     }
@@ -174,24 +291,108 @@ public class UploadController {
                 int rollNumberIndex = 1;
                 int studentNameIndex = 2;
                 int excelDataIndex = 3;
+                int programFullNameIndex = 3;
+                int programNameIndex = 4;
+                int curriculumIndex = 7;
 
                 for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
                     row = spreadsheet.getRow(rowIndex);
                     if (row != null) {
                         StudentEntity student = new StudentEntity();
+
                         Cell rollNumberCell = row.getCell(rollNumberIndex);
                         Cell studentNameCell = row.getCell(studentNameIndex);
+                        Cell programNameCell = row.getCell(programNameIndex);
+                        Cell programFullNameCell = row.getCell(programFullNameIndex);
+                        Cell curriculumCell = row.getCell(curriculumIndex);
+
+                        // Get Student Info
                         if (rollNumberCell != null) {
-                            System.out.println(rollNumberCell.getStringCellValue() + " \t\t ");
-                            student.setRollNumber(rollNumberCell.getStringCellValue());
+                            String rollNumber = rollNumberCell.getCellType() == Cell.CELL_TYPE_STRING ?
+                                    rollNumberCell.getStringCellValue() : (rollNumberCell.getNumericCellValue() == 0 ?
+                                    "" : Integer.toString((int) rollNumberCell.getNumericCellValue()));
+                            if (!rollNumber.isEmpty()) {
+                                student.setRollNumber(rollNumber);
+                            }
                         }
-                        if (studentNameCell != null) {
-                            System.out.println(studentNameCell.getStringCellValue());
-                            student.setFullName(studentNameCell.getStringCellValue());
+
+                        String studentFullName;
+                        if (studentNameCell != null &&
+                                !(studentFullName = studentNameCell.getStringCellValue().trim()).isEmpty()) {
+                            student.setFullName(studentFullName);
+                        }
+
+                        // Get Program Info
+                        ProgramEntity curProgram = null;
+                        boolean isProgramExist = false;
+                        String programName;
+                        if (programNameCell != null &&
+                                !(programName = programNameCell.getStringCellValue().trim()).isEmpty()) {
+
+                            boolean isFound = false;
+                            for (ProgramEntity program : programList) {
+                                if (!isFound && program.getName().equals(programName)) {
+                                    isFound = true;
+                                    isProgramExist = true;
+                                    curProgram = program;
+                                    break;
+                                }
+                            }
+
+                            if (!isFound) {
+                                curProgram = new ProgramEntity();
+                                curProgram.setName(programName);
+                            }
+                        }
+                        String programFullName;
+                        if (!isProgramExist && programFullNameCell != null &&
+                                !(programFullName = programFullNameCell.getStringCellValue().trim()).isEmpty()) {
+                            curProgram.setFullName(programFullName);
+                        }
+                        if (!isProgramExist && curProgram != null) {
+                            programService.createProgram(curProgram);
+                            programList.add(curProgram);
+                        }
+
+                        // Get Curriculum Info
+                        CurriculumEntity currentCurriculum = null;
+                        if (curProgram != null) {
+                            String curriculumName;
+                            if (curriculumCell != null &&
+                                    !(curriculumName = curriculumCell.getStringCellValue().trim()).isEmpty()) {
+
+                                int pos = curriculumName.indexOf("_");
+                                if (pos != -1) {
+                                    curriculumName = curriculumName.substring(pos + 1);
+                                }
+
+                                boolean isFound = false;
+                                for (CurriculumEntity curriculum : curriculumList) {
+                                    if (!isFound && curriculum.getName().equals(curriculumName)
+                                            && curriculum.getProgramId().getName().equals(curProgram.getName())) {
+                                        isFound = true;
+                                        currentCurriculum = curriculum;
+                                        break;
+                                    }
+                                }
+                                if (!isFound) {
+                                    currentCurriculum = new CurriculumEntity();
+                                    currentCurriculum.setName(curriculumName);
+                                    currentCurriculum.setProgramId(curProgram);
+                                    curriculumService.createCurriculum(currentCurriculum);
+
+                                    curriculumList.add(currentCurriculum);
+                                }
+                            }
                         }
 
                         if (student.getRollNumber() != null) {
-                            students.add(student);
+                            DocumentStudentEntity docStd = new DocumentStudentEntity();
+                            docStd.setStudentId(student);
+                            docStd.setCurriculumId(currentCurriculum);
+                            docStd.setDocumentId(templateDoc);
+
+                            studentList.add(docStd);
                         }
                     }
                 }
@@ -200,10 +401,11 @@ public class UploadController {
                 obj.addProperty("message", "Chỉ chấp nhận file excel");
                 return obj;
             }
-            studentService.createStudentList(students);
+            studentService.createStudentList(studentList);
         } catch (Exception e) {
             obj.addProperty("success", false);
             obj.addProperty("message", e.getMessage());
+            e.printStackTrace();
             return obj;
         }
 
@@ -227,7 +429,7 @@ public class UploadController {
 
     @RequestMapping(value = "/upload-exist-marks-file", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject chooseExistMarkFile(@RequestParam("file") String file,  @RequestParam("startRow") int startRow, @RequestParam("endRow") int endRow) {
+    public JsonObject chooseExistMarkFile(@RequestParam("file") String file, @RequestParam("startRow") int startRow, @RequestParam("endRow") int endRow) {
         this.totalLine = 0;
         this.currentLine = 0;
         startRowNumber = startRow;
