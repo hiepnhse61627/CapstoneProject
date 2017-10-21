@@ -25,6 +25,19 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
         }
     }
 
+    public SubjectCurriculumEntity findByName(String name) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<SubjectCurriculumEntity> query = em.createQuery("SELECT a FROM SubjectCurriculumEntity a WHERE a.name = :name", SubjectCurriculumEntity.class);
+            query.setParameter("name", name);
+            return query.getSingleResult();
+        } catch (Exception e) {
+            return null;
+        } finally {
+            em.close();
+        }
+    }
+
     public SubjectCurriculumEntity createCurriculum(SubjectCurriculumEntity entity) {
         EntityManager em = null;
         try {
@@ -57,6 +70,20 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public void updateCurriculum(SubjectCurriculumEntity entity) {
+        EntityManager em = getEntityManager();
+        em.getTransaction().begin();
+        try {
+            entity = em.merge(entity);
+            em.flush();
+            em.refresh(entity);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            em.getTransaction().commit();
         }
     }
 }

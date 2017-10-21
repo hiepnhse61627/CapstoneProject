@@ -25,12 +25,22 @@ public class SubjectCurriculumServiceImpl implements ISubjectCurriculumService {
         return controller.findById(curId);
     }
 
+    @Override
+    public SubjectCurriculumEntity getCurriculumByName(String name) {
+        return controller.findByName(name);
+    }
+
     public void createCurriculumList(List<SubjectCurriculumEntity> curriculumEntityList) {
-//        controller.createCurriculumList(curriculumEntityList);
+        controller.createCurriculumList(curriculumEntityList);
     }
 
     @Override
     public SubjectCurriculumEntity createCurriculum(SubjectCurriculumEntity entity) {
         return controller.createCurriculum(entity);
+    }
+
+    @Override
+    public void updateCurriculum(SubjectCurriculumEntity entity) {
+        controller.updateCurriculum(entity);
     }
 }

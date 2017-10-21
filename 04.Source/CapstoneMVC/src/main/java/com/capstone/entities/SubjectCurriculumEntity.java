@@ -47,7 +47,7 @@ public class SubjectCurriculumEntity implements Serializable {
     @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
     @ManyToOne(fetch = FetchType.EAGER)
     private ProgramEntity programId;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectCurriculumEntity")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectCurriculumEntity", fetch = FetchType.EAGER)
     private List<CurriculumMappingEntity> curriculumMappingEntityList;
 
     public SubjectCurriculumEntity() {
