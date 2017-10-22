@@ -6,18 +6,9 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
+import java.util.Date;
 import java.util.List;
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  *
@@ -43,6 +34,16 @@ public class StudentEntity implements Serializable {
     private String rollNumber;
     @Column(name = "FullName")
     private String fullName;
+    @Column(name = "DateOfBirth")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date dateOfBirth;
+    @Column(name = "Gender")
+    private Boolean gender;
+    @Column(name = "Term")
+    private Integer term;
+    @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
+    @ManyToOne(optional = false)
+    private ProgramEntity programId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
     private List<DocumentStudentEntity> documentStudentEntityList;
     @OneToMany(mappedBy = "studentId")
@@ -90,6 +91,38 @@ public class StudentEntity implements Serializable {
 
     public void setDocumentStudentEntityList(List<DocumentStudentEntity> documentStudentEntityList) {
         this.documentStudentEntityList = documentStudentEntityList;
+    }
+
+    public Date getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public Boolean getGender() {
+        return gender;
+    }
+
+    public void setGender(Boolean gender) {
+        this.gender = gender;
+    }
+
+    public Integer getTerm() {
+        return term;
+    }
+
+    public void setTerm(Integer term) {
+        this.term = term;
+    }
+
+    public ProgramEntity getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(ProgramEntity programId) {
+        this.programId = programId;
     }
 
     public List<MarksEntity> getMarksEntityList() {

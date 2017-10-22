@@ -8,10 +8,7 @@ import com.google.gson.JsonObject;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -59,6 +56,10 @@ public class UploadController {
     ICourseService courseService = new CourseServiceImpl();
     ISubjectCurriculumService curriculumsService = new SubjectCurriculumServiceImpl();
     IMarksService marksService = new MarksServiceImpl();
+    IProgramService programService = new ProgramServiceImpl();
+    ICurriculumService curriculumService = new CurriculumServiceImpl();
+    IDocumentService documentService = new DocumentServiceImpl();
+    IDocTypeService docTypeService = new DocTypeServiceImpl();
 
     /**
      * --------------STUDENTS------------
@@ -112,10 +113,7 @@ public class UploadController {
     }
 
     private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile) {
-        IProgramService programService = new ProgramServiceImpl();
-        ICurriculumService curriculumService = new CurriculumServiceImpl();
-        IDocumentService documentService = new DocumentServiceImpl();
-        IDocTypeService docTypeService = new DocTypeServiceImpl();
+
         JsonObject obj = new JsonObject();
 
         try {
@@ -178,7 +176,7 @@ public class UploadController {
 
             int mainClass = 15;
 
-
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
             for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
@@ -212,71 +210,41 @@ public class UploadController {
                     String dateOfBirth;
                     if (dateOfBirthCell != null &&
                             !(dateOfBirth = dateOfBirthCell.getStringCellValue().trim()).isEmpty()) {
-                        
+                        if (dateOfBirth.matches("\\d{1,2}-\\d{1,2}-\\d{4}")) {
+                            student.setDateOfBirth(sdf.parse(dateOfBirth));
+                        }
                     }
 
-                    // Get Program Info
-                    ProgramEntity curProgram = null;
-                    boolean isProgramExist = false;
+                    String gender;
+                    if (genderCell != null &&
+                            !(gender = genderCell.getStringCellValue().trim()).isEmpty()) {
+                        student.setGender(gender.equalsIgnoreCase("Nam"));
+                    }
+
+                    ProgramEntity studentProgram;
                     String programName;
                     if (programNameCell != null &&
                             !(programName = programNameCell.getStringCellValue().trim()).isEmpty()) {
-
-                        boolean isFound = false;
-                        for (ProgramEntity program : programList) {
-                            if (!isFound && program.getName().equals(programName)) {
-                                isFound = true;
-                                isProgramExist = true;
-                                curProgram = program;
-                                break;
-                            }
-                        }
-
-                        if (!isFound) {
-                            curProgram = new ProgramEntity();
-                            curProgram.setName(programName);
-                        }
-                    }
-//                    String programFullName;
-//                    if (!isProgramExist && programFullNameCell != null &&
-//                            !(programFullName = programFullNameCell.getStringCellValue().trim()).isEmpty()) {
-//                        curProgram.setFullName(programFullName);
-//                    }
-                    if (!isProgramExist && curProgram != null) {
-                        programService.createProgram(curProgram);
-                        programList.add(curProgram);
+                        studentProgram = this.findOrCreateProgram(programList, programName);
+                        student.setProgramId(studentProgram);
                     }
 
-                    // Get Curriculum Info
                     CurriculumEntity currentCurriculum = null;
-                    if (curProgram != null) {
-                        String curriculumName;
-                        if (curriculumCell != null &&
-                                !(curriculumName = curriculumCell.getStringCellValue().trim()).isEmpty()) {
+                    String curriculumStr;
+                    if (curriculumCell != null &&
+                            !(curriculumStr = curriculumCell.getStringCellValue().trim()).isEmpty()) {
+                        int pos = curriculumStr.indexOf("_");
+                        if (pos != -1) {
+                            String curPogramName = curriculumStr.substring(0, pos);
+                            String curCurriName = curriculumStr.substring(pos + 1);
 
-                            int pos = curriculumName.indexOf("_");
-                            if (pos != -1) {
-                                curriculumName = curriculumName.substring(pos + 1);
-                            }
-
-                            boolean isFound = false;
-                            for (CurriculumEntity curriculum : curriculumList) {
-                                if (!isFound && curriculum.getName().equals(curriculumName)
-                                        && curriculum.getProgramId().getName().equals(curProgram.getName())) {
-                                    isFound = true;
-                                    currentCurriculum = curriculum;
-                                    break;
-                                }
-                            }
-                            if (!isFound) {
-                                currentCurriculum = new CurriculumEntity();
-                                currentCurriculum.setName(curriculumName);
-                                currentCurriculum.setProgramId(curProgram);
-                                curriculumService.createCurriculum(currentCurriculum);
-
-                                curriculumList.add(currentCurriculum);
-                            }
+                            currentCurriculum = findOrCreateCurriculum(programList, curriculumList, curPogramName, curCurriName);
                         }
+                    }
+
+                    if (termCell != null) {
+                        double term = termCell.getNumericCellValue();
+                        student.setTerm(((Number) term).intValue());
                     }
 
                     if (student.getRollNumber() != null) {
@@ -300,6 +268,49 @@ public class UploadController {
 
         obj.addProperty("success", true);
         return obj;
+    }
+
+    private ProgramEntity findOrCreateProgram(List<ProgramEntity> list, String programName) {
+        ProgramEntity program = null;
+
+        for (ProgramEntity p : list) {
+            if (p.getName().equals(programName)) {
+                program = p;
+                break;
+            }
+        }
+
+        if (program == null) {
+            program = new ProgramEntity();
+            program.setName(programName);
+            programService.createProgram(program);
+            list.add(program);
+        }
+
+        return program;
+    }
+
+    private CurriculumEntity findOrCreateCurriculum(List<ProgramEntity> programList, List<CurriculumEntity> curriList,
+                                                    String programName, String curriName) {
+        CurriculumEntity curriculum = null;
+
+        for (CurriculumEntity c : curriList) {
+            if (c.getProgramId().getName().equals(programName)
+                    && c.getName().equals(curriName)) {
+                curriculum = c;
+                break;
+            }
+        }
+
+        if (curriculum == null) {
+            curriculum = new CurriculumEntity();
+            curriculum.setProgramId(this.findOrCreateProgram(programList, programName));
+            curriculum.setName(curriName);
+            curriculumService.createCurriculum(curriculum);
+            curriList.add(curriculum);
+        }
+
+        return curriculum;
     }
 
     // Old file
