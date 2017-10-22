@@ -1,10 +1,13 @@
 package com.capstone.jpa.exJpa;
 
+import com.capstone.entities.DocumentStudentEntity;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.RealSemesterEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.jpa.StudentEntityJpaController;
 import com.capstone.models.Logger;
+import com.capstone.services.DocumentStudentServiceImpl;
+import com.capstone.services.IDocumentStudentService;
 
 import javax.persistence.*;
 import javax.persistence.criteria.*;
@@ -28,34 +31,51 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
         return totalLine;
     }
 
-    public void createStudentList(List<StudentEntity> students) {
+    public void createStudentList(List<DocumentStudentEntity> students) {
         totalLine = students.size();
         currentLine = 0;
 
         EntityManager em = null;
         try {
             em = getEntityManager();
-            for (StudentEntity student : students) {
+            for (DocumentStudentEntity docStudent : students) {
                 try {
                     em.getTransaction().begin();
 
-                    TypedQuery<StudentEntity> single = em.createQuery("SELECT c FROM StudentEntity c WHERE c.rollNumber = :roll", StudentEntity.class);
-                    single.setParameter("roll", student.getRollNumber());
+                    // Create student
+                    TypedQuery<StudentEntity> queryStudent = em.createQuery(
+                            "SELECT c FROM StudentEntity c WHERE c.rollNumber = :rollNumber", StudentEntity.class);
+                    queryStudent.setParameter("rollNumber", docStudent.getStudentId().getRollNumber());
 
-                    List<StudentEntity> stus = single.getResultList();
-                    if (stus.size() == 0) {
-                        em.persist(student);
+                    List<StudentEntity> std = queryStudent.getResultList();
+                    if (std.isEmpty()) {
+                        em.persist(docStudent.getStudentId());
+                    } else {
+                        docStudent.setStudentId(std.get(0));
                     }
-//                    } else {
-//                        StudentEntity stu = stus.get(0);
-//                        stu.setRollNumber(student.getRollNumber());
-//                        stu.setFullName(student.getFullName());
-//                        em.merge(stu);
-//                    }
+
+                    // Create document student
+                    if (docStudent.getCurriculumId() != null && docStudent.getDocumentId() != null) {
+                        TypedQuery<DocumentStudentEntity> queryDocStudent = em.createQuery(
+                                "SELECT d FROM DocumentStudentEntity d" +
+                                        " WHERE d.studentId.id = :studentId" +
+                                        " AND d.curriculumId.id = :curriId" +
+                                        " AND d.documentId.id = :docId"
+                                , DocumentStudentEntity.class);
+                        queryDocStudent.setParameter("studentId", docStudent.getStudentId().getId());
+                        queryDocStudent.setParameter("curriId", docStudent.getCurriculumId().getId());
+                        queryDocStudent.setParameter("docId", docStudent.getDocumentId().getId());
+
+                        List<DocumentStudentEntity> docEntity = queryDocStudent.getResultList();
+                        if (docEntity.isEmpty()) {
+                            em.persist(docStudent);
+                        }
+                    }
 
                     em.getTransaction().commit();
                 } catch (Exception e) {
-                    System.out.println("Student " + student.getRollNumber() + "caused " + e.getMessage());
+                    System.out.println("Student " + docStudent.getStudentId().getRollNumber() + "caused " + e.getMessage());
+                    e.printStackTrace();
                 }
 
                 currentLine++;

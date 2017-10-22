@@ -1,5 +1,6 @@
 package com.capstone.services;
 
+import com.capstone.entities.DocumentStudentEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.jpa.exJpa.ExStudentEntityJpaController;
 
@@ -13,7 +14,7 @@ public class StudentServiceImpl implements IStudentService {
     ExStudentEntityJpaController studentEntityJpaController = new ExStudentEntityJpaController(emf);
 
     @Override
-    public void createStudentList(List<StudentEntity> studentEntityList) {
+    public void createStudentList(List<DocumentStudentEntity> studentEntityList) {
         studentEntityJpaController.createStudentList(studentEntityList);
     }
 
