@@ -93,7 +93,7 @@
                 <div class="pull-left image">
                     <security:authentication var="imageUrl" property="principal.picture"/>
                     <c:choose>
-                        <c:when test="${imageUrl} != ''">
+                        <c:when test="${not empty imageUrl}">
                             <img src="${imageUrl}" class="img-circle" alt="User Image">
                         </c:when>
                         <c:otherwise>
@@ -106,7 +106,7 @@
                     <p>
                         <security:authentication var="username" property="principal.fullname"/>
                         <c:choose>
-                            <c:when test="${username} != ''">
+                            <c:when test="${not empty username}">
                                 ${username}
                             </c:when>
                             <c:otherwise>

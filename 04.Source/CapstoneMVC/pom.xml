@@ -130,7 +130,7 @@
         <dependency>
             <groupId>com.aspose</groupId>
             <artifactId>aspose-cells</artifactId>
-            <version>RELEASE</version>
+            <version>16.11.0</version>
         </dependency>
     </dependencies>
 </project>

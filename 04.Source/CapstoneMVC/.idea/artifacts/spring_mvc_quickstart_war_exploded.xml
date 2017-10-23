@@ -96,6 +96,7 @@
           <element id="library" level="project" name="Maven: org.apache.poi:poi:3.17" />
           <element id="library" level="project" name="Maven: com.itextpdf:itextpdf:5.5.12" />
           <element id="library" level="project" name="Maven: com.aspose:aspose-cells:17.9" />
+          <element id="library" level="project" name="Maven: com.aspose:aspose-cells:16.11.0" />
         </element>
       </element>
       <element id="javaee-facet-resources" facet="spring-mvc-quickstart/web/Web" />
