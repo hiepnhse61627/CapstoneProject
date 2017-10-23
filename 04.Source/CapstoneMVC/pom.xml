@@ -84,7 +84,6 @@
             <artifactId>guava</artifactId>
             <version>19.0</version>
         </dependency>
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
@@ -121,12 +120,6 @@
             <version>1.4.195</version>
             <scope>runtime</scope>
         </dependency>
-        <!--<dependency>-->
-            <!--<groupId>org.springframework.security.oauth</groupId>-->
-            <!--<artifactId>spring-security-oauth2</artifactId>-->
-            <!--<version>2.0.0.RELEASE</version>-->
-        <!--</dependency>-->
-        <!-- ASPOSE -->
         <dependency>
             <groupId>com.aspose</groupId>
             <artifactId>aspose-cells</artifactId>
