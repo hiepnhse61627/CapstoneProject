@@ -82,7 +82,7 @@ public class RealSemesterEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.RealSemesterEntity[ id=" + id + " ]";
+        return "com.capstone.entites.RealSemesterEntity[ id=" + id + " ]";
     }
     
 }

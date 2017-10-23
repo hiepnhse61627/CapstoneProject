@@ -126,7 +126,7 @@ public class MarksEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.MarksEntity[ id=" + id + " ]";
+        return "com.capstone.entites.MarksEntity[ id=" + id + " ]";
     }
     
 }

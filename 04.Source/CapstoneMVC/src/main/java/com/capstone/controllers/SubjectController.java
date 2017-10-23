@@ -39,14 +39,12 @@ public class SubjectController {
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("UploadSubject");
         view.addObject("title", "Nhập môn học");
-
         File dir = new File(context.getRealPath("/") + "UploadedFiles/UploadedSubjectTemplate/");
         System.out.println(context.getRealPath("/"));
         if (dir.isDirectory()) {
             File[] listOfFiles = dir.listFiles();
             view.addObject("files", listOfFiles);
         }
-
         return view;
     }
 
@@ -61,7 +59,6 @@ public class SubjectController {
             result = new JsonObject();
             result.addProperty("success", false);
         }
-
         return result;
     }
 
@@ -73,13 +70,11 @@ public class SubjectController {
             ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
             read.saveFile(context, file, folder);
         }
-
         return result;
     }
 
     private JsonObject ReadFile(MultipartFile file1, File file2, boolean isNewFile) {
-        List<SubjectEntity> columndata = new ArrayList<SubjectEntity>();
-        ;
+        List<SubjectEntity> columndata = new ArrayList<>();
         JsonObject obj = new JsonObject();
         InputStream is = null;
 
@@ -92,7 +87,7 @@ public class SubjectController {
 
             XSSFWorkbook workbook = new XSSFWorkbook(is);
 
-//            List<ReplacementSubject> replace = new ArrayList<>();
+            List<ReplacementSubject> replace = new ArrayList<>();
 
             for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
                 XSSFSheet sheet = workbook.getSheetAt(i);
@@ -103,7 +98,7 @@ public class SubjectController {
                     Iterator<Cell> cellIterator = row.cellIterator();
                     SubjectEntity en = new SubjectEntity();
                     en.setIsSpecialized(false);
-//                    ReplacementSubject re = new ReplacementSubject();
+                    ReplacementSubject re = new ReplacementSubject();
                     while (cellIterator.hasNext()) {
                         Cell cell = cellIterator.next();
                         if (row.getRowNum() > 3) { //To filter column headings
@@ -111,7 +106,7 @@ public class SubjectController {
                             if (cell.getColumnIndex() == 0) { // Subject code
                                 en.setId(cell.getStringCellValue().trim());
                                 // set sub code
-//                                re.setSubCode(en.getId());
+                                re.setSubCode(en.getId());
                             } else if (cell.getColumnIndex() == 1) { // Abbreviation
                                 en.setAbbreviation(cell.getStringCellValue().trim());
                             } else if (cell.getColumnIndex() == 2) { // Subject name
@@ -133,25 +128,25 @@ public class SubjectController {
                                 en.setPrequisiteEntity(prequisiteEntity);
                             } else if (cell.getColumnIndex() == 5) { // Replacement
                                 String replacers = cell.getStringCellValue().trim();
-//                                re.setReplaceCode(replacers);
-                                if (replacers != null && !replacers.isEmpty()) {
-                                    String processed = "";
-                                    String[] data = replacers.split("OR");
-                                    for (String d : data) {
-                                        processed += d.trim() + ",";
-                                    }
-                                    if (processed.lastIndexOf(",") == processed.length() - 1) {
-                                        processed = processed.substring(0, processed.lastIndexOf(","));
-                                    }
+                                re.setReplaceCode(replacers);
+//                                if (replacers != null && !replacers.isEmpty()) {
+//                                    String processed = "";
+//                                    String[] data = replacers.split("OR");
+//                                    for (String d : data) {
+//                                        processed += d.trim() + ",";
+//                                    }
+//                                    if (processed.lastIndexOf(",") == processed.length() - 1) {
+//                                        processed = processed.substring(0, processed.lastIndexOf(","));
+//                                    }
 //                                    en.setReplacementId(processed.trim());
-                                }
+//                                }
                             }
                         }
                     }
 
                     if (en.getName() != null && !en.getName().isEmpty() && !columndata.stream().anyMatch(c -> c.getId().equals(en.getId()))) {
                         columndata.add(en);
-//                        replace.add(re);
+                        replace.add(re);
                     }
                 }
             }
@@ -159,7 +154,7 @@ public class SubjectController {
             is.close();
 
             subjectService.insertSubjectList(columndata);
-//            subjectService.insertReplacementList(replace);
+            subjectService.insertReplacementList(replace);
         } catch (Exception e) {
             e.printStackTrace();
             obj.addProperty("success", false);
@@ -179,33 +174,4 @@ public class SubjectController {
         obj.addProperty("totalLine", subjectService.getTotalLine());
         return obj;
     }
-
-//    public void SaveFileToServer(MultipartFile file) {
-//        if (!file.isEmpty()) {
-//            try {
-//                byte[] bytes = file.getBytes();
-//
-//                File dir = new File(context.getRealPath("/") + "UploadedFiles/UploadedSubjectTemplate/");
-//                if (!dir.exists()) {
-//                    dir.mkdirs();
-//                }
-//
-//                File serverFile = new File(dir.getAbsolutePath()
-//                        + File.separator + file.getOriginalFilename());
-//                if (serverFile.exists()) {
-//                    SimpleDateFormat df = new SimpleDateFormat("_yyyy-MM-dd-HH-mm-ss");
-//                    String suffix = df.format(Calendar.getInstance().getTime());
-//                    serverFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename() + suffix);
-//                }
-//
-//                BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(serverFile));
-//                stream.write(bytes);
-//                stream.close();
-//
-//                System.out.println(("Server File Location = " + serverFile.getAbsolutePath()));
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
 }

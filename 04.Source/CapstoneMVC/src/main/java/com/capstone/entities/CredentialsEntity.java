@@ -130,7 +130,7 @@ public class CredentialsEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.CredentialsEntity[ id=" + id + " ]";
+        return "com.capstone.entites.CredentialsEntity[ id=" + id + " ]";
     }
     
 }

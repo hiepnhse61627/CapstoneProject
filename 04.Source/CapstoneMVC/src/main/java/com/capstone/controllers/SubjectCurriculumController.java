@@ -362,6 +362,115 @@ public class SubjectCurriculumController {
         return obj;
     }
 
+    private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile) {
+        JsonObject obj = new JsonObject();
+
+        try {
+            InputStream is = isNewFile ? file.getInputStream() : new FileInputStream(file2);
+
+            HSSFWorkbook workbook = new HSSFWorkbook(is);
+            HSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            HSSFRow row;
+
+            int termIndex = -1;
+            int subjectIndex = -1;
+            int curriculumIndex = -1;
+
+            int rowIndex = 0;
+            boolean flag = false;
+
+            for (rowIndex = 0; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+
+                if (row != null) {
+                    for (int cellIndex = row.getFirstCellNum(); cellIndex <= row.getLastCellNum(); cellIndex++) {
+                        Cell cell = row.getCell(cellIndex);
+                        if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("curriculumcode")) {
+                            curriculumIndex = cellIndex;
+                        } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("subjectcode")) {
+                            subjectIndex = cellIndex;
+                        } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("termno")) {
+                            termIndex = cellIndex;
+                        }
+
+                        if (termIndex != -1 && subjectIndex != -1 && curriculumIndex != -1) {
+                            flag = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (flag) {
+                    break;
+                }
+            }
+
+            ISubjectService subjectService = new SubjectServiceImpl();
+            ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
+
+            Map<String, List<SubjectCurriculumEntity>> map = new LinkedHashMap<>();
+            for (rowIndex = rowIndex + 1; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+                if (row != null) {
+                    String curriculumCode = row.getCell(curriculumIndex).getStringCellValue();
+                    String subjectCode = row.getCell(subjectIndex).getStringCellValue();
+                    double termNo = row.getCell(termIndex).getNumericCellValue();
+
+                    if (map.get(curriculumCode) == null) {
+                        SubjectEntity subject = subjectService.findSubjectById(subjectCode);
+                        if (subject != null) {
+                            String[] parts = curriculumCode.split("_");
+                            if (parts.length == 2) {
+                                CurriculumEntity entity = subjectCurriculumService.findCurriculum(parts[0], parts[1]);
+                                if (entity != null) {
+                                    SubjectCurriculumEntity cur = new SubjectCurriculumEntity();
+                                    cur.setSubjectId(subject);
+                                    cur.setCurriculumId(entity);
+                                    cur.setOrdinalNumber(1);
+                                    cur.setTermNumber((int)termNo);
+                                    List<SubjectCurriculumEntity> list = new ArrayList<>();
+                                    list.add(cur);
+                                    map.put(curriculumCode, list);
+                                }
+                            }
+                        }
+                    } else {
+                        SubjectEntity subject = subjectService.findSubjectById(subjectCode);
+                        if (subject != null) {
+                            String[] parts = curriculumCode.split("_");
+                            if (parts.length == 2) {
+                                CurriculumEntity entity = subjectCurriculumService.findCurriculum(parts[0], parts[1]);
+                                if (entity != null) {
+                                    SubjectCurriculumEntity cur = new SubjectCurriculumEntity();
+                                    cur.setSubjectId(subject);
+                                    cur.setCurriculumId(entity);
+                                    cur.setOrdinalNumber(map.get(curriculumCode).size() + 1);
+                                    cur.setTermNumber((int)termNo);
+                                    map.get(curriculumCode).add(cur);
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
+//
+            for (Map.Entry<String, List<SubjectCurriculumEntity>> entry : map.entrySet()) {
+                entry.getValue().forEach(c -> subjectCurriculumService.createCurriculum(c));
+            }
+
+            obj.addProperty("success", true);
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
+            return obj;
+        }
+
+        return obj;
+    }
+
     @RequestMapping(value = "/deletesubcurriculum", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject delete(@RequestParam int curId) {
@@ -387,142 +496,5 @@ public class SubjectCurriculumController {
         }
 
         return obj;
-    }
-
-    private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile) {
-//        JsonObject obj = new JsonObject();
-//
-//        try {
-//            InputStream is = isNewFile ? file.getInputStream() : new FileInputStream(file2);
-//
-//            HSSFWorkbook workbook = new HSSFWorkbook(is);
-//            HSSFSheet spreadsheet = workbook.getSheetAt(0);
-//
-//            HSSFRow row;
-//
-//            int termIndex = -1;
-//            int subjectIndex = -1;
-//            int curriculumIndex = -1;
-//
-//            int rowIndex = 0;
-//            boolean flag = false;
-//
-//            for (rowIndex = 0; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
-//                row = spreadsheet.getRow(rowIndex);
-//
-//                if (row != null) {
-//                    for (int cellIndex = row.getFirstCellNum(); cellIndex <= row.getLastCellNum(); cellIndex++) {
-//                        Cell cell = row.getCell(cellIndex);
-//                        if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("termno")) {
-//                            termIndex = cellIndex;
-//                        } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("subjectcode")) {
-//                            subjectIndex = cellIndex;
-//                        } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("curriculumcode")) {
-//                            curriculumIndex = cellIndex;
-//                        }
-//
-//                        if (termIndex != -1 && subjectIndex != -1 && curriculumIndex != -1) {
-//                            flag = true;
-//                            break;
-//                        }
-//                    }
-//                }
-//
-//                if (flag) {
-//                    break;
-//                }
-//            }
-//
-//            ISubjectService subjectService = new SubjectServiceImpl();
-//            ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
-//
-//            Map<String, List<CurriculumMappingEntity>> map = new TreeMap<>();
-//            for (rowIndex = rowIndex + 1; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
-//                row = spreadsheet.getRow(rowIndex);
-//                if (row != null) {
-//                    String curriculumCode = row.getCell(curriculumIndex).getStringCellValue();
-//                    String subjectCode = row.getCell(subjectIndex).getStringCellValue();
-//                    double termNo = row.getCell(termIndex).getNumericCellValue();
-//
-//                    if (map.get(curriculumCode) == null) {
-//                        SubjectEntity subject = subjectService.findSubjectById(subjectCode);
-//                        if (subject != null) {
-//
-//                            SubjectCurriculumEntity exist = subjectCurriculumService.getCurriculumByName(curriculumCode);
-//                            if (exist != null) {
-//                                delete(exist.getId());
-//                            }
-//
-//                            SubjectCurriculumEntity entity = new SubjectCurriculumEntity();
-//                            entity.setName(curriculumCode);
-//                            entity = subjectCurriculumService.createCurriculum(entity);
-//
-//                            List<CurriculumMappingEntity> list = new ArrayList<>();
-//
-//                            if (termNo > 0) {
-//                                CurriculumMappingEntity mapping = new CurriculumMappingEntity();
-//                                mapping.setOrdering(1);
-//                                mapping.setTerm("Học kỳ " + (int) termNo);
-//                                CurriculumMappingEntityPK pk = new CurriculumMappingEntityPK();
-//                                pk.setSubId(subject.getId());
-//                                pk.setCurId(entity.getId());
-//                                mapping.setCurriculumMappingEntityPK(pk);
-//                                list.add(mapping);
-//                            }
-//
-//                            map.put(curriculumCode, list);
-//                        }
-//                    } else {
-//                        SubjectEntity subject = subjectService.findSubjectById(subjectCode);
-//                        if (subject != null) {
-//                            SubjectCurriculumEntity entity = subjectCurriculumService.getCurriculumByName(curriculumCode);
-//
-//                            if (termNo > 0) {
-//                                CurriculumMappingEntity mapping = new CurriculumMappingEntity();
-//                                mapping.setOrdering(map.get(curriculumCode).size() + 1);
-//                                mapping.setTerm("Học kỳ " + (int) termNo);
-//                                CurriculumMappingEntityPK pk = new CurriculumMappingEntityPK();
-//                                pk.setSubId(subject.getId());
-//                                pk.setCurId(entity.getId());
-//                                mapping.setCurriculumMappingEntityPK(pk);
-//
-//                                map.get(curriculumCode).add(mapping);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//
-//            for (Map.Entry<String, List<CurriculumMappingEntity>> entry : map.entrySet()) {
-//                SubjectCurriculumEntity entity = subjectCurriculumService.getCurriculumByName(entry.getKey());
-//                entity.setCurriculumMappingEntityList(entry.getValue());
-//                subjectCurriculumService.updateCurriculum(entity);
-//            }
-//
-//            obj.addProperty("success", true);
-//        } catch (Exception e) {
-//            Logger.writeLog(e);
-//            obj.addProperty("success", false);
-//            obj.addProperty("message", e.getMessage());
-//            return obj;
-//        }
-//
-//        return obj;
-        return null;
-    }
-
-    private int findRow(HSSFSheet sheet, int currentRow, String cellContent) {
-        for (int rowIndex = currentRow; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
-            Row row = sheet.getRow(rowIndex);
-            if (row != null) {
-                for (int cellIndex = row.getFirstCellNum(); cellIndex <= row.getLastCellNum(); cellIndex++) {
-                    Cell cell = row.getCell(cellIndex);
-                    if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains(cellContent)) {
-                        return row.getRowNum();
-                    }
-                }
-            }
-        }
-        return -1;
     }
 }

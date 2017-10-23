@@ -108,7 +108,7 @@ public class ProgramEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.ProgramEntity[ id=" + id + " ]";
+        return "com.capstone.entites.ProgramEntity[ id=" + id + " ]";
     }
     
 }

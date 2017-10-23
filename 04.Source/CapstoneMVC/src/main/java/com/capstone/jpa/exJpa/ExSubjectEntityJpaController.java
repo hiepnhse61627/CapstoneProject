@@ -34,34 +34,21 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
     }
 
     public void insertSubjectList(List<SubjectEntity> list) {
-//        EntityManager manager = getEntityManager();
-//        TypedQuery<SubjectEntity> query = manager.createQuery("SELECT c FROM SubjectEntity c", SubjectEntity.class);
-//        List<SubjectEntity> cur = query.getResultList();
-//
-//        this.totalLine = list.size();
-//        this.currentLine = 0;
-//
-//        manager.getTransaction().begin();
-//
-//        for (SubjectEntity en : list) {
-//            if (!cur.stream().anyMatch(c -> c.getId().equals(en.getId()))) {
-//
-//                SubjectMarkComponentEntity entity = new SubjectMarkComponentEntity();
-//                entity.setSubjectId(en.getId());
-//
-//                en.setSubjectMarkComponentEntity(entity);
-//                entity.setSubjectEntity(en);
-//
-//                manager.persist(en);
-//                manager.persist(entity);
-//            } else {
-//                System.out.println(en.getId() + " has exist!");
-//            }
-//
-//            ++this.currentLine;
-//        }
-//
-//        manager.getTransaction().commit();
+        EntityManager manager = getEntityManager();
+
+        this.totalLine = list.size();
+        this.currentLine = 0;
+
+        manager.getTransaction().begin();
+
+        for (SubjectEntity en : list) {
+            if (manager.find(SubjectEntity.class, en.getId()) == null) {
+                manager.persist(en);
+            }
+            ++this.currentLine;
+        }
+
+        manager.getTransaction().commit();
     }
 
     private List<List<SubjectEntity>> prequisiteList;
@@ -164,24 +151,24 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
     }
 
     public void insertReplacementList(List<ReplacementSubject> list) {
-//        EntityManager manager = getEntityManager();
-//        manager.getTransaction().begin();
-//        for (ReplacementSubject replacer : list) {
-//            if (replacer.getReplaceCode() != null && !replacer.getReplaceCode().isEmpty()) {
-//                SubjectEntity sub = manager.find(SubjectEntity.class, replacer.getSubCode());
-//                if (sub != null) {
-//                    String[] rep = replacer.getReplaceCode().split("OR");
-//                    for (String r : rep ) {
-//                        SubjectEntity replace = manager.find(SubjectEntity.class, r.trim());
-//                        if (!sub.getReplacementSubjectList().contains(replace)) {
-//                            sub.getReplacementSubjectList().add(replace);
-//                        }
-//                    }
-//                    manager.merge(sub);
-//                    manager.flush();
-//                }
-//            }
-//        }
-//        manager.getTransaction().commit();
+        EntityManager manager = getEntityManager();
+        manager.getTransaction().begin();
+        for (ReplacementSubject replacer : list) {
+            if (replacer.getReplaceCode() != null && !replacer.getReplaceCode().isEmpty()) {
+                SubjectEntity sub = manager.find(SubjectEntity.class, replacer.getSubCode());
+                if (sub != null) {
+                    String[] rep = replacer.getReplaceCode().split(",");
+                    for (String r : rep ) {
+                        SubjectEntity replace = manager.find(SubjectEntity.class, r.trim());
+                        if (!sub.getSubjectEntityList().contains(replace)) {
+                            sub.getSubjectEntityList().add(replace);
+                        }
+                    }
+                    manager.merge(sub);
+                    manager.flush();
+                }
+            }
+        }
+        manager.getTransaction().commit();
     }
 }

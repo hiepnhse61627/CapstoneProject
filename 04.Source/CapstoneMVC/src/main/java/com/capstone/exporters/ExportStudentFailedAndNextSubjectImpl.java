@@ -151,7 +151,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
             @Override
             public int compare(MarksEntity o1, MarksEntity o2) {
                 return new CompareToBuilder()
-                        .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().toUpperCase())
+                        .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
                         .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
                         .toComparison();
             }
@@ -169,7 +169,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
         List<MarksEntity> resultList = new ArrayList<>();
         // remove duplicate
         for (MarksEntity marksEntity : comparedList) {
-            if (marksEntity.getSubjectMarkComponentId() != null && !resultList.stream().anyMatch(r -> r.getSubjectMarkComponentId().getSubjectId().toUpperCase().equals(marksEntity.getSubjectMarkComponentId().getSubjectId().toUpperCase())
+            if (marksEntity.getSubjectMarkComponentId() != null && !resultList.stream().anyMatch(r -> r.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase().equals(marksEntity.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
                     && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
                 resultList.add(marksEntity);
             }

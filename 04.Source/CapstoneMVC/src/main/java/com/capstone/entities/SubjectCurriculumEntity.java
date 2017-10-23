@@ -103,7 +103,7 @@ public class SubjectCurriculumEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.SubjectCurriculumEntity[ id=" + id + " ]";
+        return "com.capstone.entites.SubjectCurriculumEntity[ id=" + id + " ]";
     }
     
 }

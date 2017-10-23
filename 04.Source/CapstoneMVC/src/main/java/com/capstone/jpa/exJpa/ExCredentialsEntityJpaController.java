@@ -16,7 +16,7 @@ public class ExCredentialsEntityJpaController extends CredentialsEntityJpaContro
 
     public CredentialsEntity findCredential(String username) {
         EntityManager manager = getEntityManager();
-        TypedQuery<CredentialsEntity> query = manager.createNamedQuery("CredentialsEntity.findByUsername", CredentialsEntity.class);
+        TypedQuery<CredentialsEntity> query = manager.createQuery("select a from CredentialsEntity a where a.username = :username", CredentialsEntity.class);
         query.setParameter("username", username);
         List<CredentialsEntity> list = query.getResultList();
         if (list.isEmpty()) return null;

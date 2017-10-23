@@ -133,7 +133,7 @@ public class StudentList {
             for (MarksEntity m : markList) {
                 MarkModel data = new MarkModel();
                 data.setSemester(m.getSemesterId().getSemester());
-                data.setSubject(m.getSubjectMarkComponentId() != null ? m.getSubjectMarkComponentId().getSubjectId() : "N/A");
+                data.setSubject(m.getSubjectMarkComponentId() != null ? m.getSubjectMarkComponentId().getSubjectId().getId() : "N/A");
                 data.setClass1(m.getCourseId().getClass1());
                 data.setStatus(m.getStatus());
                 data.setAverageMark(m.getAverageMark());

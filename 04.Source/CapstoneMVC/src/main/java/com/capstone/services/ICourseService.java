@@ -7,7 +7,7 @@ import com.capstone.models.DatatableModel;
 import java.util.List;
 
 public interface ICourseService {
-    CourseEntity findCourseByClassAndSubjectCode(String className, String subjectCode);
+    CourseEntity findCourseByClass(String className);
     void createCourseList(List<CourseEntity> courseEntityList);
     CourseEntity createCourse(CourseEntity entity);
     void updateCourse(CourseEntity model);

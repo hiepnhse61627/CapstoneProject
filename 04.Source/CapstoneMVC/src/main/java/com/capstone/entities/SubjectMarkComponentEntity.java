@@ -24,16 +24,17 @@ public class SubjectMarkComponentEntity implements Serializable {
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name = "SubjectId", length = 50)
-    private String subjectId;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
-    @Column(name = "Percent", precision = 53)
+    @Column(name = "PercentWeight", precision = 53)
     private Double percent;
     @Column(name = "Name", length = 2147483647)
     private String name;
     @JoinColumn(name = "MarkComponentId", referencedColumnName = "Id")
     @ManyToOne
     private MarkComponentEntity markComponentId;
+    @JoinColumn(name = "SubjectId", referencedColumnName = "Id")
+    @ManyToOne
+    private SubjectEntity subjectId;
     @OneToMany(mappedBy = "subjectMarkComponentId")
     private List<MarksEntity> marksEntityList;
 
@@ -50,14 +51,6 @@ public class SubjectMarkComponentEntity implements Serializable {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public String getSubjectId() {
-        return subjectId;
-    }
-
-    public void setSubjectId(String subjectId) {
-        this.subjectId = subjectId;
     }
 
     public Double getPercent() {
@@ -82,6 +75,14 @@ public class SubjectMarkComponentEntity implements Serializable {
 
     public void setMarkComponentId(MarkComponentEntity markComponentId) {
         this.markComponentId = markComponentId;
+    }
+
+    public SubjectEntity getSubjectId() {
+        return subjectId;
+    }
+
+    public void setSubjectId(SubjectEntity subjectId) {
+        this.subjectId = subjectId;
     }
 
     public List<MarksEntity> getMarksEntityList() {
@@ -114,7 +115,7 @@ public class SubjectMarkComponentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.SubjectMarkComponentEntity[ id=" + id + " ]";
+        return "com.capstone.entites.SubjectMarkComponentEntity[ id=" + id + " ]";
     }
     
 }

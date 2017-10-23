@@ -152,7 +152,7 @@ public class StudentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.StudentEntity[ id=" + id + " ]";
+        return "com.capstone.entites.StudentEntity[ id=" + id + " ]";
     }
     
 }

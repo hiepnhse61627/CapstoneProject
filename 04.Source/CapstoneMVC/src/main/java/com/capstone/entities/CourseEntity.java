@@ -82,7 +82,7 @@ public class CourseEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.CourseEntity[ id=" + id + " ]";
+        return "com.capstone.entites.CourseEntity[ id=" + id + " ]";
     }
     
 }

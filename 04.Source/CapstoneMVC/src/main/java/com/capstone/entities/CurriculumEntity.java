@@ -109,7 +109,7 @@ public class CurriculumEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.CurriculumEntity[ id=" + id + " ]";
+        return "com.capstone.entites.CurriculumEntity[ id=" + id + " ]";
     }
     
 }

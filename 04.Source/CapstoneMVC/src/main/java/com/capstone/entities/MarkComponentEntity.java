@@ -82,7 +82,7 @@ public class MarkComponentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.MarkComponentEntity[ id=" + id + " ]";
+        return "com.capstone.entites.MarkComponentEntity[ id=" + id + " ]";
     }
     
 }

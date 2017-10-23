@@ -82,7 +82,7 @@ public class DocTypeEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.DocTypeEntity[ id=" + id + " ]";
+        return "com.capstone.entites.DocTypeEntity[ id=" + id + " ]";
     }
     
 }

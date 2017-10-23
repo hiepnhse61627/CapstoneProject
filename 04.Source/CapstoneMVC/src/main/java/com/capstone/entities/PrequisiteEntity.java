@@ -99,7 +99,7 @@ public class PrequisiteEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.PrequisiteEntity[ subjectId=" + subjectId + " ]";
+        return "com.capstone.entites.PrequisiteEntity[ subjectId=" + subjectId + " ]";
     }
     
 }

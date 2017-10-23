@@ -124,7 +124,7 @@ public class DocumentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.DocumentEntity[ id=" + id + " ]";
+        return "com.capstone.entites.DocumentEntity[ id=" + id + " ]";
     }
     
 }

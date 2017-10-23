@@ -7,7 +7,19 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 /**
  *
@@ -22,7 +34,6 @@ public class SubjectEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Column(name = "Id", nullable = false, length = 50)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
     @Column(name = "Name", length = 255)
     private String name;
@@ -43,6 +54,8 @@ public class SubjectEntity implements Serializable {
     private PrequisiteEntity prequisiteEntity;
     @OneToMany(mappedBy = "subjectId")
     private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
+    @OneToMany(mappedBy = "subjectId")
+    private List<SubjectMarkComponentEntity> subjectMarkComponentEntityList;
 
     public SubjectEntity() {
     }
@@ -123,6 +136,14 @@ public class SubjectEntity implements Serializable {
         this.subjectCurriculumEntityList = subjectCurriculumEntityList;
     }
 
+    public List<SubjectMarkComponentEntity> getSubjectMarkComponentEntityList() {
+        return subjectMarkComponentEntityList;
+    }
+
+    public void setSubjectMarkComponentEntityList(List<SubjectMarkComponentEntity> subjectMarkComponentEntityList) {
+        this.subjectMarkComponentEntityList = subjectMarkComponentEntityList;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -145,7 +166,7 @@ public class SubjectEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.SubjectEntity[ id=" + id + " ]";
+        return "com.capstone.entites.SubjectEntity[ id=" + id + " ]";
     }
     
 }
