@@ -306,6 +306,7 @@ public class SubjectCurriculumController {
             JsonObject data = new JsonObject();
 
             List<CurriculumEntity> dataList = service3.getAllCurriculums();
+            dataList = dataList.stream().filter(c -> c.getSubjectCurriculumEntityList() != null || !c.getSubjectCurriculumEntityList().isEmpty()).collect(Collectors.toList());
             if (params.get("sSearch") != null && !params.get("sSearch").isEmpty()) {
                 dataList = dataList.stream().filter(c -> c.getName().contains(params.get("sSearch")) || c.getProgramId().getName().contains(params.get("sSearch"))).collect(Collectors.toList());
             }
