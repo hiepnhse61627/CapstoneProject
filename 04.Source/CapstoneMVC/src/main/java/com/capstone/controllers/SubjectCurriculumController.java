@@ -408,6 +408,7 @@ public class SubjectCurriculumController {
 
             ISubjectService subjectService = new SubjectServiceImpl();
             ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
+            ICurriculumService curriculumService = new CurriculumServiceImpl();
 
             Map<String, List<SubjectCurriculumEntity>> map = new LinkedHashMap<>();
             for (rowIndex = rowIndex + 1; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
@@ -422,11 +423,27 @@ public class SubjectCurriculumController {
                         if (subject != null) {
                             String[] parts = curriculumCode.split("_");
                             if (parts.length == 2) {
-                                CurriculumEntity entity = subjectCurriculumService.findCurriculum(parts[0], parts[1]);
+                                CurriculumEntity entity = subjectCurriculumService.findCurriculum(parts[0].trim(), parts[1].trim());
                                 if (entity != null) {
                                     SubjectCurriculumEntity cur = new SubjectCurriculumEntity();
                                     cur.setSubjectId(subject);
                                     cur.setCurriculumId(entity);
+                                    cur.setOrdinalNumber(1);
+                                    cur.setTermNumber((int)termNo);
+                                    List<SubjectCurriculumEntity> list = new ArrayList<>();
+                                    list.add(cur);
+                                    map.put(curriculumCode, list);
+                                } else {
+                                    CurriculumEntity en = new CurriculumEntity();
+                                    en.setName(parts[1].trim());
+                                    ProgramEntity en2 = new ProgramEntity();
+                                    en2.setName(parts[0].trim());
+                                    en.setProgramId(en2);
+                                    en = curriculumService.createCurriculum(en);
+
+                                    SubjectCurriculumEntity cur = new SubjectCurriculumEntity();
+                                    cur.setSubjectId(subject);
+                                    cur.setCurriculumId(en);
                                     cur.setOrdinalNumber(1);
                                     cur.setTermNumber((int)termNo);
                                     List<SubjectCurriculumEntity> list = new ArrayList<>();
@@ -445,6 +462,20 @@ public class SubjectCurriculumController {
                                     SubjectCurriculumEntity cur = new SubjectCurriculumEntity();
                                     cur.setSubjectId(subject);
                                     cur.setCurriculumId(entity);
+                                    cur.setOrdinalNumber(map.get(curriculumCode).size() + 1);
+                                    cur.setTermNumber((int)termNo);
+                                    map.get(curriculumCode).add(cur);
+                                } else {
+                                    CurriculumEntity en = new CurriculumEntity();
+                                    en.setName(parts[1].trim());
+                                    ProgramEntity en2 = new ProgramEntity();
+                                    en2.setName(parts[0].trim());
+                                    en.setProgramId(en2);
+                                    en = curriculumService.createCurriculum(en);
+
+                                    SubjectCurriculumEntity cur = new SubjectCurriculumEntity();
+                                    cur.setSubjectId(subject);
+                                    cur.setCurriculumId(en);
                                     cur.setOrdinalNumber(map.get(curriculumCode).size() + 1);
                                     cur.setTermNumber((int)termNo);
                                     map.get(curriculumCode).add(cur);
