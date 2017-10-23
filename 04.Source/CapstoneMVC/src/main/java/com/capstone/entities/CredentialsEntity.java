@@ -15,7 +15,8 @@ import javax.persistence.*;
 @Entity
 @Table(name = "Credentials", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "CredentialsEntity.findAll", query = "SELECT c FROM CredentialsEntity c")})
+    @NamedQuery(name = "CredentialsEntity.findAll", query = "SELECT c FROM CredentialsEntity c"),
+    @NamedQuery(name = "CredentialsEntity.findByUsername", query = "SELECT c FROM CredentialsEntity c WHERE c.username = :username")})
 public class CredentialsEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;

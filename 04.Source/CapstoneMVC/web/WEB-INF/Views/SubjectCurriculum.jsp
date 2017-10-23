@@ -23,7 +23,6 @@
                     <table id="table">
                         <thead>
                         <th>Tên</th>
-                        <th>Mô tả</th>
                         <th>Chỉnh sửa</th>
                         <th>Xóa</th>
                         </thead>
@@ -311,24 +310,21 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3],
+                    "aTargets": [0, 1, 2],
                     "bSortable": false,
-                },
-                {
-                    "aTargets": [2, 3],
                     "sClass": "text-center",
                 },
                 {
-                    "aTargets": [2],
+                    "aTargets": [1],
                     "mRender": function (data, type, row) {
                         return "<a class='btn btn-success tbl-btn' href='/editcurriculum/" + data + "'>" +
                             "<i class='glyphicon glyphicon-pencil'></i></a>";
                     }
                 },
                 {
-                    "aTargets": [3],
+                    "aTargets": [2],
                     "mRender": function (data, type, row) {
-                        return "<a class='btn btn-danger tbl-btn' onclick='Remove(" + row[2] + ")'>" +
+                        return "<a class='btn btn-danger tbl-btn' onclick='Remove(" + row[1] + ")'>" +
                             "<i class='fa fa-trash'></i></a>";
                     }
                 },

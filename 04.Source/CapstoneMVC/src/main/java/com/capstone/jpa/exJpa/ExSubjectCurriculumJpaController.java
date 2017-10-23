@@ -1,13 +1,14 @@
 package com.capstone.jpa.exJpa;
 
+import com.capstone.entities.CurriculumEntity;
 import com.capstone.entities.SubjectCurriculumEntity;
 import com.capstone.jpa.SubjectCurriculumEntityJpaController;
+import org.apache.commons.lang3.reflect.Typed;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Query;
+import javax.persistence.*;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpaController {
@@ -57,21 +58,16 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
     }
 
     public void createCurriculumList(List<SubjectCurriculumEntity> subjectCurriculumEntityList) {
-//        EntityManager em = getEntityManager();
-//        for (SubjectCurriculumEntity subjectCurriculumEntity : subjectCurriculumEntityList) {
-//            try {
-//                TypedQuery<SubjectCurriculumEntity> tmp = em.createQuery("SELECT c FROM SubjectCurriculumEntity c WHERE c.name = :name AND c.description = :description", SubjectCurriculumEntity.class);
-//                tmp.setParameter("name", subjectCurriculumEntity.getName());
-//                tmp.setParameter("description", subjectCurriculumEntity.getDescription());
-//                if (tmp.getResultList().size() == 0) {
-//                    em.getTransaction().begin();
-//                    em.persist(subjectCurriculumEntity);
-//                    em.getTransaction().commit();
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
+        EntityManager em = getEntityManager();
+        for (SubjectCurriculumEntity subjectCurriculumEntity : subjectCurriculumEntityList) {
+            try {
+                em.getTransaction().begin();
+                em.persist(subjectCurriculumEntity);
+                em.getTransaction().commit();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void updateCurriculum(SubjectCurriculumEntity entity) {
@@ -85,6 +81,23 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
             e.printStackTrace();
         } finally {
             em.getTransaction().commit();
+        }
+    }
+
+    public CurriculumEntity findCurriculum(String cur, String program) {
+        EntityManager em = getEntityManager();
+
+        try {
+            TypedQuery<CurriculumEntity> query = em.createQuery("SELECT a FROM CurriculumEntity a WHERE a.name = :program AND a.programId.name = :cur", CurriculumEntity.class);
+            query.setParameter("cur", cur);
+            query.setParameter("program", program);
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            System.out.println("data " + program + "_" + cur + " not exist");
+            return null;
+        } catch (NonUniqueResultException e) {
+            System.out.println("data " + program + "_" + cur + " has multiple results");
+            return null;
         }
     }
 }

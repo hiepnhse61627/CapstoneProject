@@ -174,7 +174,7 @@ public class SubjectCurriculumController {
     @RequestMapping(value = "/editcurriculum", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject Edit(@RequestParam() List<String> data, @RequestParam int id, @RequestParam String name, @RequestParam String des, @RequestParam int programId) {
-//        JsonObject obj = new JsonObject();
+        //        JsonObject obj = new JsonObject();
 //        ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
 //
 //        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
@@ -298,47 +298,40 @@ public class SubjectCurriculumController {
     @RequestMapping("/getsubcurriculum")
     @ResponseBody
     public JsonObject GetSubCurriculum(@RequestParam Map<String, String> params) {
-//        ISubjectCurriculumService service = new SubjectCurriculumServiceImpl();
-//        ISubjectService service2 = new SubjectServiceImpl();
-//
-//        try {
-//            JsonObject data = new JsonObject();
-//
-//            List<SubjectCurriculumEntity> dataList = service.getAllSubjectCurriculum();
-//            if (params.get("sSearch") != null && !params.get("sSearch").isEmpty()) {
-//                dataList = dataList.stream().filter(c -> c.getName().contains(params.get("sSearch"))).collect(Collectors.toList());
-//            }
-//
-//            List<SubjectCurriculumEntity> displayList = new ArrayList<>();
-//            if (!dataList.isEmpty()) {
-//                displayList = dataList.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
-//            }
-//
-//            ArrayList<ArrayList<String>> result = new ArrayList<>();
-//            if (!displayList.isEmpty()) {
-//                displayList.forEach(m -> {
-//                    ArrayList<String> tmp = new ArrayList<>();
-//                    tmp.add(m.getName());
-//                    tmp.add(m.getDescription());
-//                    tmp.add(m.getId().toString());
-//                    result.add(tmp);
-//                });
-//            }
-//
-//            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result, new TypeToken<List<MarksEntity>>() {
-//            }.getType());
-//
-//            data.addProperty("iTotalRecords", dataList.size());
-//            data.addProperty("iTotalDisplayRecords", dataList.size());
-//            data.add("aaData", aaData);
-//            data.addProperty("sEcho", params.get("sEcho"));
-//
-//            return data;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        ICurriculumService curriculumService = new CurriculumServiceImpl();
+        JsonObject jsonObj = new JsonObject();
 
-        return null;
+        try {
+            int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
+            int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
+            String searchValue = params.get("sSearch").trim();
+
+            List<CurriculumEntity> curriculumList = curriculumService
+                    .getCurriculums(iDisplayStart, iDisplayLength, searchValue);
+            List<List<String>> dataList = new ArrayList<>();
+            for (CurriculumEntity c : curriculumList) {
+                List<String> row = new ArrayList<>();
+                row.add(c.getProgramId().getName() + "_" + c.getName());
+                row.add(c.getId().toString());
+
+                dataList.add(row);
+            }
+
+            int iTotalRecords = curriculumService.countAllCurriculums();
+            int iTotalDisplayRecords = curriculumService.countCurriculums(searchValue);
+            JsonArray aaData = (JsonArray) new Gson()
+                    .toJsonTree(dataList, new TypeToken<List<List<String>>>() {}.getType());
+
+            jsonObj.addProperty("iTotalRecords", iTotalRecords);
+            jsonObj.addProperty("iTotalDisplayRecords", iTotalDisplayRecords);
+            jsonObj.add("aaData", aaData);
+            jsonObj.addProperty("sEcho", params.get("sEcho"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.writeLog(e);
+        }
+
+        return jsonObj;
     }
 
     @RequestMapping(value = "/subcurriculum/choose", method = RequestMethod.POST)
@@ -364,33 +357,6 @@ public class SubjectCurriculumController {
         if (obj.get("success").getAsBoolean()) {
             ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
             read.saveFile(context, file, folder);
-        }
-
-        return obj;
-    }
-
-    @RequestMapping(value = "/deletesubcurriculum", method = RequestMethod.POST)
-    @ResponseBody
-    public JsonObject delete(@RequestParam int curId) {
-        JsonObject obj = new JsonObject();
-        ISubjectCurriculumService service = new SubjectCurriculumServiceImpl();
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-        EntityManager em = emf.createEntityManager();
-        try {
-            SubjectCurriculumEntity ent = service.getCurriculumById(curId);
-
-            em.getTransaction().begin();
-
-            SubjectCurriculumEntity b = em.merge(ent);
-            em.remove(b);
-            em.flush();
-
-            em.getTransaction().commit();
-
-            obj.addProperty("success", true);
-        } catch (Exception e) {
-            obj.addProperty("success", false);
-            obj.addProperty("message", e.getMessage());
         }
 
         return obj;
@@ -443,68 +409,56 @@ public class SubjectCurriculumController {
             ISubjectService subjectService = new SubjectServiceImpl();
             ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
 
-//            Map<String, List<CurriculumMappingEntity>> map = new TreeMap<>();
-//            for (rowIndex = rowIndex + 1; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
-//                row = spreadsheet.getRow(rowIndex);
-//                if (row != null) {
-//                    String curriculumCode = row.getCell(curriculumIndex).getStringCellValue();
-//                    String subjectCode = row.getCell(subjectIndex).getStringCellValue();
-//                    double termNo = row.getCell(termIndex).getNumericCellValue();
+            Map<String, List<SubjectCurriculumEntity>> map = new LinkedHashMap<>();
+            for (rowIndex = rowIndex + 1; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+                if (row != null) {
+                    String curriculumCode = row.getCell(curriculumIndex).getStringCellValue();
+                    String subjectCode = row.getCell(subjectIndex).getStringCellValue();
+                    double termNo = row.getCell(termIndex).getNumericCellValue();
+
+                    if (map.get(curriculumCode) == null) {
+                        SubjectEntity subject = subjectService.findSubjectById(subjectCode);
+                        if (subject != null) {
+                            String[] parts = curriculumCode.split("_");
+                            if (parts.length == 2) {
+                                CurriculumEntity entity = subjectCurriculumService.findCurriculum(parts[0], parts[1]);
+                                if (entity != null) {
+                                    SubjectCurriculumEntity cur = new SubjectCurriculumEntity();
+                                    cur.setSubjectId(subject);
+                                    cur.setCurriculumId(entity);
+                                    cur.setOrdinalNumber(1);
+                                    cur.setTermNumber((int)termNo);
+                                    List<SubjectCurriculumEntity> list = new ArrayList<>();
+                                    list.add(cur);
+                                    map.put(curriculumCode, list);
+                                }
+                            }
+                        }
+                    } else {
+                        SubjectEntity subject = subjectService.findSubjectById(subjectCode);
+                        if (subject != null) {
+                            String[] parts = curriculumCode.split("_");
+                            if (parts.length == 2) {
+                                CurriculumEntity entity = subjectCurriculumService.findCurriculum(parts[0], parts[1]);
+                                if (entity != null) {
+                                    SubjectCurriculumEntity cur = new SubjectCurriculumEntity();
+                                    cur.setSubjectId(subject);
+                                    cur.setCurriculumId(entity);
+                                    cur.setOrdinalNumber(map.get(curriculumCode).size() + 1);
+                                    cur.setTermNumber((int)termNo);
+                                    map.get(curriculumCode).add(cur);
+                                }
+                            }
+                        }
+                    }
+
+                }
+            }
 //
-//                    if (map.get(curriculumCode) == null) {
-//                        SubjectEntity subject = subjectService.findSubjectById(subjectCode);
-//                        if (subject != null) {
-//
-//                            SubjectCurriculumEntity exist = subjectCurriculumService.getCurriculumByName(curriculumCode);
-//                            if (exist != null) {
-//                                delete(exist.getId());
-//                            }
-//
-//                            SubjectCurriculumEntity entity = new SubjectCurriculumEntity();
-//                            entity.setName(curriculumCode);
-//                            entity = subjectCurriculumService.createCurriculum(entity);
-//
-//                            List<CurriculumMappingEntity> list = new ArrayList<>();
-//
-//                            if (termNo > 0) {
-//                                CurriculumMappingEntity mapping = new CurriculumMappingEntity();
-//                                mapping.setOrdering(1);
-//                                mapping.setTerm("Học kỳ " + (int) termNo);
-//                                CurriculumMappingEntityPK pk = new CurriculumMappingEntityPK();
-//                                pk.setSubId(subject.getId());
-//                                pk.setCurId(entity.getId());
-//                                mapping.setCurriculumMappingEntityPK(pk);
-//                                list.add(mapping);
-//                            }
-//
-//                            map.put(curriculumCode, list);
-//                        }
-//                    } else {
-//                        SubjectEntity subject = subjectService.findSubjectById(subjectCode);
-//                        if (subject != null) {
-//                            SubjectCurriculumEntity entity = subjectCurriculumService.getCurriculumByName(curriculumCode);
-//
-//                            if (termNo > 0) {
-//                                CurriculumMappingEntity mapping = new CurriculumMappingEntity();
-//                                mapping.setOrdering(map.get(curriculumCode).size() + 1);
-//                                mapping.setTerm("Học kỳ " + (int) termNo);
-//                                CurriculumMappingEntityPK pk = new CurriculumMappingEntityPK();
-//                                pk.setSubId(subject.getId());
-//                                pk.setCurId(entity.getId());
-//                                mapping.setCurriculumMappingEntityPK(pk);
-//
-//                                map.get(curriculumCode).add(mapping);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//
-//            for (Map.Entry<String, List<CurriculumMappingEntity>> entry : map.entrySet()) {
-//                SubjectCurriculumEntity entity = subjectCurriculumService.getCurriculumByName(entry.getKey());
-//                entity.setCurriculumMappingEntityList(entry.getValue());
-//                subjectCurriculumService.updateCurriculum(entity);
-//            }
+            for (Map.Entry<String, List<SubjectCurriculumEntity>> entry : map.entrySet()) {
+                entry.getValue().forEach(c -> subjectCurriculumService.createCurriculum(c));
+            }
 
             obj.addProperty("success", true);
         } catch (Exception e) {
@@ -512,6 +466,33 @@ public class SubjectCurriculumController {
             obj.addProperty("success", false);
             obj.addProperty("message", e.getMessage());
             return obj;
+        }
+
+        return obj;
+    }
+
+    @RequestMapping(value = "/deletesubcurriculum", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject delete(@RequestParam int curId) {
+        JsonObject obj = new JsonObject();
+        ISubjectCurriculumService service = new SubjectCurriculumServiceImpl();
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+        EntityManager em = emf.createEntityManager();
+        try {
+            SubjectCurriculumEntity ent = service.getCurriculumById(curId);
+
+            em.getTransaction().begin();
+
+            SubjectCurriculumEntity b = em.merge(ent);
+            em.remove(b);
+            em.flush();
+
+            em.getTransaction().commit();
+
+            obj.addProperty("success", true);
+        } catch (Exception e) {
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
         }
 
         return obj;
