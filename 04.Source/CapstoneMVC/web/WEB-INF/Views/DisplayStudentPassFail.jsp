@@ -58,7 +58,6 @@
                                 <th>MSSV</th>
                                 <th>Tên SV</th>
                                 <th>Môn học</th>
-                                <th>Lớp</th>
                                 <th>Học kỳ</th>
                                 <th>Điểm TB</th>
                                 <th>Status</th>
@@ -180,7 +179,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4, 5, 6, 7],
+                    "aTargets": [0, 1, 2, 3, 4, 5, 6],
                     "bSortable": false,
                 },
                 {
@@ -190,11 +189,11 @@
                 {
                     "aTargets": [1],
                     "mRender": function (data, type, row) {
-                        return "<a onclick='GetAllStudentMarks(" + row[7] + ")'>" + data + "</a>";
+                        return "<a onclick='GetAllStudentMarks(" + row[6] + ")'>" + data + "</a>";
                     }
                 },
                 {
-                    "aTargets": [7],
+                    "aTargets": [6],
                     "bVisible": false
                 }
             ],

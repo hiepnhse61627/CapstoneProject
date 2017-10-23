@@ -141,8 +141,11 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             // Subject Component Id Condition
             Predicate subjectComponentPredicate = null;
             if (!subjectId.equals("0")) {
-                Expression<String> subjectExpression = marksEntityRoot.get("subjectId").get("subjectId");
-                subjectComponentPredicate = criteriaBuilder.equal(subjectExpression, subjectId);
+                Expression<String> subjectExpression = marksEntityRoot.get("subjectMarkComponentId").get("subjectId").get("id");
+                Expression<Integer> markComponentExpression = marksEntityRoot.get("subjectMarkComponentId").get("markComponentId").get("id");
+                Predicate subjectPredicate = criteriaBuilder.equal(subjectExpression, subjectId);
+                Predicate markComponentPredicate = criteriaBuilder.equal(markComponentExpression, 6);
+                subjectComponentPredicate = criteriaBuilder.and(subjectPredicate, markComponentPredicate);
                 predicate = predicate == null ? subjectComponentPredicate : criteriaBuilder.and(predicate, subjectComponentPredicate);
             }
 
@@ -151,12 +154,10 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             if (searchKey != null && !searchKey.isEmpty()) {
                 Expression<String> studentFullnameExpression = marksEntityRoot.get("studentId").get("fullName");
                 Expression<String> studentRollNumberExpression = marksEntityRoot.get("studentId").get("rollNumber");
-                Expression<String> classExpression = marksEntityRoot.get("courseId").get("class1");
                 Predicate fullNamePredicate = criteriaBuilder.like(studentFullnameExpression, "%" + searchKey + "%");
                 Predicate rollNumberPredicate = criteriaBuilder.like(studentRollNumberExpression, "%" + searchKey + "%");
-                Predicate classPredicate = criteriaBuilder.like(classExpression, "%" + searchKey + "%");
 
-                searchKeyPredicate = criteriaBuilder.or(fullNamePredicate, rollNumberPredicate, classPredicate);
+                searchKeyPredicate = criteriaBuilder.or(fullNamePredicate, rollNumberPredicate);
                 predicate = predicate == null ? searchKeyPredicate : criteriaBuilder.and(predicate, searchKeyPredicate);
             }
 
