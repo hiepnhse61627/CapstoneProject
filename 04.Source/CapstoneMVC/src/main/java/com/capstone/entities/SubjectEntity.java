@@ -33,7 +33,6 @@ public class SubjectEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
     @Column(name = "Id", nullable = false, length = 50)
     private String id;
     @Column(name = "Name", length = 255)
