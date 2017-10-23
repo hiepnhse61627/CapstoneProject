@@ -60,6 +60,7 @@ public class UploadController {
     ICurriculumService curriculumService = new CurriculumServiceImpl();
     IDocumentService documentService = new DocumentServiceImpl();
     IDocTypeService docTypeService = new DocTypeServiceImpl();
+    IMarkComponentService markComponentService = new MarkComponentServiceImpl();
 
     /**
      * --------------STUDENTS------------
@@ -619,7 +620,7 @@ public class UploadController {
             int statusIndex = 5;
 
             this.currentLine = 0;
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
+            String markComponentName = "AVERAGE";
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
                 if (!isCancel) {
                     while (isPause) {
@@ -661,28 +662,32 @@ public class UploadController {
                                 }
                             }
 
-                            if (classNameCell != null && subjectCodeCell != null) {
-//                                String cla = classNameCell.getStringCellValue().trim();
-//                                String subjectCd = subjectCodeCell.getStringCellValue().trim();
-//                                // find subject mark component
-//                                SubjectEntity subjectMarkComponentEntity =
-//                                        subjectService.findSubjectById(subjectCd.toUpperCase().trim());
-//
-//                                if (subjectMarkComponentEntity != null) {
-//                                    marksEntity.setSubjectMarkComponentId(subjectMarkComponentEntity.get);
-//                                } else {
-//                                    System.out.println("Subject " + subjectCd + " doesn't exist!");
-//                                }
-//                                // find course
-//                                CourseEntity courseEntity = courseService.findCourseByClassAndSubjectCode(cla.toUpperCase(), subjectCd.toUpperCase());
-//                                if (courseEntity != null) {
-//                                    marksEntity.setCourseId(courseEntity);
-//                                } else { // create new course entity
-//                                    courseEntity = new CourseEntity();
-//                                    courseEntity.setClass1(cla.toUpperCase());
-//                                    courseEntity = courseService.createCourse(courseEntity);
-//                                    marksEntity.setCourseId(courseEntity);
-//                                }
+                            if (classNameCell != null) {
+                                String className = classNameCell.getStringCellValue().trim().toUpperCase();
+                                CourseEntity courseEntity = courseService.findCourseByClass(className);
+                                if (courseEntity != null) {
+                                    marksEntity.setCourseId(courseEntity);
+                                } else { // create new Course
+                                    courseEntity = new CourseEntity();
+                                    courseEntity.setClass1(className);
+                                    courseEntity = courseService.createCourse(courseEntity);
+                                    marksEntity.setCourseId(courseEntity);
+                                }
+                            }
+
+                            if (subjectCodeCell != null) {
+                                String subjectCode = subjectCodeCell.getStringCellValue().trim().toUpperCase();
+                                // find mark componentEntity
+                                MarkComponentEntity markComponentEntity = markComponentService.getMarkComponentByName(markComponentName);
+                                // Create Subject Mark Component
+                                SubjectMarkComponentEntity subjectMarkComponentEntity = new SubjectMarkComponentEntity();
+                                subjectMarkComponentEntity.setSubjectId(subjectCode);
+                                subjectMarkComponentEntity.setMarkComponentId(markComponentEntity);
+                                subjectMarkComponentEntity.setPercent(0.0);
+                                subjectMarkComponentEntity.setName(subjectCode + "_" + markComponentName);
+                                subjectMarkComponentEntity = subjectMarkComponentService.createSubjectMarkComponent(subjectMarkComponentEntity);
+
+                                marksEntity.setSubjectMarkComponentId(subjectMarkComponentEntity);
                             }
 
                             if (averageMarkCell != null) {
