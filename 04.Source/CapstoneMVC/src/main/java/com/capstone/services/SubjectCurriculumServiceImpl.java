@@ -16,7 +16,7 @@ public class SubjectCurriculumServiceImpl implements ISubjectCurriculumService {
     ExSubjectCurriculumJpaController controller = new ExSubjectCurriculumJpaController(emf);
 
     @Override
-    public List<SubjectCurriculumEntity> getAllSubjectCurriculum() {
+    public List<SubjectCurriculumEntity> getAllSubjectCurriculums() {
         return controller.findSubjectCurriculumEntityEntities();
     }
 

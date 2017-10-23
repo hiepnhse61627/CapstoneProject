@@ -2,12 +2,14 @@ package com.capstone.jpa.exJpa;
 
 import com.capstone.entities.SubjectCurriculumEntity;
 import com.capstone.jpa.SubjectCurriculumEntityJpaController;
+import org.apache.commons.lang3.reflect.Typed;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpaController {
