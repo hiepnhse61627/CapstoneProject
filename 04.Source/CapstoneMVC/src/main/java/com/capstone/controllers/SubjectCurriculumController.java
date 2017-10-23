@@ -298,45 +298,46 @@ public class SubjectCurriculumController {
     @RequestMapping("/getsubcurriculum")
     @ResponseBody
     public JsonObject GetSubCurriculum(@RequestParam Map<String, String> params) {
-//        ISubjectCurriculumService service = new SubjectCurriculumServiceImpl();
-//        ISubjectService service2 = new SubjectServiceImpl();
-//
-//        try {
-//            JsonObject data = new JsonObject();
-//
-//            List<SubjectCurriculumEntity> dataList = service.getAllSubjectCurriculum();
-//            if (params.get("sSearch") != null && !params.get("sSearch").isEmpty()) {
-//                dataList = dataList.stream().filter(c -> c.getName().contains(params.get("sSearch"))).collect(Collectors.toList());
-//            }
-//
-//            List<SubjectCurriculumEntity> displayList = new ArrayList<>();
-//            if (!dataList.isEmpty()) {
-//                displayList = dataList.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
-//            }
-//
-//            ArrayList<ArrayList<String>> result = new ArrayList<>();
-//            if (!displayList.isEmpty()) {
-//                displayList.forEach(m -> {
-//                    ArrayList<String> tmp = new ArrayList<>();
-//                    tmp.add(m.getName());
-//                    tmp.add(m.getDescription());
-//                    tmp.add(m.getId().toString());
-//                    result.add(tmp);
-//                });
-//            }
-//
-//            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result, new TypeToken<List<MarksEntity>>() {
-//            }.getType());
-//
-//            data.addProperty("iTotalRecords", dataList.size());
-//            data.addProperty("iTotalDisplayRecords", dataList.size());
-//            data.add("aaData", aaData);
-//            data.addProperty("sEcho", params.get("sEcho"));
-//
-//            return data;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+        ISubjectCurriculumService service = new SubjectCurriculumServiceImpl();
+        ISubjectService service2 = new SubjectServiceImpl();
+        ICurriculumService service3 = new CurriculumServiceImpl();
+
+        try {
+            JsonObject data = new JsonObject();
+
+            List<CurriculumEntity> dataList = service3.getAllCurriculums();
+            if (params.get("sSearch") != null && !params.get("sSearch").isEmpty()) {
+                dataList = dataList.stream().filter(c -> c.getName().contains(params.get("sSearch")) || c.getProgramId().getName().contains(params.get("sSearch"))).collect(Collectors.toList());
+            }
+
+            List<CurriculumEntity> displayList = new ArrayList<>();
+            if (!dataList.isEmpty()) {
+                displayList = dataList.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+            }
+
+            ArrayList<ArrayList<String>> result = new ArrayList<>();
+            if (!displayList.isEmpty()) {
+                displayList.forEach(m -> {
+                    ArrayList<String> tmp = new ArrayList<>();
+                    tmp.add(m.getProgramId().getName());
+                    tmp.add(m.getName());
+                    tmp.add(m.getId().toString());
+                    result.add(tmp);
+                });
+            }
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result, new TypeToken<List<MarksEntity>>() {
+            }.getType());
+
+            data.addProperty("iTotalRecords", dataList.size());
+            data.addProperty("iTotalDisplayRecords", dataList.size());
+            data.add("aaData", aaData);
+            data.addProperty("sEcho", params.get("sEcho"));
+
+            return data;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         return null;
     }

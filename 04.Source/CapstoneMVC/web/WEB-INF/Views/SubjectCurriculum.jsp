@@ -22,8 +22,8 @@
                 <div class="col-md-12">
                     <table id="table">
                         <thead>
-                        <th>Tên</th>
-                        <th>Mô tả</th>
+                        <th>Ngành</th>
+                        <th>Khóa</th>
                         <th>Chỉnh sửa</th>
                         <th>Xóa</th>
                         </thead>
