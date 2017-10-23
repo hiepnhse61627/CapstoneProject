@@ -64,7 +64,7 @@ public class PercentFailController {
             IRealSemesterService service1 = new RealSemesterServiceImpl();
             for (RealSemesterEntity r : Ultilities.SortSemesters(service1.getAllSemester())) {
 
-                TypedQuery<MarksEntity> query;
+                TypedQuery<MarksEntity> query = null;
 
                 if (subjectId.equals("0") && courseId.equals("0")) {
                     query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
@@ -77,19 +77,19 @@ public class PercentFailController {
                     query.setParameter("sub", subjectId);
                     query.setParameter("semester", r.getId());
                 } else if (subjectId.equals("0") && !courseId.equals("0")) {
-                    query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
-                            "m.courseId.class1 LIKE :course " +
-                            "AND m.semesterId.id = :semester", MarksEntity.class);
-                    query.setParameter("course", "%" + courseId + "%");
-                    query.setParameter("semester", r.getId());
+//                    query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
+//                            "m.courseId.class1 LIKE :course " +
+//                            "AND m.semesterId.id = :semester", MarksEntity.class);
+//                    query.setParameter("course", "%" + courseId + "%");
+//                    query.setParameter("semester", r.getId());
                 } else {
-                    query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
-                            "m.subjectMarkComponentId.subjectId = :sub " +
-                            "AND m.courseId.class1 LIKE :course " +
-                            "AND m.semesterId.id = :semester", MarksEntity.class);
-                    query.setParameter("sub", subjectId);
-                    query.setParameter("course", "%" + courseId + "%");
-                    query.setParameter("semester", r.getId());
+//                    query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
+//                            "m.subjectMarkComponentId.subjectId = :sub " +
+//                            "AND m.courseId.class1 LIKE :course " +
+//                            "AND m.semesterId.id = :semester", MarksEntity.class);
+//                    query.setParameter("sub", subjectId);
+//                    query.setParameter("course", "%" + courseId + "%");
+//                    query.setParameter("semester", r.getId());
                 }
 
                 List<MarksEntity> list = query.getResultList();
@@ -110,13 +110,13 @@ public class PercentFailController {
 
                             Map<String, List<String>> map = new HashMap<>();
                             for (MarksEntity mark : m.getValue()) {
-                                if (map.get(mark.getCourseId().getClass1().trim()) != null) {
-                                    map.get(mark.getCourseId().getClass1().trim()).add(mark.getStatus());
-                                } else {
-                                    List<String> tmp2 = new ArrayList<>();
-                                    tmp2.add(mark.getStatus());
-                                    map.put(mark.getCourseId().getClass1().trim(), tmp2);
-                                }
+//                                if (map.get(mark.getCourseId().getClass1().trim()) != null) {
+//                                    map.get(mark.getCourseId().getClass1().trim()).add(mark.getStatus());
+//                                } else {
+//                                    List<String> tmp2 = new ArrayList<>();
+//                                    tmp2.add(mark.getStatus());
+//                                    map.put(mark.getCourseId().getClass1().trim(), tmp2);
+//                                }
                             }
 
                             for (Map.Entry<String, List<String>> last : map.entrySet()) {

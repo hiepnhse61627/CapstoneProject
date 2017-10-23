@@ -64,7 +64,7 @@ public class CourseController {
 
             for (CourseEntity course : courseList) {
                 List<String> dataList = new ArrayList<String>() {{
-                    add(course.getClass1());
+//                    add(course.getClass1());
                     add(course.getId() + "");
                 }};
                 result.add(dataList);
@@ -95,7 +95,7 @@ public class CourseController {
             EntityManager em = emf.createEntityManager();
 
             CourseEntity course = new CourseEntity();
-            course.setClass1(params.get("clazz"));
+//            course.setClass1(params.get("clazz"));
 
             courseService.createCourse(course);
 
@@ -120,7 +120,7 @@ public class CourseController {
 
             CourseEntity model = new CourseEntity();
             model.setId(Integer.parseInt(params.get("courseId")));
-            model.setClass1(params.get("clazz"));
+//            model.setClass1(params.get("clazz"));
 
             courseService.updateCourse(model);
             jsonObj.addProperty("success", true);

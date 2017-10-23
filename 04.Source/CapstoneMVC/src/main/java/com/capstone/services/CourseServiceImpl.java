@@ -13,9 +13,10 @@ public class CourseServiceImpl implements ICourseService {
     private EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
     ExCourseEntityJpaController courseEntityJpaController = new ExCourseEntityJpaController(emf);
 
+
     @Override
-    public CourseEntity findCourseByClass(String className) {
-        return courseEntityJpaController.findCourseByClass(className);
+    public CourseEntity findCourseBySemesterAndSubjectCode(String semesterName, String subjectCode) {
+        return courseEntityJpaController.findCourseBySemesterAndSubjectCode(semesterName, subjectCode);
     }
 
     @Override

@@ -175,7 +175,7 @@ public class ExportStudentsFailImpl implements IExportObject {
 
             Cell classCell = row.createCell(6);
             classCell.setCellStyle(cellStyle);
-            classCell.setCellValue(mark.getCourseId().getClass1());
+//            classCell.setCellValue(mark.getCourseId().getClass1());
 
             Cell semesterCell = row.createCell(7);
             semesterCell.setCellStyle(cellStyle);

@@ -16,7 +16,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "Course", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "CourseEntity.findAll", query = "SELECT c FROM CourseEntity c")})
+        @NamedQuery(name = "CourseEntity.findAll", query = "SELECT c FROM CourseEntity c")})
 public class CourseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -24,8 +24,10 @@ public class CourseEntity implements Serializable {
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name = "Class", length = 250)
-    private String class1;
+    @Column(name = "Semester", length = 50)
+    private String semester;
+    @Column(name = "SubjectCode", length = 50)
+    private String subjectCode;
     @OneToMany(mappedBy = "courseId")
     private List<MarksEntity> marksEntityList;
 
@@ -44,12 +46,20 @@ public class CourseEntity implements Serializable {
         this.id = id;
     }
 
-    public String getClass1() {
-        return class1;
+    public String getSemester() {
+        return semester;
     }
 
-    public void setClass1(String class1) {
-        this.class1 = class1;
+    public void setSemester(String semester) {
+        this.semester = semester;
+    }
+
+    public String getSubjectCode() {
+        return subjectCode;
+    }
+
+    public void setSubjectCode(String subjectCode) {
+        this.subjectCode = subjectCode;
     }
 
     public List<MarksEntity> getMarksEntityList() {
@@ -82,7 +92,7 @@ public class CourseEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entites.CourseEntity[ id=" + id + " ]";
+        return "com.capstone.entities.CourseEntity[ id=" + id + " ]";
     }
-    
+
 }

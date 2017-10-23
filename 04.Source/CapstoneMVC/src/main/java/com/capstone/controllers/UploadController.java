@@ -1,5 +1,6 @@
 package com.capstone.controllers;
 
+import com.capstone.models.ImportedMarkObject;
 import com.capstone.models.Logger;
 import com.capstone.models.ReadAndSaveFileToServer;
 import com.capstone.models.Ultilities;
@@ -595,6 +596,7 @@ public class UploadController {
     private JsonObject readMarkFile(MultipartFile file, File file2, boolean isNewFile) {
         JsonObject jsonObject = new JsonObject();
         List<MarksEntity> marksEntities = new ArrayList<MarksEntity>();
+        List<ImportedMarkObject> listImported = new ArrayList<>();
 
         try {
             InputStream is;
@@ -615,7 +617,6 @@ public class UploadController {
             int semesterNameIndex = 0;
             int rollNumberIndex = 1;
             int subjectCodeIndex = 2;
-            int classNameIndex = 3;
             int averageMarkIndex = 4;
             int statusIndex = 5;
 
@@ -637,12 +638,11 @@ public class UploadController {
                     if (rollNumberCell != null) {
                         StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumberCell.getStringCellValue().trim());
                         if (studentEntity != null) {
-                            MarksEntity marksEntity = new MarksEntity();
-                            marksEntity.setStudentId(studentEntity);
+                            ImportedMarkObject importedMarkObject = new ImportedMarkObject();
+                            importedMarkObject.setStudentEntity(studentEntity);
 
                             Cell semesterNameCell = row.getCell(semesterNameIndex);
                             Cell subjectCodeCell = row.getCell(subjectCodeIndex);
-                            Cell classNameCell = row.getCell(classNameIndex);
                             Cell averageMarkCell = row.getCell(averageMarkIndex);
                             Cell statusCell = row.getCell(statusIndex);
 
@@ -652,57 +652,25 @@ public class UploadController {
                                 if (semesterName.contains("_H2")) {
                                     semesterName = semesterName.substring(0, semesterName.indexOf("_"));
                                 }
-                                RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(semesterName);
-                                if (realSemesterEntity != null) {
-                                    marksEntity.setSemesterId(realSemesterEntity);
-                                } else {
-                                    realSemesterEntity = new RealSemesterEntity();
-                                    realSemesterEntity.setSemester(semesterName);
-                                    marksEntity.setSemesterId(realSemesterService.createRealSemester(realSemesterEntity));
-                                }
-                            }
-
-                            if (classNameCell != null) {
-                                String className = classNameCell.getStringCellValue().trim().toUpperCase();
-                                CourseEntity courseEntity = courseService.findCourseByClass(className);
-                                if (courseEntity != null) {
-                                    marksEntity.setCourseId(courseEntity);
-                                } else { // create new Course
-                                    courseEntity = new CourseEntity();
-                                    courseEntity.setClass1(className);
-                                    courseEntity = courseService.createCourse(courseEntity);
-                                    marksEntity.setCourseId(courseEntity);
-                                }
+                                importedMarkObject.setSemesterName(semesterName.toUpperCase());
                             }
 
                             if (subjectCodeCell != null) {
                                 String subjectCode = subjectCodeCell.getStringCellValue().trim().toUpperCase();
-                                // find mark componentEntity
-                                MarkComponentEntity markComponentEntity = markComponentService.getMarkComponentByName(markComponentName);
                                 // find subject code
                                 SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
-                                if (subjectEntity != null) {
-                                    // Create Subject Mark Component
-                                    SubjectMarkComponentEntity subjectMarkComponentEntity = new SubjectMarkComponentEntity();
-                                    subjectMarkComponentEntity.setSubjectId(subjectEntity);
-                                    subjectMarkComponentEntity.setMarkComponentId(markComponentEntity);
-                                    subjectMarkComponentEntity.setPercent(0.0);
-                                    subjectMarkComponentEntity.setName(subjectCode + "_" + markComponentName);
-                                    subjectMarkComponentEntity = subjectMarkComponentService.createSubjectMarkComponent(subjectMarkComponentEntity);
-
-                                    marksEntity.setSubjectMarkComponentId(subjectMarkComponentEntity);
-                                }
+                                importedMarkObject.setSubjectCode(subjectEntity);
                             }
 
                             if (averageMarkCell != null) {
-                                marksEntity.setAverageMark(averageMarkCell.getNumericCellValue());
+                                importedMarkObject.setAverageMark(averageMarkCell.getNumericCellValue());
                             }
 
                             if (statusCell != null) {
-                                marksEntity.setStatus(statusCell.getStringCellValue());
+                                importedMarkObject.setStatus(statusCell.getStringCellValue());
                             }
                             // Add mark entity to list
-                            marksEntities.add(marksEntity);
+                            listImported.add(importedMarkObject);
                         }
                     }
                     this.currentLine++;
@@ -710,8 +678,52 @@ public class UploadController {
                     break;
                 }
             }
-
             is.close();
+            List<ImportedMarkObject> finalList = listImported.stream().filter(f -> f.getSubjectCode() != null).collect(Collectors.toList());
+            // convert to Mark Entity
+            for (ImportedMarkObject object : finalList) {
+                MarksEntity marksEntity = new MarksEntity();
+                // set student
+                marksEntity.setStudentId(object.getStudentEntity());
+                // set semester
+                RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(object.getSemesterName());
+                if (realSemesterEntity != null) {
+                    marksEntity.setSemesterId(realSemesterEntity);
+                } else {
+                    // create new semester
+                    realSemesterEntity = new RealSemesterEntity();
+                    realSemesterEntity.setSemester(object.getSemesterName());
+                    realSemesterEntity = realSemesterService.createRealSemester(realSemesterEntity);
+                    marksEntity.setSemesterId(realSemesterEntity);
+                }
+                // set course
+                CourseEntity courseEntity = courseService.findCourseBySemesterAndSubjectCode(object.getSemesterName(), object.getSubjectCode().getId());
+                if (courseEntity != null) {
+                    marksEntity.setCourseId(courseEntity);
+                } else {
+                    courseEntity = new CourseEntity();
+                    courseEntity.setSemester(object.getSemesterName());
+                    courseEntity.setSubjectCode(object.getSubjectCode().getId());
+                    courseEntity = courseService.createCourse(courseEntity);
+                    marksEntity.setCourseId(courseEntity);
+                }
+                // set subject mark component
+                MarkComponentEntity markComponentEntity = markComponentService.getMarkComponentByName(markComponentName);
+                SubjectMarkComponentEntity subjectMarkComponentEntity = new SubjectMarkComponentEntity();
+                subjectMarkComponentEntity.setMarkComponentId(markComponentEntity);
+                subjectMarkComponentEntity.setName(object.getSubjectCode().getId() + "_" + markComponentName);
+                subjectMarkComponentEntity.setPercent(0.0);
+                subjectMarkComponentEntity.setSubjectId(object.getSubjectCode());
+                subjectMarkComponentEntity = subjectMarkComponentService.createSubjectMarkComponent(subjectMarkComponentEntity);
+                marksEntity.setSubjectMarkComponentId(subjectMarkComponentEntity);
+                // set average mark
+                marksEntity.setAverageMark(object.getAverageMark());
+                // set status
+                marksEntity.setStatus(object.getStatus());
+
+                // add to list mark entities
+                marksEntities.add(marksEntity);
+            }
             marksService.createMarks(marksEntities);
 
             if (!isCancel) {

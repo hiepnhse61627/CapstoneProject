@@ -125,7 +125,7 @@ public class StudentDetail {
                 set2.forEach(m -> {
                     ArrayList<String> tmp = new ArrayList<>();
                     tmp.add(m.getSubjectMarkComponentId() == null ? "N/A" : m.getSubjectMarkComponentId().getSubjectId().getId());
-                    tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getClass1());
+//                    tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getClass1());
                     tmp.add(m.getSemesterId() == null ? "N/A" : m.getSemesterId().getSemester());
                     tmp.add(String.valueOf(m.getAverageMark()));
                     tmp.add(m.getStatus());

@@ -12,12 +12,13 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
         super(emf);
     }
 
-    public CourseEntity findCourseByClass(String className) {
+    public CourseEntity findCourseBySemesterAndSubjectCode(String semesterName, String subjectCode) {
         EntityManager em = getEntityManager();
         try {
-            String sqlString = "SELECT c FROM CourseEntity c WHERE c.class1 = :clazz";
+            String sqlString = "SELECT c FROM CourseEntity c WHERE c.semester = :semester AND c.subjectCode = :subjectCode";
             Query query = em.createQuery(sqlString);
-            query.setParameter("clazz", className);
+            query.setParameter("semester", semesterName);
+            query.setParameter("subjectCode", subjectCode);
 
             CourseEntity courseEntity = (CourseEntity) query.getSingleResult();
 
@@ -49,35 +50,35 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
     }
 
     public void createCourseList(List<CourseEntity> courseEntityList) {
-        EntityManager em = getEntityManager();
-        for (CourseEntity courseEntity: courseEntityList) {
-            try {
-                TypedQuery<CourseEntity> tmp = em.createQuery("SELECT c FROM CourseEntity c WHERE c.class1 = :class", CourseEntity.class);
-                tmp.setParameter("class", courseEntity.getClass1());
-                if (tmp.getResultList().size() == 0) {
-                    em.getTransaction().begin();
-                    em.persist(courseEntity);
-                    em.getTransaction().commit();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+//        EntityManager em = getEntityManager();
+//        for (CourseEntity courseEntity: courseEntityList) {
+//            try {
+//                TypedQuery<CourseEntity> tmp = em.createQuery("SELECT c FROM CourseEntity c WHERE c.class1 = :class", CourseEntity.class);
+//                tmp.setParameter("class", courseEntity.getClass1());
+//                if (tmp.getResultList().size() == 0) {
+//                    em.getTransaction().begin();
+//                    em.persist(courseEntity);
+//                    em.getTransaction().commit();
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     public void updateCourse(CourseEntity model) {
-        EntityManager em = getEntityManager();
-
-        try {
-            CourseEntity course = this.findCourseEntity(model.getId());
-            course.setClass1(model.getClass1());
-
-            em.getTransaction().begin();
-            em.merge(course);
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        EntityManager em = getEntityManager();
+//
+//        try {
+//            CourseEntity course = this.findCourseEntity(model.getId());
+//            course.setClass1(model.getClass1());
+//
+//            em.getTransaction().begin();
+//            em.merge(course);
+//            em.getTransaction().commit();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     public void deleteCourse(int courseId) {
@@ -101,49 +102,50 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
         EntityManager em = getEntityManager();
         List<CourseEntity> result = null;
 
-        try {
-            TypedQuery<Integer> queryCount;
-
-            // Đếm số khóa học
-            queryCount = em.createQuery("SELECT COUNT(c) FROM CourseEntity c", Integer.class);
-            model.iTotalRecords = ((Number) queryCount.getSingleResult()).intValue();
-
-            // Đếm số khóa học sau khi filter
-            if (model.sSearch.isEmpty()) {
-                model.iTotalDisplayRecords = model.iTotalRecords;
-            } else {
-                queryCount = em.createQuery("SELECT COUNT(c) FROM CourseEntity c " +
-                        "WHERE c.class1 LIKE :class", Integer.class);
-                queryCount.setParameter("class", "%" + model.sSearch + "%");
-                model.iTotalDisplayRecords = ((Number) queryCount.getSingleResult()).intValue();
-            }
-
-            // Danh sách khóa học
-            String queryStr = "SELECT c FROM CourseEntity c";
-            if (!model.sSearch.isEmpty()) {
-                queryStr += " WHERE c.subjectCode LIKE :subCode OR c.class1 LIKE :class";
-            }
-
-            TypedQuery<CourseEntity> query = em.createQuery(queryStr, CourseEntity.class)
-                    .setFirstResult(model.iDisplayStart)
-                    .setMaxResults(model.iDisplayLength);
-
-            if (!model.sSearch.isEmpty()) {
-                query.setParameter("subCode", "%" + model.sSearch + "%");
-                query.setParameter("class", "%" + model.sSearch + "%");
-            }
-
-            result = query.getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        try {
+//            TypedQuery<Integer> queryCount;
+//
+//            // Đếm số khóa học
+//            queryCount = em.createQuery("SELECT COUNT(c) FROM CourseEntity c", Integer.class);
+//            model.iTotalRecords = ((Number) queryCount.getSingleResult()).intValue();
+//
+//            // Đếm số khóa học sau khi filter
+//            if (model.sSearch.isEmpty()) {
+//                model.iTotalDisplayRecords = model.iTotalRecords;
+//            } else {
+//                queryCount = em.createQuery("SELECT COUNT(c) FROM CourseEntity c " +
+//                        "WHERE c.class1 LIKE :class", Integer.class);
+//                queryCount.setParameter("class", "%" + model.sSearch + "%");
+//                model.iTotalDisplayRecords = ((Number) queryCount.getSingleResult()).intValue();
+//            }
+//
+//            // Danh sách khóa học
+//            String queryStr = "SELECT c FROM CourseEntity c";
+//            if (!model.sSearch.isEmpty()) {
+//                queryStr += " WHERE c.subjectCode LIKE :subCode OR c.class1 LIKE :class";
+//            }
+//
+//            TypedQuery<CourseEntity> query = em.createQuery(queryStr, CourseEntity.class)
+//                    .setFirstResult(model.iDisplayStart)
+//                    .setMaxResults(model.iDisplayLength);
+//
+//            if (!model.sSearch.isEmpty()) {
+//                query.setParameter("subCode", "%" + model.sSearch + "%");
+//                query.setParameter("class", "%" + model.sSearch + "%");
+//            }
+//
+//            result = query.getResultList();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 
         return result;
     }
 
     public List<String> findAllToString() {
-        EntityManager em = getEntityManager();
-        TypedQuery<String> q = em.createQuery("SELECT distinct c.class1 FROM CourseEntity c", String.class);
-        return q.getResultList();
+//        EntityManager em = getEntityManager();
+//        TypedQuery<String> q = em.createQuery("SELECT distinct c.class1 FROM CourseEntity c", String.class);
+//        return q.getResultList();
+        return null;
     }
 }
