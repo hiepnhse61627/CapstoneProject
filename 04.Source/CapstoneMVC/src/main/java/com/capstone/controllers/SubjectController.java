@@ -102,6 +102,7 @@ public class SubjectController {
                     Row row = rowIterator.next();
                     Iterator<Cell> cellIterator = row.cellIterator();
                     SubjectEntity en = new SubjectEntity();
+                    en.setIsSpecialized(false);
 //                    ReplacementSubject re = new ReplacementSubject();
                     while (cellIterator.hasNext()) {
                         Cell cell = cellIterator.next();
