@@ -150,6 +150,32 @@ public class StudentDetail {
     @RequestMapping("/getStudentCurrentCourse")
     @ResponseBody
     public JsonObject GetStudentCurrentCourse(@RequestParam Map<String, String> params) {
+        IStudentService studentService = new StudentServiceImpl();
+
+        int stuId = Integer.parseInt(params.get("stuId"));
+        StudentEntity student = studentService.findStudentById(stuId);
+
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            String queryStr = "SELECT sc FROM DocumentStudentEntity ds, SubjectCurriculumEntity sc" +
+                    " WHERE ds.studentId.id = :studentId AND ds.createdDate =" +
+                    " (SELECT MAX(ds1.createdDate) FROM DocumentStudentEntity ds1 WHERE ds1.studentId.id = :studentId) " +
+                    " AND ds.curriculumId.id = sc.curriculumId.id" +
+                    " AND sc.termNumber = :term";
+            TypedQuery<SubjectCurriculumEntity> query = em.createQuery(queryStr, SubjectCurriculumEntity.class);
+            query.setParameter("studentId", stuId);
+            query.setParameter("term", student.getTerm());
+
+            List<SubjectCurriculumEntity> currentTermSubjectCurriList = query.getResultList();
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
 //        IStudentService studentService = new StudentServiceImpl();
 //        IProgramService programService = new ProgramServiceImpl();
 //
@@ -172,12 +198,6 @@ public class StudentDetail {
 //            }
 //            ProgramEntity program = programService.getProgramByName(programName);
 //
-////            String sqlString = "SELECT distinct Curriculum_Mapping.term FROM Student " +
-////                    "INNER JOIN Marks on student.ID = Marks.StudentId AND Student.ID = ?" +
-////                    " INNER JOIN Curriculum_Mapping ON Marks.SubjectId = Curriculum_Mapping.SubId " +
-////                    " INNER JOIN Subject_Curriculum ON Subject_Curriculum.Id = Curriculum_Mapping.CurId" +
-////                    " AND Subject_Curriculum.ProgramId = ?" +
-////                    " ORDER BY Curriculum_Mapping.Term desc";
 //            String sqlString = "SELECT Curriculum_Mapping.Term, COUNT(*) FROM Student " +
 //                    "INNER JOIN Marks on student.ID = Marks.StudentId AND Student.ID = ?" +
 //                    " INNER JOIN Curriculum_Mapping ON Marks.SubjectId = Curriculum_Mapping.SubId " +
@@ -210,7 +230,7 @@ public class StudentDetail {
 //                    currentTermNumber++;
 //                }
 //            }
-
+//
 //            query = em.createQuery("SELECT s FROM CurriculumMappingEntity c, SubjectEntity s WHERE c.term LIKE '%" + currentTermNumber + "' AND c.subjectEntity.id = s.id", SubjectEntity.class);
 //            objects = (List<SubjectEntity>) query.getResultList();
 //
@@ -268,6 +288,45 @@ public class StudentDetail {
     @RequestMapping("/getStudentNextCourse")
     @ResponseBody
     public JsonObject GetStudentNextCourse(@RequestParam Map<String, String> params) {
+        IStudentService studentService = new StudentServiceImpl();
+        JsonObject jsonObject = new JsonObject();
+
+        int stuId = Integer.parseInt(params.get("stuId"));
+        StudentEntity student = studentService.findStudentById(stuId);
+
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            String queryStr = "SELECT sc FROM DocumentStudentEntity ds, SubjectCurriculumEntity sc" +
+                    " WHERE ds.studentId.id = :studentId AND ds.createdDate =" +
+                    " (SELECT MAX(ds1.createdDate) FROM DocumentStudentEntity ds1 WHERE ds1.studentId.id = :studentId) " +
+                    " AND ds.curriculumId.id = sc.curriculumId.id" +
+                    " AND sc.termNumber = :term";
+            TypedQuery<SubjectCurriculumEntity> query = em.createQuery(queryStr, SubjectCurriculumEntity.class);
+            query.setParameter("studentId", stuId);
+            query.setParameter("term", student.getTerm() + 1);
+
+            List<SubjectCurriculumEntity> list = query.getResultList();
+            List<List<String>> result = new ArrayList<>();
+            for (SubjectCurriculumEntity sc : list) {
+                List<String> row = new ArrayList<>();
+                row.add(sc.getSubjectId().getId());
+                row.add(sc.getSubjectId().getName());
+
+                result.add(row);
+            }
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
+
+            jsonObject.addProperty("iTotalRecords", result.size());
+            jsonObject.addProperty("iTotalDisplayRecords", result.size());
+            jsonObject.add("aaData", aaData);
+            jsonObject.addProperty("sEcho", params.get("sEcho"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 //        IStudentService studentService = new StudentServiceImpl();
 //        IProgramService programService = new ProgramServiceImpl();
 //
@@ -379,7 +438,6 @@ public class StudentDetail {
 //        }
 //
 //
-//        return jsonObject;
-        return null;
+        return jsonObject;
     }
 }
