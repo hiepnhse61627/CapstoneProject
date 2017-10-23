@@ -6,50 +6,37 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 @Entity
-@Table(name = "Credentials")
+@Table(name = "Credentials", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "CredentialsEntity.findAll", query = "SELECT c FROM CredentialsEntity c")
-    , @NamedQuery(name = "CredentialsEntity.findById", query = "SELECT c FROM CredentialsEntity c WHERE c.id = :id")
-    , @NamedQuery(name = "CredentialsEntity.findByUsername", query = "SELECT c FROM CredentialsEntity c WHERE c.username = :username")
-    , @NamedQuery(name = "CredentialsEntity.findByPassword", query = "SELECT c FROM CredentialsEntity c WHERE c.password = :password")
-    , @NamedQuery(name = "CredentialsEntity.findByRole", query = "SELECT c FROM CredentialsEntity c WHERE c.role = :role")})
+    @NamedQuery(name = "CredentialsEntiy.findAll", query = "SELECT c FROM CredentialsEntity c")})
 public class CredentialsEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
-    @Column(name = "Id")
+    @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Basic(optional = false)
-    @Column(name = "Username")
+    @Column(name = "Username", nullable = false, length = 60)
     private String username;
     @Basic(optional = false)
-    @Column(name = "Password")
+    @Column(name = "Password", nullable = false, length = 60)
     private String password;
-    @Column(name = "Role")
-    private String role;
-    @Column(name = "Email")
-    private String email;
-    @Column(name = "Fullname")
+    @Column(name = "Fullname", length = 2147483647)
     private String fullname;
-    @Column(name = "Picture")
+    @Column(name = "Email", length = 2147483647)
+    private String email;
+    @Column(name = "Picture", length = 2147483647)
     private String picture;
+    @Column(name = "Role", length = 60)
+    private String role;
 
     public CredentialsEntity() {
     }
@@ -88,6 +75,30 @@ public class CredentialsEntity implements Serializable {
         this.password = password;
     }
 
+    public String getFullname() {
+        return fullname;
+    }
+
+    public void setFullname(String fullname) {
+        this.fullname = fullname;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPicture() {
+        return picture;
+    }
+
+    public void setPicture(String picture) {
+        this.picture = picture;
+    }
+
     public String getRole() {
         return role;
     }
@@ -120,28 +131,5 @@ public class CredentialsEntity implements Serializable {
     public String toString() {
         return "com.capstone.entities.CredentialsEntity[ id=" + id + " ]";
     }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getFullname() {
-        return fullname;
-    }
-
-    public void setFullname(String fullname) {
-        this.fullname = fullname;
-    }
-
-    public String getPicture() {
-        return picture;
-    }
-
-    public void setPicture(String picture) {
-        this.picture = picture;
-    }
+    
 }

@@ -12,7 +12,7 @@ public class SubjectMarkComponentServiceImpl implements ISubjectMarkComponentSer
     ExSubjectMarkComponentJpaController subjectMarkComponentJpaController = new ExSubjectMarkComponentJpaController(emf);
 
     @Override
-    public SubjectMarkComponentEntity findSubjectMarkComponentById(String id) {
+    public SubjectMarkComponentEntity findSubjectMarkComponentById(Integer id) {
         return subjectMarkComponentJpaController.findSubjectMarkComponentEntity(id);
     }
 }

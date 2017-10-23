@@ -78,7 +78,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 if (marks != null && !marks.isEmpty()) {
                     String failedSubject = "";
                     for (MarksEntity mark : marks) {
-                        failedSubject += mark.getSubjectId().getSubjectId();
+                        failedSubject += mark.getSubjectMarkComponentId().getSubjectId();
                         failedSubject += ",";
                     }
                     failedSubject = Character.toString(failedSubject.charAt(failedSubject.length() - 1)).equals(",") ? failedSubject.substring(0, failedSubject.length() - 1) : failedSubject;
@@ -151,7 +151,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
             @Override
             public int compare(MarksEntity o1, MarksEntity o2) {
                 return new CompareToBuilder()
-                        .append(o1.getSubjectId() == null ? "" : o1.getSubjectId().getSubjectId().toUpperCase(), o2.getSubjectId() == null ? "" : o2.getSubjectId().getSubjectId().toUpperCase())
+                        .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().toUpperCase())
                         .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
                         .toComparison();
             }
@@ -169,7 +169,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
         List<MarksEntity> resultList = new ArrayList<>();
         // remove duplicate
         for (MarksEntity marksEntity : comparedList) {
-            if (marksEntity.getSubjectId() != null && !resultList.stream().anyMatch(r -> r.getSubjectId().getSubjectId().toUpperCase().equals(marksEntity.getSubjectId().getSubjectId().toUpperCase())
+            if (marksEntity.getSubjectMarkComponentId() != null && !resultList.stream().anyMatch(r -> r.getSubjectMarkComponentId().getSubjectId().toUpperCase().equals(marksEntity.getSubjectMarkComponentId().getSubjectId().toUpperCase())
                     && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
                 resultList.add(marksEntity);
             }
@@ -200,34 +200,34 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
             nextTermNumber = currentTermNumber + 1;
         }
 
-        query = em.createQuery("SELECT s FROM CurriculumMappingEntity c, SubjectEntity s " +
-                                 "WHERE c.term LIKE '%" + nextTermNumber + "' AND c.subjectEntity.id = s.id", SubjectEntity.class);
-        subjects = (List<SubjectEntity>) query.getResultList();
-
+//        query = em.createQuery("SELECT s FROM CurriculumMappingEntity c, SubjectEntity s " +
+//                                 "WHERE c.term LIKE '%" + nextTermNumber + "' AND c.subjectEntity.id = s.id", SubjectEntity.class);
+//        subjects = (List<SubjectEntity>) query.getResultList();
+//
         ArrayList<ArrayList<String>> parent = new ArrayList<>();
-        if (!subjects.isEmpty()) {
-            subjects.forEach(m -> {
-                ArrayList<String> tmp = new ArrayList<>();
-                tmp.add(m.getId());
-                tmp.add(m.getName());
-
-                SubjectEntity cur = subjectService.findSubjectById(m.getId());
-                boolean exist = false;
+//        if (!subjects.isEmpty()) {
+//            subjects.forEach(m -> {
+//                ArrayList<String> tmp = new ArrayList<>();
+//                tmp.add(m.getId());
+//                tmp.add(m.getName());
+//
+//                SubjectEntity cur = subjectService.findSubjectById(m.getId());
+//                boolean exist = false;
 //                for (PrequisiteEntity s : cur.getPrequisiteEntityList()) {
 //                    TypedQuery<MarksEntity> q = em.createQuery("SELECT c FROM MarksEntity c WHERE c.studentId.id = :id AND c.subjectId.subjectId = :sub", MarksEntity.class);
 //                    List<MarksEntity> l = q.setParameter("sub", s.getId()).setParameter("id", studentId).getResultList();
 //                    exist = Ultilities.CheckStudentSubjectFailOrPass(l);
 //                }
 
-                if (exist) {
-                    tmp.add("1");
-                } else {
-                    tmp.add("0");
-                }
-
-                parent.add(tmp);
-            });
-        }
+//                if (exist) {
+//                    tmp.add("1");
+//                } else {
+//                    tmp.add("0");
+//                }
+//
+//                parent.add(tmp);
+//            });
+//        }
         return parent;
     }
 }

@@ -51,7 +51,7 @@ public class PercentFailController {
         String courseId = params.get("course");
 
         Comparator<MarksEntity> comparator = (o1, o2) -> new CompareToBuilder()
-                .append(o1.getSubjectId() == null ? "" : o1.getSubjectId().getSubjectId().toUpperCase(), o2.getSubjectId() == null ? "" : o2.getSubjectId().getSubjectId().toUpperCase())
+                .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().toUpperCase())
                 .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
                 .toComparison();
 
@@ -72,7 +72,7 @@ public class PercentFailController {
                     query.setParameter("semester", r.getId());
                 } else if (!subjectId.equals("0") && courseId.equals("0")) {
                     query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
-                            "m.subjectId.subjectId = :sub " +
+                            "m.subjectMarkComponentId.subjectId = :sub " +
                             "AND m.semesterId.id = :semester", MarksEntity.class);
                     query.setParameter("sub", subjectId);
                     query.setParameter("semester", r.getId());
@@ -84,7 +84,7 @@ public class PercentFailController {
                     query.setParameter("semester", r.getId());
                 } else {
                     query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
-                            "m.subjectId.subjectId = :sub " +
+                            "m.subjectMarkComponentId.subjectId = :sub " +
                             "AND m.courseId.class1 LIKE :course " +
                             "AND m.semesterId.id = :semester", MarksEntity.class);
                     query.setParameter("sub", subjectId);
@@ -162,15 +162,15 @@ public class PercentFailController {
     }
 
     public Table<String, String, List<MarksEntity>> FillterPassFailList(List<MarksEntity> list) {
-        List<MarksEntity> removed = list.stream().filter(c -> c.getSubjectId() != null).collect(Collectors.toList());
+        List<MarksEntity> removed = list.stream().filter(c -> c.getSubjectMarkComponentId() != null).collect(Collectors.toList());
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
         for (MarksEntity m : removed) {
-            if (map.get(m.getSemesterId().getSemester(), m.getSubjectId().getSubjectId()) == null) {
+            if (map.get(m.getSemesterId().getSemester(), m.getSubjectMarkComponentId().getSubjectId()) == null) {
                 List<MarksEntity> tmp = new ArrayList<>();
                 tmp.add(m);
-                map.put(m.getSemesterId().getSemester(), m.getSubjectId().getSubjectId(), tmp);
+                map.put(m.getSemesterId().getSemester(), m.getSubjectMarkComponentId().getSubjectId(), tmp);
             } else {
-                map.get(m.getSemesterId().getSemester(), m.getSubjectId().getSubjectId()).add(m);
+                map.get(m.getSemesterId().getSemester(), m.getSubjectMarkComponentId().getSubjectId()).add(m);
             }
         }
 

@@ -88,7 +88,7 @@ public class ExportStudentFailedPrerequisiteImpl implements IExportObject {
 
                 Cell prerequisiteCell = row.createCell(3);
                 prerequisiteCell.setCellStyle(cellStyle);
-                prerequisiteCell.setCellValue(model.getMark().getSubjectId() == null ? "N/A" : model.getMark().getSubjectId().getSubjectId());
+                prerequisiteCell.setCellValue(model.getMark().getSubjectMarkComponentId() == null ? "N/A" : model.getMark().getSubjectMarkComponentId().getSubjectId());
 
                 rowIndex++;
             }

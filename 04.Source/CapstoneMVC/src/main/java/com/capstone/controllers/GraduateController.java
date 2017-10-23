@@ -70,14 +70,14 @@ public class GraduateController {
                 int credits = 0;
                 int specializedCredits = 0;
                 for (MarksEntity c : entry.getValue()) {
-                    if (c.getStatus().toLowerCase().contains("pass") && c.getSubjectId() != null) {
-                        System.out.println(c.getSubjectId().getSubjectId());
-                        int curCredit = c.getSubjectId().getSubjectEntity().getCredits();
-                        credits += curCredit;
-                        if (c.getSubjectId().getSubjectEntity().getIsSpecialized()) {
-                            specializedCredits += curCredit;
-                        }
-                    }
+//                    if (c.getStatus().toLowerCase().contains("pass") && c.getSubjectId() != null) {
+//                        System.out.println(c.getSubjectId().getSubjectId());
+//                        int curCredit = c.getSubjectId().getSubjectEntity().getCredits();
+//                        credits += curCredit;
+//                        if (c.getSubjectId().getSubjectEntity().getIsSpecialized()) {
+//                            specializedCredits += curCredit;
+//                        }
+//                    }
                 }
 
                 if (credits >= totalCredit && specializedCredits >= sCredit) {

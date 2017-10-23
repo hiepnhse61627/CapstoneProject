@@ -15,10 +15,9 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
     public CourseEntity findCourseByClassAndSubjectCode(String className, String subjectCode) {
         EntityManager em = getEntityManager();
         try {
-            String sqlString = "SELECT c FROM CourseEntity c WHERE c.class1 = :clazz AND c.subjectCode = :subjectCode";
+            String sqlString = "SELECT c FROM CourseEntity c WHERE c.class1 = :clazz";
             Query query = em.createQuery(sqlString);
             query.setParameter("clazz", className);
-            query.setParameter("subjectCode", subjectCode);
             query.setMaxResults(1);
 
             CourseEntity courseEntity = (CourseEntity) query.getSingleResult();
@@ -54,11 +53,8 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
         EntityManager em = getEntityManager();
         for (CourseEntity courseEntity: courseEntityList) {
             try {
-                TypedQuery<CourseEntity> tmp = em.createQuery("SELECT c FROM CourseEntity c WHERE c.class1 = :class AND c.endDate = :enddate AND c.startDate = :startdate AND c.subjectCode = :sub ", CourseEntity.class);
-                tmp.setParameter("sub", courseEntity.getSubjectCode());
+                TypedQuery<CourseEntity> tmp = em.createQuery("SELECT c FROM CourseEntity c WHERE c.class1 = :class", CourseEntity.class);
                 tmp.setParameter("class", courseEntity.getClass1());
-                tmp.setParameter("startdate", courseEntity.getStartDate(), TemporalType.TIMESTAMP);
-                tmp.setParameter("enddate", courseEntity.getEndDate(), TemporalType.TIMESTAMP);
                 if (tmp.getResultList().size() == 0) {
                     em.getTransaction().begin();
                     em.persist(courseEntity);
@@ -75,10 +71,7 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
 
         try {
             CourseEntity course = this.findCourseEntity(model.getId());
-            course.setSubjectCode(model.getSubjectCode());
             course.setClass1(model.getClass1());
-            course.setStartDate(model.getStartDate());
-            course.setEndDate(model.getEndDate());
 
             em.getTransaction().begin();
             em.merge(course);
@@ -121,8 +114,7 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
                 model.iTotalDisplayRecords = model.iTotalRecords;
             } else {
                 queryCount = em.createQuery("SELECT COUNT(c) FROM CourseEntity c " +
-                        "WHERE c.subjectCode LIKE :subCode OR c.class1 LIKE :class", Integer.class);
-                queryCount.setParameter("subCode", "%" + model.sSearch + "%");
+                        "WHERE c.class1 LIKE :class", Integer.class);
                 queryCount.setParameter("class", "%" + model.sSearch + "%");
                 model.iTotalDisplayRecords = ((Number) queryCount.getSingleResult()).intValue();
             }

@@ -18,40 +18,39 @@ import javax.persistence.Table;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 @Entity
-@Table(name = "Prequisite")
+@Table(name = "Prequisite", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
     @NamedQuery(name = "PrequisiteEntity.findAll", query = "SELECT p FROM PrequisiteEntity p")})
 public class PrequisiteEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
-    @Column(name = "SubId")
-    private String subId;
-    @Column(name = "PrequisiteSubs")
+    @Column(name = "SubjectId", nullable = false, length = 50)
+    private String subjectId;
+    @Column(name = "PrequisiteSubs", length = 2147483647)
     private String prequisiteSubs;
     @Column(name = "FailMark")
     private Integer failMark;
-    @JoinColumn(name = "SubId", referencedColumnName = "Id", insertable = false, updatable = false)
+    @JoinColumn(name = "SubjectId", referencedColumnName = "Id", nullable = false, insertable = false, updatable = false)
     @OneToOne(optional = false)
     private SubjectEntity subjectEntity;
 
     public PrequisiteEntity() {
     }
 
-    public PrequisiteEntity(String subId) {
-        this.subId = subId;
+    public PrequisiteEntity(String subjectId) {
+        this.subjectId = subjectId;
     }
 
-    public String getSubId() {
-        return subId;
+    public String getSubjectId() {
+        return subjectId;
     }
 
-    public void setSubId(String subId) {
-        this.subId = subId;
+    public void setSubjectId(String subjectId) {
+        this.subjectId = subjectId;
     }
 
     public String getPrequisiteSubs() {
@@ -81,7 +80,7 @@ public class PrequisiteEntity implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (subId != null ? subId.hashCode() : 0);
+        hash += (subjectId != null ? subjectId.hashCode() : 0);
         return hash;
     }
 
@@ -92,7 +91,7 @@ public class PrequisiteEntity implements Serializable {
             return false;
         }
         PrequisiteEntity other = (PrequisiteEntity) object;
-        if ((this.subId == null && other.subId != null) || (this.subId != null && !this.subId.equals(other.subId))) {
+        if ((this.subjectId == null && other.subjectId != null) || (this.subjectId != null && !this.subjectId.equals(other.subjectId))) {
             return false;
         }
         return true;
@@ -100,7 +99,7 @@ public class PrequisiteEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.PrequisiteEntity[ subId=" + subId + " ]";
+        return "com.capstone.entities.PrequisiteEntity[ subjectId=" + subjectId + " ]";
     }
     
 }

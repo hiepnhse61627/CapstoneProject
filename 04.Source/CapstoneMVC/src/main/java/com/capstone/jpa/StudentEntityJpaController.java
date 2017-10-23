@@ -10,6 +10,7 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import com.capstone.entities.ProgramEntity;
 import com.capstone.entities.DocumentStudentEntity;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ import javax.persistence.EntityManagerFactory;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 public class StudentEntityJpaController implements Serializable {
 
@@ -47,6 +48,11 @@ public class StudentEntityJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            ProgramEntity programId = studentEntity.getProgramId();
+            if (programId != null) {
+                programId = em.getReference(programId.getClass(), programId.getId());
+                studentEntity.setProgramId(programId);
+            }
             List<DocumentStudentEntity> attachedDocumentStudentEntityList = new ArrayList<DocumentStudentEntity>();
             for (DocumentStudentEntity documentStudentEntityListDocumentStudentEntityToAttach : studentEntity.getDocumentStudentEntityList()) {
                 documentStudentEntityListDocumentStudentEntityToAttach = em.getReference(documentStudentEntityListDocumentStudentEntityToAttach.getClass(), documentStudentEntityListDocumentStudentEntityToAttach.getId());
@@ -60,6 +66,10 @@ public class StudentEntityJpaController implements Serializable {
             }
             studentEntity.setMarksEntityList(attachedMarksEntityList);
             em.persist(studentEntity);
+            if (programId != null) {
+                programId.getStudentEntityList().add(studentEntity);
+                programId = em.merge(programId);
+            }
             for (DocumentStudentEntity documentStudentEntityListDocumentStudentEntity : studentEntity.getDocumentStudentEntityList()) {
                 StudentEntity oldStudentIdOfDocumentStudentEntityListDocumentStudentEntity = documentStudentEntityListDocumentStudentEntity.getStudentId();
                 documentStudentEntityListDocumentStudentEntity.setStudentId(studentEntity);
@@ -97,6 +107,8 @@ public class StudentEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             StudentEntity persistentStudentEntity = em.find(StudentEntity.class, studentEntity.getId());
+            ProgramEntity programIdOld = persistentStudentEntity.getProgramId();
+            ProgramEntity programIdNew = studentEntity.getProgramId();
             List<DocumentStudentEntity> documentStudentEntityListOld = persistentStudentEntity.getDocumentStudentEntityList();
             List<DocumentStudentEntity> documentStudentEntityListNew = studentEntity.getDocumentStudentEntityList();
             List<MarksEntity> marksEntityListOld = persistentStudentEntity.getMarksEntityList();
@@ -113,6 +125,10 @@ public class StudentEntityJpaController implements Serializable {
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
+            if (programIdNew != null) {
+                programIdNew = em.getReference(programIdNew.getClass(), programIdNew.getId());
+                studentEntity.setProgramId(programIdNew);
+            }
             List<DocumentStudentEntity> attachedDocumentStudentEntityListNew = new ArrayList<DocumentStudentEntity>();
             for (DocumentStudentEntity documentStudentEntityListNewDocumentStudentEntityToAttach : documentStudentEntityListNew) {
                 documentStudentEntityListNewDocumentStudentEntityToAttach = em.getReference(documentStudentEntityListNewDocumentStudentEntityToAttach.getClass(), documentStudentEntityListNewDocumentStudentEntityToAttach.getId());
@@ -128,6 +144,14 @@ public class StudentEntityJpaController implements Serializable {
             marksEntityListNew = attachedMarksEntityListNew;
             studentEntity.setMarksEntityList(marksEntityListNew);
             studentEntity = em.merge(studentEntity);
+            if (programIdOld != null && !programIdOld.equals(programIdNew)) {
+                programIdOld.getStudentEntityList().remove(studentEntity);
+                programIdOld = em.merge(programIdOld);
+            }
+            if (programIdNew != null && !programIdNew.equals(programIdOld)) {
+                programIdNew.getStudentEntityList().add(studentEntity);
+                programIdNew = em.merge(programIdNew);
+            }
             for (DocumentStudentEntity documentStudentEntityListNewDocumentStudentEntity : documentStudentEntityListNew) {
                 if (!documentStudentEntityListOld.contains(documentStudentEntityListNewDocumentStudentEntity)) {
                     StudentEntity oldStudentIdOfDocumentStudentEntityListNewDocumentStudentEntity = documentStudentEntityListNewDocumentStudentEntity.getStudentId();
@@ -195,6 +219,11 @@ public class StudentEntityJpaController implements Serializable {
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
+            }
+            ProgramEntity programId = studentEntity.getProgramId();
+            if (programId != null) {
+                programId.getStudentEntityList().remove(studentEntity);
+                programId = em.merge(programId);
             }
             List<MarksEntity> marksEntityList = studentEntity.getMarksEntityList();
             for (MarksEntity marksEntityListMarksEntity : marksEntityList) {

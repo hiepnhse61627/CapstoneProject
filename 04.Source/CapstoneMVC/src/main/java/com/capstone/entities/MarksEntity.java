@@ -6,41 +6,27 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 @Entity
-@Table(name = "Marks")
+@Table(name = "Marks", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "MarksEntity.findAll", query = "SELECT m FROM MarksEntity m")
-    , @NamedQuery(name = "MarksEntity.findById", query = "SELECT m FROM MarksEntity m WHERE m.id = :id")
-    , @NamedQuery(name = "MarksEntity.findByAverageMark", query = "SELECT m FROM MarksEntity m WHERE m.averageMark = :averageMark")
-    , @NamedQuery(name = "MarksEntity.findByStatus", query = "SELECT m FROM MarksEntity m WHERE m.status = :status")})
+    @NamedQuery(name = "MarksEntity.findAll", query = "SELECT m FROM MarksEntity m")})
 public class MarksEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
-    @Column(name = "Id")
+    @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
-    @Column(name = "AverageMark")
+    @Column(name = "AverageMark", precision = 53)
     private Double averageMark;
-    @Column(name = "Status")
+    @Column(name = "Status", length = 50)
     private String status;
     @JoinColumn(name = "CourseId", referencedColumnName = "Id")
     @ManyToOne
@@ -48,12 +34,12 @@ public class MarksEntity implements Serializable {
     @JoinColumn(name = "SemesterId", referencedColumnName = "Id")
     @ManyToOne
     private RealSemesterEntity semesterId;
-    @JoinColumn(name = "StudentId", referencedColumnName = "ID")
+    @JoinColumn(name = "StudentId", referencedColumnName = "Id")
     @ManyToOne
     private StudentEntity studentId;
-    @JoinColumn(name = "SubjectId", referencedColumnName = "SubjectId")
+    @JoinColumn(name = "SubjectMarkComponentId", referencedColumnName = "Id")
     @ManyToOne
-    private SubjectMarkComponentEntity subjectId;
+    private SubjectMarkComponentEntity subjectMarkComponentId;
 
     public MarksEntity() {
     }
@@ -110,12 +96,12 @@ public class MarksEntity implements Serializable {
         this.studentId = studentId;
     }
 
-    public SubjectMarkComponentEntity getSubjectId() {
-        return subjectId;
+    public SubjectMarkComponentEntity getSubjectMarkComponentId() {
+        return subjectMarkComponentId;
     }
 
-    public void setSubjectId(SubjectMarkComponentEntity subjectId) {
-        this.subjectId = subjectId;
+    public void setSubjectMarkComponentId(SubjectMarkComponentEntity subjectMarkComponentId) {
+        this.subjectMarkComponentId = subjectMarkComponentId;
     }
 
     @Override
@@ -140,7 +126,7 @@ public class MarksEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.MarksEntity[ id=" + id + " ]";
+        return "com.capstone.entities.MarksEntity[ id=" + id + " ]";
     }
     
 }

@@ -7,46 +7,30 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 @Entity
-@Table(name = "Document")
+@Table(name = "Document", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "DocumentEntity.findAll", query = "SELECT d FROM DocumentEntity d")
-    , @NamedQuery(name = "DocumentEntity.findById", query = "SELECT d FROM DocumentEntity d WHERE d.id = :id")
-    , @NamedQuery(name = "DocumentEntity.findByCode", query = "SELECT d FROM DocumentEntity d WHERE d.code = :code")
-    , @NamedQuery(name = "DocumentEntity.findByDescription", query = "SELECT d FROM DocumentEntity d WHERE d.description = :description")})
+    @NamedQuery(name = "DocumentEntity.findAll", query = "SELECT d FROM DocumentEntity d")})
 public class DocumentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
-    @Column(name = "Id")
+    @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name = "Code")
+    @Column(name = "Code", length = 50)
     private String code;
-    @Column(name = "Description")
+    @Column(name = "Description", length = 2147483647)
     private String description;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "documentId")
     private List<DocumentStudentEntity> documentStudentEntityList;
-    @JoinColumn(name = "DocTypeId", referencedColumnName = "Id")
+    @JoinColumn(name = "DocTypeId", referencedColumnName = "Id", nullable = false)
     @ManyToOne(optional = false)
     private DocTypeEntity docTypeId;
     @OneToMany(mappedBy = "docParentId")
@@ -140,7 +124,7 @@ public class DocumentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.DocumentEntity[ id=" + id + " ]";
+        return "com.capstone.entities.DocumentEntity[ id=" + id + " ]";
     }
     
 }

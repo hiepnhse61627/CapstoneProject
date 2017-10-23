@@ -12,27 +12,24 @@ import javax.persistence.*;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 @Entity
-@Table(name = "Student")
+@Table(name = "Student", catalog = "CapstoneProject", schema = "dbo", uniqueConstraints = {
+    @UniqueConstraint(columnNames = {"RollNumber"})})
 @NamedQueries({
-    @NamedQuery(name = "StudentEntity.findAll", query = "SELECT s FROM StudentEntity s")
-    , @NamedQuery(name = "StudentEntity.findById", query = "SELECT s FROM StudentEntity s WHERE s.id = :id")
-    , @NamedQuery(name = "StudentEntity.findByRollNumber", query = "SELECT s FROM StudentEntity s WHERE s.rollNumber = :rollNumber")
-    , @NamedQuery(name = "StudentEntity.findByFullName", query = "SELECT s FROM StudentEntity s WHERE s.fullName = :fullName")})
+    @NamedQuery(name = "StudentEntity.findAll", query = "SELECT s FROM StudentEntity s")})
 public class StudentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
-    @Column(name = "ID")
+    @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Basic(optional = false)
-    @Column(name = "RollNumber")
+    @Column(name = "RollNumber", nullable = false, length = 50)
     private String rollNumber;
-    @Column(name = "FullName")
+    @Column(name = "FullName", length = 150)
     private String fullName;
     @Column(name = "DateOfBirth")
     @Temporal(TemporalType.TIMESTAMP)
@@ -41,13 +38,13 @@ public class StudentEntity implements Serializable {
     private Boolean gender;
     @Column(name = "Term")
     private Integer term;
-    @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
-    @ManyToOne(optional = false)
-    private ProgramEntity programId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
     private List<DocumentStudentEntity> documentStudentEntityList;
     @OneToMany(mappedBy = "studentId")
     private List<MarksEntity> marksEntityList;
+    @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
+    @ManyToOne
+    private ProgramEntity programId;
 
     public StudentEntity() {
     }
@@ -85,14 +82,6 @@ public class StudentEntity implements Serializable {
         this.fullName = fullName;
     }
 
-    public List<DocumentStudentEntity> getDocumentStudentEntityList() {
-        return documentStudentEntityList;
-    }
-
-    public void setDocumentStudentEntityList(List<DocumentStudentEntity> documentStudentEntityList) {
-        this.documentStudentEntityList = documentStudentEntityList;
-    }
-
     public Date getDateOfBirth() {
         return dateOfBirth;
     }
@@ -117,12 +106,12 @@ public class StudentEntity implements Serializable {
         this.term = term;
     }
 
-    public ProgramEntity getProgramId() {
-        return programId;
+    public List<DocumentStudentEntity> getDocumentStudentEntityList() {
+        return documentStudentEntityList;
     }
 
-    public void setProgramId(ProgramEntity programId) {
-        this.programId = programId;
+    public void setDocumentStudentEntityList(List<DocumentStudentEntity> documentStudentEntityList) {
+        this.documentStudentEntityList = documentStudentEntityList;
     }
 
     public List<MarksEntity> getMarksEntityList() {
@@ -131,6 +120,14 @@ public class StudentEntity implements Serializable {
 
     public void setMarksEntityList(List<MarksEntity> marksEntityList) {
         this.marksEntityList = marksEntityList;
+    }
+
+    public ProgramEntity getProgramId() {
+        return programId;
+    }
+
+    public void setProgramId(ProgramEntity programId) {
+        this.programId = programId;
     }
 
     @Override
@@ -155,7 +152,7 @@ public class StudentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.StudentEntity[ id=" + id + " ]";
+        return "com.capstone.entities.StudentEntity[ id=" + id + " ]";
     }
     
 }

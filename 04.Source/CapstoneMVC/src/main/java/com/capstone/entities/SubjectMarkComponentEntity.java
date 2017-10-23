@@ -7,46 +7,49 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 @Entity
-@Table(name = "Subject_MarkComponent")
+@Table(name = "Subject_MarkComponent", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "SubjectMarkComponentEntity.findAll", query = "SELECT s FROM SubjectMarkComponentEntity s")
-    , @NamedQuery(name = "SubjectMarkComponentEntity.findBySubjectId", query = "SELECT s FROM SubjectMarkComponentEntity s WHERE s.subjectId = :subjectId")
-    , @NamedQuery(name = "SubjectMarkComponentEntity.findByComponentPercent", query = "SELECT s FROM SubjectMarkComponentEntity s WHERE s.componentPercent = :componentPercent")})
+    @NamedQuery(name = "SubjectMarkComponentEntity.findAll", query = "SELECT s FROM SubjectMarkComponentEntity s")})
 public class SubjectMarkComponentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
-    @Column(name = "SubjectId")
+    @Column(name = "Id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    @Column(name = "SubjectId", length = 50)
     private String subjectId;
-    @Column(name = "ComponentPercent")
-    private Integer componentPercent;
-    @OneToMany(mappedBy = "subjectId")
+    // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
+    @Column(name = "Percent", precision = 53)
+    private Double percent;
+    @Column(name = "Name", length = 2147483647)
+    private String name;
+    @JoinColumn(name = "MarkComponentId", referencedColumnName = "Id")
+    @ManyToOne
+    private MarkComponentEntity markComponentId;
+    @OneToMany(mappedBy = "subjectMarkComponentId")
     private List<MarksEntity> marksEntityList;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "subjectMarkComponentEntity")
-    private SubjectEntity subjectEntity;
 
     public SubjectMarkComponentEntity() {
     }
 
-    public SubjectMarkComponentEntity(String subjectId) {
-        this.subjectId = subjectId;
+    public SubjectMarkComponentEntity(Integer id) {
+        this.id = id;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getSubjectId() {
@@ -57,12 +60,28 @@ public class SubjectMarkComponentEntity implements Serializable {
         this.subjectId = subjectId;
     }
 
-    public Integer getComponentPercent() {
-        return componentPercent;
+    public Double getPercent() {
+        return percent;
     }
 
-    public void setComponentPercent(Integer componentPercent) {
-        this.componentPercent = componentPercent;
+    public void setPercent(Double percent) {
+        this.percent = percent;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public MarkComponentEntity getMarkComponentId() {
+        return markComponentId;
+    }
+
+    public void setMarkComponentId(MarkComponentEntity markComponentId) {
+        this.markComponentId = markComponentId;
     }
 
     public List<MarksEntity> getMarksEntityList() {
@@ -73,18 +92,10 @@ public class SubjectMarkComponentEntity implements Serializable {
         this.marksEntityList = marksEntityList;
     }
 
-    public SubjectEntity getSubjectEntity() {
-        return subjectEntity;
-    }
-
-    public void setSubjectEntity(SubjectEntity subjectEntity) {
-        this.subjectEntity = subjectEntity;
-    }
-
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (subjectId != null ? subjectId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -95,7 +106,7 @@ public class SubjectMarkComponentEntity implements Serializable {
             return false;
         }
         SubjectMarkComponentEntity other = (SubjectMarkComponentEntity) object;
-        if ((this.subjectId == null && other.subjectId != null) || (this.subjectId != null && !this.subjectId.equals(other.subjectId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -103,7 +114,7 @@ public class SubjectMarkComponentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.SubjectMarkComponentEntity[ subjectId=" + subjectId + " ]";
+        return "com.capstone.entities.SubjectMarkComponentEntity[ id=" + id + " ]";
     }
     
 }

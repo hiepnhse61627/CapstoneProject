@@ -11,32 +11,28 @@ import javax.persistence.*;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 @Entity
-@Table(name = "Program")
+@Table(name = "Program", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
     @NamedQuery(name = "ProgramEntity.findAll", query = "SELECT p FROM ProgramEntity p")})
 public class ProgramEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
-    @Column(name = "Id")
+    @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Basic(optional = false)
-    @Column(name = "Name")
+    @Column(name = "Name", nullable = false, length = 10)
     private String name;
-    @OneToMany(mappedBy = "programId")
-    private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
-    @Basic(optional = false)
-    @Column(name = "FullName")
+    @Column(name = "FullName", length = 50)
     private String fullName;
+    @OneToMany(mappedBy = "programId")
+    private List<StudentEntity> studentEntityList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "programId")
     private List<CurriculumEntity> curriculumEntityList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "programId")
-    private List<StudentEntity> studentList;
 
     public ProgramEntity() {
     }
@@ -66,14 +62,6 @@ public class ProgramEntity implements Serializable {
         this.name = name;
     }
 
-    public List<SubjectCurriculumEntity> getSubjectCurriculumEntityList() {
-        return subjectCurriculumEntityList;
-    }
-
-    public void setSubjectCurriculumEntityList(List<SubjectCurriculumEntity> subjectCurriculumEntityList) {
-        this.subjectCurriculumEntityList = subjectCurriculumEntityList;
-	}
-	
     public String getFullName() {
         return fullName;
     }
@@ -82,20 +70,20 @@ public class ProgramEntity implements Serializable {
         this.fullName = fullName;
     }
 
+    public List<StudentEntity> getStudentEntityList() {
+        return studentEntityList;
+    }
+
+    public void setStudentEntityList(List<StudentEntity> studentEntityList) {
+        this.studentEntityList = studentEntityList;
+    }
+
     public List<CurriculumEntity> getCurriculumEntityList() {
         return curriculumEntityList;
     }
 
     public void setCurriculumEntityList(List<CurriculumEntity> curriculumEntityList) {
         this.curriculumEntityList = curriculumEntityList;
-    }
-
-    public List<StudentEntity> getStudentList() {
-        return studentList;
-    }
-
-    public void setStudentList(List<StudentEntity> studentList) {
-        this.studentList = studentList;
     }
 
     @Override

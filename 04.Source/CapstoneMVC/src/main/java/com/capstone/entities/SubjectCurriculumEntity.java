@@ -6,49 +6,33 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import javax.persistence.*;
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 @Entity
-@Table(name = "Subject_Curriculum")
+@Table(name = "Subject_Curriculum", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "SubjectCurriculumEntity.findAll", query = "SELECT s FROM SubjectCurriculumEntity s")
-    , @NamedQuery(name = "SubjectCurriculumEntity.findById", query = "SELECT s FROM SubjectCurriculumEntity s WHERE s.id = :id")
-    , @NamedQuery(name = "SubjectCurriculumEntity.findByName", query = "SELECT s FROM SubjectCurriculumEntity s WHERE s.name = :name")
-    , @NamedQuery(name = "SubjectCurriculumEntity.findByDescription", query = "SELECT s FROM SubjectCurriculumEntity s WHERE s.description = :description")})
+    @NamedQuery(name = "SubjectCurriculumEntity.findAll", query = "SELECT s FROM SubjectCurriculumEntity s")})
 public class SubjectCurriculumEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
-    @Column(name = "Id")
+    @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name = "Name")
-    private String name;
-    @Column(name = "Description")
-    private String description;
-    @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
-    @ManyToOne(fetch = FetchType.EAGER)
-    private ProgramEntity programId;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "subjectCurriculumEntity", fetch = FetchType.EAGER)
-    private List<CurriculumMappingEntity> curriculumMappingEntityList;
+    @Column(name = "OrdinalNumber")
+    private Integer ordinalNumber;
+    @Column(name = "TermNumber")
+    private Integer termNumber;
+    @JoinColumn(name = "CurriculumId", referencedColumnName = "Id")
+    @ManyToOne
+    private CurriculumEntity curriculumId;
+    @JoinColumn(name = "SubjectId", referencedColumnName = "Id")
+    @ManyToOne
+    private SubjectEntity subjectId;
 
     public SubjectCurriculumEntity() {
     }
@@ -65,39 +49,36 @@ public class SubjectCurriculumEntity implements Serializable {
         this.id = id;
     }
 
-    public String getName() {
-        return name;
+    public Integer getOrdinalNumber() {
+        return ordinalNumber;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setOrdinalNumber(Integer ordinalNumber) {
+        this.ordinalNumber = ordinalNumber;
     }
 
-    public String getDescription() {
-        return description;
+    public Integer getTermNumber() {
+        return termNumber;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setTermNumber(Integer termNumber) {
+        this.termNumber = termNumber;
     }
 
-    public List<CurriculumMappingEntity> getCurriculumMappingEntityList() {
-        if (this.curriculumMappingEntityList == null) {
-            this.curriculumMappingEntityList = new ArrayList<>();
-        }
-        return curriculumMappingEntityList;
+    public CurriculumEntity getCurriculumId() {
+        return curriculumId;
     }
 
-    public void setCurriculumMappingEntityList(List<CurriculumMappingEntity> curriculumMappingEntityList) {
-        this.curriculumMappingEntityList = curriculumMappingEntityList;
+    public void setCurriculumId(CurriculumEntity curriculumId) {
+        this.curriculumId = curriculumId;
     }
 
-    public ProgramEntity getProgramId() {
-        return programId;
+    public SubjectEntity getSubjectId() {
+        return subjectId;
     }
 
-    public void setProgramId(ProgramEntity programId) {
-        this.programId = programId;
+    public void setSubjectId(SubjectEntity subjectId) {
+        this.subjectId = subjectId;
     }
 
     @Override
@@ -122,7 +103,7 @@ public class SubjectCurriculumEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.SubjectCurriculumEntity[ id=" + id + " ]";
+        return "com.capstone.entities.SubjectCurriculumEntity[ id=" + id + " ]";
     }
     
 }

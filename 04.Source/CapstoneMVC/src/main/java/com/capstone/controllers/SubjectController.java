@@ -125,7 +125,7 @@ public class SubjectController {
                             } else if (cell.getColumnIndex() == 4) { // Prerequisite
                                 String prequisite = cell.getStringCellValue().trim();
                                 PrequisiteEntity prequisiteEntity = new PrequisiteEntity();
-                                prequisiteEntity.setSubId(en.getId());
+                                prequisiteEntity.setSubjectId(en.getId());
                                 if (prequisite != null && !prequisite.isEmpty()) {
                                     prequisiteEntity.setFailMark(4);
                                     prequisiteEntity.setPrequisiteSubs(prequisite);
@@ -143,7 +143,7 @@ public class SubjectController {
                                     if (processed.lastIndexOf(",") == processed.length() - 1) {
                                         processed = processed.substring(0, processed.lastIndexOf(","));
                                     }
-                                    en.setReplacementId(processed.trim());
+//                                    en.setReplacementId(processed.trim());
                                 }
                             }
                         }

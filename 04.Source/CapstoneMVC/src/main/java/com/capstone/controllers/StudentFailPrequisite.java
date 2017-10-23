@@ -134,7 +134,7 @@ public class StudentFailPrequisite {
                 }
             }
 
-            String queryStr = "SELECT p FROM MarksEntity p WHERE p.subjectId.subjectId IN :sList OR p.subjectId.subjectId = :sub";
+            String queryStr = "SELECT p FROM MarksEntity p WHERE p.subjectMarkComponentId.subjectId IN :sList OR p.subjectMarkComponentId.subjectId = :sub";
             TypedQuery<MarksEntity> prequisiteQuery;
             if (!subjectId.equals("0") && !subjectId.isEmpty()) {
                 SubjectEntity entity = subjectService.findSubjectById(subjectId);
@@ -198,7 +198,7 @@ public class StudentFailPrequisite {
                     tmp.add(m.getMark().getStudentId().getRollNumber());
                     tmp.add(m.getMark().getStudentId().getFullName());
                     tmp.add(m.getSubjectWhichPrequisiteFail() == null ? "N/A" : m.getSubjectWhichPrequisiteFail());
-                    tmp.add(m.getMark().getSubjectId() == null ? "N/A" : m.getMark().getSubjectId().getSubjectId());
+                    tmp.add(m.getMark().getSubjectMarkComponentId() == null ? "N/A" : m.getMark().getSubjectMarkComponentId().getSubjectId());
                     tmp.add(m.getMark().getCourseId() == null ? "N/A" : m.getMark().getCourseId().getClass1());
                     tmp.add(m.getMark().getSemesterId() == null ? "N/A" : m.getMark().getSemesterId().getSemester());
                     tmp.add(String.valueOf(m.getMark().getAverageMark()));

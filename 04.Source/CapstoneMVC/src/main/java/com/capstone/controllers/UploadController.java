@@ -662,30 +662,27 @@ public class UploadController {
                             }
 
                             if (classNameCell != null && subjectCodeCell != null) {
-                                String cla = classNameCell.getStringCellValue().trim();
-                                String subjectCd = subjectCodeCell.getStringCellValue().trim();
-                                // find subject mark component
-                                SubjectEntity subjectMarkComponentEntity =
-                                        subjectService.findSubjectById(subjectCd.toUpperCase().trim());
-
-                                if (subjectMarkComponentEntity != null) {
-                                    marksEntity.setSubjectId(subjectMarkComponentEntity.getSubjectMarkComponentEntity());
-                                } else {
-                                    System.out.println("Subject " + subjectCd + " doesn't exist!");
-                                }
-                                // find course
-                                CourseEntity courseEntity = courseService.findCourseByClassAndSubjectCode(cla.toUpperCase(), subjectCd.toUpperCase());
-                                if (courseEntity != null) {
-                                    marksEntity.setCourseId(courseEntity);
-                                } else { // create new course entity
-                                    courseEntity = new CourseEntity();
-                                    courseEntity.setClass1(cla.toUpperCase());
-                                    courseEntity.setSubjectCode(subjectCd.toUpperCase());
-                                    courseEntity.setStartDate(sdf.parse(String.valueOf(new Date("01/01/1970"))));
-                                    courseEntity.setEndDate(sdf.parse(String.valueOf(new Date("01/30/1970"))));
-                                    courseEntity = courseService.createCourse(courseEntity);
-                                    marksEntity.setCourseId(courseEntity);
-                                }
+//                                String cla = classNameCell.getStringCellValue().trim();
+//                                String subjectCd = subjectCodeCell.getStringCellValue().trim();
+//                                // find subject mark component
+//                                SubjectEntity subjectMarkComponentEntity =
+//                                        subjectService.findSubjectById(subjectCd.toUpperCase().trim());
+//
+//                                if (subjectMarkComponentEntity != null) {
+//                                    marksEntity.setSubjectMarkComponentId(subjectMarkComponentEntity.get);
+//                                } else {
+//                                    System.out.println("Subject " + subjectCd + " doesn't exist!");
+//                                }
+//                                // find course
+//                                CourseEntity courseEntity = courseService.findCourseByClassAndSubjectCode(cla.toUpperCase(), subjectCd.toUpperCase());
+//                                if (courseEntity != null) {
+//                                    marksEntity.setCourseId(courseEntity);
+//                                } else { // create new course entity
+//                                    courseEntity = new CourseEntity();
+//                                    courseEntity.setClass1(cla.toUpperCase());
+//                                    courseEntity = courseService.createCourse(courseEntity);
+//                                    marksEntity.setCourseId(courseEntity);
+//                                }
                             }
 
                             if (averageMarkCell != null) {
@@ -902,22 +899,6 @@ public class UploadController {
                                     course.setClass1(classCell.getStringCellValue());
                                 }
                             }
-                            if (startDateCell != null) {
-                                course.setStartDate(sdf.parse(String.valueOf(startDateCell.getDateCellValue())));
-                            }
-                            if (endDateCell != null) {
-                                course.setEndDate(sdf.parse(String.valueOf(endDateCell.getDateCellValue())));
-                            }
-                            if (subjectCell != null) {
-                                if (subjectCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-                                    System.out.println("Subject Num ------" + subjectCell.getNumericCellValue());
-                                    course.setSubjectCode(String.valueOf(subjectCell.getNumericCellValue()));
-                                } else {
-                                    System.out.println("Subject String ----" + subjectCell.getStringCellValue());
-                                    course.setSubjectCode(subjectCell.getStringCellValue());
-                                }
-
-                            }
 
                             if (course.getClass1() != null) {
                                 courses.add(course);
@@ -927,14 +908,14 @@ public class UploadController {
                 }
 
                 System.out.println("All Course Added");
-                for (CourseEntity element : courses) {
-                    if (!uniqueCourses.stream().anyMatch(c -> c.getClass1().equals(element.getClass1())
-                            && c.getSubjectCode().equals(element.getSubjectCode())
-                            && c.getStartDate() == element.getStartDate()
-                            && c.getEndDate() == element.getEndDate())) {
-                        uniqueCourses.add(element);
-                    }
-                }
+//                for (CourseEntity element : courses) {
+//                    if (!uniqueCourses.stream().anyMatch(c -> c.getClass1().equals(element.getClass1())
+//                            && c.getSubjectCode().equals(element.getSubjectCode())
+//                            && c.getStartDate() == element.getStartDate()
+//                            && c.getEndDate() == element.getEndDate())) {
+//                        uniqueCourses.add(element);
+//                    }
+//                }
 
                 courseService.createCourseList(uniqueCourses);
             }

@@ -6,42 +6,34 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import java.util.Date;
+import javax.persistence.*;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 @Entity
-@Table(name = "Document_Student")
+@Table(name = "Document_Student", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "DocumentStudentEntity.findAll", query = "SELECT d FROM DocumentStudentEntity d")
-    , @NamedQuery(name = "DocumentStudentEntity.findById", query = "SELECT d FROM DocumentStudentEntity d WHERE d.id = :id")})
+    @NamedQuery(name = "DocumentStudentEntity.findAll", query = "SELECT d FROM DocumentStudentEntity d")})
 public class DocumentStudentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
-    @Column(name = "Id")
+    @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @JoinColumn(name = "CurriculumId", referencedColumnName = "Id")
+    @Column(name = "CreatedDate")
+    @Temporal(TemporalType.DATE)
+    private Date createdDate;
+    @JoinColumn(name = "CurriculumId", referencedColumnName = "Id", nullable = false)
     @ManyToOne(optional = false)
     private CurriculumEntity curriculumId;
-    @JoinColumn(name = "DocumentId", referencedColumnName = "Id")
+    @JoinColumn(name = "DocumentId", referencedColumnName = "Id", nullable = false)
     @ManyToOne(optional = false)
     private DocumentEntity documentId;
-    @JoinColumn(name = "StudentId", referencedColumnName = "ID")
+    @JoinColumn(name = "StudentId", referencedColumnName = "Id", nullable = false)
     @ManyToOne(optional = false)
     private StudentEntity studentId;
 
@@ -58,6 +50,14 @@ public class DocumentStudentEntity implements Serializable {
 
     public void setId(Integer id) {
         this.id = id;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
     }
 
     public CurriculumEntity getCurriculumId() {
@@ -106,7 +106,7 @@ public class DocumentStudentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.DocumentStudentEntity[ id=" + id + " ]";
+        return "com.capstone.entities.DocumentStudentEntity[ id=" + id + " ]";
     }
     
 }

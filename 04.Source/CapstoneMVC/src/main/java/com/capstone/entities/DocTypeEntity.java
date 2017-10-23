@@ -7,37 +7,24 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 @Entity
-@Table(name = "DocType")
+@Table(name = "DocType", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "DocTypeEntity.findAll", query = "SELECT d FROM DocTypeEntity d")
-    , @NamedQuery(name = "DocTypeEntity.findById", query = "SELECT d FROM DocTypeEntity d WHERE d.id = :id")
-    , @NamedQuery(name = "DocTypeEntity.findByName", query = "SELECT d FROM DocTypeEntity d WHERE d.name = :name")})
+    @NamedQuery(name = "DocTypeEntity.findAll", query = "SELECT d FROM DocTypeEntity d")})
 public class DocTypeEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
-    @Column(name = "Id")
+    @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name = "Name")
+    @Column(name = "Name", length = 50)
     private String name;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "docTypeId")
     private List<DocumentEntity> documentEntityList;
@@ -95,7 +82,7 @@ public class DocTypeEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.DocTypeEntity[ id=" + id + " ]";
+        return "com.capstone.entities.DocTypeEntity[ id=" + id + " ]";
     }
     
 }

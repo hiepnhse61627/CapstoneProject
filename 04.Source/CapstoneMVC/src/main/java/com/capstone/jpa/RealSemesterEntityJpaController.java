@@ -21,7 +21,7 @@ import javax.persistence.EntityManagerFactory;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 public class RealSemesterEntityJpaController implements Serializable {
 

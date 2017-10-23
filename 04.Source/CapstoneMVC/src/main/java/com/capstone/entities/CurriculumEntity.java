@@ -7,44 +7,31 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 @Entity
-@Table(name = "Curriculum")
+@Table(name = "Curriculum", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "CurriculumEntity.findAll", query = "SELECT c FROM CurriculumEntity c")
-    , @NamedQuery(name = "CurriculumEntity.findById", query = "SELECT c FROM CurriculumEntity c WHERE c.id = :id")
-    , @NamedQuery(name = "CurriculumEntity.findByName", query = "SELECT c FROM CurriculumEntity c WHERE c.name = :name")})
+    @NamedQuery(name = "CurriculumEntity.findAll", query = "SELECT c FROM CurriculumEntity c")})
 public class CurriculumEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
-    @Column(name = "Id")
+    @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Basic(optional = false)
-    @Column(name = "Name")
+    @Column(name = "Name", nullable = false, length = 10)
     private String name;
+    @OneToMany(mappedBy = "curriculumId")
+    private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "curriculumId")
     private List<DocumentStudentEntity> documentStudentEntityList;
-    @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
+    @JoinColumn(name = "ProgramId", referencedColumnName = "Id", nullable = false)
     @ManyToOne(optional = false)
     private ProgramEntity programId;
 
@@ -74,6 +61,14 @@ public class CurriculumEntity implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<SubjectCurriculumEntity> getSubjectCurriculumEntityList() {
+        return subjectCurriculumEntityList;
+    }
+
+    public void setSubjectCurriculumEntityList(List<SubjectCurriculumEntity> subjectCurriculumEntityList) {
+        this.subjectCurriculumEntityList = subjectCurriculumEntityList;
     }
 
     public List<DocumentStudentEntity> getDocumentStudentEntityList() {
@@ -114,7 +109,7 @@ public class CurriculumEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "entities.CurriculumEntity[ id=" + id + " ]";
+        return "com.capstone.entities.CurriculumEntity[ id=" + id + " ]";
     }
     
 }

@@ -19,7 +19,7 @@ import javax.persistence.criteria.Root;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 public class CredentialsEntityJpaController implements Serializable {
 
@@ -40,7 +40,7 @@ public class CredentialsEntityJpaController implements Serializable {
             em.persist(credentialsEntity);
             em.getTransaction().commit();
         } catch (Exception ex) {
-            if (findCredentialsEntity(credentialsEntity.getId()) != null) {
+            if (findCredentialsEntiy(credentialsEntity.getId()) != null) {
                 throw new PreexistingEntityException("CredentialsEntity " + credentialsEntity + " already exists.", ex);
             }
             throw ex;
@@ -62,7 +62,7 @@ public class CredentialsEntityJpaController implements Serializable {
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
                 Integer id = credentialsEntity.getId();
-                if (findCredentialsEntity(id) == null) {
+                if (findCredentialsEntiy(id) == null) {
                     throw new NonexistentEntityException("The credentialsEntity with id " + id + " no longer exists.");
                 }
             }
@@ -95,15 +95,15 @@ public class CredentialsEntityJpaController implements Serializable {
         }
     }
 
-    public List<CredentialsEntity> findCredentialsEntityEntities() {
-        return findCredentialsEntityEntities(true, -1, -1);
+    public List<CredentialsEntity> findCredentialsEntiyEntities() {
+        return findCredentialsEntiyEntities(true, -1, -1);
     }
 
-    public List<CredentialsEntity> findCredentialsEntityEntities(int maxResults, int firstResult) {
-        return findCredentialsEntityEntities(false, maxResults, firstResult);
+    public List<CredentialsEntity> findCredentialsEntiyEntities(int maxResults, int firstResult) {
+        return findCredentialsEntiyEntities(false, maxResults, firstResult);
     }
 
-    private List<CredentialsEntity> findCredentialsEntityEntities(boolean all, int maxResults, int firstResult) {
+    private List<CredentialsEntity> findCredentialsEntiyEntities(boolean all, int maxResults, int firstResult) {
         EntityManager em = getEntityManager();
         try {
             CriteriaQuery cq = em.getCriteriaBuilder().createQuery();
@@ -119,7 +119,7 @@ public class CredentialsEntityJpaController implements Serializable {
         }
     }
 
-    public CredentialsEntity findCredentialsEntity(Integer id) {
+    public CredentialsEntity findCredentialsEntiy(Integer id) {
         EntityManager em = getEntityManager();
         try {
             return em.find(CredentialsEntity.class, id);
@@ -128,7 +128,7 @@ public class CredentialsEntityJpaController implements Serializable {
         }
     }
 
-    public int getCredentialsEntityCount() {
+    public int getCredentialsEntiyCount() {
         EntityManager em = getEntityManager();
         try {
             CriteriaQuery cq = em.getCriteriaBuilder().createQuery();

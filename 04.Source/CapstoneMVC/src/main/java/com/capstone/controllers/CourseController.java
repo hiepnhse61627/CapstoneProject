@@ -62,13 +62,9 @@ public class CourseController {
             List<CourseEntity> courseList = courseService.getCourseListForDatatable(model);
             List<List<String>> result = new ArrayList<>();
 
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             for (CourseEntity course : courseList) {
                 List<String> dataList = new ArrayList<String>() {{
                     add(course.getClass1());
-                    add(course.getSubjectCode());
-                    add(sdf.format(course.getStartDate()));
-                    add(sdf.format(course.getEndDate()));
                     add(course.getId() + "");
                 }};
                 result.add(dataList);
@@ -98,15 +94,8 @@ public class CourseController {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em = emf.createEntityManager();
 
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            Date startDate = sdf.parse(params.get("sStartDate"));
-            Date endDate = sdf.parse(params.get("sEndDate"));
-
             CourseEntity course = new CourseEntity();
             course.setClass1(params.get("clazz"));
-            course.setSubjectCode(params.get("subjectCode"));
-            course.setStartDate(startDate);
-            course.setEndDate(endDate);
 
             courseService.createCourse(course);
 
@@ -129,16 +118,9 @@ public class CourseController {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em = emf.createEntityManager();
 
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-            Date startDate = sdf.parse(params.get("sStartDate"));
-            Date endDate = sdf.parse(params.get("sEndDate"));
-
             CourseEntity model = new CourseEntity();
             model.setId(Integer.parseInt(params.get("courseId")));
-            model.setSubjectCode(params.get("subjectCode"));
             model.setClass1(params.get("clazz"));
-            model.setStartDate(startDate);
-            model.setEndDate(endDate);
 
             courseService.updateCourse(model);
             jsonObj.addProperty("success", true);

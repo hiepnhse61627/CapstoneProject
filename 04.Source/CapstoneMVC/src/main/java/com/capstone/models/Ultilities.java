@@ -46,13 +46,6 @@ public class Ultilities {
         }).thenComparingInt(a -> {
             String semester = ((MarksEntity) a).getSemesterId().getSemester();
             return semester.indexOf("_");
-        }).thenComparingLong(a -> {
-            MarksEntity en = (MarksEntity) a;
-            Date time = en.getCourseId().getStartDate();
-            if (time == null) {
-                time = Date.from(Instant.MIN);
-            }
-            return time.getTime();
         }));
 
         return set;
@@ -100,12 +93,12 @@ public class Ultilities {
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
         if (!list.isEmpty()) {
             for (MarksEntity m : list) {
-                if (map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()) == null) {
+                if (map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId()) == null) {
                     List<MarksEntity> newMarkList = new ArrayList<>();
                     newMarkList.add(m);
-                    map.put(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId(), newMarkList);
+                    map.put(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId(), newMarkList);
                 } else {
-                    map.get(m.getStudentId().getRollNumber(), m.getSubjectId().getSubjectId()).add(m);
+                    map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId()).add(m);
                 }
             }
 
@@ -135,7 +128,7 @@ public class Ultilities {
                                         }
 
                                         if (!isPass) {
-                                            result.add(new FailPrequisiteModel(tmp, m.getSubjectId().getSubjectId()));
+                                            result.add(new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId()));
                                             break;
                                         }
                                     }

@@ -14,25 +14,25 @@ import javax.persistence.*;
  * @author hiepnhse61627
  */
 @Entity
-@Table(name = "RealSemester", catalog = "CapstoneProject", schema = "dbo")
+@Table(name = "MarkComponent", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "RealSemesterEntity.findAll", query = "SELECT r FROM RealSemesterEntity r")})
-public class RealSemesterEntity implements Serializable {
+    @NamedQuery(name = "MarkComponentEntity.findAll", query = "SELECT m FROM MarkComponentEntity m")})
+public class MarkComponentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name = "Semester", length = 50)
-    private String semester;
-    @OneToMany(mappedBy = "semesterId")
-    private List<MarksEntity> marksEntityList;
+    @Column(name = "Name", length = 2147483647)
+    private String name;
+    @OneToMany(mappedBy = "markComponentId")
+    private List<SubjectMarkComponentEntity> subjectMarkComponentEntityList;
 
-    public RealSemesterEntity() {
+    public MarkComponentEntity() {
     }
 
-    public RealSemesterEntity(Integer id) {
+    public MarkComponentEntity(Integer id) {
         this.id = id;
     }
 
@@ -44,20 +44,20 @@ public class RealSemesterEntity implements Serializable {
         this.id = id;
     }
 
-    public String getSemester() {
-        return semester;
+    public String getName() {
+        return name;
     }
 
-    public void setSemester(String semester) {
-        this.semester = semester;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public List<MarksEntity> getMarksEntityList() {
-        return marksEntityList;
+    public List<SubjectMarkComponentEntity> getSubjectMarkComponentEntityList() {
+        return subjectMarkComponentEntityList;
     }
 
-    public void setMarksEntityList(List<MarksEntity> marksEntityList) {
-        this.marksEntityList = marksEntityList;
+    public void setSubjectMarkComponentEntityList(List<SubjectMarkComponentEntity> subjectMarkComponentEntityList) {
+        this.subjectMarkComponentEntityList = subjectMarkComponentEntityList;
     }
 
     @Override
@@ -70,10 +70,10 @@ public class RealSemesterEntity implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof RealSemesterEntity)) {
+        if (!(object instanceof MarkComponentEntity)) {
             return false;
         }
-        RealSemesterEntity other = (RealSemesterEntity) object;
+        MarkComponentEntity other = (MarkComponentEntity) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -82,7 +82,7 @@ public class RealSemesterEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.RealSemesterEntity[ id=" + id + " ]";
+        return "com.capstone.entities.MarkComponentEntity[ id=" + id + " ]";
     }
     
 }

@@ -26,16 +26,17 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
     }
 
     public SubjectCurriculumEntity findByName(String name) {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<SubjectCurriculumEntity> query = em.createQuery("SELECT a FROM SubjectCurriculumEntity a WHERE a.name = :name", SubjectCurriculumEntity.class);
-            query.setParameter("name", name);
-            return query.getSingleResult();
-        } catch (Exception e) {
-            return null;
-        } finally {
-            em.close();
-        }
+//        EntityManager em = getEntityManager();
+//        try {
+//            TypedQuery<SubjectCurriculumEntity> query = em.createQuery("SELECT a FROM SubjectCurriculumEntity a WHERE a.name = :name", SubjectCurriculumEntity.class);
+//            query.setParameter("name", name);
+//            return query.getSingleResult();
+//        } catch (Exception e) {
+//            return null;
+//        } finally {
+//            em.close();
+//        }
+        return null;
     }
 
     public SubjectCurriculumEntity createCurriculum(SubjectCurriculumEntity entity) {
@@ -56,21 +57,21 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
     }
 
     public void createCurriculumList(List<SubjectCurriculumEntity> subjectCurriculumEntityList) {
-        EntityManager em = getEntityManager();
-        for (SubjectCurriculumEntity subjectCurriculumEntity : subjectCurriculumEntityList) {
-            try {
-                TypedQuery<SubjectCurriculumEntity> tmp = em.createQuery("SELECT c FROM SubjectCurriculumEntity c WHERE c.name = :name AND c.description = :description", SubjectCurriculumEntity.class);
-                tmp.setParameter("name", subjectCurriculumEntity.getName());
-                tmp.setParameter("description", subjectCurriculumEntity.getDescription());
-                if (tmp.getResultList().size() == 0) {
-                    em.getTransaction().begin();
-                    em.persist(subjectCurriculumEntity);
-                    em.getTransaction().commit();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+//        EntityManager em = getEntityManager();
+//        for (SubjectCurriculumEntity subjectCurriculumEntity : subjectCurriculumEntityList) {
+//            try {
+//                TypedQuery<SubjectCurriculumEntity> tmp = em.createQuery("SELECT c FROM SubjectCurriculumEntity c WHERE c.name = :name AND c.description = :description", SubjectCurriculumEntity.class);
+//                tmp.setParameter("name", subjectCurriculumEntity.getName());
+//                tmp.setParameter("description", subjectCurriculumEntity.getDescription());
+//                if (tmp.getResultList().size() == 0) {
+//                    em.getTransaction().begin();
+//                    em.persist(subjectCurriculumEntity);
+//                    em.getTransaction().commit();
+//                }
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
     }
 
     public void updateCurriculum(SubjectCurriculumEntity entity) {

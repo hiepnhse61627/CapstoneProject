@@ -69,7 +69,7 @@ public class ExportGraduatedStudentsImpl implements IExportObject {
                 ordinalNumberCell.setCellStyle(cellStyle);
                 ordinalNumberCell.setCellValue("" + (markSize - ordinalNumber + 1));
                 // Subject code
-                SubjectEntity subjectEntity = subjectService.findSubjectById(marksEntity.getSubjectId().getSubjectId());
+                SubjectEntity subjectEntity = subjectService.findSubjectById(marksEntity.getSubjectMarkComponentId().getSubjectId());
                 XSSFCell subjectCodeCell = row.createCell(1);
                 subjectCodeCell.setCellValue(subjectEntity.getId());
                 CellRangeAddress range1 = new CellRangeAddress(rowIndex, rowIndex, 1, 2);
@@ -128,27 +128,27 @@ public class ExportGraduatedStudentsImpl implements IExportObject {
 
         Map<StudentEntity, List<MarksEntity>> resultMap = new HashMap<>();
 
-        for (Map.Entry<StudentEntity, List<MarksEntity>> entry : map.entrySet()) {
-            int credits = 0;
-            int specializedCredits = 0;
-            for (MarksEntity c : entry.getValue()) {
-                if (c.getStatus().toLowerCase().contains("pass") && c.getSubjectId() != null) {
-                    System.out.println(c.getSubjectId().getSubjectId());
-                    int curCredit = c.getSubjectId().getSubjectEntity().getCredits();
-                    credits += curCredit;
-                    if (c.getSubjectId().getSubjectEntity().getIsSpecialized()) {
-                        specializedCredits += curCredit;
-                    }
-                }
-            }
-
-            if (credits >= totalCredit && specializedCredits >= sCredit) {
-                resultMap.put(entry.getKey(),
-                        entry.getValue().stream().filter(m -> m.getStatus().toLowerCase().contains("pass")
-                                                      && m.getSubjectId() != null
-                                                      && m.getSubjectId().getSubjectEntity().getIsSpecialized()).collect(Collectors.toList()));
-            }
-        }
+//        for (Map.Entry<StudentEntity, List<MarksEntity>> entry : map.entrySet()) {
+//            int credits = 0;
+//            int specializedCredits = 0;
+//            for (MarksEntity c : entry.getValue()) {
+//                if (c.getStatus().toLowerCase().contains("pass") && c.getSubjectId() != null) {
+//                    System.out.println(c.getSubjectMarkComponentId().getSubjectId());
+//                    int curCredit = c.getSubjectMarkComponentId().getSubjectEntity().getCredits();
+//                    credits += curCredit;
+//                    if (c.getSubjectMarkComponentId().getSubjectEntity().getIsSpecialized()) {
+//                        specializedCredits += curCredit;
+//                    }
+//                }
+//            }
+//
+//            if (credits >= totalCredit && specializedCredits >= sCredit) {
+//                resultMap.put(entry.getKey(),
+//                        entry.getValue().stream().filter(m -> m.getStatus().toLowerCase().contains("pass")
+//                                                      && m.getSubjectMarkComponentId() != null
+//                                                      && m.getSubjectMarkComponentId().getSubjectEntity().getIsSpecialized()).collect(Collectors.toList()));
+//            }
+//        }
 
         return resultMap;
     }

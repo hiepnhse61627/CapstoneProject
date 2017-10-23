@@ -73,7 +73,7 @@ public class StudentController {
                     ArrayList<String> tmp = new ArrayList<>();
                     tmp.add(m.getStudentId().getRollNumber());
                     tmp.add(m.getStudentId().getFullName());
-                    tmp.add(m.getSubjectId() == null ? "N/A" : m.getSubjectId().getSubjectId());
+                    tmp.add(m.getSubjectMarkComponentId() == null ? "N/A" : m.getSubjectMarkComponentId().getSubjectId());
                     tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getClass1());
                     tmp.add(m.getSemesterId() == null ? "N/A" : m.getSemesterId().getSemester());
                     tmp.add(String.valueOf(m.getAverageMark()));
@@ -113,7 +113,7 @@ public class StudentController {
             @Override
             public int compare(MarksEntity o1, MarksEntity o2) {
                 return new CompareToBuilder()
-                        .append(o1.getSubjectId() == null ? "" : o1.getSubjectId().getSubjectId().toUpperCase(), o2.getSubjectId() == null ? "" : o2.getSubjectId().getSubjectId().toUpperCase())
+                        .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().toUpperCase())
                         .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
                         .toComparison();
             }
@@ -130,7 +130,7 @@ public class StudentController {
         // remove duplicate
         
         for (MarksEntity marksEntity : comparedList) {
-            if (marksEntity.getSubjectId() != null && !resultList.stream().anyMatch(r -> r.getSubjectId().getSubjectId().toUpperCase().equals(marksEntity.getSubjectId().getSubjectId().toUpperCase())
+            if (marksEntity.getSubjectMarkComponentId() != null && !resultList.stream().anyMatch(r -> r.getSubjectMarkComponentId().getSubjectId().toUpperCase().equals(marksEntity.getSubjectMarkComponentId().getSubjectId().toUpperCase())
                                                 && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
                 resultList.add(marksEntity);
             }
@@ -159,7 +159,7 @@ public class StudentController {
             List<MarkModel> dataList = new ArrayList<>();
 
             for (MarksEntity m : mlist) {
-                String subjectCode = m.getSubjectId() != null ? m.getSubjectId().getSubjectId() : "N/A";
+                String subjectCode = m.getSubjectMarkComponentId() != null ? m.getSubjectMarkComponentId().getSubjectId() : "N/A";
                 curMark = null;
 
                 for (MarkModel data : dataList) {
@@ -177,8 +177,6 @@ public class StudentController {
                     mark.setStatus(m.getStatus());
                     mark.setAverageMark(m.getAverageMark());
                     mark.setRepeatingNumber(1);
-                    mark.setStartDate(m.getCourseId().getStartDate());
-                    mark.setEndDate(m.getCourseId().getEndDate());
 
                     dataList.add(mark);
                 } else {
@@ -187,8 +185,6 @@ public class StudentController {
                     curMark.setStatus(m.getStatus());
                     curMark.setAverageMark(m.getAverageMark());
                     curMark.setRepeatingNumber(curMark.getRepeatingNumber() + 1);
-                    curMark.setStartDate(curMark.getStartDate());
-                    curMark.setEndDate(curMark.getEndDate());
                 }
             }
 //            dataList = Ultilities.SortMarkModelBySemester(dataList);

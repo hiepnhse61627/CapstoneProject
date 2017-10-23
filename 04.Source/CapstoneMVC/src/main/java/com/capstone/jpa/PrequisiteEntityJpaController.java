@@ -22,7 +22,7 @@ import javax.persistence.EntityManagerFactory;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 public class PrequisiteEntityJpaController implements Serializable {
 
@@ -39,8 +39,8 @@ public class PrequisiteEntityJpaController implements Serializable {
         List<String> illegalOrphanMessages = null;
         SubjectEntity subjectEntityOrphanCheck = prequisiteEntity.getSubjectEntity();
         if (subjectEntityOrphanCheck != null) {
-            PrequisiteEntity oldPrequisiteOfSubjectEntity = subjectEntityOrphanCheck.getPrequisiteEntity();
-            if (oldPrequisiteOfSubjectEntity != null) {
+            PrequisiteEntity oldPrequisiteEntityOfSubjectEntity = subjectEntityOrphanCheck.getPrequisiteEntity();
+            if (oldPrequisiteEntityOfSubjectEntity != null) {
                 if (illegalOrphanMessages == null) {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
@@ -66,7 +66,7 @@ public class PrequisiteEntityJpaController implements Serializable {
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
-            if (findPrequisiteEntity(prequisiteEntity.getSubId()) != null) {
+            if (findPrequisiteEntity(prequisiteEntity.getSubjectId()) != null) {
                 throw new PreexistingEntityException("PrequisiteEntity " + prequisiteEntity + " already exists.", ex);
             }
             throw ex;
@@ -82,13 +82,13 @@ public class PrequisiteEntityJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            PrequisiteEntity persistentPrequisiteEntity = em.find(PrequisiteEntity.class, prequisiteEntity.getSubId());
+            PrequisiteEntity persistentPrequisiteEntity = em.find(PrequisiteEntity.class, prequisiteEntity.getSubjectId());
             SubjectEntity subjectEntityOld = persistentPrequisiteEntity.getSubjectEntity();
             SubjectEntity subjectEntityNew = prequisiteEntity.getSubjectEntity();
             List<String> illegalOrphanMessages = null;
             if (subjectEntityNew != null && !subjectEntityNew.equals(subjectEntityOld)) {
-                PrequisiteEntity oldPrequisiteOfSubjectEntity = subjectEntityNew.getPrequisiteEntity();
-                if (oldPrequisiteOfSubjectEntity != null) {
+                PrequisiteEntity oldPrequisiteEntityOfSubjectEntity = subjectEntityNew.getPrequisiteEntity();
+                if (oldPrequisiteEntityOfSubjectEntity != null) {
                     if (illegalOrphanMessages == null) {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
@@ -115,7 +115,7 @@ public class PrequisiteEntityJpaController implements Serializable {
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
-                String id = prequisiteEntity.getSubId();
+                String id = prequisiteEntity.getSubjectId();
                 if (findPrequisiteEntity(id) == null) {
                     throw new NonexistentEntityException("The prequisiteEntity with id " + id + " no longer exists.");
                 }
@@ -136,7 +136,7 @@ public class PrequisiteEntityJpaController implements Serializable {
             PrequisiteEntity prequisiteEntity;
             try {
                 prequisiteEntity = em.getReference(PrequisiteEntity.class, id);
-                prequisiteEntity.getSubId();
+                prequisiteEntity.getSubjectId();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The prequisiteEntity with id " + id + " no longer exists.", enfe);
             }
