@@ -6,7 +6,17 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
-import javax.persistence.*;
+import java.util.List;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 /**
  *
@@ -20,8 +30,8 @@ public class SubjectMarkComponentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "Percent", precision = 53)
@@ -34,6 +44,8 @@ public class SubjectMarkComponentEntity implements Serializable {
     @JoinColumn(name = "SubjectId", referencedColumnName = "Id")
     @ManyToOne
     private SubjectEntity subjectId;
+    @OneToMany(mappedBy = "subjectMarkComponentId")
+    private List<MarksEntity> marksEntityList;
 
     public SubjectMarkComponentEntity() {
     }
@@ -82,6 +94,14 @@ public class SubjectMarkComponentEntity implements Serializable {
         this.subjectId = subjectId;
     }
 
+    public List<MarksEntity> getMarksEntityList() {
+        return marksEntityList;
+    }
+
+    public void setMarksEntityList(List<MarksEntity> marksEntityList) {
+        this.marksEntityList = marksEntityList;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -104,7 +124,7 @@ public class SubjectMarkComponentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.SubjectMarkComponentEntity[ id=" + id + " ]";
+        return "com.capstone.entites.SubjectMarkComponentEntity[ id=" + id + " ]";
     }
     
 }

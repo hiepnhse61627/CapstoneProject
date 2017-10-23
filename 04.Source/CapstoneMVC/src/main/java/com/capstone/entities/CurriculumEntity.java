@@ -7,7 +7,17 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 /**
  *
@@ -21,8 +31,8 @@ public class CurriculumEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Basic(optional = false)
     @Column(name = "Name", nullable = false, length = 10)
@@ -109,7 +119,7 @@ public class CurriculumEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.CurriculumEntity[ id=" + id + " ]";
+        return "com.capstone.entites.CurriculumEntity[ id=" + id + " ]";
     }
     
 }

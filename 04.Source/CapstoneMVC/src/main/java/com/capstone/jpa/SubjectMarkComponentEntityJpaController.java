@@ -12,9 +12,11 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import com.capstone.entities.MarkComponentEntity;
 import com.capstone.entities.SubjectEntity;
+import com.capstone.entities.MarksEntity;
 import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -35,6 +37,9 @@ public class SubjectMarkComponentEntityJpaController implements Serializable {
     }
 
     public void create(SubjectMarkComponentEntity subjectMarkComponentEntity) throws PreexistingEntityException, Exception {
+        if (subjectMarkComponentEntity.getMarksEntityList() == null) {
+            subjectMarkComponentEntity.setMarksEntityList(new ArrayList<MarksEntity>());
+        }
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -49,6 +54,12 @@ public class SubjectMarkComponentEntityJpaController implements Serializable {
                 subjectId = em.getReference(subjectId.getClass(), subjectId.getId());
                 subjectMarkComponentEntity.setSubjectId(subjectId);
             }
+            List<MarksEntity> attachedMarksEntityList = new ArrayList<MarksEntity>();
+            for (MarksEntity marksEntityListMarksEntityToAttach : subjectMarkComponentEntity.getMarksEntityList()) {
+                marksEntityListMarksEntityToAttach = em.getReference(marksEntityListMarksEntityToAttach.getClass(), marksEntityListMarksEntityToAttach.getId());
+                attachedMarksEntityList.add(marksEntityListMarksEntityToAttach);
+            }
+            subjectMarkComponentEntity.setMarksEntityList(attachedMarksEntityList);
             em.persist(subjectMarkComponentEntity);
             if (markComponentId != null) {
                 markComponentId.getSubjectMarkComponentEntityList().add(subjectMarkComponentEntity);
@@ -57,6 +68,15 @@ public class SubjectMarkComponentEntityJpaController implements Serializable {
             if (subjectId != null) {
                 subjectId.getSubjectMarkComponentEntityList().add(subjectMarkComponentEntity);
                 subjectId = em.merge(subjectId);
+            }
+            for (MarksEntity marksEntityListMarksEntity : subjectMarkComponentEntity.getMarksEntityList()) {
+                SubjectMarkComponentEntity oldSubjectMarkComponentIdOfMarksEntityListMarksEntity = marksEntityListMarksEntity.getSubjectMarkComponentId();
+                marksEntityListMarksEntity.setSubjectMarkComponentId(subjectMarkComponentEntity);
+                marksEntityListMarksEntity = em.merge(marksEntityListMarksEntity);
+                if (oldSubjectMarkComponentIdOfMarksEntityListMarksEntity != null) {
+                    oldSubjectMarkComponentIdOfMarksEntityListMarksEntity.getMarksEntityList().remove(marksEntityListMarksEntity);
+                    oldSubjectMarkComponentIdOfMarksEntityListMarksEntity = em.merge(oldSubjectMarkComponentIdOfMarksEntityListMarksEntity);
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -81,6 +101,8 @@ public class SubjectMarkComponentEntityJpaController implements Serializable {
             MarkComponentEntity markComponentIdNew = subjectMarkComponentEntity.getMarkComponentId();
             SubjectEntity subjectIdOld = persistentSubjectMarkComponentEntity.getSubjectId();
             SubjectEntity subjectIdNew = subjectMarkComponentEntity.getSubjectId();
+            List<MarksEntity> marksEntityListOld = persistentSubjectMarkComponentEntity.getMarksEntityList();
+            List<MarksEntity> marksEntityListNew = subjectMarkComponentEntity.getMarksEntityList();
             if (markComponentIdNew != null) {
                 markComponentIdNew = em.getReference(markComponentIdNew.getClass(), markComponentIdNew.getId());
                 subjectMarkComponentEntity.setMarkComponentId(markComponentIdNew);
@@ -89,6 +111,13 @@ public class SubjectMarkComponentEntityJpaController implements Serializable {
                 subjectIdNew = em.getReference(subjectIdNew.getClass(), subjectIdNew.getId());
                 subjectMarkComponentEntity.setSubjectId(subjectIdNew);
             }
+            List<MarksEntity> attachedMarksEntityListNew = new ArrayList<MarksEntity>();
+            for (MarksEntity marksEntityListNewMarksEntityToAttach : marksEntityListNew) {
+                marksEntityListNewMarksEntityToAttach = em.getReference(marksEntityListNewMarksEntityToAttach.getClass(), marksEntityListNewMarksEntityToAttach.getId());
+                attachedMarksEntityListNew.add(marksEntityListNewMarksEntityToAttach);
+            }
+            marksEntityListNew = attachedMarksEntityListNew;
+            subjectMarkComponentEntity.setMarksEntityList(marksEntityListNew);
             subjectMarkComponentEntity = em.merge(subjectMarkComponentEntity);
             if (markComponentIdOld != null && !markComponentIdOld.equals(markComponentIdNew)) {
                 markComponentIdOld.getSubjectMarkComponentEntityList().remove(subjectMarkComponentEntity);
@@ -105,6 +134,23 @@ public class SubjectMarkComponentEntityJpaController implements Serializable {
             if (subjectIdNew != null && !subjectIdNew.equals(subjectIdOld)) {
                 subjectIdNew.getSubjectMarkComponentEntityList().add(subjectMarkComponentEntity);
                 subjectIdNew = em.merge(subjectIdNew);
+            }
+            for (MarksEntity marksEntityListOldMarksEntity : marksEntityListOld) {
+                if (!marksEntityListNew.contains(marksEntityListOldMarksEntity)) {
+                    marksEntityListOldMarksEntity.setSubjectMarkComponentId(null);
+                    marksEntityListOldMarksEntity = em.merge(marksEntityListOldMarksEntity);
+                }
+            }
+            for (MarksEntity marksEntityListNewMarksEntity : marksEntityListNew) {
+                if (!marksEntityListOld.contains(marksEntityListNewMarksEntity)) {
+                    SubjectMarkComponentEntity oldSubjectMarkComponentIdOfMarksEntityListNewMarksEntity = marksEntityListNewMarksEntity.getSubjectMarkComponentId();
+                    marksEntityListNewMarksEntity.setSubjectMarkComponentId(subjectMarkComponentEntity);
+                    marksEntityListNewMarksEntity = em.merge(marksEntityListNewMarksEntity);
+                    if (oldSubjectMarkComponentIdOfMarksEntityListNewMarksEntity != null && !oldSubjectMarkComponentIdOfMarksEntityListNewMarksEntity.equals(subjectMarkComponentEntity)) {
+                        oldSubjectMarkComponentIdOfMarksEntityListNewMarksEntity.getMarksEntityList().remove(marksEntityListNewMarksEntity);
+                        oldSubjectMarkComponentIdOfMarksEntityListNewMarksEntity = em.merge(oldSubjectMarkComponentIdOfMarksEntityListNewMarksEntity);
+                    }
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -144,6 +190,11 @@ public class SubjectMarkComponentEntityJpaController implements Serializable {
             if (subjectId != null) {
                 subjectId.getSubjectMarkComponentEntityList().remove(subjectMarkComponentEntity);
                 subjectId = em.merge(subjectId);
+            }
+            List<MarksEntity> marksEntityList = subjectMarkComponentEntity.getMarksEntityList();
+            for (MarksEntity marksEntityListMarksEntity : marksEntityList) {
+                marksEntityListMarksEntity.setSubjectMarkComponentId(null);
+                marksEntityListMarksEntity = em.merge(marksEntityListMarksEntity);
             }
             em.remove(subjectMarkComponentEntity);
             em.getTransaction().commit();

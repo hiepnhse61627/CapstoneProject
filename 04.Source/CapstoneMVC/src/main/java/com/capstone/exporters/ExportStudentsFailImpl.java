@@ -165,7 +165,7 @@ public class ExportStudentsFailImpl implements IExportObject {
 
             Cell SubjectCodeCell = row.createCell(4);
             SubjectCodeCell.setCellStyle(cellStyle);
-            SubjectCodeCell.setCellValue(mark.getSubjectMarkComponentId().getSubjectId());
+            SubjectCodeCell.setCellValue(mark.getSubjectMarkComponentId().getSubjectId().getId());
             CellRangeAddress range2 = new CellRangeAddress(rowIndex, rowIndex, 4, 5);
             spreadsheet.addMergedRegion(range2);
             RegionUtil.setBorderBottom(BorderStyle.THIN, range2, spreadsheet);

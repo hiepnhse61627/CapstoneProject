@@ -8,6 +8,7 @@ package com.capstone.entities;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -17,6 +18,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 /**
@@ -31,6 +33,7 @@ public class SubjectEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false, length = 50)
     private String id;
     @Column(name = "Name", length = 255)
@@ -48,6 +51,10 @@ public class SubjectEntity implements Serializable {
     private List<SubjectEntity> subjectEntityList;
     @ManyToMany(mappedBy = "subjectEntityList")
     private List<SubjectEntity> subjectEntityList1;
+    @OneToOne(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
+    private PrequisiteEntity prequisiteEntity;
+    @OneToMany(mappedBy = "subjectId")
+    private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
     @OneToMany(mappedBy = "subjectId")
     private List<SubjectMarkComponentEntity> subjectMarkComponentEntityList;
 
@@ -114,6 +121,22 @@ public class SubjectEntity implements Serializable {
         this.subjectEntityList1 = subjectEntityList1;
     }
 
+    public PrequisiteEntity getPrequisiteEntity() {
+        return prequisiteEntity;
+    }
+
+    public void setPrequisiteEntity(PrequisiteEntity prequisiteEntity) {
+        this.prequisiteEntity = prequisiteEntity;
+    }
+
+    public List<SubjectCurriculumEntity> getSubjectCurriculumEntityList() {
+        return subjectCurriculumEntityList;
+    }
+
+    public void setSubjectCurriculumEntityList(List<SubjectCurriculumEntity> subjectCurriculumEntityList) {
+        this.subjectCurriculumEntityList = subjectCurriculumEntityList;
+    }
+
     public List<SubjectMarkComponentEntity> getSubjectMarkComponentEntityList() {
         return subjectMarkComponentEntityList;
     }
@@ -144,7 +167,7 @@ public class SubjectEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.SubjectEntity[ id=" + id + " ]";
+        return "com.capstone.entites.SubjectEntity[ id=" + id + " ]";
     }
     
 }

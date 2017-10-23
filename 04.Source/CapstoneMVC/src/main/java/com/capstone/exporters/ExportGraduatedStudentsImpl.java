@@ -69,7 +69,7 @@ public class ExportGraduatedStudentsImpl implements IExportObject {
                 ordinalNumberCell.setCellStyle(cellStyle);
                 ordinalNumberCell.setCellValue("" + (markSize - ordinalNumber + 1));
                 // Subject code
-                SubjectEntity subjectEntity = subjectService.findSubjectById(marksEntity.getSubjectMarkComponentId().getSubjectId());
+                SubjectEntity subjectEntity = subjectService.findSubjectById(marksEntity.getSubjectMarkComponentId().getSubjectId().getId());
                 XSSFCell subjectCodeCell = row.createCell(1);
                 subjectCodeCell.setCellValue(subjectEntity.getId());
                 CellRangeAddress range1 = new CellRangeAddress(rowIndex, rowIndex, 1, 2);

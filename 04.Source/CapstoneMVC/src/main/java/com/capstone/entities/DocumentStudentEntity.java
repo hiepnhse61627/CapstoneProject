@@ -7,7 +7,17 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -21,8 +31,8 @@ public class DocumentStudentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Column(name = "CreatedDate")
     @Temporal(TemporalType.DATE)
@@ -106,7 +116,7 @@ public class DocumentStudentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.DocumentStudentEntity[ id=" + id + " ]";
+        return "com.capstone.entites.DocumentStudentEntity[ id=" + id + " ]";
     }
     
 }

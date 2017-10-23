@@ -6,7 +6,15 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 
 /**
  *
@@ -20,8 +28,8 @@ public class MarksEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "AverageMark", precision = 53)
@@ -126,7 +134,7 @@ public class MarksEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.MarksEntity[ id=" + id + " ]";
+        return "com.capstone.entites.MarksEntity[ id=" + id + " ]";
     }
     
 }

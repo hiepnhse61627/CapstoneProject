@@ -51,7 +51,7 @@ public class PercentFailController {
         String courseId = params.get("course");
 
         Comparator<MarksEntity> comparator = (o1, o2) -> new CompareToBuilder()
-                .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().toUpperCase())
+                .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
                 .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
                 .toComparison();
 
@@ -168,7 +168,7 @@ public class PercentFailController {
             if (map.get(m.getSemesterId().getSemester(), m.getSubjectMarkComponentId().getSubjectId()) == null) {
                 List<MarksEntity> tmp = new ArrayList<>();
                 tmp.add(m);
-                map.put(m.getSemesterId().getSemester(), m.getSubjectMarkComponentId().getSubjectId(), tmp);
+                map.put(m.getSemesterId().getSemester(), m.getSubjectMarkComponentId().getSubjectId().getId(), tmp);
             } else {
                 map.get(m.getSemesterId().getSemester(), m.getSubjectMarkComponentId().getSubjectId()).add(m);
             }

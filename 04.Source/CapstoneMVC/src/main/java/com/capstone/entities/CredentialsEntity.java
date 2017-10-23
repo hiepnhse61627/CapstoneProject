@@ -6,7 +6,13 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 
 /**
  *
@@ -15,13 +21,13 @@ import javax.persistence.*;
 @Entity
 @Table(name = "Credentials", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "CredentialsEntiy.findAll", query = "SELECT c FROM CredentialsEntity c")})
+    @NamedQuery(name = "CredentialsEntity.findAll", query = "SELECT c FROM CredentialsEntity c")})
 public class CredentialsEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Basic(optional = false)
     @Column(name = "Username", nullable = false, length = 60)
@@ -129,7 +135,7 @@ public class CredentialsEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.CredentialsEntity[ id=" + id + " ]";
+        return "com.capstone.entites.CredentialsEntity[ id=" + id + " ]";
     }
     
 }

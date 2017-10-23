@@ -7,7 +7,14 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 /**
  *
@@ -21,8 +28,8 @@ public class MarkComponentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Column(name = "Name", length = 2147483647)
     private String name;
@@ -82,7 +89,7 @@ public class MarkComponentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.MarkComponentEntity[ id=" + id + " ]";
+        return "com.capstone.entites.MarkComponentEntity[ id=" + id + " ]";
     }
     
 }

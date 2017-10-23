@@ -96,7 +96,7 @@ public class Ultilities {
                 if (map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId()) == null) {
                     List<MarksEntity> newMarkList = new ArrayList<>();
                     newMarkList.add(m);
-                    map.put(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId(), newMarkList);
+                    map.put(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId(), newMarkList);
                 } else {
                     map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId()).add(m);
                 }
@@ -128,7 +128,7 @@ public class Ultilities {
                                         }
 
                                         if (!isPass) {
-                                            result.add(new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId()));
+                                            result.add(new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId()));
                                             break;
                                         }
                                     }
