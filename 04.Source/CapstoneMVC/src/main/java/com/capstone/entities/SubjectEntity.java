@@ -22,7 +22,6 @@ public class SubjectEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Column(name = "Id", nullable = false, length = 50)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
     @Column(name = "Name", length = 255)
     private String name;
