@@ -43,4 +43,9 @@ public class SubjectCurriculumServiceImpl implements ISubjectCurriculumService {
     public void updateCurriculum(SubjectCurriculumEntity entity) {
         controller.updateCurriculum(entity);
     }
+
+    @Override
+    public CurriculumEntity findCurriculum(String curName, String programName) {
+        return controller.findCurriculum(curName, programName);
+    }
 }
