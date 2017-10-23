@@ -93,12 +93,12 @@ public class Ultilities {
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
         if (!list.isEmpty()) {
             for (MarksEntity m : list) {
-                if (map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId()) == null) {
+                if (map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
                     List<MarksEntity> newMarkList = new ArrayList<>();
                     newMarkList.add(m);
                     map.put(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId(), newMarkList);
                 } else {
-                    map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId()).add(m);
+                    map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId()).add(m);
                 }
             }
 
@@ -109,8 +109,14 @@ public class Ultilities {
                     List<MarksEntity> markList = SortMarkBySemester(subject.get(subId));
                     for (MarksEntity m : markList) {
                         if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt")) {
-                            boolean isPass = false;
+
+                            int totalFail = 0;
+                            FailPrequisiteModel failedRow = null;
+
                             for (String row : prequisiteRow) {
+
+                                boolean isPass = false;
+
                                 String[] cell = row.trim().split(",");
                                 for (String prequisite : cell) {
                                     prequisite = prequisite.trim();
@@ -128,18 +134,22 @@ public class Ultilities {
                                         }
 
                                         if (!isPass) {
-                                            result.add(new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId()));
+                                            failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId());
                                             break;
                                         }
                                     }
                                     //////////////////////
 
-                                    if (!isPass) {
-                                        break;
-                                    }
+                                }
+
+                                if (!isPass) {
+                                    totalFail++;
                                 }
                             }
-                            break;
+
+                            if (totalFail == prequisiteRow.size()) {
+                                if (failedRow != null) result.add(failedRow);
+                            }
                         }
                     }
                 }
