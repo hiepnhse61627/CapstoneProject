@@ -127,6 +127,7 @@ public class UploadController {
             List<DocumentStudentEntity> studentList = new ArrayList<>();
             List<ProgramEntity> programList = programService.getAllPrograms();
             List<CurriculumEntity> curriculumList = curriculumService.getAllCurriculums();
+            Date now = new Date();
 
             // Get template document
             List<DocumentEntity> docList = documentService.getAllDocuments();
@@ -254,6 +255,7 @@ public class UploadController {
                         docStd.setStudentId(student);
                         docStd.setCurriculumId(currentCurriculum);
                         docStd.setDocumentId(templateDoc);
+                        docStd.setCreatedDate(now);
 
                         studentList.add(docStd);
                     }

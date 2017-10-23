@@ -125,7 +125,7 @@ public class StudentDetail {
                 set2.forEach(m -> {
                     ArrayList<String> tmp = new ArrayList<>();
                     tmp.add(m.getSubjectMarkComponentId() == null ? "N/A" : m.getSubjectMarkComponentId().getSubjectId().getId());
-//                    tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getClass1());
+                    tmp.add(m.getCourseId() == null ? "N/A" : m.getCourseId().getSemester());
                     tmp.add(m.getSemesterId() == null ? "N/A" : m.getSemesterId().getSemester());
                     tmp.add(String.valueOf(m.getAverageMark()));
                     tmp.add(m.getStatus());
@@ -150,6 +150,111 @@ public class StudentDetail {
     @RequestMapping("/getStudentCurrentCourse")
     @ResponseBody
     public JsonObject GetStudentCurrentCourse(@RequestParam Map<String, String> params) {
+        IStudentService studentService = new StudentServiceImpl();
+        ISubjectService subjectService = new SubjectServiceImpl();
+        JsonObject jsonObject = new JsonObject();
+
+        int stuId = Integer.parseInt(params.get("stuId"));
+        StudentEntity student = studentService.findStudentById(stuId);
+
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            String queryStr = "SELECT sc FROM DocumentStudentEntity ds, SubjectCurriculumEntity sc" +
+                    " WHERE ds.studentId.id = :studentId AND ds.createdDate =" +
+                    " (SELECT MAX(ds1.createdDate) FROM DocumentStudentEntity ds1 WHERE ds1.studentId.id = :studentId) " +
+                    " AND ds.curriculumId.id = sc.curriculumId.id" +
+                    " AND sc.termNumber = :term";
+            TypedQuery<SubjectCurriculumEntity> query = em.createQuery(queryStr, SubjectCurriculumEntity.class);
+            query.setParameter("studentId", stuId);
+            query.setParameter("term", student.getTerm());
+
+            List<SubjectCurriculumEntity> currentTermSubjectCurriList = query.getResultList();
+
+
+
+
+            List<MarksEntity> list = service2.getStudentMarksById(stuId);
+            // Init students passed and failed
+            List<MarksEntity> listPassed = list.stream().filter(p -> p.getStatus().contains("Passed") || p.getStatus().contains("Exempt")).collect(Collectors.toList());
+            List<MarksEntity> listFailed = list.stream().filter(f -> !f.getStatus().contains("Passed") || !f.getStatus().contains("Exempt")).collect(Collectors.toList());
+            // compared list
+            List<MarksEntity> comparedList = new ArrayList<>();
+            // make comparator
+            Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
+                @Override
+                public int compare(MarksEntity o1, MarksEntity o2) {
+                    return new CompareToBuilder()
+                            .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
+                            .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
+                            .toComparison();
+                }
+            };
+            Collections.sort(listPassed, comparator);
+            // start compare failed list to passed list
+            for (int i = 0; i < listFailed.size(); i++) {
+                MarksEntity keySearch = listFailed.get(i);
+                int index = Collections.binarySearch(listPassed, keySearch, comparator);
+                if (index < 0) {
+                    comparedList.add(keySearch);
+                }
+            }
+            // result list
+            List<MarksEntity> failList = new ArrayList<>();
+            // remove duplicate
+            for (MarksEntity marksEntity : comparedList) {
+                if (marksEntity.getSubjectMarkComponentId() != null && !failList.stream().anyMatch(r -> r.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase().equals(marksEntity.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
+                        && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
+                    failList.add(marksEntity);
+                }
+            }
+
+
+
+            List<SubjectCurriculumEntity> result = new ArrayList<>();
+            for (SubjectCurriculumEntity sc : currentTermSubjectCurriList) {
+                List<List<SubjectEntity>> preList = subjectService.getAllPrequisiteSubjects(sc.getSubjectId().getId());
+
+                boolean isFound = false;
+                // Find if fail subject in preList
+                for (MarksEntity marksEntity : failList) {
+                    for (List<SubjectEntity> sList : preList) {
+                        for (SubjectEntity s : sList) {
+                            if (s.getId().equals(marksEntity.getSubjectMarkComponentId().getSubjectId().getId())) {
+                                isFound = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (!isFound) {
+                    result.add(sc);
+                }
+            }
+
+
+            List<List<String>> displayList = new ArrayList<>();
+            for (SubjectCurriculumEntity sc : result) {
+                List<String> row = new ArrayList<>();
+                row.add(sc.getSubjectId().getId());
+                row.add(sc.getSubjectId().getName());
+
+                displayList.add(row);
+            }
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(displayList);
+
+            jsonObject.addProperty("iTotalRecords", result.size());
+            jsonObject.addProperty("iTotalDisplayRecords", result.size());
+            jsonObject.add("aaData", aaData);
+            jsonObject.addProperty("sEcho", params.get("sEcho"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
 //        IStudentService studentService = new StudentServiceImpl();
 //        IProgramService programService = new ProgramServiceImpl();
 //
@@ -172,12 +277,6 @@ public class StudentDetail {
 //            }
 //            ProgramEntity program = programService.getProgramByName(programName);
 //
-////            String sqlString = "SELECT distinct Curriculum_Mapping.term FROM Student " +
-////                    "INNER JOIN Marks on student.ID = Marks.StudentId AND Student.ID = ?" +
-////                    " INNER JOIN Curriculum_Mapping ON Marks.SubjectId = Curriculum_Mapping.SubId " +
-////                    " INNER JOIN Subject_Curriculum ON Subject_Curriculum.Id = Curriculum_Mapping.CurId" +
-////                    " AND Subject_Curriculum.ProgramId = ?" +
-////                    " ORDER BY Curriculum_Mapping.Term desc";
 //            String sqlString = "SELECT Curriculum_Mapping.Term, COUNT(*) FROM Student " +
 //                    "INNER JOIN Marks on student.ID = Marks.StudentId AND Student.ID = ?" +
 //                    " INNER JOIN Curriculum_Mapping ON Marks.SubjectId = Curriculum_Mapping.SubId " +
@@ -210,7 +309,7 @@ public class StudentDetail {
 //                    currentTermNumber++;
 //                }
 //            }
-
+//
 //            query = em.createQuery("SELECT s FROM CurriculumMappingEntity c, SubjectEntity s WHERE c.term LIKE '%" + currentTermNumber + "' AND c.subjectEntity.id = s.id", SubjectEntity.class);
 //            objects = (List<SubjectEntity>) query.getResultList();
 //
@@ -261,13 +360,51 @@ public class StudentDetail {
 //        }
 //
 //
-//        return jsonObject;
-        return null;
+        return jsonObject;
     }
 
     @RequestMapping("/getStudentNextCourse")
     @ResponseBody
     public JsonObject GetStudentNextCourse(@RequestParam Map<String, String> params) {
+        IStudentService studentService = new StudentServiceImpl();
+        JsonObject jsonObject = new JsonObject();
+
+        int stuId = Integer.parseInt(params.get("stuId"));
+        StudentEntity student = studentService.findStudentById(stuId);
+
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            String queryStr = "SELECT sc FROM DocumentStudentEntity ds, SubjectCurriculumEntity sc" +
+                    " WHERE ds.studentId.id = :studentId AND ds.createdDate =" +
+                    " (SELECT MAX(ds1.createdDate) FROM DocumentStudentEntity ds1 WHERE ds1.studentId.id = :studentId) " +
+                    " AND ds.curriculumId.id = sc.curriculumId.id" +
+                    " AND sc.termNumber = :term";
+            TypedQuery<SubjectCurriculumEntity> query = em.createQuery(queryStr, SubjectCurriculumEntity.class);
+            query.setParameter("studentId", stuId);
+            query.setParameter("term", student.getTerm() + 1);
+
+            List<SubjectCurriculumEntity> list = query.getResultList();
+            List<List<String>> result = new ArrayList<>();
+            for (SubjectCurriculumEntity sc : list) {
+                List<String> row = new ArrayList<>();
+                row.add(sc.getSubjectId().getId());
+                row.add(sc.getSubjectId().getName());
+
+                result.add(row);
+            }
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
+
+            jsonObject.addProperty("iTotalRecords", result.size());
+            jsonObject.addProperty("iTotalDisplayRecords", result.size());
+            jsonObject.add("aaData", aaData);
+            jsonObject.addProperty("sEcho", params.get("sEcho"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
 //        IStudentService studentService = new StudentServiceImpl();
 //        IProgramService programService = new ProgramServiceImpl();
 //
@@ -379,7 +516,6 @@ public class StudentDetail {
 //        }
 //
 //
-//        return jsonObject;
-        return null;
+        return jsonObject;
     }
 }
