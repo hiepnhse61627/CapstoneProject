@@ -397,52 +397,52 @@ public class SubjectCurriculumController {
     }
 
     private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile) {
-//        JsonObject obj = new JsonObject();
-//
-//        try {
-//            InputStream is = isNewFile ? file.getInputStream() : new FileInputStream(file2);
-//
-//            HSSFWorkbook workbook = new HSSFWorkbook(is);
-//            HSSFSheet spreadsheet = workbook.getSheetAt(0);
-//
-//            HSSFRow row;
-//
-//            int termIndex = -1;
-//            int subjectIndex = -1;
-//            int curriculumIndex = -1;
-//
-//            int rowIndex = 0;
-//            boolean flag = false;
-//
-//            for (rowIndex = 0; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
-//                row = spreadsheet.getRow(rowIndex);
-//
-//                if (row != null) {
-//                    for (int cellIndex = row.getFirstCellNum(); cellIndex <= row.getLastCellNum(); cellIndex++) {
-//                        Cell cell = row.getCell(cellIndex);
-//                        if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("termno")) {
-//                            termIndex = cellIndex;
-//                        } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("subjectcode")) {
-//                            subjectIndex = cellIndex;
-//                        } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("curriculumcode")) {
-//                            curriculumIndex = cellIndex;
-//                        }
-//
-//                        if (termIndex != -1 && subjectIndex != -1 && curriculumIndex != -1) {
-//                            flag = true;
-//                            break;
-//                        }
-//                    }
-//                }
-//
-//                if (flag) {
-//                    break;
-//                }
-//            }
-//
-//            ISubjectService subjectService = new SubjectServiceImpl();
-//            ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
-//
+        JsonObject obj = new JsonObject();
+
+        try {
+            InputStream is = isNewFile ? file.getInputStream() : new FileInputStream(file2);
+
+            HSSFWorkbook workbook = new HSSFWorkbook(is);
+            HSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            HSSFRow row;
+
+            int termIndex = -1;
+            int subjectIndex = -1;
+            int curriculumIndex = -1;
+
+            int rowIndex = 0;
+            boolean flag = false;
+
+            for (rowIndex = 0; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+
+                if (row != null) {
+                    for (int cellIndex = row.getFirstCellNum(); cellIndex <= row.getLastCellNum(); cellIndex++) {
+                        Cell cell = row.getCell(cellIndex);
+                        if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("curriculumcode")) {
+                            curriculumIndex = cellIndex;
+                        } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("subjectcode")) {
+                            subjectIndex = cellIndex;
+                        } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("termno")) {
+                            termIndex = cellIndex;
+                        }
+
+                        if (termIndex != -1 && subjectIndex != -1 && curriculumIndex != -1) {
+                            flag = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (flag) {
+                    break;
+                }
+            }
+
+            ISubjectService subjectService = new SubjectServiceImpl();
+            ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
+
 //            Map<String, List<CurriculumMappingEntity>> map = new TreeMap<>();
 //            for (rowIndex = rowIndex + 1; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
 //                row = spreadsheet.getRow(rowIndex);
@@ -505,31 +505,15 @@ public class SubjectCurriculumController {
 //                entity.setCurriculumMappingEntityList(entry.getValue());
 //                subjectCurriculumService.updateCurriculum(entity);
 //            }
-//
-//            obj.addProperty("success", true);
-//        } catch (Exception e) {
-//            Logger.writeLog(e);
-//            obj.addProperty("success", false);
-//            obj.addProperty("message", e.getMessage());
-//            return obj;
-//        }
-//
-//        return obj;
-        return null;
-    }
 
-    private int findRow(HSSFSheet sheet, int currentRow, String cellContent) {
-        for (int rowIndex = currentRow; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
-            Row row = sheet.getRow(rowIndex);
-            if (row != null) {
-                for (int cellIndex = row.getFirstCellNum(); cellIndex <= row.getLastCellNum(); cellIndex++) {
-                    Cell cell = row.getCell(cellIndex);
-                    if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains(cellContent)) {
-                        return row.getRowNum();
-                    }
-                }
-            }
+            obj.addProperty("success", true);
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
+            return obj;
         }
-        return -1;
+
+        return obj;
     }
 }

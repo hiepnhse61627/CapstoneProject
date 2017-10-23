@@ -6,7 +6,6 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
-import java.util.List;
 import javax.persistence.*;
 
 /**
@@ -24,8 +23,6 @@ public class SubjectMarkComponentEntity implements Serializable {
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name = "SubjectId", length = 50)
-    private String subjectId;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "Percent", precision = 53)
     private Double percent;
@@ -34,8 +31,9 @@ public class SubjectMarkComponentEntity implements Serializable {
     @JoinColumn(name = "MarkComponentId", referencedColumnName = "Id")
     @ManyToOne
     private MarkComponentEntity markComponentId;
-    @OneToMany(mappedBy = "subjectMarkComponentId")
-    private List<MarksEntity> marksEntityList;
+    @JoinColumn(name = "SubjectId", referencedColumnName = "Id")
+    @ManyToOne
+    private SubjectEntity subjectId;
 
     public SubjectMarkComponentEntity() {
     }
@@ -50,14 +48,6 @@ public class SubjectMarkComponentEntity implements Serializable {
 
     public void setId(Integer id) {
         this.id = id;
-    }
-
-    public String getSubjectId() {
-        return subjectId;
-    }
-
-    public void setSubjectId(String subjectId) {
-        this.subjectId = subjectId;
     }
 
     public Double getPercent() {
@@ -84,12 +74,12 @@ public class SubjectMarkComponentEntity implements Serializable {
         this.markComponentId = markComponentId;
     }
 
-    public List<MarksEntity> getMarksEntityList() {
-        return marksEntityList;
+    public SubjectEntity getSubjectId() {
+        return subjectId;
     }
 
-    public void setMarksEntityList(List<MarksEntity> marksEntityList) {
-        this.marksEntityList = marksEntityList;
+    public void setSubjectId(SubjectEntity subjectId) {
+        this.subjectId = subjectId;
     }
 
     @Override

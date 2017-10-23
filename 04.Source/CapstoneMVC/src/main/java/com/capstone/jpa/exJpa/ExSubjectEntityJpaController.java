@@ -68,25 +68,25 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 
     public List<List<SubjectEntity>> getAllPrequisiteSubjects(String subId) {
         prequisiteList = new ArrayList<>();
-        EntityManager manager = getEntityManager();
-        SubjectEntity currSub = manager.find(SubjectEntity.class, subId);
-        PrequisiteEntity prequisite = currSub.getPrequisiteEntity();
-        if (prequisite.getPrequisiteSubs() != null) {
-            String[] prequisitesRow = prequisite.getPrequisiteSubs().split("OR");
-            for (String row : prequisitesRow) {
-                List<SubjectEntity> list = new ArrayList<>();
-                String[] processedRows = row.replaceAll("\\(", "").replaceAll("\\)", "").split(",");
-                for (String sub : processedRows) {
-                    SubjectEntity pre = manager.find(SubjectEntity.class, sub.trim());
-                    if (pre != null) {
-                        list.add(pre);
-                    }
-                }
-                if (!list.isEmpty()) {
-                    prequisiteList.add(list);
-                }
-            }
-        }
+//        EntityManager manager = getEntityManager();
+//        SubjectEntity currSub = manager.find(SubjectEntity.class, subId);
+//        PrequisiteEntity prequisite = currSub.getPrequisiteEntity();
+//        if (prequisite.getPrequisiteSubs() != null) {
+//            String[] prequisitesRow = prequisite.getPrequisiteSubs().split("OR");
+//            for (String row : prequisitesRow) {
+//                List<SubjectEntity> list = new ArrayList<>();
+//                String[] processedRows = row.replaceAll("\\(", "").replaceAll("\\)", "").split(",");
+//                for (String sub : processedRows) {
+//                    SubjectEntity pre = manager.find(SubjectEntity.class, sub.trim());
+//                    if (pre != null) {
+//                        list.add(pre);
+//                    }
+//                }
+//                if (!list.isEmpty()) {
+//                    prequisiteList.add(list);
+//                }
+//            }
+//        }
 
         return prequisiteList;
     }
@@ -119,27 +119,27 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
     }
 
     public List<List<SubjectEntity>> getAllPrequisite() {
-        prequisiteList = new ArrayList<>();
-        EntityManager manager = getEntityManager();
-        for (SubjectEntity currSub : this.findSubjectEntityEntities()) {
-            PrequisiteEntity prequisite = currSub.getPrequisiteEntity();
-            if (prequisite.getPrequisiteSubs() != null) {
-                String[] prequisitesRow = prequisite.getPrequisiteSubs().split("OR");
-                for (String row : prequisitesRow) {
-                    List<SubjectEntity> list = new ArrayList<>();
-                    String[] processedRows = row.replaceAll("\\(", "").replaceAll("\\)", "").split(",");
-                    for (String sub : processedRows) {
-                        SubjectEntity pre = manager.find(SubjectEntity.class, sub.trim());
-                        if (pre != null) {
-                            list.add(pre);
-                        }
-                    }
-                    if (!list.isEmpty()) {
-                        prequisiteList.add(list);
-                    }
-                }
-            }
-        }
+//        prequisiteList = new ArrayList<>();
+//        EntityManager manager = getEntityManager();
+//        for (SubjectEntity currSub : this.findSubjectEntityEntities()) {
+//            PrequisiteEntity prequisite = currSub.getPrequisiteEntity();
+//            if (prequisite.getPrequisiteSubs() != null) {
+//                String[] prequisitesRow = prequisite.getPrequisiteSubs().split("OR");
+//                for (String row : prequisitesRow) {
+//                    List<SubjectEntity> list = new ArrayList<>();
+//                    String[] processedRows = row.replaceAll("\\(", "").replaceAll("\\)", "").split(",");
+//                    for (String sub : processedRows) {
+//                        SubjectEntity pre = manager.find(SubjectEntity.class, sub.trim());
+//                        if (pre != null) {
+//                            list.add(pre);
+//                        }
+//                    }
+//                    if (!list.isEmpty()) {
+//                        prequisiteList.add(list);
+//                    }
+//                }
+//            }
+//        }
 
         return prequisiteList;
     }

@@ -7,7 +7,17 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 /**
  *
@@ -22,7 +32,6 @@ public class SubjectEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Column(name = "Id", nullable = false, length = 50)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
     @Column(name = "Name", length = 255)
     private String name;
@@ -39,10 +48,8 @@ public class SubjectEntity implements Serializable {
     private List<SubjectEntity> subjectEntityList;
     @ManyToMany(mappedBy = "subjectEntityList")
     private List<SubjectEntity> subjectEntityList1;
-    @OneToOne(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
-    private PrequisiteEntity prequisiteEntity;
     @OneToMany(mappedBy = "subjectId")
-    private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
+    private List<SubjectMarkComponentEntity> subjectMarkComponentEntityList;
 
     public SubjectEntity() {
     }
@@ -107,20 +114,12 @@ public class SubjectEntity implements Serializable {
         this.subjectEntityList1 = subjectEntityList1;
     }
 
-    public PrequisiteEntity getPrequisiteEntity() {
-        return prequisiteEntity;
+    public List<SubjectMarkComponentEntity> getSubjectMarkComponentEntityList() {
+        return subjectMarkComponentEntityList;
     }
 
-    public void setPrequisiteEntity(PrequisiteEntity prequisiteEntity) {
-        this.prequisiteEntity = prequisiteEntity;
-    }
-
-    public List<SubjectCurriculumEntity> getSubjectCurriculumEntityList() {
-        return subjectCurriculumEntityList;
-    }
-
-    public void setSubjectCurriculumEntityList(List<SubjectCurriculumEntity> subjectCurriculumEntityList) {
-        this.subjectCurriculumEntityList = subjectCurriculumEntityList;
+    public void setSubjectMarkComponentEntityList(List<SubjectMarkComponentEntity> subjectMarkComponentEntityList) {
+        this.subjectMarkComponentEntityList = subjectMarkComponentEntityList;
     }
 
     @Override

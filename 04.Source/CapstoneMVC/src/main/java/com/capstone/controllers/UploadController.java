@@ -679,15 +679,19 @@ public class UploadController {
                                 String subjectCode = subjectCodeCell.getStringCellValue().trim().toUpperCase();
                                 // find mark componentEntity
                                 MarkComponentEntity markComponentEntity = markComponentService.getMarkComponentByName(markComponentName);
-                                // Create Subject Mark Component
-                                SubjectMarkComponentEntity subjectMarkComponentEntity = new SubjectMarkComponentEntity();
-                                subjectMarkComponentEntity.setSubjectId(subjectCode);
-                                subjectMarkComponentEntity.setMarkComponentId(markComponentEntity);
-                                subjectMarkComponentEntity.setPercent(0.0);
-                                subjectMarkComponentEntity.setName(subjectCode + "_" + markComponentName);
-                                subjectMarkComponentEntity = subjectMarkComponentService.createSubjectMarkComponent(subjectMarkComponentEntity);
+                                // find subject code
+                                SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
+                                if (subjectEntity != null) {
+                                    // Create Subject Mark Component
+                                    SubjectMarkComponentEntity subjectMarkComponentEntity = new SubjectMarkComponentEntity();
+                                    subjectMarkComponentEntity.setSubjectId(subjectEntity);
+                                    subjectMarkComponentEntity.setMarkComponentId(markComponentEntity);
+                                    subjectMarkComponentEntity.setPercent(0.0);
+                                    subjectMarkComponentEntity.setName(subjectCode + "_" + markComponentName);
+                                    subjectMarkComponentEntity = subjectMarkComponentService.createSubjectMarkComponent(subjectMarkComponentEntity);
 
-                                marksEntity.setSubjectMarkComponentId(subjectMarkComponentEntity);
+                                    marksEntity.setSubjectMarkComponentId(subjectMarkComponentEntity);
+                                }
                             }
 
                             if (averageMarkCell != null) {
@@ -743,266 +747,78 @@ public class UploadController {
     /**
      * --------------COURSE------------
      **/
-    @RequestMapping(value = "/goUploadCoursePage")
-    public ModelAndView goUploadCoursePage() {
-        ModelAndView view = new ModelAndView("uploadCourse");
-        view.addObject("title", "Nhập danh sách khóa học");
-
-        ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
-        File[] list = read.readFiles(context, folder);
-        view.addObject("files", list);
-        return view;
-    }
-
-    @RequestMapping("/getCourseStatus")
-    @ResponseBody
-    public JsonObject getCourseCurrentLine() {
-        JsonObject obj = new JsonObject();
-        obj.addProperty("current", studentService.getCurrentLine());
-        obj.addProperty("total", studentService.getTotalLine());
-        return obj;
-    }
-
-    @RequestMapping(value = "/uploadCourseExistFile", method = RequestMethod.POST)
-    @ResponseBody
-    public JsonObject chooseExistCourseFile(@RequestParam("file") String file) {
-        JsonObject obj;
-        try {
-            File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
-            obj = ReadCourseFile(null, f, false);
-        } catch (Exception e) {
-            obj = new JsonObject();
-            obj.addProperty("success", false);
-            obj.addProperty("message", e.getMessage());
-        }
-
-        return obj;
-    }
-
-    @RequestMapping(value = "/uploadCourse", method = RequestMethod.POST)
-    @ResponseBody
-    public JsonObject uploadCourseFile(@RequestParam("file") MultipartFile files) {
-        JsonObject obj = ReadCourseFile(files, null, true);
-        if (obj.get("success").getAsBoolean()) {
-            ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
-            read.saveFile(context, files, folder);
-        }
-
-        return obj;
-    }
-
-    private static int findRow(XSSFSheet sheet, String cellContent) {
-        for (Row row : sheet) {
-            for (Cell cell : row) {
-                if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
-                    if (cell.getRichStringCellValue().getString().trim().equals(cellContent)) {
-                        return row.getRowNum();
-                    }
-                }
-            }
-        }
-        return 0;
-    }
-
-    private static boolean checkCell(XSSFCell c) {
-        if (c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-            return false;
-        }
-        return true;
-    }
-
-
-    private JsonObject ReadCourseFile(MultipartFile file, File file2, boolean isNewFile) {
-        JsonObject obj = new JsonObject();
-
-        try {
-            InputStream is;
-            if (isNewFile) {
-                is = file.getInputStream();
-            } else {
-                is = new FileInputStream(file2);
-            }
-
-            XSSFWorkbook workbook = new XSSFWorkbook(is);
-            XSSFSheet spreadsheet = workbook.getSheetAt(0);
-
-            XSSFRow row;
-            int classIndex = 0;
-            int startDateIndex = 0;
-            int endDateIndex = 0;
-            int subjectCodeIndex = 0;
-            int excelDataIndex = 0;
-            int checkIndex = 0;
-            int dataStartIndex = 0;
-
-            List<CourseEntity> courses = new ArrayList<>();
-            List<CourseEntity> uniqueCourses = new ArrayList<>();
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
-
-            //get header data row index
-            excelDataIndex = findRow(spreadsheet, "Lớp");
-            row = spreadsheet.getRow(excelDataIndex);
-
-            //get data start index
-            for (dataStartIndex = excelDataIndex; dataStartIndex <= spreadsheet.getLastRowNum(); dataStartIndex++) {
-                boolean flag = false;
-                for (int curCellIndex = 0; curCellIndex <= row.getLastCellNum(); curCellIndex++) {
-                    if (row.getCell(curCellIndex).getStringCellValue().toString().equals("Lớp")) {
-                        checkIndex = curCellIndex;
-                        flag = true;
-                        break;
-                    }
-                }
-                if (flag) {
-                    break;
-                }
-            }
-
-            for (int conRowIndex = excelDataIndex + 1; conRowIndex <= spreadsheet.getLastRowNum(); conRowIndex++) {
-                if (checkCell(spreadsheet.getRow(conRowIndex).getCell(checkIndex)) == true) {
-                    dataStartIndex = conRowIndex;
-                    break;
-                }
-            }
-
-            row = spreadsheet.getRow(excelDataIndex);
-            for (int cellIndex = 0; cellIndex <= row.getLastCellNum(); cellIndex++) {
-                if (row.getCell(cellIndex).getStringCellValue().toString().equals("Lớp")) {
-                    classIndex = cellIndex;
-                }
-                if (row.getCell(cellIndex).getStringCellValue().toString().equals("Ngày \n" + "bắt đầu")) {
-                    startDateIndex = cellIndex;
-                }
-                if (row.getCell(cellIndex).getStringCellValue().toString().equals("Ngày \n" + "kết thúc")) {
-                    endDateIndex = cellIndex;
-                }
-                if (row.getCell(cellIndex).getStringCellValue().toString().equals("Mã môn")) {
-                    subjectCodeIndex = cellIndex;
-                }
-                if (classIndex != 0 && startDateIndex != 0 && endDateIndex != 0 && subjectCodeIndex != 0) break;
-            }
-            if (classIndex == 0 && startDateIndex == 0 && endDateIndex == 0 && subjectCodeIndex == 0) {
-
-            } else {
-
-                for (int rowIndex = dataStartIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
-                    row = spreadsheet.getRow(rowIndex);
-
-                    if (row != null) {
-                        CourseEntity course = new CourseEntity();
-                        Cell classCell = row.getCell(classIndex);
-                        Cell startDateCell = row.getCell(startDateIndex);
-                        Cell endDateCell = row.getCell(endDateIndex);
-                        Cell subjectCell = row.getCell(subjectCodeIndex);
-                        if (classCell != null && startDateCell != null && endDateCell != null && subjectCell != null) {
-                            if (classCell != null) {
-                                if (classCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-                                    System.out.println("Class Num ---- " + classCell.getNumericCellValue());
-                                    course.setClass1(String.valueOf(classCell.getNumericCellValue()));
-                                } else {
-                                    System.out.println("Class String ----" + classCell.getStringCellValue());
-                                    course.setClass1(classCell.getStringCellValue());
-                                }
-                            }
-
-                            if (course.getClass1() != null) {
-                                courses.add(course);
-                            }
-                        }
-                    }
-                }
-
-                System.out.println("All Course Added");
-//                for (CourseEntity element : courses) {
-//                    if (!uniqueCourses.stream().anyMatch(c -> c.getClass1().equals(element.getClass1())
-//                            && c.getSubjectCode().equals(element.getSubjectCode())
-//                            && c.getStartDate() == element.getStartDate()
-//                            && c.getEndDate() == element.getEndDate())) {
-//                        uniqueCourses.add(element);
+//    @RequestMapping(value = "/goUploadCoursePage")
+//    public ModelAndView goUploadCoursePage() {
+//        ModelAndView view = new ModelAndView("uploadCourse");
+//        view.addObject("title", "Nhập danh sách khóa học");
+//
+//        ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+//        File[] list = read.readFiles(context, folder);
+//        view.addObject("files", list);
+//        return view;
+//    }
+//
+//    @RequestMapping("/getCourseStatus")
+//    @ResponseBody
+//    public JsonObject getCourseCurrentLine() {
+//        JsonObject obj = new JsonObject();
+//        obj.addProperty("current", studentService.getCurrentLine());
+//        obj.addProperty("total", studentService.getTotalLine());
+//        return obj;
+//    }
+//
+//    @RequestMapping(value = "/uploadCourseExistFile", method = RequestMethod.POST)
+//    @ResponseBody
+//    public JsonObject chooseExistCourseFile(@RequestParam("file") String file) {
+//        JsonObject obj;
+//        try {
+//            File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
+//            obj = ReadCourseFile(null, f, false);
+//        } catch (Exception e) {
+//            obj = new JsonObject();
+//            obj.addProperty("success", false);
+//            obj.addProperty("message", e.getMessage());
+//        }
+//
+//        return obj;
+//    }
+//
+//    @RequestMapping(value = "/uploadCourse", method = RequestMethod.POST)
+//    @ResponseBody
+//    public JsonObject uploadCourseFile(@RequestParam("file") MultipartFile files) {
+//        JsonObject obj = ReadCourseFile(files, null, true);
+//        if (obj.get("success").getAsBoolean()) {
+//            ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+//            read.saveFile(context, files, folder);
+//        }
+//
+//        return obj;
+//    }
+//
+//    private static int findRow(XSSFSheet sheet, String cellContent) {
+//        for (Row row : sheet) {
+//            for (Cell cell : row) {
+//                if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
+//                    if (cell.getRichStringCellValue().getString().trim().equals(cellContent)) {
+//                        return row.getRowNum();
 //                    }
 //                }
-
-                courseService.createCourseList(uniqueCourses);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            obj.addProperty("success", false);
-            obj.addProperty("message", e.getMessage());
-            return obj;
-        }
-
-        obj.addProperty("success", true);
-        return obj;
-    }
-
-    /**
-     * --------------CURRICULUM------------
-     **/
-    @RequestMapping(value = "/goUploadCurriculumPage")
-    public ModelAndView goUploadCurriculumPage() {
-        ModelAndView view = new ModelAndView("uploadCurriculum");
-        view.addObject("title", "Nhập chương trình đào tạo");
-
-        ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
-        File[] list = read.readFiles(context, folder);
-        view.addObject("files", list);
-        return view;
-    }
-
-    @RequestMapping("/getCurriculumStatus")
-    @ResponseBody
-    public JsonObject getCurriculumCurrentLine() {
-        JsonObject obj = new JsonObject();
-        obj.addProperty("current", studentService.getCurrentLine());
-        obj.addProperty("total", studentService.getTotalLine());
-        return obj;
-    }
-
-    @RequestMapping(value = "/uploadCurriculumExistFile", method = RequestMethod.POST)
-    @ResponseBody
-    public JsonObject chooseExistCurriculumFile(@RequestParam("file") String file) {
-        JsonObject obj;
-        try {
-            File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
-            obj = ReadCurriculumFile(null, f, false);
-        } catch (Exception e) {
-            obj = new JsonObject();
-            obj.addProperty("success", false);
-            obj.addProperty("message", e.getMessage());
-        }
-
-        return obj;
-    }
-
-    @RequestMapping(value = "/uploadCurriculum", method = RequestMethod.POST)
-    @ResponseBody
-    public JsonObject uploadCurriculumFile(@RequestParam("file") MultipartFile files) {
-        JsonObject obj = ReadCurriculumFile(files, null, true);
-        if (obj.get("success").getAsBoolean()) {
-            ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
-            read.saveFile(context, files, folder);
-        }
-
-        return obj;
-    }
-
-    private static int findRowCurriculum(XSSFSheet sheet, String cellContent) {
-        for (Row row : sheet) {
-            for (Cell cell : row) {
-                if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
-                    if (cell.getRichStringCellValue().getString().trim().equals(cellContent)) {
-                        return row.getRowNum();
-                    }
-                }
-            }
-        }
-        return 0;
-    }
-
-
-    private JsonObject ReadCurriculumFile(MultipartFile file, File file2, boolean isNewFile) {
-        JsonObject obj = new JsonObject();
-
+//            }
+//        }
+//        return 0;
+//    }
+//
+//    private static boolean checkCell(XSSFCell c) {
+//        if (c.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+//            return false;
+//        }
+//        return true;
+//    }
+//
+//
+//    private JsonObject ReadCourseFile(MultipartFile file, File file2, boolean isNewFile) {
+//        JsonObject obj = new JsonObject();
+//
 //        try {
 //            InputStream is;
 //            if (isNewFile) {
@@ -1012,64 +828,252 @@ public class UploadController {
 //            }
 //
 //            XSSFWorkbook workbook = new XSSFWorkbook(is);
-//            XSSFSheet spreadsheet = workbook.getSheetAt(1);
+//            XSSFSheet spreadsheet = workbook.getSheetAt(0);
 //
 //            XSSFRow row;
+//            int classIndex = 0;
+//            int startDateIndex = 0;
+//            int endDateIndex = 0;
+//            int subjectCodeIndex = 0;
 //            int excelDataIndex = 0;
+//            int checkIndex = 0;
+//            int dataStartIndex = 0;
 //
-//            String curriculumName = spreadsheet.getSheetName();
-//
-//            List<CurriculumMappingEntity> curriculums = new ArrayList<>();
-//            List<CurriculumMappingEntity> uniqueCurriculum = new ArrayList<>();
-////            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
+//            List<CourseEntity> courses = new ArrayList<>();
+//            List<CourseEntity> uniqueCourses = new ArrayList<>();
+//            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
 //
 //            //get header data row index
-//            excelDataIndex = findRowCurriculum(spreadsheet, "Học kỳ 1");
+//            excelDataIndex = findRow(spreadsheet, "Lớp");
+//            row = spreadsheet.getRow(excelDataIndex);
 //
-//            for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
-//                XSSFRow termRow = spreadsheet.getRow(rowIndex);
-//                String term = "";
-//                if (termRow.getCell(1).getCellType() == Cell.CELL_TYPE_NUMERIC) {
-//                    if (termRow.getCell(2).getStringCellValue() == ""
-//                            && termRow.getCell(3).getStringCellValue() != "") {
-//                        term = termRow.getCell(3).getStringCellValue();
-//                        rowIndex++;
+//            //get data start index
+//            for (dataStartIndex = excelDataIndex; dataStartIndex <= spreadsheet.getLastRowNum(); dataStartIndex++) {
+//                boolean flag = false;
+//                for (int curCellIndex = 0; curCellIndex <= row.getLastCellNum(); curCellIndex++) {
+//                    if (row.getCell(curCellIndex).getStringCellValue().toString().equals("Lớp")) {
+//                        checkIndex = curCellIndex;
+//                        flag = true;
+//                        break;
 //                    }
 //                }
-//
-//                row = spreadsheet.getRow(rowIndex);
-//                if (row != null) {
-//                    CurriculumMappingEntity curriculum = new CurriculumMappingEntity();
-//                    Cell subjectCell = row.getCell(2);
-//                    if (subjectCell != null) {
-//                        curriculum.setCurriculumMappingEntityPK(subjectCell.getRichStringCellValue().getString());
-//                        curriculum.setTerm(term);
-//                        curriculums.add(curriculum);
-//
-//                    }
+//                if (flag) {
+//                    break;
 //                }
 //            }
 //
-//            System.out.println("All Curriculum Added");
-//            for (CurriculumMappingEntity element : curriculums) {
-//                if (!uniqueCurriculum.stream().anyMatch(c -> c.getTerm().equals(element.getTerm())
-//                        && c.getCurriculumMappingEntityPK().equals(element.getCurriculumMappingEntityPK()))) {
-//                    uniqueCurriculum.add(element);
+//            for (int conRowIndex = excelDataIndex + 1; conRowIndex <= spreadsheet.getLastRowNum(); conRowIndex++) {
+//                if (checkCell(spreadsheet.getRow(conRowIndex).getCell(checkIndex)) == true) {
+//                    dataStartIndex = conRowIndex;
+//                    break;
 //                }
 //            }
 //
-//            curriculumsService.createCurriculumList(curriculums);
+//            row = spreadsheet.getRow(excelDataIndex);
+//            for (int cellIndex = 0; cellIndex <= row.getLastCellNum(); cellIndex++) {
+//                if (row.getCell(cellIndex).getStringCellValue().toString().equals("Lớp")) {
+//                    classIndex = cellIndex;
+//                }
+//                if (row.getCell(cellIndex).getStringCellValue().toString().equals("Ngày \n" + "bắt đầu")) {
+//                    startDateIndex = cellIndex;
+//                }
+//                if (row.getCell(cellIndex).getStringCellValue().toString().equals("Ngày \n" + "kết thúc")) {
+//                    endDateIndex = cellIndex;
+//                }
+//                if (row.getCell(cellIndex).getStringCellValue().toString().equals("Mã môn")) {
+//                    subjectCodeIndex = cellIndex;
+//                }
+//                if (classIndex != 0 && startDateIndex != 0 && endDateIndex != 0 && subjectCodeIndex != 0) break;
+//            }
+//            if (classIndex == 0 && startDateIndex == 0 && endDateIndex == 0 && subjectCodeIndex == 0) {
 //
+//            } else {
+//
+//                for (int rowIndex = dataStartIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+//                    row = spreadsheet.getRow(rowIndex);
+//
+//                    if (row != null) {
+//                        CourseEntity course = new CourseEntity();
+//                        Cell classCell = row.getCell(classIndex);
+//                        Cell startDateCell = row.getCell(startDateIndex);
+//                        Cell endDateCell = row.getCell(endDateIndex);
+//                        Cell subjectCell = row.getCell(subjectCodeIndex);
+//                        if (classCell != null && startDateCell != null && endDateCell != null && subjectCell != null) {
+//                            if (classCell != null) {
+//                                if (classCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+//                                    System.out.println("Class Num ---- " + classCell.getNumericCellValue());
+//                                    course.setClass1(String.valueOf(classCell.getNumericCellValue()));
+//                                } else {
+//                                    System.out.println("Class String ----" + classCell.getStringCellValue());
+//                                    course.setClass1(classCell.getStringCellValue());
+//                                }
+//                            }
+//
+//                            if (course.getClass1() != null) {
+//                                courses.add(course);
+//                            }
+//                        }
+//                    }
+//                }
+//
+//                System.out.println("All Course Added");
+////                for (CourseEntity element : courses) {
+////                    if (!uniqueCourses.stream().anyMatch(c -> c.getClass1().equals(element.getClass1())
+////                            && c.getSubjectCode().equals(element.getSubjectCode())
+////                            && c.getStartDate() == element.getStartDate()
+////                            && c.getEndDate() == element.getEndDate())) {
+////                        uniqueCourses.add(element);
+////                    }
+////                }
+//
+//                courseService.createCourseList(uniqueCourses);
+//            }
 //        } catch (Exception e) {
 //            e.printStackTrace();
 //            obj.addProperty("success", false);
 //            obj.addProperty("message", e.getMessage());
 //            return obj;
 //        }
-
-        obj.addProperty("success", true);
-        return obj;
-    }
+//
+//        obj.addProperty("success", true);
+//        return obj;
+//    }
+//
+//    /**
+//     * --------------CURRICULUM------------
+//     **/
+//    @RequestMapping(value = "/goUploadCurriculumPage")
+//    public ModelAndView goUploadCurriculumPage() {
+//        ModelAndView view = new ModelAndView("uploadCurriculum");
+//        view.addObject("title", "Nhập chương trình đào tạo");
+//
+//        ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+//        File[] list = read.readFiles(context, folder);
+//        view.addObject("files", list);
+//        return view;
+//    }
+//
+//    @RequestMapping("/getCurriculumStatus")
+//    @ResponseBody
+//    public JsonObject getCurriculumCurrentLine() {
+//        JsonObject obj = new JsonObject();
+//        obj.addProperty("current", studentService.getCurrentLine());
+//        obj.addProperty("total", studentService.getTotalLine());
+//        return obj;
+//    }
+//
+//    @RequestMapping(value = "/uploadCurriculumExistFile", method = RequestMethod.POST)
+//    @ResponseBody
+//    public JsonObject chooseExistCurriculumFile(@RequestParam("file") String file) {
+//        JsonObject obj;
+//        try {
+//            File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
+//            obj = ReadCurriculumFile(null, f, false);
+//        } catch (Exception e) {
+//            obj = new JsonObject();
+//            obj.addProperty("success", false);
+//            obj.addProperty("message", e.getMessage());
+//        }
+//
+//        return obj;
+//    }
+//
+//    @RequestMapping(value = "/uploadCurriculum", method = RequestMethod.POST)
+//    @ResponseBody
+//    public JsonObject uploadCurriculumFile(@RequestParam("file") MultipartFile files) {
+//        JsonObject obj = ReadCurriculumFile(files, null, true);
+//        if (obj.get("success").getAsBoolean()) {
+//            ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+//            read.saveFile(context, files, folder);
+//        }
+//
+//        return obj;
+//    }
+//
+//    private static int findRowCurriculum(XSSFSheet sheet, String cellContent) {
+//        for (Row row : sheet) {
+//            for (Cell cell : row) {
+//                if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
+//                    if (cell.getRichStringCellValue().getString().trim().equals(cellContent)) {
+//                        return row.getRowNum();
+//                    }
+//                }
+//            }
+//        }
+//        return 0;
+//    }
+//
+//
+//    private JsonObject ReadCurriculumFile(MultipartFile file, File file2, boolean isNewFile) {
+//        JsonObject obj = new JsonObject();
+//
+////        try {
+////            InputStream is;
+////            if (isNewFile) {
+////                is = file.getInputStream();
+////            } else {
+////                is = new FileInputStream(file2);
+////            }
+////
+////            XSSFWorkbook workbook = new XSSFWorkbook(is);
+////            XSSFSheet spreadsheet = workbook.getSheetAt(1);
+////
+////            XSSFRow row;
+////            int excelDataIndex = 0;
+////
+////            String curriculumName = spreadsheet.getSheetName();
+////
+////            List<CurriculumMappingEntity> curriculums = new ArrayList<>();
+////            List<CurriculumMappingEntity> uniqueCurriculum = new ArrayList<>();
+//////            SimpleDateFormat sdf = new SimpleDateFormat("EEE MMM dd HH:mm:ss z yyyy", Locale.US);
+////
+////            //get header data row index
+////            excelDataIndex = findRowCurriculum(spreadsheet, "Học kỳ 1");
+////
+////            for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+////                XSSFRow termRow = spreadsheet.getRow(rowIndex);
+////                String term = "";
+////                if (termRow.getCell(1).getCellType() == Cell.CELL_TYPE_NUMERIC) {
+////                    if (termRow.getCell(2).getStringCellValue() == ""
+////                            && termRow.getCell(3).getStringCellValue() != "") {
+////                        term = termRow.getCell(3).getStringCellValue();
+////                        rowIndex++;
+////                    }
+////                }
+////
+////                row = spreadsheet.getRow(rowIndex);
+////                if (row != null) {
+////                    CurriculumMappingEntity curriculum = new CurriculumMappingEntity();
+////                    Cell subjectCell = row.getCell(2);
+////                    if (subjectCell != null) {
+////                        curriculum.setCurriculumMappingEntityPK(subjectCell.getRichStringCellValue().getString());
+////                        curriculum.setTerm(term);
+////                        curriculums.add(curriculum);
+////
+////                    }
+////                }
+////            }
+////
+////            System.out.println("All Curriculum Added");
+////            for (CurriculumMappingEntity element : curriculums) {
+////                if (!uniqueCurriculum.stream().anyMatch(c -> c.getTerm().equals(element.getTerm())
+////                        && c.getCurriculumMappingEntityPK().equals(element.getCurriculumMappingEntityPK()))) {
+////                    uniqueCurriculum.add(element);
+////                }
+////            }
+////
+////            curriculumsService.createCurriculumList(curriculums);
+////
+////        } catch (Exception e) {
+////            e.printStackTrace();
+////            obj.addProperty("success", false);
+////            obj.addProperty("message", e.getMessage());
+////            return obj;
+////        }
+//
+//        obj.addProperty("success", true);
+//        return obj;
+//    }
 
 }
 
