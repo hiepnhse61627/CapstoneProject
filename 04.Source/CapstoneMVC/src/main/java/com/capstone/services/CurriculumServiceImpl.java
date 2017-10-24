@@ -2,6 +2,7 @@ package com.capstone.services;
 
 import com.capstone.entities.CurriculumEntity;
 import com.capstone.jpa.exJpa.ExCurriculumEntityJpaController;
+import com.capstone.models.Logger;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -42,7 +43,21 @@ public class CurriculumServiceImpl implements  ICurriculumService {
     }
 
     @Override
+    public CurriculumEntity getCurriculumByNameAndProgramId(String name, int programId) {
+        return controller.getCurriculumByNameAndProgramId(name, programId);
+    }
+
+    @Override
     public CurriculumEntity createCurriculum(CurriculumEntity entity) {
         return controller.createCurriculum(entity);
+    }
+
+    @Override
+    public void updateCurriculum(CurriculumEntity entity) {
+        try {
+            controller.edit(entity);
+        } catch (Exception e) {
+            Logger.writeLog(e);
+        }
     }
 }
