@@ -348,7 +348,7 @@
                                     <div class="menu-child-wrapper">
                                         <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                         <div class="child-content col-md-11">
-                                            Danh sách pass môn nhưng chưa pass môn tiên quyết
+                                            Danh sách sinh viên đang học sai tiên quyết
                                         </div>
                                     </div>
                                 </a>
@@ -369,6 +369,16 @@
                                         <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                         <div class="child-content col-md-11">
                                             Danh sách chậm tiến độ
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách sinh viên đang học trong kì theo môn học
                                         </div>
                                     </div>
                                 </a>

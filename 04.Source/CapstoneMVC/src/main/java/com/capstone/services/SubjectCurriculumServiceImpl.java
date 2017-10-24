@@ -22,8 +22,7 @@ public class SubjectCurriculumServiceImpl implements ISubjectCurriculumService {
 
     @Override
     public List<SubjectCurriculumEntity> getSubjectCurriculums(int curriculumId) {
-        return
-                controller.getSubjectCurriculums(curriculumId);
+        return controller.getSubjectCurriculums(curriculumId);
     }
 
     @Override
@@ -48,6 +47,11 @@ public class SubjectCurriculumServiceImpl implements ISubjectCurriculumService {
     @Override
     public void updateCurriculum(SubjectCurriculumEntity entity) {
         controller.updateCurriculum(entity);
+    }
+
+    @Override
+    public  void deleteCurriculum(int subjectCurriculumId) {
+        controller.deleteCurriculum(subjectCurriculumId);
     }
 
     @Override

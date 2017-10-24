@@ -78,6 +78,24 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
         }
     }
 
+    public void deleteCurriculum(int subjectCurriculumId) {
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+            SubjectCurriculumEntity entity = this.findSubjectCurriculumEntity(subjectCurriculumId);
+
+            em.getTransaction().begin();
+            em.remove(em.merge(entity));
+            em.getTransaction().commit();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+    }
+
     public void createCurriculumList(List<SubjectCurriculumEntity> subjectCurriculumEntityList) {
         EntityManager em = getEntityManager();
         for (SubjectCurriculumEntity subjectCurriculumEntity : subjectCurriculumEntityList) {

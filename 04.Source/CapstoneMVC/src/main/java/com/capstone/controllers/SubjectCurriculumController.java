@@ -198,8 +198,53 @@ public class SubjectCurriculumController {
                 }
             }
 
-            // Update
-            
+            // Update subject curriculum
+            List<SubjectCurriculumEntity> oldSubjectCurriList =
+                    subjectCurriculumService.getSubjectCurriculums(curriculumId);
+
+            int curTerm = 0;
+            int orderinalNumber = 1;
+            // "data" là 1 list, vd: Học kỳ 1, Môn 1, Môn 2, Môn 3, Học kỳ 2, Môn 4, Môn 5... theo thứ tự order
+            for (String str : data) {
+                if (str.contains("Học kỳ")) {
+                    curTerm = Integer.parseInt(str.substring("Học kỳ".length() + 1));
+                } else {
+                    SubjectCurriculumEntity curSubCurriculum = null;
+                    // Find existed subject curriculum
+                    for (SubjectCurriculumEntity sc : oldSubjectCurriList) {
+                        if (sc.getSubjectId().getId().equalsIgnoreCase(str)) {
+                            curSubCurriculum = sc;
+                            break;
+                        }
+                    }
+
+                    // Update if subject curriculum is found, crete new record if not
+                    if (curSubCurriculum != null) {
+                        curSubCurriculum.setTermNumber(curTerm);
+                        curSubCurriculum.setOrdinalNumber(orderinalNumber++);
+                        subjectCurriculumService.updateCurriculum(curSubCurriculum);
+                        oldSubjectCurriList.remove(curSubCurriculum);
+                    } else {
+                        SubjectEntity subjectEntity = new SubjectEntity();
+                        subjectEntity.setId(str);
+
+                        curSubCurriculum = new SubjectCurriculumEntity();
+                        curSubCurriculum.setCurriculumId(currentCurriculum);
+                        curSubCurriculum.setSubjectId(subjectEntity);
+                        curSubCurriculum.setTermNumber(curTerm);
+                        curSubCurriculum.setOrdinalNumber(orderinalNumber++);
+
+                        subjectCurriculumService.createCurriculum(curSubCurriculum);
+                    }
+                }
+            }
+
+            // Remove all subject curriculum aren't using
+            if (!oldSubjectCurriList.isEmpty()) {
+                for (SubjectCurriculumEntity sc : oldSubjectCurriList) {
+                    subjectCurriculumService.deleteCurriculum(sc.getId());
+                }
+            }
 
             jsonObj.addProperty("success", true);
         } catch (Exception e) {
@@ -209,125 +254,6 @@ public class SubjectCurriculumController {
             jsonObj.addProperty("message", e.getMessage());
         }
 
-
-        //        JsonObject obj = new JsonObject();
-//        ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
-//
-//        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-//        EntityManager em = emf.createEntityManager();
-//
-//        try {
-//            SubjectCurriculumEntity ent = subjectCurriculumService.getCurriculumById(id);
-//
-//            if (ent != null) {
-//                if (name != null && !name.isEmpty()) ent.setName(name);
-//                if (des != null && !des.isEmpty()) ent.setDescription(des);
-//                ProgramEntity program = new ProgramEntity();
-//                program.setId(programId);
-//                ent.setProgramId(program);
-//
-//                List<CurriculumMappingEntity> l = ent.getCurriculumMappingEntityList();
-//                List<CurriculumMappingEntity> notin = new ArrayList<>();
-//                for (CurriculumMappingEntity m : l) {
-//                    boolean flag = false;
-//                    for (String s : data) {
-//                        if (!s.toLowerCase().contains("học kỳ") && m.getSubjectEntity().getId().equals(s)) flag = true;
-//                    }
-//                    if (!flag) {
-//                        notin.add(m);
-//                    }
-//                }
-//
-//                if (!notin.isEmpty()) {
-//                    for (CurriculumMappingEntity m : notin) {
-//                        em.getTransaction().begin();
-//                        CurriculumMappingEntity tmp5 = em.merge(m);
-//                        em.remove(tmp5);
-//                        em.flush();
-//                        l.remove(m);
-//                        ent.setCurriculumMappingEntityList(l);
-//                        SubjectCurriculumEntity tmp4 = em.merge(ent);
-//                        em.flush();
-//                        em.refresh(tmp4);
-//                        em.getTransaction().commit();
-//
-//                        ent = tmp4;
-//                    }
-//                }
-//
-//                String term = "";
-//                int order = 1;
-//                for (String s : data) {
-//                    if (s.toLowerCase().contains("học kỳ")) {
-//                        term = s;
-//                    } else {
-//                        l = ent.getCurriculumMappingEntityList();
-//
-//                        for (CurriculumMappingEntity c : l) {
-//                            if (c.getSubjectEntity().getId().equals(s)) {
-//                                int i = l.indexOf(c);
-//                                c.setTerm(term);
-//                                c.setOrdering(order++);
-//                                em.getTransaction().begin();
-//                                CurriculumMappingEntity tmp = em.merge(c);
-//                                em.flush();
-//                                em.refresh(tmp);
-//                                l.set(i, tmp);
-//                                ent.setCurriculumMappingEntityList(l);
-//                                SubjectCurriculumEntity tmp3 = em.merge(ent);
-//                                em.flush();
-//                                em.refresh(tmp3);
-//                                em.getTransaction().commit();
-//                                break;
-//                            }
-//                        }
-//
-//                        boolean flag = false;
-//                        for (CurriculumMappingEntity c : l) {
-//                            if (c.getSubjectEntity().getId().equals(s)) {
-//                                flag = true;
-//                                break;
-//                            }
-//                        }
-//
-//                        if (!flag) {
-//                            if (em.find(SubjectEntity.class, s) != null) {
-//                                em.getTransaction().begin();
-//
-//                                CurriculumMappingEntity c = new CurriculumMappingEntity();
-//                                c.setOrdering(order++);
-//                                c.setTerm(term);
-//
-//                                CurriculumMappingEntityPK pk = new CurriculumMappingEntityPK();
-//                                pk.setSubId(s);
-//                                pk.setCurId(ent.getId());
-//                                c.setCurriculumMappingEntityPK(pk);
-//
-//                                em.persist(c);
-//                                em.flush();
-//                                em.refresh(c);
-//
-//                                List<CurriculumMappingEntity> tmp = ent.getCurriculumMappingEntityList();
-//                                tmp.add(c);
-//                                ent.setCurriculumMappingEntityList(tmp);
-//                                SubjectCurriculumEntity tmp2 = em.merge(ent);
-//                                em.flush();
-//                                em.refresh(tmp2);
-//
-//                                em.getTransaction().commit();
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            obj.addProperty("success", true);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            obj.addProperty("success", false);
-//            obj.addProperty("message", e.getMessage());
-//        }
-//
-//        return obj;
         return jsonObj;
     }
 
@@ -446,6 +372,7 @@ public class SubjectCurriculumController {
             ISubjectService subjectService = new SubjectServiceImpl();
             ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
             ICurriculumService curriculumService = new CurriculumServiceImpl();
+            IProgramService programService = new ProgramServiceImpl();
 
             Map<String, List<SubjectCurriculumEntity>> map = new LinkedHashMap<>();
             for (rowIndex = rowIndex + 1; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
@@ -475,6 +402,7 @@ public class SubjectCurriculumController {
                                     en.setName(parts[1].trim());
                                     ProgramEntity en2 = new ProgramEntity();
                                     en2.setName(parts[0].trim());
+                                    en2 = programService.createProgram(en2);
                                     en.setProgramId(en2);
                                     en = curriculumService.createCurriculum(en);
 
@@ -507,6 +435,7 @@ public class SubjectCurriculumController {
                                     en.setName(parts[1].trim());
                                     ProgramEntity en2 = new ProgramEntity();
                                     en2.setName(parts[0].trim());
+                                    en2 = programService.createProgram(en2);
                                     en.setProgramId(en2);
                                     en = curriculumService.createCurriculum(en);
 
