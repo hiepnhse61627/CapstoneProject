@@ -284,6 +284,16 @@
                                 </a>
                             </li>
                             <li>
+                                <a href="/studying">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách sinh viên đang học
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
                                 <a href="/studentDetail">
                                     <div class="menu-child-wrapper">
                                         <div class="child-icon"><i class="fa fa-circle-o"></i></div>

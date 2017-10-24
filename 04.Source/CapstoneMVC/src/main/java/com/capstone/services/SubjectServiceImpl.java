@@ -57,4 +57,9 @@ public class SubjectServiceImpl implements ISubjectService {
     public int countStudentCredits(int studentId) {
         return controller.countStudentCredits(studentId);
     }
+
+    @Override
+    public List<SubjectEntity> getSubjectsByMarkStatus(String[] statuses) {
+        return controller.getSubjectsByMarkStatus(statuses);
+    }
 }

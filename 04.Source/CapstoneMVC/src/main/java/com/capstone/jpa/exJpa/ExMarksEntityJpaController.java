@@ -13,6 +13,7 @@ import org.apache.commons.lang3.reflect.Typed;
 import javax.persistence.*;
 import javax.persistence.criteria.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.bouncycastle.asn1.x500.style.RFC4519Style.o;
@@ -254,6 +255,20 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         EntityManager manager = getEntityManager();
         TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.studentId.id = :id", MarksEntity.class);
         query.setParameter("id", studentId);
+        return query.getResultList();
+    }
+
+    public List<MarksEntity> getStudyingStudents(String subjectId, String[] statuses) {
+        EntityManager manager = getEntityManager();
+        String queryStr = "SELECT c FROM MarksEntity c WHERE c.status IN :list ";
+        if (subjectId != null) {
+            queryStr += "AND c.subjectMarkComponentId.subjectId.id = :sub";
+        }
+        TypedQuery<MarksEntity> query = manager.createQuery(queryStr, MarksEntity.class);
+        if (subjectId != null) {
+            query.setParameter("sub", subjectId);
+        }
+        query.setParameter("list", Arrays.asList(statuses));
         return query.getResultList();
     }
 }
