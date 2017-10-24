@@ -81,6 +81,29 @@ public class ExCurriculumEntityJpaController extends CurriculumEntityJpaControll
         return result;
     }
 
+    public CurriculumEntity getCurriculumByNameAndProgramId(String name, int programId) {
+        CurriculumEntity entity;
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+
+            String queryStr = "SELECT c FROM CurriculumEntity c WHERE c.programId.id = :programId AND c.name = :name";
+            TypedQuery<CurriculumEntity> query = em.createQuery(queryStr, CurriculumEntity.class);
+            query.setParameter("programId", programId);
+            query.setParameter("name", name);
+
+            List<CurriculumEntity> list = query.getResultList();
+            entity = !list.isEmpty() ? list.get(0) : null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return entity;
+    }
+
     public List<CurriculumEntity> getCurriculums(int firstResult, int maxResult, String searchValue) {
         List<CurriculumEntity> result;
         EntityManager em = null;
