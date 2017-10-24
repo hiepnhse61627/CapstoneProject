@@ -69,42 +69,39 @@ public class SubjectCurriculumController {
 
     @RequestMapping("/editcurriculum/{curId}")
     public ModelAndView Edit(@PathVariable("curId") int curId) {
-//        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-//        EntityManager em = emf.createEntityManager();
-//
-//        ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
-//        ISubjectService subjectService = new SubjectServiceImpl();
-//        IProgramService programService = new ProgramServiceImpl();
-//
-//        ModelAndView view = new ModelAndView("EditSubjectCurriculum");
-//        SubjectCurriculumEntity ent = subjectCurriculumService.getCurriculumById(curId);
-//        List<CurriculumMappingEntity> sortedList = ent.getCurriculumMappingEntityList();
-//        sortedList.sort(Comparator.comparing(c -> c.getOrdering()));
-//        sortedList.forEach(c -> System.out.print(c.getOrdering() + ", "));
-//        view.addObject("data", ent);
-//
-////        Map<String, List<CurriculumMappingEntity>> unsortedmap = new HashMap<>();
-////        Map<String, List<CurriculumMappingEntity>> map = new TreeMap<>(unsortedmap);
-//        Map<String, List<CurriculumMappingEntity>> map = new LinkedHashMap<>();
-//        for (CurriculumMappingEntity en : sortedList) {
-//            if (map.get(en.getTerm()) == null) {
-//                List<CurriculumMappingEntity> tmp = new ArrayList<>();
-//                tmp.add(en);
-//                map.put(en.getTerm(), tmp);
-//            } else {
-//                map.get(en.getTerm()).add(en);
-//            }
-//        }
-//        view.addObject("list", map);
-//
-//        List<SubjectEntity> subjectList = subjectService.getAllSubjects();
-//        view.addObject("subs", subjectList);
-//
-//        List<ProgramEntity> programList = programService.getAllPrograms();
-//        view.addObject("programs", programList);
-//
-//        return view;
-        return null;
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+        EntityManager em = emf.createEntityManager();
+
+        ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
+        ISubjectService subjectService = new SubjectServiceImpl();
+        IProgramService programService = new ProgramServiceImpl();
+        ICurriculumService curriculumService = new CurriculumServiceImpl();
+
+        ModelAndView view = new ModelAndView("EditSubjectCurriculum");
+
+        CurriculumEntity curriculum = curriculumService.getCurriculumById(curId);
+        view.addObject("data", curriculum);
+
+        List<SubjectCurriculumEntity> subjectCurriList = subjectCurriculumService.getSubjectCurriculums(curId);
+        Map<String, List<SubjectCurriculumEntity>> displayList = new LinkedHashMap<>();
+        for (SubjectCurriculumEntity item : subjectCurriList) {
+            if (displayList.get("Học kỳ " + item.getTermNumber()) == null) {
+                List<SubjectCurriculumEntity> tmp = new ArrayList<>();
+                tmp.add(item);
+                displayList.put("Học kỳ " + item.getTermNumber(), tmp);
+            } else {
+                displayList.get("Học kỳ " + item.getTermNumber()).add(item);
+            }
+        }
+        view.addObject("displayList", displayList);
+
+        List<SubjectEntity> subjectList = subjectService.getAllSubjects();
+        view.addObject("subs", subjectList);
+
+        List<ProgramEntity> programList = programService.getAllPrograms();
+        view.addObject("programs", programList);
+
+        return view;
     }
 
     @RequestMapping(value = "/createcurriculum", method = RequestMethod.POST)
@@ -173,7 +170,46 @@ public class SubjectCurriculumController {
 
     @RequestMapping(value = "/editcurriculum", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject Edit(@RequestParam() List<String> data, @RequestParam int id, @RequestParam String name, @RequestParam String des, @RequestParam int programId) {
+    public JsonObject Edit(@RequestParam() List<String> data, @RequestParam int curriculumId,
+                           @RequestParam String curriculumName, @RequestParam int programId) {
+        JsonObject jsonObj = new JsonObject();
+        curriculumName = curriculumName.toUpperCase().trim();
+
+        ICurriculumService curriculumService = new CurriculumServiceImpl();
+        ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
+
+        try {
+            // Check curriculum is edited or not, if not updates
+            CurriculumEntity currentCurriculum = curriculumService.getCurriculumById(curriculumId);
+            if (currentCurriculum.getProgramId().getId() != programId
+                    || !currentCurriculum.getName().equalsIgnoreCase(curriculumName)) {
+                CurriculumEntity entity = curriculumService.getCurriculumByNameAndProgramId(curriculumName, programId);
+                if (entity != null) {
+                    jsonObj.addProperty("success", false);
+                    jsonObj.addProperty("message", "Không thể cập nhật, khung chương trình này đã tồn tại.");
+                    return jsonObj;
+                } else {
+                    ProgramEntity programEntity = new ProgramEntity();
+                    programEntity.setId(programId);
+
+                    currentCurriculum.setName(curriculumName);
+                    currentCurriculum.setProgramId(programEntity);
+                    curriculumService.updateCurriculum(currentCurriculum);
+                }
+            }
+
+            // Update
+            
+
+            jsonObj.addProperty("success", true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.writeLog(e);
+            jsonObj.addProperty("success", false);
+            jsonObj.addProperty("message", e.getMessage());
+        }
+
+
         //        JsonObject obj = new JsonObject();
 //        ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
 //
@@ -292,7 +328,7 @@ public class SubjectCurriculumController {
 //        }
 //
 //        return obj;
-        return null;
+        return jsonObj;
     }
 
     @RequestMapping("/getsubcurriculum")
@@ -320,7 +356,8 @@ public class SubjectCurriculumController {
             int iTotalRecords = curriculumService.countAllCurriculums();
             int iTotalDisplayRecords = curriculumService.countCurriculums(searchValue);
             JsonArray aaData = (JsonArray) new Gson()
-                    .toJsonTree(dataList, new TypeToken<List<List<String>>>() {}.getType());
+                    .toJsonTree(dataList, new TypeToken<List<List<String>>>() {
+                    }.getType());
 
             jsonObj.addProperty("iTotalRecords", iTotalRecords);
             jsonObj.addProperty("iTotalDisplayRecords", iTotalDisplayRecords);
@@ -429,7 +466,7 @@ public class SubjectCurriculumController {
                                     cur.setSubjectId(subject);
                                     cur.setCurriculumId(entity);
                                     cur.setOrdinalNumber(1);
-                                    cur.setTermNumber((int)termNo);
+                                    cur.setTermNumber((int) termNo);
                                     List<SubjectCurriculumEntity> list = new ArrayList<>();
                                     list.add(cur);
                                     map.put(curriculumCode, list);
@@ -445,7 +482,7 @@ public class SubjectCurriculumController {
                                     cur.setSubjectId(subject);
                                     cur.setCurriculumId(en);
                                     cur.setOrdinalNumber(1);
-                                    cur.setTermNumber((int)termNo);
+                                    cur.setTermNumber((int) termNo);
                                     List<SubjectCurriculumEntity> list = new ArrayList<>();
                                     list.add(cur);
                                     map.put(curriculumCode, list);
@@ -463,7 +500,7 @@ public class SubjectCurriculumController {
                                     cur.setSubjectId(subject);
                                     cur.setCurriculumId(entity);
                                     cur.setOrdinalNumber(map.get(curriculumCode).size() + 1);
-                                    cur.setTermNumber((int)termNo);
+                                    cur.setTermNumber((int) termNo);
                                     map.get(curriculumCode).add(cur);
                                 } else {
                                     CurriculumEntity en = new CurriculumEntity();
@@ -477,7 +514,7 @@ public class SubjectCurriculumController {
                                     cur.setSubjectId(subject);
                                     cur.setCurriculumId(en);
                                     cur.setOrdinalNumber(map.get(curriculumCode).size() + 1);
-                                    cur.setTermNumber((int)termNo);
+                                    cur.setTermNumber((int) termNo);
                                     map.get(curriculumCode).add(cur);
                                 }
                             }

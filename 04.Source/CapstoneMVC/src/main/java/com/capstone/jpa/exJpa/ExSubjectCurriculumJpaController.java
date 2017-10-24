@@ -26,6 +26,27 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
         }
     }
 
+    public List<SubjectCurriculumEntity> getSubjectCurriculums(int curriculumId) {
+        List<SubjectCurriculumEntity> result;
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+
+            String queryStr = "SELECT sc FROM SubjectCurriculumEntity sc WHERE sc.curriculumId.id = :curriculumId ORDER BY sc.ordinalNumber";
+            TypedQuery<SubjectCurriculumEntity> query = em.createQuery(queryStr, SubjectCurriculumEntity.class);
+            query.setParameter("curriculumId", curriculumId);
+
+            result = query.getResultList();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
+    }
+
     public SubjectCurriculumEntity findByName(String name) {
 //        EntityManager em = getEntityManager();
 //        try {

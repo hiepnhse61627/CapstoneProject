@@ -44,42 +44,34 @@
                     </div>
                     <div class="my-content">
                         <div class="my-input-group p-l-30">
-                            <div class="left-content">
-                                <label class="p-t-8">Tên:</label>
+                            <div class="left-content" style="width: 90px">
+                                <label class="p-t-8">Khóa:</label>
                             </div>
-                            <div class="right-content">
-                                <input id="name" type="text" class="form-control" value="${data.name}"/>
-                            </div>
-                        </div>
-
-                        <div class="my-input-group p-l-30">
-                            <div class="left-content">
-                                <label class="p-t-8">Mô tả:</label>
-                            </div>
-                            <div class="right-content">
-                                <input id="des" type="text" class="form-control" value="${data.description}"/>
+                            <div class="right-content width-30">
+                                <input id="curriculumName" type="text" class="form-control" value="${data.name}"/>
                             </div>
                         </div>
 
                         <div class="my-input-group p-l-30">
-                            <div class="left-content">
-                                <label class="p-t-8">Ngành:</label>
+                            <div class="left-content" style="width: 90px">
+                                <label class="p-t-8">Ngành học:</label>
                             </div>
-                            <div class="right-content">
-                                <select id="program" class="form-control">
-                                    <c:forEach var="p" items="${programs}">
-                                        <c:choose>
-                                            <c:when test="${data.programId.id == p.id}">
-                                                <option selected value="${p.id}">${p.name}</option>
-                                            </c:when>
-                                            <c:otherwise>
-                                                <option value="${p.id}">${p.name}</option>
-                                            </c:otherwise>
-                                        </c:choose>
-                                    </c:forEach>
-                                </select>
+                            <div class="right-content width-30">
+                                    <select id="program" class="form-control">
+                                        <c:forEach var="p" items="${programs}">
+                                            <c:choose>
+                                                <c:when test="${data.programId.id == p.id}">
+                                                    <option selected value="${p.id}">${p.name}</option>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <option value="${p.id}">${p.name}</option>
+                                                </c:otherwise>
+                                            </c:choose>
+                                        </c:forEach>
+                                    </select>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -116,14 +108,14 @@
                             <div class="scroll-wrapper custom-scrollbar">
                                 <table class="table" id="table">
                                     <tbody>
-                                    <c:forEach var="row" items="${list}">
+                                    <c:forEach var="row" items="${displayList}">
                                         <tr id="${row.key}" class="index nodrag">
                                             <td colspan="2"><b>${row.key}</b></td>
                                         </tr>
                                         <c:forEach var="list" items="${row.value}">
-                                            <tr id="${list.subjectEntity.id}" class="draggable">
-                                                <td>${list.subjectEntity.id}</td>
-                                                <td>${list.subjectEntity.name}</td>
+                                            <tr id="${list.subjectId.id}" class="draggable">
+                                                <td>${list.subjectId.id}</td>
+                                                <td>${list.subjectId.name}</td>
                                                 <td>
                                                     <button class="up btn btn-link" type="button"
                                                             style="visibility: hidden"><i
@@ -257,11 +249,15 @@
     }
 
     function Send() {
+        if ($('#curriculumName').val().trim() == '') {
+            swal('', 'Tên khóa không được để trống', 'error');
+            return;
+        }
+
         var form = new FormData();
         form.append("data", data);
-        form.append("id", '${data.id}');
-        form.append("name", $('#name').val());
-        form.append("des", $('#des').val());
+        form.append("curriculumId", '${data.id}');
+        form.append("curriculumName", $('#curriculumName').val());
         form.append("programId", $('#program').val());
 
         $.ajax({
