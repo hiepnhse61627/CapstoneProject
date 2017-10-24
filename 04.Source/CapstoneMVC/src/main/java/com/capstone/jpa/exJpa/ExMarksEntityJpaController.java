@@ -227,13 +227,6 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         return result;
     }
 
-    public List<MarksEntity> getStudentMarksById(int stuId) {
-        EntityManager em = getEntityManager();
-        TypedQuery<MarksEntity> query = em.createQuery("SELECT m FROM MarksEntity m WHERE m.studentId.id = :sid", MarksEntity.class);
-        query.setParameter("sid", stuId);
-        return query.getResultList();
-    }
-
     public int countMarksByCourseId(int courseId) {
         EntityManager em = getEntityManager();
         int count = 0;
@@ -270,5 +263,91 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         }
         query.setParameter("list", Arrays.asList(statuses));
         return query.getResultList();
+    }
+
+    public List<MarksEntity> getAllMarksByStudentAndSubject(int studentId, String subjectId, String semesterId) {
+        EntityManager manager = getEntityManager();
+
+        if (realSemesters == null)
+            realSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester());
+
+        List<MarksEntity> marks = new ArrayList<>();
+        int row = -1;
+        for (RealSemesterEntity r : realSemesters) {
+            if (r.getId() == Integer.parseInt(semesterId)) {
+                row = realSemesters.indexOf(r);
+            }
+        }
+
+        if (row < 0) {
+            marks = buildQuery2(semesterId, subjectId, studentId);
+        } else {
+            for (int i = 0; i < row + 1; i++) {
+                semesterId = realSemesters.get(i).getId().toString();
+                List<MarksEntity> finalMarks = marks;
+                buildQuery2(semesterId, subjectId, studentId).forEach(o -> {
+                    if (!finalMarks.contains((MarksEntity) o)) {
+                        finalMarks.add((MarksEntity) o);
+                    }
+                });
+                marks = finalMarks;
+            }
+        }
+        return marks;
+
+    }
+
+    private List<MarksEntity> buildQuery2(String semesterId, String subjectId, int studentId) {
+        EntityManager em = null;
+        List<MarksEntity> marks = new ArrayList<>();
+        try {
+            em = getEntityManager();
+
+            //Create criteria builder
+            CriteriaBuilder criteriaBuilder = em.getCriteriaBuilder();
+            CriteriaQuery criteriaQuery = criteriaBuilder.createQuery();
+
+            Root<MarksEntity> marksEntityRoot = criteriaQuery.from(MarksEntity.class);
+            Predicate predicate = null;
+
+            // Semester Name condition
+            Predicate semesterNamePredicate = null;
+            if (!semesterId.equals("0")) {
+                Expression<Integer> semesterExpression = marksEntityRoot.get("semesterId").get("id");
+                semesterNamePredicate = criteriaBuilder.equal(semesterExpression, Integer.parseInt(semesterId));
+                predicate = predicate == null ? semesterNamePredicate : criteriaBuilder.and(predicate, semesterNamePredicate);
+            }
+
+            // Subject Component Id Condition
+            Predicate subjectComponentPredicate = null;
+            if (!subjectId.equals("0")) {
+                Expression<String> subjectExpression = marksEntityRoot.get("subjectMarkComponentId").get("subjectId").get("id");
+                Expression<Integer> markComponentExpression = marksEntityRoot.get("subjectMarkComponentId").get("markComponentId").get("id");
+                Predicate subjectPredicate = criteriaBuilder.equal(subjectExpression, subjectId);
+                Predicate markComponentPredicate = criteriaBuilder.equal(markComponentExpression, 6);
+                subjectComponentPredicate = criteriaBuilder.and(subjectPredicate, markComponentPredicate);
+                predicate = predicate == null ? subjectComponentPredicate : criteriaBuilder.and(predicate, subjectComponentPredicate);
+            }
+
+            // User's search keys condition
+            Predicate studentIdPredicate = null;
+            if (studentId != 0) {
+                Expression<String> studentIdExpression = marksEntityRoot.get("studentId").get("id");
+                studentIdPredicate = criteriaBuilder.equal(studentIdExpression, studentId);
+                predicate = predicate == null ? studentIdPredicate : criteriaBuilder.and(predicate, studentIdPredicate);
+            }
+
+            if (predicate != null) {
+                criteriaQuery.where(predicate);
+            } else {
+                criteriaQuery.select(marksEntityRoot);
+            }
+
+            Query query = em.createQuery(criteriaQuery);
+            marks = query.getResultList();
+        } finally {
+            em.close();
+        }
+        return marks;
     }
 }

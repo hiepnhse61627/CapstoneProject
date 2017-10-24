@@ -16,4 +16,5 @@ public interface IMarksService {
     List<MarksEntity> getStudentMarksById(int stuId);
     List<MarksEntity> getStudyingStudents(String subjectId, String[] statuses);
     int countMarksByCourseId(int courseId);
+    List<MarksEntity> getAllMarksByStudentAndSubject(int studentId, String subjectId, String semesterId);
 }
