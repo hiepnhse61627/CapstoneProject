@@ -403,7 +403,7 @@
             }
         });
 
-        $('#hidden').val(jsonString.join(','));
+        $('#hidden').val(jsonString.join(';'));
 
         $("input[name='objectType']").val(3);
         $("input[name='subId']").val($('#select').val());
