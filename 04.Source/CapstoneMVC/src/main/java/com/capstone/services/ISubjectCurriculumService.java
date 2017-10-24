@@ -13,5 +13,6 @@ public interface ISubjectCurriculumService {
     void createCurriculumList(List<SubjectCurriculumEntity> courseEntityList);
     SubjectCurriculumEntity createCurriculum(SubjectCurriculumEntity entity);
     void updateCurriculum(SubjectCurriculumEntity entity);
+    void deleteCurriculum(int subjectCurriculumId);
     CurriculumEntity findCurriculum(String curName, String programName);
 }
