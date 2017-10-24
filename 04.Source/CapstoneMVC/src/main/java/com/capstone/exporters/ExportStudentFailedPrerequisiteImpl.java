@@ -7,6 +7,10 @@ import com.capstone.models.FailPrequisiteModel;
 import com.capstone.models.Ultilities;
 import com.capstone.services.ISubjectService;
 import com.capstone.services.SubjectServiceImpl;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
@@ -20,10 +24,8 @@ import javax.persistence.TypedQuery;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class ExportStudentFailedPrerequisiteImpl implements IExportObject {
 
@@ -54,12 +56,8 @@ public class ExportStudentFailedPrerequisiteImpl implements IExportObject {
     }
 
     private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, Map<String, String> params) {
-        // get params
-        String prerequisiteIds = params.get("prequisiteId").trim();
-        String subjectId = params.get("subId").trim();
-        String[] prerequisiteIdArr = prerequisiteIds.split(",");
         // process list
-        List<FailPrequisiteModel> models = processFailPrerequisite(subjectId, prerequisiteIdArr);
+        List<FailPrequisiteModel> models = processFailPrerequisite(params);
         if (models != null && !models.isEmpty()) {
             // style
             CellStyle cellStyle = workbook.createCellStyle();
@@ -95,44 +93,80 @@ public class ExportStudentFailedPrerequisiteImpl implements IExportObject {
         }
     }
 
-    private List<FailPrequisiteModel> processFailPrerequisite(String sub, String[] p) {
+    private List<FailPrequisiteModel> processFailPrerequisite(Map<String, String> params) {
+        ISubjectService subjectService = new SubjectServiceImpl();
+
+        String subjectId = params.get("subId").trim();
+        String prequisiteStr = params.get("prequisiteId").trim();
+
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-        EntityManager manager = emf.createEntityManager();
+        EntityManager em = emf.createEntityManager();
 
         List<FailPrequisiteModel> result = new ArrayList<>();
-        if (sub.equals("0")) {
-            if (p.length > 0) {
-                for (String i : p) {
-                    SubjectEntity pre = service.findSubjectById(i);
-                    if (pre != null) {
-//                        for (PrequisiteEntity s: pre.getPrequisiteEntityList()) {
-//                            TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
-//                            List<MarksEntity> list = query.setParameter("sub", s.getSubId().getId()).setParameter("sList", Arrays.asList(p)).getResultList();
-//                            Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getSubId().getId(), i, s.getFailMark()).forEach(c -> {
-//                                if(!result.contains(c)) {
-//                                    result.add(c);
-//                                }
-//                            });
-//                        }
-                    }
+
+        Map<String, List<String>> map = new HashMap<>();
+        List<String> prequisiteRow = Arrays.asList(prequisiteStr.split(";"));
+        if (prequisiteRow.get(0) != null && !prequisiteRow.get(0).isEmpty()) {
+            for (String s : prequisiteRow) {
+                String[] a = s.split("_");
+                if (map.get(a[0]) == null) {
+                    List<String> l = new ArrayList<>();
+                    l.add(a[1]);
+                    map.put(a[0], l);
+                } else {
+                    map.get(a[0]).add(a[1]);
                 }
             }
+        }
+
+        String queryStr = "SELECT p FROM MarksEntity p WHERE p.subjectMarkComponentId.subjectId.id IN :sList OR p.subjectMarkComponentId.subjectId.id = :sub";
+        TypedQuery<MarksEntity> prequisiteQuery;
+        if (!subjectId.equals("0") && !subjectId.isEmpty()) {
+            SubjectEntity entity = subjectService.findSubjectById(subjectId);
+            PrequisiteEntity prequisite = entity.getPrequisiteEntity();
+
+            prequisiteQuery = em.createQuery(queryStr, MarksEntity.class);
+            prequisiteQuery.setParameter("sub", subjectId);
+
+            List<String> l = map.get(subjectId);
+            List<String> processedData = new ArrayList<>();
+            for (String data : l) {
+                String[] s = data.trim().split(",");
+                for (String ss : s) {
+                    processedData.add(ss.trim());
+                }
+            }
+            prequisiteQuery.setParameter("sList", processedData);
+
+            List<MarksEntity> list = prequisiteQuery.getResultList();
+            Ultilities.FilterStudentPassedSubFailPrequisite(list, subjectId, l, prequisite.getFailMark()).forEach(c -> {
+                if (!result.contains(c)) {
+                    result.add(c);
+                }
+            });
         } else {
-            if (p.length > 0) {
-                for (String i : p) {
-                    SubjectEntity pre = service.findSubjectById(i);
-                    if (pre != null) {
-//                        for (PrequisiteEntity s: pre.getPrequisiteEntityList()) {
-//                            TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.subjectId.subjectId = :sub OR c.subjectId.subjectId IN :sList", MarksEntity.class);
-//                            List<MarksEntity> list = query.setParameter("sub", s.getSubId().getId()).setParameter("sList", Arrays.asList(p)).getResultList();
-//                            Ultilities.FilterStudentPassedSubFailPrequisite(list, s.getSubId().getId(), i, s.getFailMark()).forEach(c -> {
-//                                if(!result.contains(c)) {
-//                                    result.add(c);
-//                                }
-//                            });
-//                        }
+            for (Map.Entry<String, List<String>> entry : map.entrySet()) {
+                SubjectEntity entity = subjectService.findSubjectById(entry.getKey());
+                PrequisiteEntity prequisite = entity.getPrequisiteEntity();
+
+                prequisiteQuery = em.createQuery(queryStr, MarksEntity.class);
+                prequisiteQuery.setParameter("sub", entry.getKey());
+
+                List<String> processedData = new ArrayList<>();
+                for (String data : entry.getValue()) {
+                    String[] s = data.trim().split(",");
+                    for (String ss : s) {
+                        processedData.add(ss.trim());
                     }
                 }
+                prequisiteQuery.setParameter("sList", processedData);
+
+                List<MarksEntity> list = prequisiteQuery.getResultList();
+                Ultilities.FilterStudentPassedSubFailPrequisite(list, entry.getKey(), entry.getValue(), prequisite.getFailMark()).forEach(c -> {
+                    if (!result.contains(c)) {
+                        result.add(c);
+                    }
+                });
             }
         }
 

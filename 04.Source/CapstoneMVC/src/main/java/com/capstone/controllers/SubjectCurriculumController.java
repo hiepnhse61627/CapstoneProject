@@ -372,6 +372,7 @@ public class SubjectCurriculumController {
             ISubjectService subjectService = new SubjectServiceImpl();
             ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
             ICurriculumService curriculumService = new CurriculumServiceImpl();
+            IProgramService programService = new ProgramServiceImpl();
 
             Map<String, List<SubjectCurriculumEntity>> map = new LinkedHashMap<>();
             for (rowIndex = rowIndex + 1; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
@@ -401,6 +402,7 @@ public class SubjectCurriculumController {
                                     en.setName(parts[1].trim());
                                     ProgramEntity en2 = new ProgramEntity();
                                     en2.setName(parts[0].trim());
+                                    en2 = programService.createProgram(en2);
                                     en.setProgramId(en2);
                                     en = curriculumService.createCurriculum(en);
 
@@ -433,6 +435,7 @@ public class SubjectCurriculumController {
                                     en.setName(parts[1].trim());
                                     ProgramEntity en2 = new ProgramEntity();
                                     en2.setName(parts[0].trim());
+                                    en2 = programService.createProgram(en2);
                                     en.setProgramId(en2);
                                     en = curriculumService.createCurriculum(en);
 
