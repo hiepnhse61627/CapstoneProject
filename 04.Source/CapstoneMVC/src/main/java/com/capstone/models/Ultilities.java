@@ -10,7 +10,11 @@ import com.capstone.services.SubjectServiceImpl;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import org.apache.commons.lang.builder.CompareToBuilder;
+import org.eclipse.persistence.sessions.Session;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.time.Instant;
@@ -179,16 +183,37 @@ public class Ultilities {
     }
 
     public static Connection getConnection() {
-        String connectionString = "jdbc:sqlserver://localhost:1433;database=CapstoneProject";
+//        String connectionString = "jdbc:sqlserver://localhost:1433;database=CapstoneProject";
         Connection connection = null;
-        String username = "sa";
-        String password = "sa";
-
+//        String username = "sa";
+//        String password = "sa";
+//
+//        try {
+//            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+//            connection = DriverManager.getConnection(connectionString, username, password);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            connection = DriverManager.getConnection(connectionString, username, password);
+            EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = fac.createEntityManager();
+            em.getTransaction().begin();
+            connection = em.unwrap(java.sql.Connection.class);
+            em.getTransaction().commit();
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println(" -- REVERT USING LEGACY CONNECTION");
+
+            String connectionString = "jdbc:sqlserver://localhost:1433;database=CapstoneProject";
+            String username = "sa";
+            String password = "sa";
+
+            try {
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                connection = DriverManager.getConnection(connectionString, username, password);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
 
         return connection;
