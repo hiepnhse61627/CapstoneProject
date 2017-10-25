@@ -1,8 +1,6 @@
 package com.capstone.models;
 
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.RealSemesterEntity;
-import com.capstone.entities.SubjectEntity;
+import com.capstone.entities.*;
 import com.capstone.services.IMarksService;
 import com.capstone.services.ISubjectService;
 import com.capstone.services.MarksServiceImpl;
@@ -15,6 +13,7 @@ import org.eclipse.persistence.sessions.Session;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.persistence.TypedQuery;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.time.Instant;
@@ -247,5 +246,35 @@ public class Ultilities {
         }));
 
         return set;
+    }
+
+    public static RealSemesterEntity getSemesterByTerm(int studentId, int term) {
+        EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
+        EntityManager em = fac.createEntityManager();
+        StudentEntity student = em.find(StudentEntity.class, studentId);
+        List<DocumentStudentEntity> list = student.getDocumentStudentEntityList();
+        list.sort(Comparator.comparingLong(a -> {
+            if (a.getCreatedDate() == null) return 0;
+            else return a.getCreatedDate().getTime();
+        }));
+
+        List<SubjectCurriculumEntity> listCur = list.get(list.size() - 1).getCurriculumId().getSubjectCurriculumEntityList();
+        listCur = listCur.stream().filter(c -> c.getTermNumber() == term).collect(Collectors.toList());
+        List<String> subjectList = new ArrayList<>();
+        listCur.forEach(c -> {
+            if (!subjectList.contains(c.getSubjectId().getId())) subjectList.add(c.getSubjectId().getId());
+        });
+
+        TypedQuery<MarksEntity> query = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :stu AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+        query.setParameter("stu", studentId);
+        query.setParameter("list", subjectList);
+        List<RealSemesterEntity> listSemester = new ArrayList<>();
+        query.getResultList().forEach(c -> {
+            if (listSemester.stream().anyMatch(a -> a.getId() == c.getSemesterId().getId())) {
+                listSemester.add(c.getSemesterId());
+            }
+        });
+        if (listSemester.isEmpty()) return null;
+        else return SortSemesters(listSemester).get(0);
     }
 }
