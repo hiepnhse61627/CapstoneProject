@@ -86,62 +86,64 @@ public class StudentDetail {
         try {
             List<MarksEntity> list = marksService.getAllMarksByStudentAndSubject(Integer.parseInt(params.get("stuId")), "0", "0");
 
+            List<MarksEntity> resultList = Ultilities.FilterListFailStudent(list);
+
             // result list
-            List<MarksEntity> resultList = new ArrayList<>();
+//            List<MarksEntity> resultList = new ArrayList<>();
 
-            Map<String, List<MarksEntity>> map = new HashMap<>();
-            for (MarksEntity m : list) {
-                if (map.get(m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
-                    List<MarksEntity> newMarkList = new ArrayList<>();
-                    newMarkList.add(m);
-                    map.put(m.getSubjectMarkComponentId().getSubjectId().getId(), newMarkList);
-                } else {
-                    map.get(m.getSubjectMarkComponentId().getSubjectId().getId()).add(m);
-                }
-            }
-
-            for (Map.Entry<String, List<MarksEntity>> entry : map.entrySet()) {
-                boolean isPass = false;
-
-                List<MarksEntity> g = Ultilities.SortMarkBySemester(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
-                if (!g.isEmpty()) {
-                    MarksEntity tmp = null;
-                    for (MarksEntity k2 : g) {
-                        tmp = k2;
-                        if (k2.getStatus().toLowerCase().contains("pass") || k2.getStatus().toLowerCase().contains("exempt")) {
-                            isPass = true;
-                            break;
-                        }
-                    }
-
-                    if (!isPass) {
-                        SubjectEntity sub = tmp.getSubjectMarkComponentId().getSubjectId();
-
-                        int totalFail = 0;
-                        MarksEntity failedRow = tmp;
-
-                        for (SubjectEntity replace : sub.getSubjectEntityList()) {
-                            List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), "0");
-                            for (MarksEntity marks : replaced) {
-                                tmp = marks;
-                                if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
-                                    isPass = true;
-                                    break;
-                                }
-                            }
-
-                            if (!isPass) {
-                                failedRow = tmp;
-                                totalFail++;
-                            }
-                        }
-
-                        if (totalFail == sub.getSubjectEntityList().size()) {
-                            resultList.add(failedRow);
-                        }
-                    }
-                }
-            }
+//            Map<String, List<MarksEntity>> map = new HashMap<>();
+//            for (MarksEntity m : list) {
+//                if (map.get(m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
+//                    List<MarksEntity> newMarkList = new ArrayList<>();
+//                    newMarkList.add(m);
+//                    map.put(m.getSubjectMarkComponentId().getSubjectId().getId(), newMarkList);
+//                } else {
+//                    map.get(m.getSubjectMarkComponentId().getSubjectId().getId()).add(m);
+//                }
+//            }
+//
+//            for (Map.Entry<String, List<MarksEntity>> entry : map.entrySet()) {
+//                boolean isPass = false;
+//
+//                List<MarksEntity> g = Ultilities.SortMarkBySemester(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
+//                if (!g.isEmpty()) {
+//                    MarksEntity tmp = null;
+//                    for (MarksEntity k2 : g) {
+//                        tmp = k2;
+//                        if (k2.getStatus().toLowerCase().contains("pass") || k2.getStatus().toLowerCase().contains("exempt")) {
+//                            isPass = true;
+//                            break;
+//                        }
+//                    }
+//
+//                    if (!isPass) {
+//                        SubjectEntity sub = tmp.getSubjectMarkComponentId().getSubjectId();
+//
+//                        int totalFail = 0;
+//                        MarksEntity failedRow = tmp;
+//
+//                        for (SubjectEntity replace : sub.getSubjectEntityList()) {
+//                            List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), "0");
+//                            for (MarksEntity marks : replaced) {
+//                                tmp = marks;
+//                                if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+//                                    isPass = true;
+//                                    break;
+//                                }
+//                            }
+//
+//                            if (!isPass) {
+//                                failedRow = tmp;
+//                                totalFail++;
+//                            }
+//                        }
+//
+//                        if (totalFail == sub.getSubjectEntityList().size()) {
+//                            resultList.add(failedRow);
+//                        }
+//                    }
+//                }
+//            }
 
             List<MarksEntity> set2 = resultList.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -340,61 +342,61 @@ public class StudentDetail {
             List<MarksEntity> list = marksService.getAllMarksByStudentAndSubject(Integer.parseInt(params.get("stuId")), "0", "0");
 
             // result list
-            List<MarksEntity> resultList = new ArrayList<>();
+            List<MarksEntity> resultList = Ultilities.FilterListFailStudent(list);
 
-            Map<String, List<MarksEntity>> map = new HashMap<>();
-            for (MarksEntity m : list) {
-                if (map.get(m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
-                    List<MarksEntity> newMarkList = new ArrayList<>();
-                    newMarkList.add(m);
-                    map.put(m.getSubjectMarkComponentId().getSubjectId().getId(), newMarkList);
-                } else {
-                    map.get(m.getSubjectMarkComponentId().getSubjectId().getId()).add(m);
-                }
-            }
-
-            for (Map.Entry<String, List<MarksEntity>> entry : map.entrySet()) {
-                boolean isPass = false;
-
-                List<MarksEntity> g = Ultilities.SortMarkBySemester(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
-                if (!g.isEmpty()) {
-                    MarksEntity tmp = null;
-                    for (MarksEntity k2 : g) {
-                        tmp = k2;
-                        if (k2.getStatus().toLowerCase().contains("pass") || k2.getStatus().toLowerCase().contains("exempt")) {
-                            isPass = true;
-                            break;
-                        }
-                    }
-
-                    if (!isPass) {
-                        SubjectEntity sub = tmp.getSubjectMarkComponentId().getSubjectId();
-
-                        int totalFail = 0;
-                        MarksEntity failedRow = tmp;
-
-                        for (SubjectEntity replace : sub.getSubjectEntityList()) {
-                            List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), "0");
-                            for (MarksEntity marks : replaced) {
-                                tmp = marks;
-                                if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
-                                    isPass = true;
-                                    break;
-                                }
-                            }
-
-                            if (!isPass) {
-                                failedRow = tmp;
-                                totalFail++;
-                            }
-                        }
-
-                        if (totalFail == sub.getSubjectEntityList().size()) {
-                            resultList.add(failedRow);
-                        }
-                    }
-                }
-            }
+//            Map<String, List<MarksEntity>> map = new HashMap<>();
+//            for (MarksEntity m : list) {
+//                if (map.get(m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
+//                    List<MarksEntity> newMarkList = new ArrayList<>();
+//                    newMarkList.add(m);
+//                    map.put(m.getSubjectMarkComponentId().getSubjectId().getId(), newMarkList);
+//                } else {
+//                    map.get(m.getSubjectMarkComponentId().getSubjectId().getId()).add(m);
+//                }
+//            }
+//
+//            for (Map.Entry<String, List<MarksEntity>> entry : map.entrySet()) {
+//                boolean isPass = false;
+//
+//                List<MarksEntity> g = Ultilities.SortMarkBySemester(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
+//                if (!g.isEmpty()) {
+//                    MarksEntity tmp = null;
+//                    for (MarksEntity k2 : g) {
+//                        tmp = k2;
+//                        if (k2.getStatus().toLowerCase().contains("pass") || k2.getStatus().toLowerCase().contains("exempt")) {
+//                            isPass = true;
+//                            break;
+//                        }
+//                    }
+//
+//                    if (!isPass) {
+//                        SubjectEntity sub = tmp.getSubjectMarkComponentId().getSubjectId();
+//
+//                        int totalFail = 0;
+//                        MarksEntity failedRow = tmp;
+//
+//                        for (SubjectEntity replace : sub.getSubjectEntityList()) {
+//                            List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), "0");
+//                            for (MarksEntity marks : replaced) {
+//                                tmp = marks;
+//                                if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+//                                    isPass = true;
+//                                    break;
+//                                }
+//                            }
+//
+//                            if (!isPass) {
+//                                failedRow = tmp;
+//                                totalFail++;
+//                            }
+//                        }
+//
+//                        if (totalFail == sub.getSubjectEntityList().size()) {
+//                            resultList.add(failedRow);
+//                        }
+//                    }
+//                }
+//            }
 
 
 
