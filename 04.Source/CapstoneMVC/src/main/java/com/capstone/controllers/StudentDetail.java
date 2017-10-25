@@ -81,44 +81,99 @@ public class StudentDetail {
     @ResponseBody
     public JsonObject GetStudentDetail(@RequestParam Map<String, String> params) {
         JsonObject data = new JsonObject();
+        IMarksService marksService = new MarksServiceImpl();
 
         try {
-            List<MarksEntity> list = service2.getStudentMarksById(Integer.parseInt(params.get("stuId")));
+            List<MarksEntity> list = marksService.getAllMarksByStudentAndSubject(Integer.parseInt(params.get("stuId")), "0", "0");
             // Init students passed and failed
-            List<MarksEntity> listPassed = list.stream().filter(p -> p.getStatus().contains("Passed") || p.getStatus().contains("Exempt")).collect(Collectors.toList());
-            List<MarksEntity> listFailed = list.stream().filter(f -> !f.getStatus().contains("Passed") || !f.getStatus().contains("Exempt")).collect(Collectors.toList());
-            // compared list
-            List<MarksEntity> comparedList = new ArrayList<>();
-            // make comparator
-            Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
-                @Override
-                public int compare(MarksEntity o1, MarksEntity o2) {
-                    return new CompareToBuilder()
-                            .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
-                            .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
-                            .toComparison();
-                }
-            };
-            Collections.sort(listPassed, comparator);
-            // start compare failed list to passed list
-            for (int i = 0; i < listFailed.size(); i++) {
-                MarksEntity keySearch = listFailed.get(i);
-                int index = Collections.binarySearch(listPassed, keySearch, comparator);
-                if (index < 0) {
-                    comparedList.add(keySearch);
-                }
-            }
+//            List<MarksEntity> listPassed = list.stream().filter(p -> p.getStatus().contains("Passed") || p.getStatus().contains("Exempt")).collect(Collectors.toList());
+//            List<MarksEntity> listFailed = list.stream().filter(f -> !f.getStatus().contains("Passed") || !f.getStatus().contains("Exempt")).collect(Collectors.toList());
+//            // compared list
+//            List<MarksEntity> comparedList = new ArrayList<>();
+//            // make comparator
+//            Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
+//                @Override
+//                public int compare(MarksEntity o1, MarksEntity o2) {
+//                    return new CompareToBuilder()
+//                            .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
+//                            .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
+//                            .toComparison();
+//                }
+//            };
+//            Collections.sort(listPassed, comparator);
+//            // start compare failed list to passed list
+//            for (int i = 0; i < listFailed.size(); i++) {
+//                MarksEntity keySearch = listFailed.get(i);
+//                int index = Collections.binarySearch(listPassed, keySearch, comparator);
+//                if (index < 0) {
+//                    comparedList.add(keySearch);
+//                }
+//            }
             // result list
             List<MarksEntity> resultList = new ArrayList<>();
-            // remove duplicate
-            for (MarksEntity marksEntity : comparedList) {
-                if (marksEntity.getSubjectMarkComponentId() != null && !resultList.stream().anyMatch(r -> r.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase().equals(marksEntity.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
-                        && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
-                    resultList.add(marksEntity);
+//            // remove duplicate
+//            for (MarksEntity marksEntity : comparedList) {
+//                if (marksEntity.getSubjectMarkComponentId() != null && !resultList.stream().anyMatch(r -> r.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase().equals(marksEntity.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
+//                        && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
+//                    resultList.add(marksEntity);
+//                }
+//            }
+
+            Map<String, List<MarksEntity>> map = new HashMap<>();
+            for (MarksEntity m : list) {
+                if (map.get(m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
+                    List<MarksEntity> newMarkList = new ArrayList<>();
+                    newMarkList.add(m);
+                    map.put(m.getSubjectMarkComponentId().getSubjectId().getId(), newMarkList);
+                } else {
+                    map.get(m.getSubjectMarkComponentId().getSubjectId().getId()).add(m);
                 }
             }
-            List<MarksEntity> set2 = new ArrayList<>();
-            set2 = resultList.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+
+            for (Map.Entry<String, List<MarksEntity>> entry : map.entrySet()) {
+                boolean isPass = false;
+
+                List<MarksEntity> g = Ultilities.SortMarkBySemester(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
+                if (!g.isEmpty()) {
+                    MarksEntity tmp = null;
+                    for (MarksEntity k2 : g) {
+                        tmp = k2;
+                        if (k2.getStatus().toLowerCase().contains("pass") || k2.getStatus().toLowerCase().contains("exempt")) {
+                            isPass = true;
+                            break;
+                        }
+                    }
+
+                    if (!isPass) {
+                        SubjectEntity sub = tmp.getSubjectMarkComponentId().getSubjectId();
+
+                        int totalFail = 0;
+                        MarksEntity failedRow = tmp;
+
+                        for (SubjectEntity replace : sub.getSubjectEntityList()) {
+                            List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), "0");
+                            for (MarksEntity marks : replaced) {
+                                tmp = marks;
+                                if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                    isPass = true;
+                                    break;
+                                }
+                            }
+
+                            if (!isPass) {
+                                failedRow = tmp;
+                                totalFail++;
+                            }
+                        }
+
+                        if (totalFail == sub.getSubjectEntityList().size()) {
+                            resultList.add(failedRow);
+                        }
+                    }
+                }
+            }
+
+            List<MarksEntity> set2 = resultList.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
             ArrayList<ArrayList<String>> parent = new ArrayList<>();
             if (!set2.isEmpty()) {
@@ -133,8 +188,7 @@ public class StudentDetail {
                 });
             }
 
-            JsonArray result = (JsonArray) new Gson().toJsonTree(parent, new TypeToken<List<MarksEntity>>() {
-            }.getType());
+            JsonArray result = (JsonArray) new Gson().toJsonTree(parent);
 
             data.addProperty("iTotalRecords", resultList.size());
             data.addProperty("iTotalDisplayRecords", resultList.size());
@@ -173,8 +227,6 @@ public class StudentDetail {
             List<SubjectCurriculumEntity> currentTermSubjectCurriList = query.getResultList();
 
 
-
-
             List<MarksEntity> list = service2.getStudentMarksById(stuId);
             // Init students passed and failed
             List<MarksEntity> listPassed = list.stream().filter(p -> p.getStatus().contains("Passed") || p.getStatus().contains("Exempt")).collect(Collectors.toList());
@@ -209,7 +261,6 @@ public class StudentDetail {
                     failList.add(marksEntity);
                 }
             }
-
 
 
             List<SubjectCurriculumEntity> result = new ArrayList<>();
