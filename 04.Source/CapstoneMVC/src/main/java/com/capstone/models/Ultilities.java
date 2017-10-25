@@ -3,7 +3,9 @@ package com.capstone.models;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.RealSemesterEntity;
 import com.capstone.entities.SubjectEntity;
+import com.capstone.services.IMarksService;
 import com.capstone.services.ISubjectService;
+import com.capstone.services.MarksServiceImpl;
 import com.capstone.services.SubjectServiceImpl;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
@@ -89,8 +91,10 @@ public class Ultilities {
     }
 
     public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, List<String> prequisiteRow, int mark) {
+        IMarksService marksService = new MarksServiceImpl();
         List<FailPrequisiteModel> result = new ArrayList<>();
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
+        list = Ultilities.SortMarkBySemester(list.stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
         if (!list.isEmpty()) {
             for (MarksEntity m : list) {
                 if (map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
@@ -135,7 +139,22 @@ public class Ultilities {
 
                                         if (!isPass) {
                                             failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId());
-                                            break;
+//                                            break;
+
+                                            for (SubjectEntity replace : tmp.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList()) {
+                                                List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), "0");
+                                                for (MarksEntity marks : replaced) {
+                                                    tmp = marks;
+                                                    if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                                        isPass = true;
+                                                        break;
+                                                    }
+                                                }
+
+                                                if (!isPass) {
+                                                    failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId());
+                                                }
+                                            }
                                         }
                                     }
                                     //////////////////////

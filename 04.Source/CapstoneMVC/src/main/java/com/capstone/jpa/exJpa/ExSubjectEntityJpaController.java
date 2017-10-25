@@ -59,6 +59,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         EntityManager manager = getEntityManager();
         SubjectEntity currSub = manager.find(SubjectEntity.class, subId);
         PrequisiteEntity prequisite = currSub.getPrequisiteEntity();
+        if (prequisite == null) System.out.println(subId);
         if (prequisite.getPrequisiteSubs() != null) {
             String[] prequisitesRow = prequisite.getPrequisiteSubs().split("OR");
             for (String row : prequisitesRow) {

@@ -172,7 +172,7 @@ public class StudentController {
                             SubjectEntity sub = tmp.getSubjectMarkComponentId().getSubjectId();
 
                             int totalFail = 0;
-                            MarksEntity failedRow = null;
+                            MarksEntity failedRow = tmp;
 
                             for (SubjectEntity replace : sub.getSubjectEntityList()) {
                                 List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), semesterId);
@@ -191,7 +191,6 @@ public class StudentController {
                             }
 
                             if (totalFail == sub.getSubjectEntityList().size()) {
-                                if (failedRow == null) failedRow = tmp;
                                 resultList.add(failedRow);
                             }
                         }
