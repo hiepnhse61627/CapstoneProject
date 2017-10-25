@@ -1,7 +1,7 @@
 package com.capstone.exporters;
 
-import com.aspose.cells.SaveFormat;
-import com.aspose.cells.Workbook;
+//import com.aspose.cells.SaveFormat;
+//import com.aspose.cells.Workbook;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.entities.SubjectEntity;
@@ -40,31 +40,31 @@ public class ExportPDFGraduatedStudentsImpl implements IExportObject {
 
     @Override
     public void writeData(OutputStream os, Map<String, String> params) throws IOException {
-        ClassLoader classLoader = getClass().getClassLoader();
-        InputStream is = classLoader.getResourceAsStream(EXCEL_TEMPLATE);
-
-        XSSFWorkbook workbook = new XSSFWorkbook(is);
-        // close input stream
-        is.close();
-        XSSFSheet spreadsheet = workbook.getSheetAt(0);
-
-        writeDataToTable(workbook, spreadsheet, params);
-
-        String realPath = ExportPDFGraduatedStudentsImpl.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        String excelPath = realPath.substring(0, realPath.indexOf("WEB-INF")) + "output.xlsx";
-        OutputStream outputFile = new FileOutputStream(excelPath);
-        workbook.write(outputFile);
-        // close output stream
-        try {
-            Workbook asposeWorkbook = new Workbook(excelPath);
-            // remove file
-            File file = new File(excelPath);
-            file.delete();
-            file = null;
-            asposeWorkbook.save(os, SaveFormat.PDF);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+//        ClassLoader classLoader = getClass().getClassLoader();
+//        InputStream is = classLoader.getResourceAsStream(EXCEL_TEMPLATE);
+//
+//        XSSFWorkbook workbook = new XSSFWorkbook(is);
+//        // close input stream
+//        is.close();
+//        XSSFSheet spreadsheet = workbook.getSheetAt(0);
+//
+//        writeDataToTable(workbook, spreadsheet, params);
+//
+//        String realPath = ExportPDFGraduatedStudentsImpl.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+//        String excelPath = realPath.substring(0, realPath.indexOf("WEB-INF")) + "output.xlsx";
+//        OutputStream outputFile = new FileOutputStream(excelPath);
+//        workbook.write(outputFile);
+//        // close output stream
+//        try {
+//            Workbook asposeWorkbook = new Workbook(excelPath);
+//            // remove file
+//            File file = new File(excelPath);
+//            file.delete();
+//            file = null;
+//            asposeWorkbook.save(os, SaveFormat.PDF);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
     }
 
     private void writeDataToTable(XSSFWorkbook workbook, XSSFSheet sheet, Map<String, String> params) {
