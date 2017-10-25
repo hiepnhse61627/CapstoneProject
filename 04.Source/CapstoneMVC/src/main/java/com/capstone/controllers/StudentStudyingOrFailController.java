@@ -89,6 +89,16 @@ public class StudentStudyingOrFailController {
                     }
                 }
 
+                List<String> students = new ArrayList<>();
+                List<DocumentStudentEntity> stuDoc = cur.getDocumentStudentEntityList();
+                for (DocumentStudentEntity doc : stuDoc) {
+                    if (doc.getStudentId() != null) {
+                        if (!students.contains(doc.getStudentId().getRollNumber())) {
+                            students.add(doc.getStudentId().getRollNumber());
+                        }
+                    }
+                }
+
                 int row = -1;
                 for (RealSemesterEntity r : realSemesters) {
                     if (r.getId() == Integer.parseInt(semester)) {
@@ -97,17 +107,147 @@ public class StudentStudyingOrFailController {
                 }
 
                 List<MarksEntity> list = new ArrayList<>();
+                String queryStr = "SELECT a FROM MarksEntity a WHERE a.subjectMarkComponentId.subjectId.id IN :list";
+                if (!students.isEmpty()) {
+                    queryStr += " AND a.studentId.rollNumber IN :stus";
+                } else {
+                    queryStr += " AND a.studentId.rollNumber = 0";
+                }
+
                 if (row < 0) {
-                    TypedQuery<MarksEntity> query = em.createQuery("SELECT a FROM MarksEntity a WHERE a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+                    TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
                     query.setParameter("list", subject);
+                    if (!students.isEmpty()) {
+                        query.setParameter("stus", students);
+                    }
                     list = Ultilities.FilterListFailStudent(query.getResultList());
                 } else {
                     for (int i = 0; i < row + 1; i++) {
-                        TypedQuery<MarksEntity> query = em.createQuery("SELECT a FROM MarksEntity a WHERE a.subjectMarkComponentId.subjectId.id IN :list AND a.semesterId.id = :semester", MarksEntity.class);
+                        TypedQuery<MarksEntity> query = em.createQuery(queryStr + " AND a.semesterId.id = :semester", MarksEntity.class);
                         query.setParameter("list", subject);
                         query.setParameter("semester", realSemesters.get(i).getId());
+                        if (!students.isEmpty()) {
+                            query.setParameter("stus", students);
+                        }
                         List<MarksEntity> finalList = list;
                         Ultilities.FilterListFailStudent(query.getResultList()).forEach(c -> {
+                            if (!finalList.contains(c)) {
+                                finalList.add(c);
+                            }
+                        });
+                        list = finalList;
+                    }
+                }
+
+                List<MarksEntity> displayList = new ArrayList<>();
+                if (!list.isEmpty()) {
+                    displayList = list.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+                }
+
+                ArrayList<ArrayList<String>> result = new ArrayList<>();
+                if (!displayList.isEmpty()) {
+                    displayList.forEach(m -> {
+                        ArrayList<String> tmp = new ArrayList<>();
+                        tmp.add(m.getStudentId().getRollNumber());
+                        tmp.add(m.getStudentId().getFullName());
+                        tmp.add(m.getSubjectMarkComponentId() == null ? "N/A" : m.getSubjectMarkComponentId().getSubjectId().getId());
+                        tmp.add(m.getSemesterId() == null ? "N/A" : m.getSemesterId().getSemester());
+                        tmp.add(String.valueOf(m.getAverageMark()));
+                        tmp.add(m.getStatus());
+                        tmp.add(m.getStudentId().getId() + "");
+                        result.add(tmp);
+                    });
+                }
+
+                JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
+
+                data.addProperty("iTotalRecords", list.size());
+                data.addProperty("iTotalDisplayRecords", list.size());
+                data.add("aaData", aaData);
+                data.addProperty("sEcho", params.get("sEcho"));
+            }
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            e.printStackTrace();
+        }
+
+        return data;
+    }
+
+    @RequestMapping("/getstudyingorfail2")
+    @ResponseBody
+    public JsonObject GetStudentStudying(@RequestParam Map<String, String> params) {
+        JsonObject data = new JsonObject();
+
+        String curId = params.get("curId");
+        String term = params.get("term");
+        String semester = params.get("semester");
+
+        try {
+            ICurriculumService curriculumService = new CurriculumServiceImpl();
+            IRealSemesterService semesterService = new RealSemesterServiceImpl();
+
+            EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = fac.createEntityManager();
+
+            CurriculumEntity cur = curriculumService.getCurriculumById(Integer.parseInt(curId));
+            if (cur != null) {
+                List<RealSemesterEntity> realSemesters = Ultilities.SortSemesters(semesterService.getAllSemester());
+
+                List<String> subject = new ArrayList<>();
+                List<SubjectCurriculumEntity> listCur = cur.getSubjectCurriculumEntityList();
+                for (SubjectCurriculumEntity c : listCur) {
+                    if (c.getTermNumber() == Integer.parseInt(term)) {
+                        if (!subject.contains(c.getSubjectId().getId())) {
+                            subject.add(c.getSubjectId().getId());
+                        }
+                    }
+                }
+
+                List<String> students = new ArrayList<>();
+                List<DocumentStudentEntity> stuDoc = cur.getDocumentStudentEntityList();
+                for (DocumentStudentEntity doc : stuDoc) {
+                    if (doc.getStudentId() != null) {
+                        if (!students.contains(doc.getStudentId().getRollNumber())) {
+                            students.add(doc.getStudentId().getRollNumber());
+                        }
+                    }
+                }
+
+                int row = -1;
+                for (RealSemesterEntity r : realSemesters) {
+                    if (r.getId() == Integer.parseInt(semester)) {
+                        row = realSemesters.indexOf(r);
+                    }
+                }
+
+                List<MarksEntity> list = new ArrayList<>();
+                String queryStr = "SELECT a FROM MarksEntity a WHERE a.subjectMarkComponentId.subjectId.id IN :list AND a.status LIKE :stat";
+                if (!students.isEmpty()) {
+                    queryStr += " AND a.studentId.rollNumber IN :stus";
+                } else {
+                    queryStr += " AND a.studentId.rollNumber = 0";
+                }
+
+                if (row < 0) {
+                    TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
+                    query.setParameter("list", subject);
+                    if (!students.isEmpty()) {
+                        query.setParameter("stus", students);
+                    }
+                    query.setParameter("stat", "%studying%");
+                    list = query.getResultList();
+                } else {
+                    for (int i = 0; i < row + 1; i++) {
+                        TypedQuery<MarksEntity> query = em.createQuery(queryStr + " AND a.semesterId.id = :semester", MarksEntity.class);
+                        query.setParameter("list", subject);
+                        query.setParameter("semester", realSemesters.get(i).getId());
+                        query.setParameter("stat", "%studying%");
+                        if (!students.isEmpty()) {
+                            query.setParameter("stus", students);
+                        }
+                        List<MarksEntity> finalList = list;
+                        query.getResultList().forEach(c -> {
                             if (!finalList.contains(c)) {
                                 finalList.add(c);
                             }

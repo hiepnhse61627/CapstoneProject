@@ -71,23 +71,35 @@
                 <button type="button" class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>
             </div>
 
-            <div class="form-group">
-                <div class="row">
-                    <div class="col-md-12">
-                        <table id="table">
-                            <thead>
-                            <tr>
-                                <th>MSSV</th>
-                                <th>Tên SV</th>
-                                <th>Môn học</th>
-                                <th>Học kỳ</th>
-                                <th>Điểm TB</th>
-                                <th>Status</th>
-                            </tr>
-                            </thead>
-                        </table>
-                    </div>
-                </div>
+
+            <div class="col-md-12">
+                <table id="table">
+                    <thead>
+                    <tr>
+                        <th>MSSV</th>
+                        <th>Tên SV</th>
+                        <th>Môn học</th>
+                        <th>Học kỳ</th>
+                        <th>Điểm TB</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+
+            <div class="col-md-12">
+                <table id="table2">
+                    <thead>
+                    <tr>
+                        <th>MSSV</th>
+                        <th>Tên SV</th>
+                        <th>Môn học</th>
+                        <th>Học kỳ</th>
+                        <th>Điểm TB</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                </table>
             </div>
         </div>
     </div>
@@ -95,6 +107,7 @@
 
 <script>
     var table = null;
+    var table2 = null;
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -132,7 +145,7 @@
     $(document).ready(function () {
         $('.select').select2();
 
-        $('#curriculum').on('change', function() {
+        $('#curriculum').on('change', function () {
             GetCurriculum($("#curriculum").val());
         })
 
@@ -153,7 +166,7 @@
                 if (result.success) {
                     var data = result.data;
                     $('#term').find('option').remove();
-                    data.forEach(function(item) {
+                    data.forEach(function (item) {
                         $('#term').append("<option value='" + item + "'>" + item + "</option>");
                     });
                 } else {
@@ -177,6 +190,49 @@
                 "bProcessing": true,
                 "bSort": false,
                 "sAjaxSource": "/getstudyingorfail", // url getData.php etc
+                "fnServerParams": function (aoData) {
+                    aoData.push({"name": "curId", "value": $('#curriculum').val()}),
+                        aoData.push({"name": "term", "value": $('#term').val()}),
+                        aoData.push({"name": "semester", "value": $('#semester').val()})
+                },
+                "oLanguage": {
+                    "sSearchPlaceholder": "",
+                    "sSearch": "Tìm kiếm:",
+                    "sZeroRecords": "Không có dữ liệu phù hợp",
+                    "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
+                    "sEmptyTable": "Không có dữ liệu",
+                    "sInfoFiltered": " - lọc ra từ _MAX_ dòng",
+                    "sLengthMenu": "Hiển thị _MENU_ dòng",
+                    "sProcessing": "Đang xử lý...",
+                    "oPaginate": {
+                        "sNext": "<i class='fa fa-chevron-right'></i>",
+                        "sPrevious": "<i class='fa fa-chevron-left'></i>"
+                    }
+
+                },
+                "aoColumnDefs": [
+                    {
+                        "aTargets": [0, 1, 2, 3, 4, 5],
+                        "bSortable": false,
+                    },
+                ],
+                "bAutoWidth": false,
+            }).fnSetFilteringDelay(1000);
+        }
+
+        if (table2 != null) {
+            table2._fnPageChange(0);
+            table2._fnAjaxUpdate();
+        } else {
+            table2 = $('#table2').dataTable({
+                "bServerSide": true,
+                "bFilter": true,
+                "bRetrieve": true,
+                "sScrollX": "100%",
+                "bScrollCollapse": true,
+                "bProcessing": true,
+                "bSort": false,
+                "sAjaxSource": "/getstudyingorfail2", // url getData.php etc
                 "fnServerParams": function (aoData) {
                     aoData.push({"name": "curId", "value": $('#curriculum').val()}),
                         aoData.push({"name": "term", "value": $('#term').val()}),
