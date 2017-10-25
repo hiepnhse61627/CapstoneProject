@@ -274,6 +274,16 @@
                         </a>
                         <ul class="treeview-menu">
                             <li>
+                                <a href="/percent/index">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Tỉ lệ rớt môn theo lớp và kỳ
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
                                 <a href="/graduate">
                                     <div class="menu-child-wrapper">
                                         <div class="child-icon"><i class="fa fa-circle-o"></i></div>
