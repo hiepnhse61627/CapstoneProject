@@ -2,13 +2,9 @@ package com.capstone.models;
 
 import com.capstone.entities.*;
 import com.capstone.services.IMarksService;
-import com.capstone.services.ISubjectService;
 import com.capstone.services.MarksServiceImpl;
-import com.capstone.services.SubjectServiceImpl;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import org.apache.commons.lang.builder.CompareToBuilder;
-import org.eclipse.persistence.sessions.Session;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -26,80 +22,89 @@ public class Ultilities {
 
     public static List<String> notexist = new ArrayList<>();
 
-    public static List<MarksEntity> SortMarkBySemester(List<MarksEntity> set) {
-        ArrayList<String> seasons = new ArrayList<String>() {{
-            add("spring");
-            add("summer");
-            add("fall");
-        }};
+    public static List<MarksEntity> FilterStudentsOnlyPassAndFail(List<MarksEntity> set) {
+//        ArrayList<String> seasons = new ArrayList<String>() {{
+//            add("spring");
+//            add("summer");
+//            add("fall");
+//        }};
 
-        set.sort(Comparator.comparingInt(a -> {
-            String removewhite = ((MarksEntity) a).getSemesterId().getSemester().replaceAll("\\s+", "");
-            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
-            Pattern pattern = Pattern.compile("^\\D*(\\d)");
-            Matcher matcher = pattern.matcher(removeline);
-            matcher.find();
-            return Integer.parseInt(removeline.substring(matcher.start(1), removeline.length()));
-        }).thenComparingInt(a -> {
-            String removewhite = ((MarksEntity) a).getSemesterId().getSemester().replaceAll("\\s+", "");
-            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
-            Pattern pattern = Pattern.compile("^\\D*(\\d)");
-            Matcher matcher = pattern.matcher(removeline);
-            matcher.find();
-            String season = removeline.substring(0, matcher.start(1)).toLowerCase();
-            return seasons.indexOf(season);
-        }).thenComparingInt(a -> {
-            String semester = ((MarksEntity) a).getSemesterId().getSemester();
-            return semester.indexOf("_");
-        }));
+        List<MarksEntity> newSet = set.stream()
+                .filter(c -> !c.getStatus().trim().toLowerCase().contains("study") &&
+                                !c.getStatus().trim().toLowerCase().contains("start") &&
+                                !c.getStatus().trim().toLowerCase().contains(("diem")))
+                .collect(Collectors.toList());
 
-        return set;
+//        set.sort(Comparator.comparingInt(a -> {
+//            String removewhite = ((MarksEntity) a).getSemesterId().getSemester().replaceAll("\\s+", "");
+//            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
+//            Pattern pattern = Pattern.compile("^\\D*(\\d)");
+//            Matcher matcher = pattern.matcher(removeline);
+//            matcher.find();
+//            return Integer.parseInt(removeline.substring(matcher.start(1), removeline.length()));
+//        }).thenComparingInt(a -> {
+//            String removewhite = ((MarksEntity) a).getSemesterId().getSemester().replaceAll("\\s+", "");
+//            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
+//            Pattern pattern = Pattern.compile("^\\D*(\\d)");
+//            Matcher matcher = pattern.matcher(removeline);
+//            matcher.find();
+//            String season = removeline.substring(0, matcher.start(1)).toLowerCase();
+//            return seasons.indexOf(season);
+//        }).thenComparingInt(a -> {
+//            String semester = ((MarksEntity) a).getSemesterId().getSemester();
+//            return semester.indexOf("_");
+//        }));
+
+        return newSet;
     }
 
-    public static List<MarkModel> SortMarkModelBySemester(List<MarkModel> set) {
-        ArrayList<String> seasons = new ArrayList<String>() {{
-            add("spring");
-            add("summer");
-            add("fall");
-        }};
+//    public static List<MarkModel> SortMarkModelBySemester(List<MarkModel> set) {
+//        ArrayList<String> seasons = new ArrayList<String>() {{
+//            add("spring");
+//            add("summer");
+//            add("fall");
+//        }};
+//
+//        set.sort(Comparator.comparingInt(a -> {
+//            String removewhite = ((MarkModel) a).getSemester().replaceAll("\\s+", "");
+//            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
+//            Pattern pattern = Pattern.compile("^\\D*(\\d)");
+//            Matcher matcher = pattern.matcher(removeline);
+//            matcher.find();
+//            return Integer.parseInt(removeline.substring(matcher.start(1), removeline.length()));
+//        }).thenComparingInt(a -> {
+//            String removewhite = ((MarkModel) a).getSemester().replaceAll("\\s+", "");
+//            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
+//            Pattern pattern = Pattern.compile("^\\D*(\\d)");
+//            Matcher matcher = pattern.matcher(removeline);
+//            matcher.find();
+//            String season = removeline.substring(0, matcher.start(1)).toLowerCase();
+//            return seasons.indexOf(season);
+//        }).thenComparingInt(a -> {
+//            String semester = ((MarkModel) a).getSemester();
+//            return semester.indexOf("_");
+//        }).thenComparingLong(a -> {
+//            MarkModel en = (MarkModel) a;
+//            Date time = en.getStartDate();
+//            if (time == null) {
+//                time = Date.from(Instant.MIN);
+//            }
+//            return time.getTime();
+//        }));
 
-        set.sort(Comparator.comparingInt(a -> {
-            String removewhite = ((MarkModel) a).getSemester().replaceAll("\\s+", "");
-            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
-            Pattern pattern = Pattern.compile("^\\D*(\\d)");
-            Matcher matcher = pattern.matcher(removeline);
-            matcher.find();
-            return Integer.parseInt(removeline.substring(matcher.start(1), removeline.length()));
-        }).thenComparingInt(a -> {
-            String removewhite = ((MarkModel) a).getSemester().replaceAll("\\s+", "");
-            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
-            Pattern pattern = Pattern.compile("^\\D*(\\d)");
-            Matcher matcher = pattern.matcher(removeline);
-            matcher.find();
-            String season = removeline.substring(0, matcher.start(1)).toLowerCase();
-            return seasons.indexOf(season);
-        }).thenComparingInt(a -> {
-            String semester = ((MarkModel) a).getSemester();
-            return semester.indexOf("_");
-        }).thenComparingLong(a -> {
-            MarkModel en = (MarkModel) a;
-            Date time = en.getStartDate();
-            if (time == null) {
-                time = Date.from(Instant.MIN);
-            }
-            return time.getTime();
-        }));
-
-        return set;
-    }
+//        return set;
+//    }
 
     public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, List<String> prequisiteRow, int mark) {
         IMarksService marksService = new MarksServiceImpl();
+
+        List<MarksEntity> newList = FilterStudentsOnlyPassAndFail(list);
+
         List<FailPrequisiteModel> result = new ArrayList<>();
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
-        list = Ultilities.SortMarkBySemester(list.stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
+        list = Ultilities.FilterStudentsOnlyPassAndFail(list.stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
         if (!list.isEmpty()) {
-            for (MarksEntity m : list) {
+            for (MarksEntity m : newList) {
                 if (map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
                     List<MarksEntity> newMarkList = new ArrayList<>();
                     newMarkList.add(m);
@@ -113,8 +118,8 @@ public class Ultilities {
             for (String studentId : studentIds) {
                 Map<String, List<MarksEntity>> subject = map.row(studentId);
                 if (subject.get(subId) != null && !subject.get(subId).isEmpty()) {
-                    List<MarksEntity> markList = SortMarkBySemester(subject.get(subId));
-                    for (MarksEntity m : markList) {
+//                    List<MarksEntity> markList = FilterStudentsOnlyPassAndFail(subject.get(subId));
+                    for (MarksEntity m : subject.get(subId)) {
                         if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt")) {
 
                             int totalFail = 0;
@@ -130,7 +135,7 @@ public class Ultilities {
 
                                     // HANDLE LOGIC HERE
                                     if (subject.get(prequisite) != null && !subject.get(prequisite).isEmpty()) {
-                                        List<MarksEntity> g = SortMarkBySemester(subject.get(prequisite));
+                                        List<MarksEntity> g = FilterStudentsOnlyPassAndFail(subject.get(prequisite));
                                         MarksEntity tmp = null;
                                         for (MarksEntity k2 : g) {
                                             tmp = k2;

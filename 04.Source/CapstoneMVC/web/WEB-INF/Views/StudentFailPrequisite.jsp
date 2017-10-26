@@ -162,7 +162,7 @@
 
         $('#select').on('change', function () {
             Get();
-        })
+        });
 
         Get();
         GetStudents();
@@ -391,6 +391,8 @@
         if (name != "") {
             cBox.attr("name", name);
         }
+
+        cBox.attr("checked", "checked");
 
         return template.html();
     }

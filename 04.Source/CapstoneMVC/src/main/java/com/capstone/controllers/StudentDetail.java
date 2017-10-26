@@ -3,21 +3,11 @@ package com.capstone.controllers;
 import com.capstone.entities.*;
 import com.capstone.models.*;
 import com.capstone.services.*;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang.builder.CompareToBuilder;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.usermodel.XSSFRow;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -25,9 +15,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -86,7 +73,7 @@ public class StudentDetail {
         try {
             List<MarksEntity> list = marksService.getAllMarksByStudentAndSubject(Integer.parseInt(params.get("stuId")), "0", "0");
 
-            List<MarksEntity> newlist = Ultilities.SortMarkBySemester(list.stream()
+            List<MarksEntity> newlist = Ultilities.FilterStudentsOnlyPassAndFail(list.stream()
                     .filter(c -> !c.getStatus().trim().toLowerCase().contains("studying"))
                     .collect(Collectors.toList()));
             List<MarksEntity> resultList = Ultilities.FilterListFailStudent(newlist);
@@ -108,7 +95,7 @@ public class StudentDetail {
 //            for (Map.Entry<String, List<MarksEntity>> entry : map.entrySet()) {
 //                boolean isPass = false;
 //
-//                List<MarksEntity> g = Ultilities.SortMarkBySemester(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
+//                List<MarksEntity> g = Ultilities.FilterStudentsOnlyPassAndFail(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
 //                if (!g.isEmpty()) {
 //                    MarksEntity tmp = null;
 //                    for (MarksEntity k2 : g) {
@@ -345,7 +332,7 @@ public class StudentDetail {
             List<MarksEntity> list = marksService.getAllMarksByStudentAndSubject(Integer.parseInt(params.get("stuId")), "0", "0");
 
             // result list
-            List<MarksEntity> newlist = Ultilities.SortMarkBySemester(list.stream()
+            List<MarksEntity> newlist = Ultilities.FilterStudentsOnlyPassAndFail(list.stream()
                     .filter(c -> !c.getStatus().toLowerCase().contains("studying"))
                     .collect(Collectors.toList()));
             List<MarksEntity> resultList = Ultilities.FilterListFailStudent(newlist);
@@ -364,7 +351,7 @@ public class StudentDetail {
 //            for (Map.Entry<String, List<MarksEntity>> entry : map.entrySet()) {
 //                boolean isPass = false;
 //
-//                List<MarksEntity> g = Ultilities.SortMarkBySemester(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
+//                List<MarksEntity> g = Ultilities.FilterStudentsOnlyPassAndFail(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
 //                if (!g.isEmpty()) {
 //                    MarksEntity tmp = null;
 //                    for (MarksEntity k2 : g) {

@@ -3,7 +3,6 @@ package com.capstone.controllers;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.entities.SubjectEntity;
-import com.capstone.models.FailPrequisiteModel;
 import com.capstone.models.MarkModel;
 import com.capstone.models.StudentMarkModel;
 import com.capstone.models.Ultilities;
@@ -15,7 +14,6 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import org.apache.commons.lang.builder.CompareToBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -157,7 +155,7 @@ public class StudentController {
                 for (Map.Entry<String, List<MarksEntity>> entry : subject.entrySet()) {
                     boolean isPass = false;
 
-                    List<MarksEntity> g = Ultilities.SortMarkBySemester(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
+                    List<MarksEntity> g = Ultilities.FilterStudentsOnlyPassAndFail(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
                     if (!g.isEmpty()) {
                         MarksEntity tmp = null;
                         for (MarksEntity k2 : g) {
@@ -215,7 +213,7 @@ public class StudentController {
                     "SELECT m FROM MarksEntity m WHERE m.studentId.id = :sid", MarksEntity.class);
             query.setParameter("sid", studentId);
             List<MarksEntity> mlist = query.getResultList();
-            mlist = Ultilities.SortMarkBySemester(mlist);
+            mlist = Ultilities.FilterStudentsOnlyPassAndFail(mlist);
 
             boolean isFound;
             MarkModel curMark;

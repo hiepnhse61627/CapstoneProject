@@ -127,7 +127,7 @@ public class StudentList {
             query.setParameter("sId", studentId);
 
             List<MarksEntity> markList = query.getResultList();
-            markList = Ultilities.SortMarkBySemester(markList);
+            markList = Ultilities.FilterStudentsOnlyPassAndFail(markList);
 
             List<MarkModel> markListModel = new ArrayList<>();
             for (MarksEntity m : markList) {
