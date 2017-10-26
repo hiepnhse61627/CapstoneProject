@@ -27,7 +27,6 @@
                             </div>
                             <div class="right-content width-30 width-m-70">
                                 <select id="cb-semester" class="select">
-                                    <option value="0" selected>All</option>
                                     <c:forEach var="s" items="${semesterList}">
                                         <option value="${s.id}">${s.semester}</option>
                                     </c:forEach>
@@ -78,7 +77,7 @@
             anControl.off('keyup search input').on('keyup search input', function () {
                 var $$this = $this;
 
-                if ((anControl.val().length == 0 || anControl.val().length >= 3) && (sPreviousSearch === null || sPreviousSearch != anControl.val())) {
+                if ((anControl.val().length == 0 || anControl.val().length >= 2) && (sPreviousSearch === null || sPreviousSearch != anControl.val())) {
                     window.clearTimeout(oTimerId);
                     sPreviousSearch = anControl.val();
                     oTimerId = window.setTimeout(function () {
@@ -96,7 +95,6 @@
     $(document).ready(function() {
         $(".select").select2();
         $("#cb-semester").on("change", function(){
-            console.log("cb-semester yass");
             RefreshTable();
         });
 
@@ -114,7 +112,7 @@
             "bSort": false,
             "sAjaxSource": "/goodStudent/getStudentList",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "semesterId", "value": $('#cb-semester').val()})
+                aoData.push({"name": "semesterId", "value": $('#cb-semester').val() != null ? $('#cb-semester').val() : 0})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",

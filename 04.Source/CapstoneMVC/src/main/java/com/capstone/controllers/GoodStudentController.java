@@ -51,23 +51,25 @@ public class GoodStudentController {
             int semesterId = Integer.parseInt(params.get("semesterId"));
             int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
             int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
+            String sSearch = params.get("sSearch").trim();
 
             List<GoodStudentModel> studentList = new ArrayList<>();
             List<Integer> studentIdList;
 
-            String querySelect = "SELECT m.studentId.id";
-            String queryFrom = "FROM MarksEntity m, SubjectMarkComponentEntity smc, MarkComponentEntity mc" +
-                    " WHERE m.semesterId.id = :semesterId AND m.status LIKE :status AND m.subjectMarkComponentId.id = smc.id" +
-                    " AND smc.markComponentId.id = mc.id AND mc.name LIKE :markComponentName";
-            String queryMoreCondition = "GROUP BY m.studentId.id" +
-                    " HAVING (SUM(m.averageMark) / COUNT(m) >= 8) ORDER BY m.studentId.id";
-
             // Get studentId list in a semester and average mark of all subjects >= 8
-            String queryStr = querySelect + " " + queryFrom + " " + queryMoreCondition;
+            String queryStr = "SELECT m.studentId.id" +
+                    " FROM MarksEntity m, SubjectMarkComponentEntity smc, MarkComponentEntity mc" +
+                    " WHERE m.semesterId.id = :semesterId AND m.status LIKE :status AND m.subjectMarkComponentId.id = smc.id" +
+                    " AND smc.markComponentId.id = mc.id AND mc.name LIKE :markComponentName" +
+                    " AND (m.studentId.rollNumber LIKE :rollNumber OR m.studentId.fullName LIKE :fullName)" +
+                    " GROUP BY m.studentId.id" +
+                    " HAVING (SUM(m.averageMark) / COUNT(m) >= 8) ORDER BY m.studentId.id";
             Query queryStudentId = em.createQuery(queryStr);
             queryStudentId.setParameter("semesterId", semesterId);
             queryStudentId.setParameter("status", "%pass%");
             queryStudentId.setParameter("markComponentName", "%average%");
+            queryStudentId.setParameter("rollNumber", "%" + sSearch + "%");
+            queryStudentId.setParameter("fullName", "%" + sSearch + "%");
             studentIdList = queryStudentId.getResultList();
 
             if (!studentIdList.isEmpty()) {
@@ -167,8 +169,17 @@ public class GoodStudentController {
                         queryCountOtherSubjectInTerm.setParameter("semesterId", semesterId);
                         int numOfOtherSubjectsInTerm = ((Number) queryCountOtherSubjectInTerm.getFirstResult()).intValue();
 
+                        queryStr = "SELECT COUNT(m) FROM MarksEntity m" +
+                                " INNER JOIN SubjectMarkComponentEntity smc" +
+                                " ON m.subjectMarkComponentId.id = smc.id AND smc.subjectId.id IN :sList" +
+                                " AND m.studentId.id = :studentId";
+                        Query queryCountSubjectsStudyMoreThanOne = em.createQuery(queryStr);
+                        queryCountSubjectsStudyMoreThanOne.setParameter("sList", subjectIds);
+                        queryCountSubjectsStudyMoreThanOne.setParameter("studentId", curStudentId);
+                        int numOfStudying = ((Number) queryCountSubjectsStudyMoreThanOne.getFirstResult()).intValue();
+
                         if (studentModel.getMarkList().size() != studentModel.getSubjectCurriculumList().size()
-                                || numOfOtherSubjectsInTerm > 0) {
+                                || numOfOtherSubjectsInTerm > 0 || numOfStudying > studentModel.getMarkList().size()) {
                             isValidated = false;
                         } else {
                             for (SubjectCurriculumEntity sc : studentModel.getSubjectCurriculumList()) {
