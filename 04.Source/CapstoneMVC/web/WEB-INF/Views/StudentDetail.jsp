@@ -179,6 +179,7 @@
         $('#select').on("change", function () {
             RefreshTable();
         });
+
         CreateSelect();
 
         CreateEmptyDataTable('#table');

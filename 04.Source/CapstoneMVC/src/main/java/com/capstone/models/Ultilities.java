@@ -299,42 +299,39 @@ public class Ultilities {
             for (Map.Entry<String, List<MarksEntity>> entry : row.entrySet()) {
                 boolean isPass = false;
 
-                List<MarksEntity> g = Ultilities.SortMarkBySemester(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
-                if (!g.isEmpty()) {
-                    MarksEntity tmp = null;
-                    for (MarksEntity k2 : g) {
-                        tmp = k2;
-                        if (k2.getStatus().toLowerCase().contains("pass") || k2.getStatus().toLowerCase().contains("exempt")) {
-                            isPass = true;
-                            break;
+                MarksEntity tmp = null;
+                for (MarksEntity k2 : entry.getValue()) {
+                    tmp = k2;
+                    if (k2.getStatus().toLowerCase().contains("pass") || k2.getStatus().toLowerCase().contains("exempt")) {
+                        isPass = true;
+                        break;
+                    }
+                }
+
+                if (!isPass) {
+                    SubjectEntity sub = tmp.getSubjectMarkComponentId().getSubjectId();
+
+                    int totalFail = 0;
+                    MarksEntity failedRow = tmp;
+
+                    for (SubjectEntity replace : sub.getSubjectEntityList()) {
+                        List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), "0");
+                        for (MarksEntity marks : replaced) {
+                            tmp = marks;
+                            if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt") || marks.getStatus().toLowerCase().contains("studying")) {
+                                isPass = true;
+                                break;
+                            }
+                        }
+
+                        if (!isPass) {
+                            failedRow = tmp;
+                            totalFail++;
                         }
                     }
 
-                    if (!isPass) {
-                        SubjectEntity sub = tmp.getSubjectMarkComponentId().getSubjectId();
-
-                        int totalFail = 0;
-                        MarksEntity failedRow = tmp;
-
-                        for (SubjectEntity replace : sub.getSubjectEntityList()) {
-                            List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), "0");
-                            for (MarksEntity marks : replaced) {
-                                tmp = marks;
-                                if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
-                                    isPass = true;
-                                    break;
-                                }
-                            }
-
-                            if (!isPass) {
-                                failedRow = tmp;
-                                totalFail++;
-                            }
-                        }
-
-                        if (totalFail == sub.getSubjectEntityList().size()) {
-                            resultList.add(failedRow);
-                        }
+                    if (totalFail == sub.getSubjectEntityList().size()) {
+                        resultList.add(failedRow);
                     }
                 }
             }

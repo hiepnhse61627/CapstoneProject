@@ -86,7 +86,10 @@ public class StudentDetail {
         try {
             List<MarksEntity> list = marksService.getAllMarksByStudentAndSubject(Integer.parseInt(params.get("stuId")), "0", "0");
 
-            List<MarksEntity> resultList = Ultilities.FilterListFailStudent(list);
+            List<MarksEntity> newlist = Ultilities.SortMarkBySemester(list.stream()
+                    .filter(c -> !c.getStatus().trim().toLowerCase().contains("studying"))
+                    .collect(Collectors.toList()));
+            List<MarksEntity> resultList = Ultilities.FilterListFailStudent(newlist);
 
             // result list
 //            List<MarksEntity> resultList = new ArrayList<>();
@@ -342,7 +345,10 @@ public class StudentDetail {
             List<MarksEntity> list = marksService.getAllMarksByStudentAndSubject(Integer.parseInt(params.get("stuId")), "0", "0");
 
             // result list
-            List<MarksEntity> resultList = Ultilities.FilterListFailStudent(list);
+            List<MarksEntity> newlist = Ultilities.SortMarkBySemester(list.stream()
+                    .filter(c -> !c.getStatus().toLowerCase().contains("studying"))
+                    .collect(Collectors.toList()));
+            List<MarksEntity> resultList = Ultilities.FilterListFailStudent(newlist);
 
 //            Map<String, List<MarksEntity>> map = new HashMap<>();
 //            for (MarksEntity m : list) {

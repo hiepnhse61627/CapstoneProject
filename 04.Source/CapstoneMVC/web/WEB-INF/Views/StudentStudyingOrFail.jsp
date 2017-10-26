@@ -71,35 +71,45 @@
                 <button type="button" class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>
             </div>
 
-
-            <div class="col-md-12">
-                <table id="table">
-                    <thead>
-                    <tr>
-                        <th>MSSV</th>
-                        <th>Tên SV</th>
-                        <th>Môn học</th>
-                        <th>Học kỳ</th>
-                        <th>Điểm TB</th>
-                        <th>Status</th>
-                    </tr>
-                    </thead>
-                </table>
-            </div>
-
-            <div class="col-md-12">
-                <table id="table2">
-                    <thead>
-                    <tr>
-                        <th>MSSV</th>
-                        <th>Tên SV</th>
-                        <th>Môn học</th>
-                        <th>Học kỳ</th>
-                        <th>Điểm TB</th>
-                        <th>Status</th>
-                    </tr>
-                    </thead>
-                </table>
+            <div class="container">
+                <ul class="nav nav-pills">
+                    <li class="active"><a href="#tab1" data-toggle="tab">Đang học</a></li>
+                    <li><a href="#tab2" data-toggle="tab">Đang nợ</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane active" id="tab1">
+                        <div class="col-md-10">
+                            <table id="table">
+                                <thead>
+                                <tr>
+                                    <th>MSSV</th>
+                                    <th>Tên SV</th>
+                                    <th>Môn học</th>
+                                    <th>Học kỳ</th>
+                                    <th>Điểm TB</th>
+                                    <th>Status</th>
+                                </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="tab2">
+                        <div class="col-md-10">
+                            <table id="table2">
+                                <thead>
+                                <tr>
+                                    <th>MSSV</th>
+                                    <th>Tên SV</th>
+                                    <th>Môn học</th>
+                                    <th>Học kỳ</th>
+                                    <th>Điểm TB</th>
+                                    <th>Status</th>
+                                </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
