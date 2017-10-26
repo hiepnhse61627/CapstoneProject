@@ -743,12 +743,12 @@ public class UploadController {
                             importMarks.stream().filter(i -> subjectCdsInCurrentTerm.contains(i.getSubjectCode().getId())).collect(Collectors.toList());
                     List<String> semesters = subjectMarkInCurrentTerm.stream().map(s -> s.getSemesterName()).collect(Collectors.toList());
                     if (subjectCd.getTermNumber() == termNo && semesters.size() != 0) {
-                        importedMarkObject.setStatus("Studying");
+                        importedMarkObject.setStatus("NotStart");
                         String semester = Ultilities.SortSemestersString(semesters).get(0);
                         importedMarkObject.setSemesterName(semester);
                     } else if (subjectCd.getTermNumber() == termNo && semesters.size() == 0) {
-                        importedMarkObject.setStatus("Studying");
-                        importedMarkObject.setSemesterName(allSemester.get(allSemester.size() - 1).getSemester());
+                        importedMarkObject.setStatus("NotStart");
+                        importedMarkObject.setSemesterName(allSemester.get(0).getSemester());
                     } else if (subjectCd.getTermNumber() < termNo && semesters.size() == 0) {
                         importedMarkObject.setStatus("ChuaCoDiem_" + subjectCd.getSubjectId().getId());
                         importedMarkObject.setSemesterName(null);
