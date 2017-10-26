@@ -280,6 +280,7 @@
                                         <div class="child-content col-md-11">
                                             Danh sách sinh viên giỏi
 										</div>
+                                    </div>
 								</a>
                             </li>
 							<li>
