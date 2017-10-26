@@ -8,6 +8,7 @@ import com.capstone.models.ReplacementSubject;
 
 import javax.persistence.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
@@ -58,6 +59,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         EntityManager manager = getEntityManager();
         SubjectEntity currSub = manager.find(SubjectEntity.class, subId);
         PrequisiteEntity prequisite = currSub.getPrequisiteEntity();
+        if (prequisite == null) System.out.println(subId);
         if (prequisite.getPrequisiteSubs() != null) {
             String[] prequisitesRow = prequisite.getPrequisiteSubs().split("OR");
             for (String row : prequisitesRow) {
@@ -170,5 +172,21 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
             }
         }
         manager.getTransaction().commit();
+    }
+
+    public List<SubjectEntity> getSubjectsByMarkStatus(String[] statuses) {
+        try {
+            EntityManager em = getEntityManager();
+            TypedQuery<SubjectEntity> query = em.createQuery("SELECT distinct a FROM SubjectEntity a, MarksEntity b, SubjectMarkComponentEntity c WHERE " +
+                    "b.subjectMarkComponentId.id = c.id AND " +
+                    "c.subjectId.id = a.id AND " +
+                    "b.status IN :list", SubjectEntity.class);
+            query.setParameter("list", Arrays.asList(statuses));
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

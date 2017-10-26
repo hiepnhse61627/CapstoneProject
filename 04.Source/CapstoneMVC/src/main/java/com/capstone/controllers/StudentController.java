@@ -2,11 +2,15 @@ package com.capstone.controllers;
 
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
+import com.capstone.entities.SubjectEntity;
+import com.capstone.models.FailPrequisiteModel;
 import com.capstone.models.MarkModel;
 import com.capstone.models.StudentMarkModel;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -102,36 +106,96 @@ public class StudentController {
         List<MarksEntity> markList = marksService.getMarkByConditions(semesterId, subjectId, searchKey);
         // result list
         List<MarksEntity> resultList = new ArrayList<>();
-        // compared list
-        List<MarksEntity> comparedList = new ArrayList<>();
-        // Init students passed and failed
-        List<MarksEntity> listPassed = markList.stream().filter(p -> p.getStatus().contains("Passed") || p.getStatus().contains("Exempt")).collect(Collectors.toList());
-        List<MarksEntity> listFailed = markList.stream().filter(f -> !f.getStatus().contains("Passed") || !f.getStatus().contains("Exempt")).collect(Collectors.toList());
-        // make comparator
-        Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
-            @Override
-            public int compare(MarksEntity o1, MarksEntity o2) {
-                return new CompareToBuilder()
-                        .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
-                        .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
-                        .toComparison();
+//        // compared list
+//        List<MarksEntity> comparedList = new ArrayList<>();
+//        // Init students passed and failed
+//        List<MarksEntity> listPassed = markList.stream().filter(p -> p.getStatus().contains("Passed") || p.getStatus().contains("Exempt")).collect(Collectors.toList());
+//        List<MarksEntity> listFailed = markList.stream().filter(f -> !f.getStatus().contains("Passed") || !f.getStatus().contains("Exempt")).collect(Collectors.toList());
+//        // make comparator
+//        Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
+//            @Override
+//            public int compare(MarksEntity o1, MarksEntity o2) {
+//                return new CompareToBuilder()
+//                        .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
+//                        .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
+//                        .toComparison();
+//            }
+//        };
+//        Collections.sort(listPassed, comparator);
+//        // start compare failed list to passed list
+//        for (int i = 0; i < listFailed.size(); i++) {
+//            MarksEntity keySearch = listFailed.get(i);
+//            int index = Collections.binarySearch(listPassed, keySearch, comparator);
+//            if (index < 0) {
+//                comparedList.add(keySearch);
+//            }
+//        }
+//        // remove duplicate
+//
+//        for (MarksEntity marksEntity : comparedList) {
+//            if (marksEntity.getSubjectMarkComponentId() != null && !resultList.stream().anyMatch(r -> r.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase().equals(marksEntity.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
+//                                                && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
+//                resultList.add(marksEntity);
+//            }
+//        }
+
+        Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
+        if (!markList.isEmpty()) {
+            for (MarksEntity m : markList) {
+                if (map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
+                    List<MarksEntity> newMarkList = new ArrayList<>();
+                    newMarkList.add(m);
+                    map.put(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId(), newMarkList);
+                } else {
+                    map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId()).add(m);
+                }
             }
-        };
-        Collections.sort(listPassed, comparator);
-        // start compare failed list to passed list
-        for (int i = 0; i < listFailed.size(); i++) {
-            MarksEntity keySearch = listFailed.get(i);
-            int index = Collections.binarySearch(listPassed, keySearch, comparator);
-            if (index < 0) {
-                comparedList.add(keySearch);
-            }
-        }
-        // remove duplicate
-        
-        for (MarksEntity marksEntity : comparedList) {
-            if (marksEntity.getSubjectMarkComponentId() != null && !resultList.stream().anyMatch(r -> r.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase().equals(marksEntity.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
-                                                && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
-                resultList.add(marksEntity);
+
+            Set<String> studentIds = map.rowKeySet();
+            for (String studentId : studentIds) {
+                Map<String, List<MarksEntity>> subject = map.row(studentId);
+                for (Map.Entry<String, List<MarksEntity>> entry : subject.entrySet()) {
+                    boolean isPass = false;
+
+                    List<MarksEntity> g = Ultilities.SortMarkBySemester(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
+                    if (!g.isEmpty()) {
+                        MarksEntity tmp = null;
+                        for (MarksEntity k2 : g) {
+                            tmp = k2;
+                            if (k2.getStatus().toLowerCase().contains("pass") || k2.getStatus().toLowerCase().contains("exempt")) {
+                                isPass = true;
+                                break;
+                            }
+                        }
+
+                        if (!isPass) {
+                            SubjectEntity sub = tmp.getSubjectMarkComponentId().getSubjectId();
+
+                            int totalFail = 0;
+                            MarksEntity failedRow = tmp;
+
+                            for (SubjectEntity replace : sub.getSubjectEntityList()) {
+                                List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), semesterId);
+                                for (MarksEntity marks : replaced) {
+                                    tmp = marks;
+                                    if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                        isPass = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!isPass) {
+                                    failedRow = tmp;
+                                    totalFail++;
+                                }
+                            }
+
+                            if (totalFail == sub.getSubjectEntityList().size()) {
+                                resultList.add(failedRow);
+                            }
+                        }
+                    }
+                }
             }
         }
 

@@ -15,4 +15,5 @@ public interface ISubjectService {
     int getCurrentLine();
     int getTotalLine();
     int countStudentCredits(int studentId);
+    List<SubjectEntity> getSubjectsByMarkStatus(String[] statuses);
 }

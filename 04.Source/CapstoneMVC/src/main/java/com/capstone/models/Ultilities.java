@@ -1,14 +1,19 @@
 package com.capstone.models;
 
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.RealSemesterEntity;
-import com.capstone.entities.SubjectEntity;
+import com.capstone.entities.*;
+import com.capstone.services.IMarksService;
 import com.capstone.services.ISubjectService;
+import com.capstone.services.MarksServiceImpl;
 import com.capstone.services.SubjectServiceImpl;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import org.apache.commons.lang.builder.CompareToBuilder;
+import org.eclipse.persistence.sessions.Session;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.TypedQuery;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.time.Instant;
@@ -89,8 +94,10 @@ public class Ultilities {
     }
 
     public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, List<String> prequisiteRow, int mark) {
+        IMarksService marksService = new MarksServiceImpl();
         List<FailPrequisiteModel> result = new ArrayList<>();
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
+        list = Ultilities.SortMarkBySemester(list.stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
         if (!list.isEmpty()) {
             for (MarksEntity m : list) {
                 if (map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
@@ -135,7 +142,22 @@ public class Ultilities {
 
                                         if (!isPass) {
                                             failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId());
-                                            break;
+//                                            break;
+
+                                            for (SubjectEntity replace : tmp.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList()) {
+                                                List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), "0");
+                                                for (MarksEntity marks : replaced) {
+                                                    tmp = marks;
+                                                    if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                                        isPass = true;
+                                                        break;
+                                                    }
+                                                }
+
+                                                if (!isPass) {
+                                                    failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId());
+                                                }
+                                            }
                                         }
                                     }
                                     //////////////////////
@@ -160,16 +182,37 @@ public class Ultilities {
     }
 
     public static Connection getConnection() {
-        String connectionString = "jdbc:sqlserver://localhost:1433;database=CapstoneProject";
+//        String connectionString = "jdbc:sqlserver://localhost:1433;database=CapstoneProject";
         Connection connection = null;
-        String username = "sa";
-        String password = "sa";
-
+//        String username = "sa";
+//        String password = "sa";
+//
+//        try {
+//            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+//            connection = DriverManager.getConnection(connectionString, username, password);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
         try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            connection = DriverManager.getConnection(connectionString, username, password);
+            EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = fac.createEntityManager();
+            em.getTransaction().begin();
+            connection = em.unwrap(java.sql.Connection.class);
+            em.getTransaction().commit();
         } catch (Exception e) {
             e.printStackTrace();
+            System.out.println(" -- REVERT USING LEGACY CONNECTION");
+
+            String connectionString = "jdbc:sqlserver://localhost:1433;database=CapstoneProject";
+            String username = "sa";
+            String password = "sa";
+
+            try {
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+                connection = DriverManager.getConnection(connectionString, username, password);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
 
         return connection;
@@ -203,5 +246,100 @@ public class Ultilities {
         }));
 
         return set;
+    }
+
+    public static RealSemesterEntity getSemesterByTerm(int studentId, int term) {
+        EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
+        EntityManager em = fac.createEntityManager();
+        StudentEntity student = em.find(StudentEntity.class, studentId);
+        List<DocumentStudentEntity> list = student.getDocumentStudentEntityList();
+        list.sort(Comparator.comparingLong(a -> {
+            if (a.getCreatedDate() == null) return 0;
+            else return a.getCreatedDate().getTime();
+        }));
+
+        List<SubjectCurriculumEntity> listCur = list.get(list.size() - 1).getCurriculumId().getSubjectCurriculumEntityList();
+        listCur = listCur.stream().filter(c -> c.getTermNumber() == term).collect(Collectors.toList());
+        List<String> subjectList = new ArrayList<>();
+        listCur.forEach(c -> {
+            if (!subjectList.contains(c.getSubjectId().getId())) subjectList.add(c.getSubjectId().getId());
+        });
+
+        TypedQuery<MarksEntity> query = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :stu AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+        query.setParameter("stu", studentId);
+        query.setParameter("list", subjectList);
+        List<RealSemesterEntity> listSemester = new ArrayList<>();
+        query.getResultList().forEach(c -> {
+            if (listSemester.stream().anyMatch(a -> a.getId() == c.getSemesterId().getId())) {
+                listSemester.add(c.getSemesterId());
+            }
+        });
+        if (listSemester.isEmpty()) return null;
+        else return SortSemesters(listSemester).get(0);
+    }
+
+    public static List<MarksEntity> FilterListFailStudent(List<MarksEntity> list) {
+        IMarksService marksService = new MarksServiceImpl();
+
+        Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
+        for (MarksEntity m : list) {
+            if (map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
+                List<MarksEntity> newMarkList = new ArrayList<>();
+                newMarkList.add(m);
+                map.put(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId(), newMarkList);
+            } else {
+                map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId()).add(m);
+            }
+        }
+
+        List<MarksEntity> resultList = new ArrayList<>();
+        Set<String> students = map.rowKeySet();
+        for (String rollnumber : students) {
+            Map<String, List<MarksEntity>> row = map.row(rollnumber);
+            for (Map.Entry<String, List<MarksEntity>> entry : row.entrySet()) {
+                boolean isPass = false;
+
+                List<MarksEntity> g = Ultilities.SortMarkBySemester(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
+                if (!g.isEmpty()) {
+                    MarksEntity tmp = null;
+                    for (MarksEntity k2 : g) {
+                        tmp = k2;
+                        if (k2.getStatus().toLowerCase().contains("pass") || k2.getStatus().toLowerCase().contains("exempt")) {
+                            isPass = true;
+                            break;
+                        }
+                    }
+
+                    if (!isPass) {
+                        SubjectEntity sub = tmp.getSubjectMarkComponentId().getSubjectId();
+
+                        int totalFail = 0;
+                        MarksEntity failedRow = tmp;
+
+                        for (SubjectEntity replace : sub.getSubjectEntityList()) {
+                            List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), "0");
+                            for (MarksEntity marks : replaced) {
+                                tmp = marks;
+                                if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                    isPass = true;
+                                    break;
+                                }
+                            }
+
+                            if (!isPass) {
+                                failedRow = tmp;
+                                totalFail++;
+                            }
+                        }
+
+                        if (totalFail == sub.getSubjectEntityList().size()) {
+                            resultList.add(failedRow);
+                        }
+                    }
+                }
+            }
+        }
+
+        return resultList;
     }
 }

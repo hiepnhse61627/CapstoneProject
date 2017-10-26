@@ -108,6 +108,25 @@
                     </div>
                 </div>
             </div>
+            <div class="form-group">
+                <div class="row">
+                    <div class="title">
+                        <h4>Dự kiến danh sách môn dọc tiếp theo</h4>
+                    </div>
+                    <div class="my-content">
+                        <div class="col-md-12">
+                            <table id="suggestCourseTable">
+                                <thead>
+                                <tr>
+                                    <th>Mã môn</th>
+                                    <th>Tên môn</th>
+                                </tr>
+                                </thead>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -121,6 +140,7 @@
     var table = null;
     var nextCourseTable = null;
     var curCourseTable = null;
+    var suggestCourseTable = null;
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -164,6 +184,7 @@
         CreateEmptyDataTable('#table');
         CreateEmptyDataTable('#nextCourseTable');
         CreateEmptyDataTable('#curCourseTable');
+        CreateEmptyDataTable('#suggestCourseTable');
     });
 
     function CreateSelect() {
@@ -331,6 +352,54 @@
         }).fnSetFilteringDelay(1000);
     }
 
+    function CreateSuggestCourseTable() {
+        suggestCourseTable = $('#suggestCourseTable').dataTable({
+            "bServerSide": true,
+            "bFilter": true,
+            "bRetrieve": true,
+            "sScrollX": "100%",
+            "bScrollCollapse": true,
+            "bProcessing": true,
+            "bSort": false,
+            "sAjaxSource": "/getStudentNextCourseSuggestion", // url getData.php etc
+            "fnServerParams": function (aoData) {
+                aoData.push({"name": "stuId", "value": $('#select').val()})
+            },
+            "oLanguage": {
+                "sSearchPlaceholder": "",
+                "sSearch": "Tìm kiếm:",
+                "sZeroRecords": "Không có dữ liệu phù hợp",
+                "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
+                "sEmptyTable": "Không có dữ liệu",
+                "sInfoFiltered": " - lọc ra từ _MAX_ dòng",
+                "sLengthMenu": "Hiển thị _MENU_ dòng",
+                "sProcessing": "Đang xử lý...",
+                "oPaginate": {
+                    "sNext": "<i class='fa fa-chevron-right'></i>",
+                    "sPrevious": "<i class='fa fa-chevron-left'></i>"
+                }
+
+            },
+            "aoColumnDefs": [
+                {
+                    "aTargets": [0, 1],
+                    "mRender": function (data, type, row) {
+                        if (row[3] == '1') {
+                            return "<span style='text-decoration: line-through'>" + data + "</span>";
+                        } else {
+                            return data;
+                        }
+                    }
+                },
+                {
+                    "aTargets": [0],
+                    "sClass": "text-center",
+                },
+            ],
+            "bAutoWidth": false,
+        }).fnSetFilteringDelay(1000);
+    }
+
     function ExportExcel() {
         $("input[name='objectType']").val(2);
         $("#export-excel").submit();
@@ -362,6 +431,15 @@
             // Delete empty table
             $('#curCourseTable').dataTable().fnDestroy();
             CreateCurrentCourseTable();
+        }
+
+        if (suggestCourseTable != null) {
+            suggestCourseTable._fnPageChange(0);
+            suggestCourseTable._fnAjaxUpdate();
+        } else {
+            // Delete empty table
+            $('#suggestCourseTable').dataTable().fnDestroy();
+            CreateSuggestCourseTable();
         }
     }
 </script>

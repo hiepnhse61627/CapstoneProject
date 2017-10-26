@@ -279,6 +279,25 @@
                                         <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                         <div class="child-content col-md-11">
                                             Danh sách sinh viên giỏi
+										</div>
+								</a>
+                            </li>
+							<li>
+                                <a href="/studyingorfail">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách sinh viên đang học và đang nợ
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/percent/index">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Tỉ lệ rớt môn theo lớp và kỳ
                                         </div>
                                     </div>
                                 </a>
@@ -289,6 +308,16 @@
                                         <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                         <div class="child-content col-md-11">
                                             Danh sách sinh viên được xét tốt nghiệp
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/studying">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Danh sách sinh viên đang học
                                         </div>
                                     </div>
                                 </a>
