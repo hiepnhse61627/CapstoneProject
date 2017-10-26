@@ -248,6 +248,36 @@ public class Ultilities {
         return set;
     }
 
+    public static List<String> SortSemestersString(List<String> set) {
+        ArrayList<String> seasons = new ArrayList<String>() {{
+            add("spring");
+            add("summer");
+            add("fall");
+        }};
+
+        set.sort(Comparator.comparingInt(a -> {
+            String removewhite = a.toString().replaceAll("\\s+", "");
+            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
+            Pattern pattern = Pattern.compile("^\\D*(\\d)");
+            Matcher matcher = pattern.matcher(removeline);
+            matcher.find();
+            return Integer.parseInt(removeline.substring(matcher.start(1), removeline.length()));
+        }).thenComparingInt(a -> {
+            String removewhite = a.toString().replaceAll("\\s+", "");
+            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
+            Pattern pattern = Pattern.compile("^\\D*(\\d)");
+            Matcher matcher = pattern.matcher(removeline);
+            matcher.find();
+            String season = removeline.substring(0, matcher.start(1)).toLowerCase();
+            return seasons.indexOf(season);
+        }).thenComparingInt(a -> {
+            String semester = a.toString();
+            return semester.indexOf("_");
+        }));
+
+        return set;
+    }
+
     public static RealSemesterEntity getSemesterByTerm(int studentId, int term) {
         EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = fac.createEntityManager();
@@ -259,21 +289,30 @@ public class Ultilities {
         }));
 
         List<SubjectCurriculumEntity> listCur = list.get(list.size() - 1).getCurriculumId().getSubjectCurriculumEntityList();
-        listCur = listCur.stream().filter(c -> c.getTermNumber() == term).collect(Collectors.toList());
+        List<SubjectCurriculumEntity> newList = new ArrayList<>();
+        for (SubjectCurriculumEntity tmp : listCur) {
+            if (tmp.getTermNumber() == term) {
+                newList.add(tmp);
+            }
+        }
         List<String> subjectList = new ArrayList<>();
-        listCur.forEach(c -> {
+        newList.forEach(c -> {
             if (!subjectList.contains(c.getSubjectId().getId())) subjectList.add(c.getSubjectId().getId());
         });
 
-        TypedQuery<MarksEntity> query = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :stu AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
-        query.setParameter("stu", studentId);
-        query.setParameter("list", subjectList);
         List<RealSemesterEntity> listSemester = new ArrayList<>();
-        query.getResultList().forEach(c -> {
-            if (listSemester.stream().anyMatch(a -> a.getId() == c.getSemesterId().getId())) {
-                listSemester.add(c.getSemesterId());
+        if (subjectList != null && !subjectList.isEmpty()) {
+            TypedQuery<MarksEntity> query = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :stu AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+            query.setParameter("stu", studentId);
+            query.setParameter("list", subjectList);
+            List<MarksEntity> listMark = query.getResultList();
+            if (listMark != null && !listMark.isEmpty()) {
+                for (MarksEntity tmp : listMark) {
+                    listSemester.add(tmp.getSemesterId());
+                }
             }
-        });
+        }
+
         if (listSemester.isEmpty()) return null;
         else return SortSemesters(listSemester).get(0);
     }

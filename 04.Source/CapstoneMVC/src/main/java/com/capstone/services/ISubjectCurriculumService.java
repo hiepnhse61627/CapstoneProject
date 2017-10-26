@@ -15,4 +15,5 @@ public interface ISubjectCurriculumService {
     void updateCurriculum(SubjectCurriculumEntity entity);
     void deleteCurriculum(int subjectCurriculumId);
     CurriculumEntity findCurriculum(String curName, String programName);
+    List<SubjectCurriculumEntity> getSubjectIds(Integer studentId, Integer currentTerm);
 }

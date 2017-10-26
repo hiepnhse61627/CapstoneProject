@@ -58,4 +58,9 @@ public class SubjectCurriculumServiceImpl implements ISubjectCurriculumService {
     public CurriculumEntity findCurriculum(String curName, String programName) {
         return controller.findCurriculum(curName, programName);
     }
+
+    @Override
+    public List<SubjectCurriculumEntity> getSubjectIds(Integer studentId, Integer currentTerm) {
+        return controller.getSubjectIds(studentId, currentTerm);
+    }
 }
