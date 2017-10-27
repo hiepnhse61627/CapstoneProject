@@ -42,7 +42,7 @@
                     <div class="my-content">
                         <div class="col-md-12">
                             <select id="curriculum" class="select form-control">
-                                <%--<option value="0">-- Tất cả --</option>--%>
+                                <option value="0">-- Tất cả --</option>
                                 <c:forEach var="cur" items="${cur}">
                                     <option value="${cur.id}">${cur.programId.name}_${cur.name}</option>
                                 </c:forEach>
@@ -73,8 +73,8 @@
 
             <div class="container">
                 <ul class="nav nav-pills">
-                    <li class="active"><a href="#tab1" data-toggle="tab">Đang học</a></li>
-                    <li><a href="#tab2" data-toggle="tab">Đang nợ</a></li>
+                    <li class="active"><a href="#tab1" data-toggle="tab">Đang nợ</a></li>
+                    <li><a href="#tab2" data-toggle="tab">Đang học</a></li>
                 </ul>
                 <div class="tab-content">
                     <div class="tab-pane active" id="tab1">
@@ -176,6 +176,7 @@
                 if (result.success) {
                     var data = result.data;
                     $('#term').find('option').remove();
+                    $('#term').append("<option value='all'>-- Tất cả --</option>");
                     data.forEach(function (item) {
                         $('#term').append("<option value='" + item + "'>" + item + "</option>");
                     });
