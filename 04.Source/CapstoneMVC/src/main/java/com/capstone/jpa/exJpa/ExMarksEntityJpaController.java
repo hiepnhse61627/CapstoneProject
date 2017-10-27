@@ -36,20 +36,39 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         super(emf);
     }
 
-    public int findMarksByProperties(Integer courseId, Integer semesterId, Integer studentId, String subjectId, Double averageMark, String status) {
+    public MarksEntity findMarksByProperties(MarksEntity marksEntity) {
         EntityManager em = null;
         try {
             em = getEntityManager();
-            String sqlString = "SELECT COUNT(StudentId) FROM Marks WHERE CourseId = " + courseId +
-                    " AND SemesterId = " + semesterId + " AND StudentId = " + studentId +
-                    " AND AverageMark = " + averageMark + " AND Status = '" + status + "'";
-
-            if (subjectId != null) {
-                sqlString += " AND SubjectId = '" + subjectId + "'";
+            String sqlString = "SELECT m FROM MarksEntity m " +
+                                "WHERE m.studentId.id = :studentId " +
+                                  "AND m.subjectMarkComponentId.id = :subjectMarkComponentId " +
+                                  "AND m.averageMark = :averageMark " +
+                                  "AND m.status = :status";
+            if (!marksEntity.getStatus().contains("NotStart") && !marksEntity.getStatus().contains("Studying")) {
+                sqlString += " AND m.semesterId.id = :semesterId AND m.courseId.id = :courseId";
             }
+            Query query = em.createQuery(sqlString);
+            query.setParameter("studentId", marksEntity.getStudentId().getId());
+            query.setParameter("subjectMarkComponentId", marksEntity.getSubjectMarkComponentId().getId());
+            if (!marksEntity.getStatus().contains("NotStart") && !marksEntity.getStatus().contains("Studying")) {
+                query.setParameter("semesterId", marksEntity.getSemesterId().getId());
+                query.setParameter("courseId", marksEntity.getCourseId().getId());
+                query.setParameter("averageMark", marksEntity.getAverageMark());
+            } else {
+                query.setParameter("averageMark", -1.0);
+            }
+            query.setParameter("status", marksEntity.getStatus());
 
-            Query query = em.createNativeQuery(sqlString);
-            return (int) query.getSingleResult();
+            MarksEntity result = (MarksEntity) query.getSingleResult();
+
+            return result;
+        } catch (NoResultException nrEx) {
+            System.out.println("No records were found with: " + marksEntity.getStudentId().getRollNumber());
+            return null;
+        } catch (NonUniqueResultException nuEx) {
+            System.out.println("Many records were found with: " + marksEntity.getStudentId().getRollNumber());
+            return null;
         } finally {
             if (em != null) {
                 em.close();
@@ -61,14 +80,22 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         EntityManager em = null;
         this.totalExistStudent = marks.size();
         this.successSavedStudent = 0;
-        int batchSize = 1000;
+        int batchSize = 200;
         try {
             em = getEntityManager();
 
-            em.getTransaction().begin();
             for (int i = 0; i < marks.size(); i++) {
+                em.getTransaction().begin();
                 MarksEntity marksEntity = marks.get(i);
-                em.persist(marksEntity);
+                MarksEntity marksInDB = findMarksByProperties(marksEntity);
+                if (marksInDB == null) {
+                    em.persist(marksEntity);
+                } else {
+                    if (marksInDB.getStatus().contains("NotStart") || marksInDB.getStatus().contains("Studying")) {
+                        marksEntity.setId(marksInDB.getId());
+                        em.merge(marksEntity);
+                    }
+                }
 
                 if (i > 0 && i % batchSize == 0) {
                     em.flush();
@@ -76,9 +103,10 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                 }
 
                 ++this.successSavedStudent;
+                em.getTransaction().commit();
             }
-            em.getTransaction().commit();
         } catch (Exception ex) {
+            em.getTransaction().rollback();
             throw ex;
         } finally {
             if (em != null) {

@@ -20,4 +20,9 @@ public class SubjectMarkComponentServiceImpl implements ISubjectMarkComponentSer
     public SubjectMarkComponentEntity createSubjectMarkComponent(SubjectMarkComponentEntity entity) {
         return subjectMarkComponentJpaController.createSubjectMarkComponent(entity);
     }
+
+    @Override
+    public SubjectMarkComponentEntity findSubjectMarkComponentByNameAndSubjectCd(String name, String subjectCd) {
+        return subjectMarkComponentJpaController.findSubjectMarkComponentByNameAndSubjectCd(name, subjectCd);
+    }
 }

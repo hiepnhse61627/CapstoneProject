@@ -228,9 +228,11 @@ public class Ultilities {
             add("spring");
             add("summer");
             add("fall");
+            add("n/a");
         }};
 
         set.sort(Comparator.comparingInt(a -> {
+            if (((RealSemesterEntity) a).getSemester().equalsIgnoreCase("n/a")) return 0;
             String removewhite = ((RealSemesterEntity) a).getSemester().replaceAll("\\s+", "");
             String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
             Pattern pattern = Pattern.compile("^\\D*(\\d)");
@@ -238,6 +240,7 @@ public class Ultilities {
             matcher.find();
             return Integer.parseInt(removeline.substring(matcher.start(1), removeline.length()));
         }).thenComparingInt(a -> {
+            if (((RealSemesterEntity) a).getSemester().equalsIgnoreCase("n/a")) return seasons.indexOf("n/a");
             String removewhite = ((RealSemesterEntity) a).getSemester().replaceAll("\\s+", "");
             String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
             Pattern pattern = Pattern.compile("^\\D*(\\d)");
@@ -258,9 +261,11 @@ public class Ultilities {
             add("spring");
             add("summer");
             add("fall");
+            add("n/a");
         }};
 
         set.sort(Comparator.comparingInt(a -> {
+            if (a.toString().equalsIgnoreCase("n/a")) return 0;
             String removewhite = a.toString().replaceAll("\\s+", "");
             String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
             Pattern pattern = Pattern.compile("^\\D*(\\d)");
@@ -268,6 +273,7 @@ public class Ultilities {
             matcher.find();
             return Integer.parseInt(removeline.substring(matcher.start(1), removeline.length()));
         }).thenComparingInt(a -> {
+            if (a.toString().equalsIgnoreCase("n/a")) return seasons.indexOf("n/a");
             String removewhite = a.toString().replaceAll("\\s+", "");
             String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
             Pattern pattern = Pattern.compile("^\\D*(\\d)");

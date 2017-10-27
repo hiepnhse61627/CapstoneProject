@@ -747,11 +747,11 @@ public class UploadController {
                         String semester = Ultilities.SortSemestersString(semesters).get(0);
                         importedMarkObject.setSemesterName(semester);
                     } else if (subjectCd.getTermNumber() == termNo && semesters.size() == 0) {
-                        importedMarkObject.setStatus("NotStart");
-                        importedMarkObject.setSemesterName(allSemester.get(0).getSemester());
+                        importedMarkObject.setStatus("Studying");
+                        importedMarkObject.setSemesterName(allSemester.get(allSemester.size() - 1).getSemester());
                     } else if (subjectCd.getTermNumber() < termNo && semesters.size() == 0) {
-                        importedMarkObject.setStatus("ChuaCoDiem_" + subjectCd.getSubjectId().getId());
-                        importedMarkObject.setSemesterName(null);
+                        importedMarkObject.setStatus("NotStart");
+                        importedMarkObject.setSemesterName("N/A");
                     } else {
                         importedMarkObject.setStatus("NotStart");
                         String semester = Ultilities.SortSemestersString(semesters).get(0);
@@ -766,6 +766,10 @@ public class UploadController {
                     MarksEntity marksEntity = new MarksEntity();
                     // set student
                     marksEntity.setStudentId(object.getStudentEntity());
+                    // set average mark
+                    marksEntity.setAverageMark(object.getAverageMark());
+                    // set status
+                    marksEntity.setStatus(object.getStatus());
                     // set semester
                     if (object.getSemesterName() != null) {
                         RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(object.getSemesterName());
@@ -794,18 +798,20 @@ public class UploadController {
                     }
                     // set subject mark component
                     MarkComponentEntity markComponentEntity = markComponentService.getMarkComponentByName(markComponentName);
-                    SubjectMarkComponentEntity subjectMarkComponentEntity = new SubjectMarkComponentEntity();
-                    subjectMarkComponentEntity.setMarkComponentId(markComponentEntity);
-                    subjectMarkComponentEntity.setName(object.getSubjectCode().getId() + "_" + markComponentName);
-                    subjectMarkComponentEntity.setPercent(0.0);
-                    subjectMarkComponentEntity.setSubjectId(object.getSubjectCode());
-                    subjectMarkComponentEntity = subjectMarkComponentService.createSubjectMarkComponent(subjectMarkComponentEntity);
-                    marksEntity.setSubjectMarkComponentId(subjectMarkComponentEntity);
-                    // set average mark
-                    marksEntity.setAverageMark(object.getAverageMark());
-                    // set status
-                    marksEntity.setStatus(object.getStatus());
-
+                    String subjectMarkComponentName = object.getSubjectCode().getId() + "_" + markComponentName;
+                    SubjectMarkComponentEntity subjectMarkComponentEntity =
+                            subjectMarkComponentService.findSubjectMarkComponentByNameAndSubjectCd(markComponentName , object.getSubjectCode().getId());
+                    if (subjectMarkComponentEntity != null) {
+                        marksEntity.setSubjectMarkComponentId(subjectMarkComponentEntity);
+                    } else {
+                        subjectMarkComponentEntity = new SubjectMarkComponentEntity();
+                        subjectMarkComponentEntity.setMarkComponentId(markComponentEntity);
+                        subjectMarkComponentEntity.setName(subjectMarkComponentName);
+                        subjectMarkComponentEntity.setPercent(0.0);
+                        subjectMarkComponentEntity.setSubjectId(object.getSubjectCode());
+                        subjectMarkComponentEntity = subjectMarkComponentService.createSubjectMarkComponent(subjectMarkComponentEntity);
+                        marksEntity.setSubjectMarkComponentId(subjectMarkComponentEntity);
+                    }
                     // add to list mark entities
                     marksEntities.add(marksEntity);
                 }
