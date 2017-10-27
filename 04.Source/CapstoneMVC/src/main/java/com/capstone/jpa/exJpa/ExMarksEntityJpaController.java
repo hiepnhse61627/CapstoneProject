@@ -36,31 +36,20 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         super(emf);
     }
 
-    public MarksEntity findMarksByProperties(MarksEntity marksEntity) {
+    public List<MarksEntity> findMarksByProperties(MarksEntity marksEntity) {
         EntityManager em = null;
         try {
             em = getEntityManager();
             String sqlString = "SELECT m FROM MarksEntity m " +
                                 "WHERE m.studentId.id = :studentId " +
                                   "AND m.subjectMarkComponentId.id = :subjectMarkComponentId " +
-                                  "AND m.averageMark = :averageMark " +
-                                  "AND m.status = :status";
-            if (!marksEntity.getStatus().contains("NotStart") && !marksEntity.getStatus().contains("Studying")) {
-                sqlString += " AND m.semesterId.id = :semesterId AND m.courseId.id = :courseId";
-            }
+                                  "AND m.semesterId.id = :semesterId";
             Query query = em.createQuery(sqlString);
             query.setParameter("studentId", marksEntity.getStudentId().getId());
             query.setParameter("subjectMarkComponentId", marksEntity.getSubjectMarkComponentId().getId());
-            if (!marksEntity.getStatus().contains("NotStart") && !marksEntity.getStatus().contains("Studying")) {
-                query.setParameter("semesterId", marksEntity.getSemesterId().getId());
-                query.setParameter("courseId", marksEntity.getCourseId().getId());
-                query.setParameter("averageMark", marksEntity.getAverageMark());
-            } else {
-                query.setParameter("averageMark", -1.0);
-            }
-            query.setParameter("status", marksEntity.getStatus());
+            query.setParameter("semesterId", marksEntity.getSemesterId().getId());
 
-            MarksEntity result = (MarksEntity) query.getSingleResult();
+            List<MarksEntity> result = (List<MarksEntity>) query.getResultList();
 
             return result;
         } catch (NoResultException nrEx) {
@@ -80,21 +69,29 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         EntityManager em = null;
         this.totalExistStudent = marks.size();
         this.successSavedStudent = 0;
-        int batchSize = 200;
+        int batchSize = 1000;
         try {
             em = getEntityManager();
 
             for (int i = 0; i < marks.size(); i++) {
                 em.getTransaction().begin();
-                MarksEntity marksEntity = marks.get(i);
-                MarksEntity marksInDB = findMarksByProperties(marksEntity);
-                if (marksInDB == null) {
-                    em.persist(marksEntity);
-                } else {
-                    if (marksInDB.getStatus().contains("NotStart") || marksInDB.getStatus().contains("Studying")) {
-                        marksEntity.setId(marksInDB.getId());
-                        em.merge(marksEntity);
+                MarksEntity markEntity = marks.get(i);
+                List<MarksEntity> marksInDB = findMarksByProperties(markEntity);
+                if (marksInDB != null && !marksInDB.isEmpty()) {
+                    MarksEntity markDB = new MarksEntity();
+                    for (MarksEntity tmp : marksInDB) {
+                        if (tmp.getStatus().contains("Studying")) {
+                            markDB = tmp;
+                            break;
+                        }
                     }
+
+                    if (markDB.getId() != null) {
+                        markEntity.setId(markDB.getId());
+                        em.merge(markEntity);
+                    }
+                } else {
+                    em.persist(markEntity);
                 }
 
                 if (i > 0 && i % batchSize == 0) {
