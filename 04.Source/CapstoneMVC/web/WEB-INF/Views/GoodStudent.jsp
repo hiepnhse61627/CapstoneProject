@@ -23,10 +23,11 @@
                     <div class="my-content">
                         <div class="my-input-group">
                             <div class="left-content m-r-5">
-                                <label class="p-t-8">Chọn sinh viên:</label>
+                                <label class="p-t-8">Chọn kỳ:</label>
                             </div>
                             <div class="right-content width-30 width-m-70">
                                 <select id="cb-semester" class="select">
+                                    <option value="0">All</option>
                                     <c:forEach var="s" items="${semesterList}">
                                         <option value="${s.id}">${s.semester}</option>
                                     </c:forEach>
@@ -43,8 +44,14 @@
                         <table id="tbl-student">
                             <thead>
                             <tr>
+                                <%--<th>MSSV</th>--%>
+                                <%--<th>Tên sinh viên</th>--%>
+                                <%--<th>Điểm trung bình</th>--%>
                                 <th>MSSV</th>
                                 <th>Tên sinh viên</th>
+                                <th>Học kỳ</th>
+                                <th>Khóa</th>
+                                <th>Kỳ</th>
                                 <th>Điểm trung bình</th>
                             </tr>
                             </thead>
@@ -92,9 +99,9 @@
         return this;
     };
 
-    $(document).ready(function() {
+    $(document).ready(function () {
         $(".select").select2();
-        $("#cb-semester").on("change", function(){
+        $("#cb-semester").on("change", function () {
             RefreshTable();
         });
 
@@ -112,7 +119,10 @@
             "bSort": false,
             "sAjaxSource": "/goodStudent/getStudentList",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "semesterId", "value": $('#cb-semester').val() != null ? $('#cb-semester').val() : 0})
+                aoData.push({
+                    "name": "semesterId",
+                    "value": $('#cb-semester').val() != null ? $('#cb-semester').val() : 0
+                })
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -130,7 +140,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2],
+                    "aTargets": [0, 1, 2, 3, 4 ,5],
                     "bSortable": false,
                     "sClass": "text-center",
                 },

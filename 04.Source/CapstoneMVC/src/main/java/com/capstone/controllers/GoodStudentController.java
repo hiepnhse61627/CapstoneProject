@@ -43,6 +43,7 @@ public class GoodStudentController {
         JsonObject jsonObject = new JsonObject();
         IMarksService marksService = new MarksServiceImpl();
         IStudentService studentService = new StudentServiceImpl();
+        IRealSemesterService semesterService = new RealSemesterServiceImpl();
 
         try {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
@@ -53,38 +54,76 @@ public class GoodStudentController {
             int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
             String sSearch = params.get("sSearch").trim();
 
-            List<GoodStudentModel> studentList = new ArrayList<>();
-            List<Integer> studentIdList;
+            Map<Integer, Map<Integer, List<GoodStudentMarkModel>>> studentList = new HashMap<>();
+            Map<Integer, DocumentStudentEntity> docStudentMap = new HashMap<>();
 
-            // Get studentId list in a semester and average mark of all subjects >= 8
-            String queryStr = "SELECT m.studentId.id" +
-                    " FROM MarksEntity m, SubjectMarkComponentEntity smc, MarkComponentEntity mc" +
-                    " WHERE m.semesterId.id = :semesterId AND m.status LIKE :status AND m.subjectMarkComponentId.id = smc.id" +
-                    " AND smc.markComponentId.id = mc.id AND mc.name LIKE :markComponentName" +
-                    " AND (m.studentId.rollNumber LIKE :rollNumber OR m.studentId.fullName LIKE :fullName)" +
-                    " GROUP BY m.studentId.id" +
-                    " HAVING (SUM(m.averageMark) / COUNT(m) >= 8) ORDER BY m.studentId.id";
-            Query queryStudentId = em.createQuery(queryStr);
-            queryStudentId.setParameter("semesterId", semesterId);
-            queryStudentId.setParameter("status", "%pass%");
-            queryStudentId.setParameter("markComponentName", "%average%");
-            queryStudentId.setParameter("rollNumber", "%" + sSearch + "%");
-            queryStudentId.setParameter("fullName", "%" + sSearch + "%");
-            studentIdList = queryStudentId.getResultList();
+            String queryStr = "SELECT m.StudentId, m.SemesterId, smc.SubjectId," +
+                    " m.AverageMark, m.Status, sc.TermNumber" +
+                    " FROM Marks m" +
+                    " INNER JOIN Student s ON m.StudentId = s.Id" +
+                    " INNER JOIN Subject_MarkComponent smc ON m.SubjectMarkComponentId = smc.Id" +
+                    " INNER JOIN MarkComponent mc ON smc.MarkComponentId = mc.Id" +
+                    " INNER JOIN Document_Student ds ON m.StudentId = ds.StudentId" +
+                    " INNER JOIN Subject_Curriculum sc ON ds.CurriculumId = sc.CurriculumId" +
+                    " AND mc.Name LIKE '%average%' AND smc.SubjectId = sc.SubjectId" +
+                    " AND ds.CreatedDate = (SELECT MAX(CreatedDate) FROM Document_Student WHERE Id = ds.Id)" +
+                    ((semesterId != 0) ? " AND m.SemesterId = ?" : "") +
+                    (!sSearch.isEmpty() ? "AND m.StudentId IN (SELECT Id FROM Student WHERE RollNumber LIKE ? OR FullName LIKE ?)" : "") +
+                    " ORDER BY m.StudentId, sc.TermNumber";
+            Query query = em.createNativeQuery(queryStr);
+            int count = 1;
+            if (semesterId != 0) {
+                query.setParameter(count++, semesterId);
+            }
+            if (!sSearch.isEmpty()) {
+                query.setParameter(count++, "%" + sSearch + "%");
+                query.setParameter(count, "%" + sSearch + "%");
+            }
 
-            if (!studentIdList.isEmpty()) {
-                // Get lastest curriculumId List
-                queryStr = "SELECT DISTINCT ds.curriculumId.id FROM DocumentStudentEntity ds WHERE ds.studentId.id IN :sList" +
-                        " AND ds.createdDate = (SELECT MAX(tDS.createdDate) FROM DocumentStudentEntity tDS WHERE tDS.id = ds.id)";
-                Query queryDocStudent = em.createQuery(queryStr);
-                queryDocStudent.setParameter("sList", studentIdList);
-                List<Integer> curriculumIdList = queryDocStudent.getResultList();
+            List<Object[]> searchList = query.getResultList();
 
-                // Get SubjectCurricumlum List
-                queryStr = "SELECT sc FROM SubjectCurriculumEntity sc WHERE sc.curriculumId.id IN :sList";
-                TypedQuery<SubjectCurriculumEntity> querySubjectCurriculum =
-                        em.createQuery(queryStr, SubjectCurriculumEntity.class);
-                querySubjectCurriculum.setParameter("sList", curriculumIdList);
+            if (!searchList.isEmpty()) {
+                Map<Integer, Map<Integer, List<GoodStudentMarkModel>>> studentMarkList = new HashMap<>();
+                for (Object[] m : searchList) {
+                    int studentId = (int) m[0];
+                    int semesId = (int) m[1];
+
+                    if (studentMarkList.get(studentId) == null) {
+                        studentMarkList.put(studentId, new HashMap<>());
+                    }
+
+                    Map<Integer, List<GoodStudentMarkModel>> semesterMarkList = studentMarkList.get(studentId);
+                    if (semesterMarkList.get(semesId) == null) {
+                        semesterMarkList.put(semesId, new ArrayList<>());
+                    }
+
+                    GoodStudentMarkModel markModel = new GoodStudentMarkModel();
+                    markModel.setSubjectId(m[2].toString());
+                    markModel.setMark((double) m[3]);
+                    markModel.setStatus(m[4].toString());
+                    markModel.setTerm((int) m[5]);
+
+                    semesterMarkList.get(semesId).add(markModel);
+                }
+
+                // Get DocumentStudent List
+                String idStr = "(" + Ultilities.parseIntegerListToString(studentMarkList.keySet()) + ")";
+                queryStr = "SELECT ds.* FROM Document_Student ds WHERE ds.StudentId IN " + idStr +
+                        " AND ds.createdDate = (SELECT MAX(CreatedDate) FROM Document_Student WHERE Id = ds.Id)";
+                Query queryDocStudent = em.createNativeQuery(queryStr, DocumentStudentEntity.class);
+                List<DocumentStudentEntity> docStudentList = queryDocStudent.getResultList();
+
+                List<Integer> curriculumList = new ArrayList<>();
+                docStudentMap = new HashMap<>();
+                for (DocumentStudentEntity docStudent : docStudentList) {
+                    docStudentMap.put(docStudent.getStudentId().getId(), docStudent);
+                    curriculumList.add(docStudent.getCurriculumId().getId());
+                }
+
+                idStr = "(" + Ultilities.parseIntegerListToString(curriculumList) + ")";
+                queryStr = "SELECT sc.* FROM Subject_Curriculum sc WHERE sc.CurriculumId IN " + idStr;
+                Query querySubjectCurriculum =
+                        em.createNativeQuery(queryStr, SubjectCurriculumEntity.class);
                 List<SubjectCurriculumEntity> subjectCurriculumList = querySubjectCurriculum.getResultList();
 
                 // Change SubjectCurriculum List to HashMap
@@ -100,128 +139,60 @@ public class GoodStudentController {
                     }
                 }
 
-                String idStr = "(" + studentIdList.get(0);
-                for (int i = 1; i < studentIdList.size(); i++) {
-                    idStr += "," + studentIdList.get(i);
-                }
-                idStr += ")";
+                // Validate student mark list
+                for (Integer studentId : studentMarkList.keySet()) {
+                    int curriculumId = docStudentMap.get(studentId).getCurriculumId().getId();
 
-                // Get student detail
-                String sqlStr = "SELECT m.StudentId, s.RollNumber, s.FullName, m.Id AS MarkId, smc.SubjectId, m.AverageMark, ds.CurriculumId, sc.TermNumber" +
-                        " FROM Marks m INNER JOIN Student s ON s.Id = m.StudentId" +
-                        " INNER JOIN Subject_MarkComponent smc ON m.SubjectMarkComponentId = smc.Id" +
-                        " INNER JOIN MarkComponent mc ON smc.MarkComponentId = mc.Id" +
-                        " INNER JOIN Document_Student ds ON m.StudentId = ds.StudentId" +
-                        " INNER JOIN Subject_Curriculum sc ON ds.CurriculumId = sc.CurriculumId AND sc.SubjectId = smc.SubjectId" +
-                        " AND m.SemesterId = ? AND m.StudentId IN " + idStr +
-                        " AND m.Status LIKE '%pass%' AND mc.Name LIKE '%average%'" +
-                        " ORDER BY m.StudentId, sc.TermNumber";
-                Query queryDetail = em.createNativeQuery(sqlStr);
-                queryDetail.setParameter(1, semesterId);
-                List<Object[]> studentDetailList = queryDetail.getResultList();
+                    Map<Integer, List<GoodStudentMarkModel>>
+                            semesterMarkList = studentMarkList.get(studentId);
 
-                for (int curStudentId : studentIdList) {
-                    GoodStudentModel studentModel = new GoodStudentModel();
-                    studentModel.setStudentId(curStudentId);
-                    // Set data for student
-                    int currentTerm = 0;
-                    int currentCurriculum = 0;
-                    String rollNumber = "";
-                    String fullName = "";
-                    for (Object[] stDetail : studentDetailList) {
-                        int studentId = (int) stDetail[0];
-                        if (curStudentId == studentId) {
-                            GoodStudentMarkModel markModel = new GoodStudentMarkModel();
-                            rollNumber = stDetail[1].toString();
-                            fullName = stDetail[2].toString();
-                            markModel.setMarkId((int) stDetail[3]);
-                            markModel.setSubjectId(stDetail[4].toString());
-                            markModel.setMark((double) stDetail[5]);
-                            currentCurriculum = (int) stDetail[6];
-                            currentTerm = (int) stDetail[7]; // term sort tăng dần, term cuối cùng = kỳ đang học
+                    for (Integer semesId : semesterMarkList.keySet()) {
+                        List<GoodStudentMarkModel> markList = semesterMarkList.get(semesId);
+                        boolean isValidate = validateMarkList(markList, subjectCurriculumMap.get(curriculumId));
+                        if (isValidate) {
+                            if (studentList.get(studentId) == null) {
+                                studentList.put(studentId, new HashMap<>());
+                            }
 
-                            studentModel.getMarkList().add(markModel);
+                            studentList.get(studentId).put(semesId, markList);
                         }
                     }
-                    studentModel.setRollNumber(rollNumber);
-                    studentModel.setFullName(fullName);
-                    studentModel.setCurrentTerm(currentTerm);
-                    studentModel.setCurriculumId(currentCurriculum);
-
-                    if (currentCurriculum > 0) {
-                        List<String> subjectIds = new ArrayList<>();
-                        for (SubjectCurriculumEntity sc : subjectCurriculumMap.get(currentCurriculum)) {
-                            if (sc.getTermNumber() == currentTerm) {
-                                studentModel.getSubjectCurriculumList().add(sc);
-                                subjectIds.add(sc.getSubjectId().getId());
-                            }
-                        }
-
-                        // validate student
-                        boolean isValidated = true;
-                        queryStr = "SELECT COUNT(m) FROM MarksEntity m" +
-                                " INNER JOIN SubjectMarkComponentEntity smc" +
-                                " ON m.subjectMarkComponentId.id = smc.id AND smc.subjectId.id NOT IN :sList" +
-                                " AND m.studentId.id = :studentId AND m.semesterId.id = :semesterId";
-                        Query queryCountOtherSubjectInTerm = em.createQuery(queryStr);
-                        queryCountOtherSubjectInTerm.setParameter("sList", subjectIds);
-                        queryCountOtherSubjectInTerm.setParameter("studentId", curStudentId);
-                        queryCountOtherSubjectInTerm.setParameter("semesterId", semesterId);
-                        int numOfOtherSubjectsInTerm = ((Number) queryCountOtherSubjectInTerm.getFirstResult()).intValue();
-
-                        queryStr = "SELECT COUNT(m) FROM MarksEntity m" +
-                                " INNER JOIN SubjectMarkComponentEntity smc" +
-                                " ON m.subjectMarkComponentId.id = smc.id AND smc.subjectId.id IN :sList" +
-                                " AND m.studentId.id = :studentId";
-                        Query queryCountSubjectsStudyMoreThanOne = em.createQuery(queryStr);
-                        queryCountSubjectsStudyMoreThanOne.setParameter("sList", subjectIds);
-                        queryCountSubjectsStudyMoreThanOne.setParameter("studentId", curStudentId);
-                        int numOfStudying = ((Number) queryCountSubjectsStudyMoreThanOne.getFirstResult()).intValue();
-
-                        if (studentModel.getMarkList().size() != studentModel.getSubjectCurriculumList().size()
-                                || numOfOtherSubjectsInTerm > 0 || numOfStudying > studentModel.getMarkList().size()) {
-                            isValidated = false;
-                        } else {
-                            for (SubjectCurriculumEntity sc : studentModel.getSubjectCurriculumList()) {
-                                boolean isFound = false;
-                                for (GoodStudentMarkModel mark : studentModel.getMarkList()) {
-                                    if (sc.getSubjectId().getId().equalsIgnoreCase(mark.getSubjectId())) {
-                                        isFound = true;
-                                        break;
-                                    }
-                                }
-
-                                if (!isFound) {
-                                    isValidated = false;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if (isValidated) {
-                            studentList.add(studentModel);
-                        }
-                    }
-
                 }
             }
 
-            List<GoodStudentModel> finalList = studentList.stream()
-                    .skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
+            List<RealSemesterEntity> semesterList = semesterService.getAllSemester();
             List<List<String>> result = new ArrayList<>();
-            for (GoodStudentModel st : finalList) {
-                List<String> list = new ArrayList<>();
-                list.add(st.getRollNumber());
-                list.add(st.getFullName());
-                list.add(calculateAverage(st.getMarkList()) + "");
+            for (int studentId : studentList.keySet()) {
+                Map<Integer, List<GoodStudentMarkModel>> semesterMarkList = studentList.get(studentId);
+                StudentEntity studentEntity = studentService.findStudentById(studentId);
+                DocumentStudentEntity documentStudentEntity = docStudentMap.get(studentId);
 
-                result.add(list);
+                for (int semesId : semesterMarkList.keySet()) {
+                    List<GoodStudentMarkModel> markList = semesterMarkList.get(semesId);
+
+                    List<String> row = new ArrayList<>();
+                    row.add(studentEntity.getRollNumber()); // RollNumber
+                    row.add(studentEntity.getFullName()); // FullName
+                    for (RealSemesterEntity semester : semesterList) {
+                        if (semester.getId() == semesId) {
+                            row.add(semester.getSemester()); // Semester
+                            break;
+                        }
+                    }
+                    row.add(documentStudentEntity.getCurriculumId().getProgramId().getName() + "_"
+                            + documentStudentEntity.getCurriculumId().getName()); // Curriculum
+                    row.add("Học kỳ " + markList.get(0).getTerm()); // Term
+                    row.add(this.calculateAverageMark(markList) + ""); // AverageMark
+
+                    result.add(row);
+                }
             }
 
+            result = result.stream().skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
             JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
 
-            jsonObject.addProperty("iTotalRecords", studentList.size());
-            jsonObject.addProperty("iTotalDisplayRecords", studentList.size());
+            jsonObject.addProperty("iTotalRecords", studentList.keySet().size());
+            jsonObject.addProperty("iTotalDisplayRecords", studentList.keySet().size());
             jsonObject.add("aaData", aaData);
             jsonObject.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {
@@ -232,19 +203,73 @@ public class GoodStudentController {
         return jsonObject;
     }
 
-    private double calculateAverage(List<GoodStudentMarkModel> markList) {
-        double result = 0;
-        if (!markList.isEmpty()) {
-            for (GoodStudentMarkModel mark : markList) {
-                result += mark.getMark();
-            }
+    private boolean validateMarkList(List<GoodStudentMarkModel> markList, List<SubjectCurriculumEntity> subCurricumlumList) {
+        boolean isValidate = true;
 
-            DecimalFormat df = new DecimalFormat("#.##");
-            df.setRoundingMode(RoundingMode.FLOOR);
-            result = Math.round(result / markList.size() * 10.0) / 10.0;
+        List<SubjectCurriculumEntity> subjectInCurrentTerm = new ArrayList<>();
+        if (!markList.isEmpty()) {
+            GoodStudentMarkModel mark = markList.get(markList.size() - 1);
+            int currentTerm = mark.getTerm();
+            for (SubjectCurriculumEntity sc : subCurricumlumList) {
+                if (sc.getTermNumber() == currentTerm) {
+                    subjectInCurrentTerm.add(sc);
+                }
+            }
         }
 
-        return result;
+        if (markList.size() != subjectInCurrentTerm.size()) {
+            isValidate = false;
+        }
+
+        // Check Mark is not fail, and Subject is not OJT
+        if (isValidate) {
+            for (GoodStudentMarkModel mark : markList) {
+                if (!Ultilities.containsIgnoreCase(mark.getStatus(), "pass")
+                        || Ultilities.containsIgnoreCase(mark.getSubjectId(), "OJ")) {
+                    isValidate = false;
+                    break;
+                }
+            }
+        }
+
+        // Check Subject in SubjectCurriculum
+        if (isValidate) {
+            for (GoodStudentMarkModel mark : markList) {
+                boolean isFound = false;
+                for (SubjectCurriculumEntity sc : subjectInCurrentTerm) {
+                    if (mark.getSubjectId().equals(sc.getSubjectId().getId())) {
+                        isFound = true;
+                        break;
+                    }
+                }
+
+                if (!isFound) {
+                    isValidate = false;
+                    break;
+                }
+            }
+        }
+
+        // Average mark >= 8
+        if (isValidate) {
+            isValidate = this.calculateAverageMark(markList) >= 8;
+        }
+
+        return isValidate;
+    }
+
+    private double calculateAverageMark(List<GoodStudentMarkModel> markList) {
+        double sum = 0;
+        int countLAB = 0;
+        for (GoodStudentMarkModel mark : markList) {
+            if (!mark.getSubjectId().contains("LAB")) {
+                sum += mark.getMark();
+            } else {
+                countLAB++;
+            }
+        }
+
+        return Math.round(sum / (markList.size() - countLAB) * 10.0) / 10.0;
     }
 
 }
