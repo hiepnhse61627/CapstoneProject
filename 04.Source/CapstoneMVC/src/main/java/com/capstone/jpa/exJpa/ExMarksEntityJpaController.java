@@ -89,6 +89,10 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                     if (markDB.getId() != null) {
                         markEntity.setId(markDB.getId());
                         em.merge(markEntity);
+                    } else {
+                        if (marksInDB.size() < 2) {
+                            em.persist(markEntity);
+                        }
                     }
                 } else {
                     em.persist(markEntity);
