@@ -5,6 +5,7 @@ public class GoodStudentMarkModel {
     private String subjectId;
     private double mark;
     private int term;
+    private String status;
 
     public GoodStudentMarkModel() {
     }
@@ -39,5 +40,13 @@ public class GoodStudentMarkModel {
 
     public void setTerm(int term) {
         this.term = term;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
