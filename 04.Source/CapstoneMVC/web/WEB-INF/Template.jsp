@@ -132,81 +132,32 @@
                 <%--<li class="header">HEADER</li>--%>
                 <!-- Optionally, you can add icons to the links -->
                 <security:authorize access="hasRole('${admin}')">
-                    <li class="treeview">
-                        <a href="#">
-                            <i class="fa fa-users"></i>
-                            <span>Thống kê</span>
-                            <i class="fa fa-angle-left pull-right"></i>
+                    <li>
+                        <a href="/dashboard">
+                            <div class="menu-child-wrapper">
+                                <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                <div class="child-content col-md-11">
+                                    Thống kê
+                                </div>
+                            </div>
                         </a>
-                        <ul class="treeview-menu">
-                            <li>
-                                <a href="/dashboard">
-                                    <div class="menu-child-wrapper">
-                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                        <div class="child-content col-md-11">
-                                            Dashboard
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="/percent/index">
-                                    <div class="menu-child-wrapper">
-                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                        <div class="child-content col-md-11">
-                                            Tỷ lệ rớt môn
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                        </ul>
                     </li>
                     <li>
                         <a href="/goSQLQueryPage"><i class="fa fa-search"></i> <span>Truy vấn dữ liệu</span></a>
                     </li>
-                    <li class="treeview">
-                        <a href="#">
-                            <i class="fa fa-users"></i>
-                            <span>Quản lý sinh viên</span>
-                            <i class="fa fa-angle-left pull-right"></i>
+                    <li>
+                        <a href="/studentList">
+                            <div class="menu-child-wrapper">
+                                <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                <div class="child-content col-md-11">
+                                    Danh sách sinh viên
+                                </div>
+                            </div>
                         </a>
-                        <ul class="treeview-menu">
-                            <li>
-                                <a href="/studentList">
-                                    <div class="menu-child-wrapper">
-                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                        <div class="child-content col-md-11">
-                                            Danh sách sinh viên
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#">
-                                    <div class="menu-child-wrapper">
-                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                        <div class="child-content col-md-11">
-                                            Trạng thái sinh viên
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="/create">
-                                    <div class="menu-child-wrapper">
-                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                        <div class="child-content col-md-11">
-                                            Enroll sinh viên
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                        </ul>
                     </li>
                     <li>
                         <a href="/course"><i class="fa fa-list"></i> <span>Quản lý khóa học</span></a>
                     </li>
-
                     <li class="treeview">
                         <a href="#">
                             <i class="glyphicon glyphicon-save"></i>
@@ -308,71 +259,71 @@
                                     <div class="menu-child-wrapper">
                                         <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                         <div class="child-content col-md-11">
-                                            Danh sách sinh viên được xét tốt nghiệp
+                                            Danh sách sinh viên thỏa điều kiện tín chỉ
                                         </div>
                                     </div>
                                 </a>
                             </li>
-                            <li>
-                                <a href="/studying">
-                                    <div class="menu-child-wrapper">
-                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                        <div class="child-content col-md-11">
-                                            Danh sách sinh viên đang học
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
+                            <%--<li>--%>
+                                <%--<a href="/studying">--%>
+                                    <%--<div class="menu-child-wrapper">--%>
+                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                        <%--<div class="child-content col-md-11">--%>
+                                            <%--Danh sách sinh viên đang học--%>
+                                        <%--</div>--%>
+                                    <%--</div>--%>
+                                <%--</a>--%>
+                            <%--</li>--%>
                             <li>
                                 <a href="/studentDetail">
                                     <div class="menu-child-wrapper">
                                         <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                         <div class="child-content col-md-11">
-                                            Danh sách nợ môn
+                                            Thông tin chi tiết của sinh viên
                                         </div>
                                     </div>
                                 </a>
                             </li>
-                            <li>
-                                <a href="/studentsOJT">
-                                    <div class="menu-child-wrapper">
-                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                        <div class="child-content col-md-11">
-                                            Danh sách đi OJT
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#">
-                                    <div class="menu-child-wrapper">
-                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                        <div class="child-content col-md-11">
-                                            Danh sách làm đồ án
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#">
-                                    <div class="menu-child-wrapper">
-                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                        <div class="child-content col-md-11">
-                                            Danh sách tốt nghiệp
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#">
-                                    <div class="menu-child-wrapper">
-                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                        <div class="child-content col-md-11">
-                                            Danh sách đóng học phí
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
+                            <%--<li>--%>
+                                <%--<a href="/studentsOJT">--%>
+                                    <%--<div class="menu-child-wrapper">--%>
+                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                        <%--<div class="child-content col-md-11">--%>
+                                            <%--Danh sách đi OJT--%>
+                                        <%--</div>--%>
+                                    <%--</div>--%>
+                                <%--</a>--%>
+                            <%--</li>--%>
+                            <%--<li>--%>
+                                <%--<a href="#">--%>
+                                    <%--<div class="menu-child-wrapper">--%>
+                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                        <%--<div class="child-content col-md-11">--%>
+                                            <%--Danh sách làm đồ án--%>
+                                        <%--</div>--%>
+                                    <%--</div>--%>
+                                <%--</a>--%>
+                            <%--</li>--%>
+                            <%--<li>--%>
+                                <%--<a href="#">--%>
+                                    <%--<div class="menu-child-wrapper">--%>
+                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                        <%--<div class="child-content col-md-11">--%>
+                                            <%--Danh sách tốt nghiệp--%>
+                                        <%--</div>--%>
+                                    <%--</div>--%>
+                                <%--</a>--%>
+                            <%--</li>--%>
+                            <%--<li>--%>
+                                <%--<a href="#">--%>
+                                    <%--<div class="menu-child-wrapper">--%>
+                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                        <%--<div class="child-content col-md-11">--%>
+                                            <%--Danh sách đóng học phí--%>
+                                        <%--</div>--%>
+                                    <%--</div>--%>
+                                <%--</a>--%>
+                            <%--</li>--%>
                             <li>
                                 <a href="/checkPrequisite">
                                     <div class="menu-child-wrapper">
@@ -403,27 +354,27 @@
                                     </div>
                                 </a>
                             </li>
-                            <li>
-                                <a href="#">
-                                    <div class="menu-child-wrapper">
-                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                        <div class="child-content col-md-11">
-                                            Danh sách sinh viên đang học trong kì theo môn học
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
+                            <%--<li>--%>
+                                <%--<a href="#">--%>
+                                    <%--<div class="menu-child-wrapper">--%>
+                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                        <%--<div class="child-content col-md-11">--%>
+                                            <%--Danh sách sinh viên đang học trong kì theo môn học--%>
+                                        <%--</div>--%>
+                                    <%--</div>--%>
+                                <%--</a>--%>
+                            <%--</li>--%>
                         </ul>
                     </li>
                 </security:authorize>
 
                 <security:authorize access="hasRole('${student}')">
                     <li>
-                        <a href="/studentDetail">
+                        <a href="/studentDetail?id=123">
                             <div class="menu-child-wrapper">
                                 <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                 <div class="child-content col-md-11">
-                                    Xem sinh viên nợ môn
+                                    Thông tin chi tiết của sinh viên
                                 </div>
                             </div>
                         </a>
