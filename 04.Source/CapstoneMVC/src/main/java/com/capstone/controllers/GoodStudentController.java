@@ -210,6 +210,11 @@ public class GoodStudentController {
         if (!markList.isEmpty()) {
             GoodStudentMarkModel mark = markList.get(markList.size() - 1);
             int currentTerm = mark.getTerm();
+
+            if (currentTerm <= 0) {
+                isValidate = false;
+            }
+
             for (SubjectCurriculumEntity sc : subCurricumlumList) {
                 if (sc.getTermNumber() == currentTerm) {
                     subjectInCurrentTerm.add(sc);
