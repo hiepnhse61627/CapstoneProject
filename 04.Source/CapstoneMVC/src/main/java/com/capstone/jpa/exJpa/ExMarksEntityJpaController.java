@@ -280,6 +280,14 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         return query.getResultList();
     }
 
+    public List<MarksEntity> getMarksByStudentIdAndStatus(int studentId, String status) {
+        EntityManager manager = getEntityManager();
+        TypedQuery<MarksEntity> query = manager.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :id AND LOWER(a.status) LIKE :stat", MarksEntity.class);
+        query.setParameter("id", studentId);
+        query.setParameter("stat", "%" + status + "%");
+        return query.getResultList();
+    }
+
     public List<MarksEntity> getStudyingStudents(String subjectId, String[] statuses) {
         EntityManager manager = getEntityManager();
         String queryStr = "SELECT c FROM MarksEntity c WHERE c.status IN :list ";

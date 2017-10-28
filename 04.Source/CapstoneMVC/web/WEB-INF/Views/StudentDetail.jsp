@@ -91,38 +91,68 @@
 
             <div class="form-group">
                 <div class="row">
-                    <div class="title">
-                        <h4>Danh sách môn đang học trong kỳ</h4>
+                    <div class="col-md-6 p-l-5 p-r-5">
+                        <div class="my-tbl-wrapper bg-gray-light overflow">
+                            <div class="title text-center">
+                                <h4>Danh sách môn đang học trong kỳ</h4>
+                            </div>
+                            <div class="my-content">
+                                <div class="col-md-12">
+                                    <table id="curCourseTable">
+                                        <thead>
+                                        <tr>
+                                            <th>Mã môn</th>
+                                            <th>Tên môn</th>
+                                            <th>Trạng thái</th>
+                                        </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="my-content">
-                        <div class="col-md-12">
-                            <table id="curCourseTable">
-                                <thead>
-                                <tr>
-                                    <th>Mã môn</th>
-                                    <th>Tên môn</th>
-                                </tr>
-                                </thead>
-                            </table>
+                    <div class="col-md-6 p-l-5 p-r-5">
+                        <div class="my-tbl-wrapper bg-gray-light overflow">
+                            <div class="title text-center">
+                                <h4>Danh sách môn học dự kiến tiếp theo</h4>
+                            </div>
+                            <div class="my-content">
+                                <div class="col-md-12">
+                                    <table id="suggestCourseTable">
+                                        <thead>
+                                        <tr>
+                                            <th>Mã môn</th>
+                                            <th>Tên môn</th>
+                                        </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
             <div class="form-group">
                 <div class="row">
-                    <div class="title">
-                        <h4>Dự kiến danh sách môn dọc tiếp theo</h4>
-                    </div>
-                    <div class="my-content">
-                        <div class="col-md-12">
-                            <table id="suggestCourseTable">
-                                <thead>
-                                <tr>
-                                    <th>Mã môn</th>
-                                    <th>Tên môn</th>
-                                </tr>
-                                </thead>
-                            </table>
+                    <div class="col-md-6 p-l-5 p-r-5">
+                        <div class="my-tbl-wrapper bg-gray-light overflow">
+                            <div class="title text-center">
+                                <h4>Danh sách môn chậm tiến độ</h4>
+                            </div>
+                            <div class="my-content">
+                                <div class="col-md-12">
+                                    <table id="notStart">
+                                        <thead>
+                                        <tr>
+                                            <th>Mã môn</th>
+                                            <th>Tên môn</th>
+                                            <th>Trạng thái</th>
+                                        </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -141,6 +171,7 @@
     var nextCourseTable = null;
     var curCourseTable = null;
     var suggestCourseTable = null;
+    var notStart = null;
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -186,6 +217,7 @@
         CreateEmptyDataTable('#nextCourseTable');
         CreateEmptyDataTable('#curCourseTable');
         CreateEmptyDataTable('#suggestCourseTable');
+        CreateEmptyDataTable('#notStart');
     });
 
     function CreateSelect() {
@@ -335,7 +367,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1],
+                    "aTargets": [0, 1, 2],
                     "mRender": function (data, type, row) {
                         if (row[3] == '1') {
                             return "<span style='text-decoration: line-through'>" + data + "</span>";
@@ -401,6 +433,54 @@
         }).fnSetFilteringDelay(1000);
     }
 
+    function CreateNotStartTable() {
+        curCourseTable = $('#notStart').dataTable({
+            "bServerSide": true,
+            "bFilter": true,
+            "bRetrieve": true,
+            "sScrollX": "100%",
+            "bScrollCollapse": true,
+            "bProcessing": true,
+            "bSort": false,
+            "sAjaxSource": "/getStudentNotStart", // url getData.php etc
+            "fnServerParams": function (aoData) {
+                aoData.push({"name": "stuId", "value": $('#select').val()})
+            },
+            "oLanguage": {
+                "sSearchPlaceholder": "",
+                "sSearch": "Tìm kiếm:",
+                "sZeroRecords": "Không có dữ liệu phù hợp",
+                "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
+                "sEmptyTable": "Không có dữ liệu",
+                "sInfoFiltered": " - lọc ra từ _MAX_ dòng",
+                "sLengthMenu": "Hiển thị _MENU_ dòng",
+                "sProcessing": "Đang xử lý...",
+                "oPaginate": {
+                    "sNext": "<i class='fa fa-chevron-right'></i>",
+                    "sPrevious": "<i class='fa fa-chevron-left'></i>"
+                }
+
+            },
+            "aoColumnDefs": [
+                {
+                    "aTargets": [0, 1, 2],
+                    "mRender": function (data, type, row) {
+                        if (row[3] == '1') {
+                            return "<span style='text-decoration: line-through'>" + data + "</span>";
+                        } else {
+                            return data;
+                        }
+                    }
+                },
+                {
+                    "aTargets": [0],
+                    "sClass": "text-center",
+                },
+            ],
+            "bAutoWidth": false,
+        }).fnSetFilteringDelay(1000);
+    }
+
     function ExportExcel() {
         $("input[name='objectType']").val(2);
         $("#export-excel").submit();
@@ -441,6 +521,15 @@
             // Delete empty table
             $('#suggestCourseTable').dataTable().fnDestroy();
             CreateSuggestCourseTable();
+        }
+
+        if (notStart != null) {
+            notStart._fnPageChange(0);
+            notStart._fnAjaxUpdate();
+        } else {
+            // Delete empty table
+            $('#notStart').dataTable().fnDestroy();
+            CreateNotStartTable();
         }
     }
 </script>

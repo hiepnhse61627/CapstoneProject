@@ -2,7 +2,6 @@ package com.capstone.services;
 
 import com.capstone.entities.MarksEntity;
 import com.capstone.jpa.exJpa.ExMarksEntityJpaController;
-import com.capstone.jpa.exJpa.ExRealSemesterEntityJpaController;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -79,5 +78,10 @@ public class MarksServiceImpl implements IMarksService {
     @Override
     public List<MarksEntity> getAllMarksByStudentAndSubject(int studentId, String subjectId, String semesterId) {
         return marksEntityJpaController.getAllMarksByStudentAndSubject(studentId, subjectId, semesterId);
+    }
+
+    @Override
+    public List<MarksEntity> getMarksByStudentIdAndStatus(int studentId, String status) {
+        return marksEntityJpaController.getMarksByStudentIdAndStatus(studentId, status);
     }
 }

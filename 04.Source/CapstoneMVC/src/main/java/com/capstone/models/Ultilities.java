@@ -23,77 +23,13 @@ public class Ultilities {
     public static List<String> notexist = new ArrayList<>();
 
     public static List<MarksEntity> FilterStudentsOnlyPassAndFail(List<MarksEntity> set) {
-//        ArrayList<String> seasons = new ArrayList<String>() {{
-//            add("spring");
-//            add("summer");
-//            add("fall");
-//        }};
-
         List<MarksEntity> newSet = set.stream()
                 .filter(c -> !c.getStatus().trim().toLowerCase().contains("study") &&
                                 !c.getStatus().trim().toLowerCase().contains("start") &&
                                 !c.getStatus().trim().toLowerCase().contains(("diem")))
                 .collect(Collectors.toList());
-
-//        set.sort(Comparator.comparingInt(a -> {
-//            String removewhite = ((MarksEntity) a).getSemesterId().getSemester().replaceAll("\\s+", "");
-//            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
-//            Pattern pattern = Pattern.compile("^\\D*(\\d)");
-//            Matcher matcher = pattern.matcher(removeline);
-//            matcher.find();
-//            return Integer.parseInt(removeline.substring(matcher.start(1), removeline.length()));
-//        }).thenComparingInt(a -> {
-//            String removewhite = ((MarksEntity) a).getSemesterId().getSemester().replaceAll("\\s+", "");
-//            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
-//            Pattern pattern = Pattern.compile("^\\D*(\\d)");
-//            Matcher matcher = pattern.matcher(removeline);
-//            matcher.find();
-//            String season = removeline.substring(0, matcher.start(1)).toLowerCase();
-//            return seasons.indexOf(season);
-//        }).thenComparingInt(a -> {
-//            String semester = ((MarksEntity) a).getSemesterId().getSemester();
-//            return semester.indexOf("_");
-//        }));
-
         return newSet;
     }
-
-//    public static List<MarkModel> SortMarkModelBySemester(List<MarkModel> set) {
-//        ArrayList<String> seasons = new ArrayList<String>() {{
-//            add("spring");
-//            add("summer");
-//            add("fall");
-//        }};
-//
-//        set.sort(Comparator.comparingInt(a -> {
-//            String removewhite = ((MarkModel) a).getSemester().replaceAll("\\s+", "");
-//            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
-//            Pattern pattern = Pattern.compile("^\\D*(\\d)");
-//            Matcher matcher = pattern.matcher(removeline);
-//            matcher.find();
-//            return Integer.parseInt(removeline.substring(matcher.start(1), removeline.length()));
-//        }).thenComparingInt(a -> {
-//            String removewhite = ((MarkModel) a).getSemester().replaceAll("\\s+", "");
-//            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
-//            Pattern pattern = Pattern.compile("^\\D*(\\d)");
-//            Matcher matcher = pattern.matcher(removeline);
-//            matcher.find();
-//            String season = removeline.substring(0, matcher.start(1)).toLowerCase();
-//            return seasons.indexOf(season);
-//        }).thenComparingInt(a -> {
-//            String semester = ((MarkModel) a).getSemester();
-//            return semester.indexOf("_");
-//        }).thenComparingLong(a -> {
-//            MarkModel en = (MarkModel) a;
-//            Date time = en.getStartDate();
-//            if (time == null) {
-//                time = Date.from(Instant.MIN);
-//            }
-//            return time.getTime();
-//        }));
-
-//        return set;
-//    }
 
     public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, List<String> prequisiteRow, int mark) {
         IMarksService marksService = new MarksServiceImpl();
@@ -118,7 +54,6 @@ public class Ultilities {
             for (String studentId : studentIds) {
                 Map<String, List<MarksEntity>> subject = map.row(studentId);
                 if (subject.get(subId) != null && !subject.get(subId).isEmpty()) {
-//                    List<MarksEntity> markList = FilterStudentsOnlyPassAndFail(subject.get(subId));
                     for (MarksEntity m : subject.get(subId)) {
                         if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt")) {
 
@@ -187,17 +122,8 @@ public class Ultilities {
     }
 
     public static Connection getConnection() {
-//        String connectionString = "jdbc:sqlserver://localhost:1433;database=CapstoneProject";
         Connection connection = null;
-//        String username = "sa";
-//        String password = "sa";
-//
-//        try {
-//            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-//            connection = DriverManager.getConnection(connectionString, username, password);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
+
         try {
             EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em = fac.createEntityManager();
@@ -222,6 +148,8 @@ public class Ultilities {
 
         return connection;
     }
+
+
 
     public static List<RealSemesterEntity> SortSemesters(List<RealSemesterEntity> set) {
         ArrayList<String> seasons = new ArrayList<String>() {{
@@ -287,45 +215,6 @@ public class Ultilities {
         }));
 
         return set;
-    }
-
-    public static RealSemesterEntity getSemesterByTerm(int studentId, int term) {
-        EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
-        EntityManager em = fac.createEntityManager();
-        StudentEntity student = em.find(StudentEntity.class, studentId);
-        List<DocumentStudentEntity> list = student.getDocumentStudentEntityList();
-        list.sort(Comparator.comparingLong(a -> {
-            if (a.getCreatedDate() == null) return 0;
-            else return a.getCreatedDate().getTime();
-        }));
-
-        List<SubjectCurriculumEntity> listCur = list.get(list.size() - 1).getCurriculumId().getSubjectCurriculumEntityList();
-        List<SubjectCurriculumEntity> newList = new ArrayList<>();
-        for (SubjectCurriculumEntity tmp : listCur) {
-            if (tmp.getTermNumber() == term) {
-                newList.add(tmp);
-            }
-        }
-        List<String> subjectList = new ArrayList<>();
-        newList.forEach(c -> {
-            if (!subjectList.contains(c.getSubjectId().getId())) subjectList.add(c.getSubjectId().getId());
-        });
-
-        List<RealSemesterEntity> listSemester = new ArrayList<>();
-        if (subjectList != null && !subjectList.isEmpty()) {
-            TypedQuery<MarksEntity> query = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :stu AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
-            query.setParameter("stu", studentId);
-            query.setParameter("list", subjectList);
-            List<MarksEntity> listMark = query.getResultList();
-            if (listMark != null && !listMark.isEmpty()) {
-                for (MarksEntity tmp : listMark) {
-                    listSemester.add(tmp.getSemesterId());
-                }
-            }
-        }
-
-        if (listSemester.isEmpty()) return null;
-        else return SortSemesters(listSemester).get(0);
     }
 
     public static List<MarksEntity> FilterListFailStudent(List<MarksEntity> list) {
