@@ -5,6 +5,7 @@ public class GoodStudentMarkModel {
     private String subjectId;
     private double mark;
     private int term;
+    private int credits;
     private String status;
 
     public GoodStudentMarkModel() {
@@ -40,6 +41,14 @@ public class GoodStudentMarkModel {
 
     public void setTerm(int term) {
         this.term = term;
+    }
+
+    public int getCredits() {
+        return credits;
+    }
+
+    public void setCredits(int credits) {
+        this.credits = credits;
     }
 
     public String getStatus() {

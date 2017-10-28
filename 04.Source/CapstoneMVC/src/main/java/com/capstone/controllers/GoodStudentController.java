@@ -57,11 +57,12 @@ public class GoodStudentController {
             Map<Integer, Map<Integer, List<GoodStudentMarkModel>>> studentList = new HashMap<>();
             Map<Integer, DocumentStudentEntity> docStudentMap = new HashMap<>();
 
-            String queryStr = "SELECT m.StudentId, m.SemesterId, smc.SubjectId," +
+            String queryStr = "SELECT m.StudentId, m.SemesterId, smc.SubjectId, sub.Credits," +
                     " m.AverageMark, m.Status, sc.TermNumber" +
                     " FROM Marks m" +
                     " INNER JOIN Student s ON m.StudentId = s.Id" +
                     " INNER JOIN Subject_MarkComponent smc ON m.SubjectMarkComponentId = smc.Id" +
+                    " INNER JOIN Subject sub ON smc.SubjectId = sub.Id" +
                     " INNER JOIN MarkComponent mc ON smc.MarkComponentId = mc.Id" +
                     " INNER JOIN Document_Student ds ON m.StudentId = ds.StudentId" +
                     " INNER JOIN Subject_Curriculum sc ON ds.CurriculumId = sc.CurriculumId" +
@@ -99,9 +100,10 @@ public class GoodStudentController {
 
                     GoodStudentMarkModel markModel = new GoodStudentMarkModel();
                     markModel.setSubjectId(m[2].toString());
-                    markModel.setMark((double) m[3]);
-                    markModel.setStatus(m[4].toString());
-                    markModel.setTerm((int) m[5]);
+                    markModel.setCredits((int) m[3]);
+                    markModel.setMark((double) m[4]);
+                    markModel.setStatus(m[5].toString());
+                    markModel.setTerm((int) m[6]);
 
                     semesterMarkList.get(semesId).add(markModel);
                 }
@@ -265,16 +267,15 @@ public class GoodStudentController {
 
     private double calculateAverageMark(List<GoodStudentMarkModel> markList) {
         double sum = 0;
-        int countLAB = 0;
+        int totalCredits = 0;
         for (GoodStudentMarkModel mark : markList) {
             if (!mark.getSubjectId().contains("LAB")) {
-                sum += mark.getMark();
-            } else {
-                countLAB++;
+                sum += mark.getMark() * mark.getCredits();
+                totalCredits += mark.getCredits();
             }
         }
 
-        return Math.round(sum / (markList.size() - countLAB) * 10.0) / 10.0;
+        return Math.round(sum / totalCredits * 10.0) / 10.0;
     }
 
 }
