@@ -31,7 +31,6 @@ public class ExportController {
         try {
             os = response.getOutputStream();
             exportObject.writeData(os, params);
-
         } catch (IOException e) {
             e.printStackTrace();
         }

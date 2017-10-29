@@ -1,17 +1,18 @@
 package com.capstone.exporters;
 
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.PrequisiteEntity;
-import com.capstone.entities.StudentEntity;
-import com.capstone.entities.SubjectEntity;
+import com.capstone.entities.*;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.*;
 import java.io.IOException;
@@ -46,6 +47,8 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
         streamingSheet.setRandomAccessWindowSize(100);
         // student list
         List<StudentEntity> students = studentService.findAllStudents();
+//        StudentEntity stu = studentService.findStudentById(Integer.parseInt(params.get("studentId")));
+//        students.add(stu);
         writeDataToTable(streamingWorkbook, streamingSheet, students);
 
         streamingWorkbook.write(os);
@@ -78,7 +81,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 if (marks != null && !marks.isEmpty()) {
                     String failedSubject = "";
                     for (MarksEntity mark : marks) {
-                        failedSubject += mark.getSubjectMarkComponentId().getSubjectId();
+                        failedSubject += mark.getSubjectMarkComponentId().getSubjectId().getId();
                         failedSubject += ",";
                     }
                     failedSubject = Character.toString(failedSubject.charAt(failedSubject.length() - 1)).equals(",") ? failedSubject.substring(0, failedSubject.length() - 1) : failedSubject;
@@ -90,144 +93,352 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                     failedSubjectCell.setCellStyle(cellStyle);
                     failedSubjectCell.setCellValue("N/A");
                 }
+
                 // next subject
-                ArrayList<ArrayList<String>> nextSubjects = processNextSubject(student);
+                List<List<String>> nextSubjects = processNextSubject(student);
                 if (nextSubjects != null && !nextSubjects.isEmpty()) {
                     String next = "";
-                    String notQualified = "";
                     for (List<String> subjects : nextSubjects) {
                         String subjectId = subjects.get(0);
-                        String subjectType = subjects.get(2);
-                        if (subjectType.equals("0")) {
-                            next += subjectId;
-                            next += ",";
-                        } else if (subjectType.equals("1")) {
-                            notQualified += subjectId;
-                            notQualified += ",";
-                        }
+                        next += subjectId;
+                        next += ",";
                     }
 
                     if (next.equals("")) {
                         next = "N/A";
                     }
 
-                    if (notQualified.equals("")) {
-                        notQualified = "N/A";
-                    }
-
-                    next = Character.toString(next.charAt(next.length() - 1)).equals(",") ? next.substring(0, next.length() - 1) : next;
-                    notQualified = Character.toString(notQualified.charAt(notQualified.length() - 1)).equals(",") ? notQualified.substring(0, notQualified.length() - 1) : notQualified;
-
                     Cell nextSubjectCell = row.createCell(3);
                     nextSubjectCell.setCellStyle(cellStyle);
                     nextSubjectCell.setCellValue(next);
-
-                    Cell notQualifiedNextSubjectCell = row.createCell(4);
-                    notQualifiedNextSubjectCell.setCellStyle(cellStyle);
-                    notQualifiedNextSubjectCell.setCellValue(notQualified);
                 } else {
                     Cell nextSubjectCell = row.createCell(3);
                     nextSubjectCell.setCellStyle(cellStyle);
                     nextSubjectCell.setCellValue("N/A");
-
-                    Cell notQualifiedNextSubjectCell = row.createCell(4);
-                    notQualifiedNextSubjectCell.setCellStyle(cellStyle);
-                    notQualifiedNextSubjectCell.setCellValue("N/A");
                 }
+
+                // current subject
+                List<List<String>> currentSubject = processCurrentSubject(student.getId());
+                if (currentSubject != null && !currentSubject.isEmpty()) {
+                    String next = "";
+                    for (List<String> subjects : currentSubject) {
+                        String subjectId = subjects.get(0);
+                        next += subjectId;
+                        next += ",";
+                    }
+
+                    if (next.equals("")) {
+                        next = "N/A";
+                    }
+
+                    Cell nextSubjectCell = row.createCell(4);
+                    nextSubjectCell.setCellStyle(cellStyle);
+                    nextSubjectCell.setCellValue(next);
+                } else {
+                    Cell nextSubjectCell = row.createCell(4);
+                    nextSubjectCell.setCellStyle(cellStyle);
+                    nextSubjectCell.setCellValue("N/A");
+                }
+
+                // current subject
+                List<List<String>> slowSubject = processNotStart(student.getId());
+                if (slowSubject != null && !slowSubject.isEmpty()) {
+                    String next = "";
+                    for (List<String> subjects : slowSubject) {
+                        String subjectId = subjects.get(0);
+                        next += subjectId;
+                        next += ",";
+                    }
+
+                    if (next.equals("")) {
+                        next = "N/A";
+                    }
+
+                    Cell nextSubjectCell = row.createCell(5);
+                    nextSubjectCell.setCellStyle(cellStyle);
+                    nextSubjectCell.setCellValue(next);
+                } else {
+                    Cell nextSubjectCell = row.createCell(5);
+                    nextSubjectCell.setCellStyle(cellStyle);
+                    nextSubjectCell.setCellValue("N/A");
+                }
+
+                // current subject
+                List<List<String>> suggestSubjects = processSuggestion(student.getId());
+                if (suggestSubjects != null && !suggestSubjects.isEmpty()) {
+                    String next = "";
+                    for (List<String> subjects : suggestSubjects) {
+                        String subjectId = subjects.get(0);
+                        next += subjectId;
+                        next += ",";
+                    }
+
+                    if (next.equals("")) {
+                        next = "N/A";
+                    }
+
+                    Cell nextSubjectCell = row.createCell(6);
+                    nextSubjectCell.setCellStyle(cellStyle);
+                    nextSubjectCell.setCellValue(next);
+                } else {
+                    Cell nextSubjectCell = row.createCell(6);
+                    nextSubjectCell.setCellStyle(cellStyle);
+                    nextSubjectCell.setCellValue("N/A");
+                }
+
+                System.out.println("Exporting " + (rowIndex + 1) + " of " + students.size());
                 rowIndex++;
             }
         }
     }
 
     private List<MarksEntity> processFailedSubject(StudentEntity student) {
-        List<MarksEntity> marks = marksService.getStudentMarksById(student.getId());
-        // Init students passed and failed
-        List<MarksEntity> listPassed = marks.stream().filter(p -> p.getStatus().contains("Passed") || p.getStatus().contains("Exempt")).collect(Collectors.toList());
-        List<MarksEntity> listFailed = marks.stream().filter(f -> !f.getStatus().contains("Passed") || !f.getStatus().contains("Exempt")).collect(Collectors.toList());
-        // compared list
-        List<MarksEntity> comparedList = new ArrayList<>();
-        // make comparator
-        Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
-            @Override
-            public int compare(MarksEntity o1, MarksEntity o2) {
-                return new CompareToBuilder()
-                        .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
-                        .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
-                        .toComparison();
-            }
-        };
-        Collections.sort(listPassed, comparator);
-        // start compare failed list to passed list
-        for (int i = 0; i < listFailed.size(); i++) {
-            MarksEntity keySearch = listFailed.get(i);
-            int index = Collections.binarySearch(listPassed, keySearch, comparator);
-            if (index < 0) {
-                comparedList.add(keySearch);
-            }
-        }
-        // result list
-        List<MarksEntity> resultList = new ArrayList<>();
-        // remove duplicate
-        for (MarksEntity marksEntity : comparedList) {
-            if (marksEntity.getSubjectMarkComponentId() != null && !resultList.stream().anyMatch(r -> r.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase().equals(marksEntity.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
-                    && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
-                resultList.add(marksEntity);
+        List<MarksEntity> list = marksService.getAllMarksByStudentAndSubject(student.getId(), "0", "0");
+
+        List<MarksEntity> newlist = Ultilities.FilterStudentsOnlyPassAndFail(list);
+        List<MarksEntity> resultList = Ultilities.FilterListFailStudent(newlist);
+
+        //remove studying marks from fail list
+        List<MarksEntity> studyingList = marksService.getMarksByStudentIdAndStatus(student.getId(), "studying");
+        Iterator<MarksEntity> iterator = resultList.iterator();
+        while(iterator.hasNext()) {
+            MarksEntity current = iterator.next();
+            if (studyingList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(current.getSubjectMarkComponentId().getSubjectId().getId()))) {
+                iterator.remove();
             }
         }
 
         return resultList;
     }
 
-    private ArrayList<ArrayList<String>> processNextSubject(StudentEntity student) {
+    private List<List<String>> processNextSubject(StudentEntity student) {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = emf.createEntityManager();
 
-        List<SubjectEntity> subjects = new ArrayList<>();
-        int studentId = student.getId();
-        String[] currentTerm = {"0"};
-        int nextTermNumber = 0;
+        String queryStr = "SELECT sc FROM DocumentStudentEntity ds, SubjectCurriculumEntity sc" +
+                " WHERE ds.studentId.id = :studentId AND ds.createdDate =" +
+                " (SELECT MAX(ds1.createdDate) FROM DocumentStudentEntity ds1 WHERE ds1.studentId.id = :studentId) " +
+                " AND ds.curriculumId.id = sc.curriculumId.id" +
+                " AND sc.termNumber = :term";
+        TypedQuery<SubjectCurriculumEntity> query = em.createQuery(queryStr, SubjectCurriculumEntity.class);
+        query.setParameter("studentId", student.getId());
+        query.setParameter("term", student.getTerm() + 1);
 
-        String sqlString = "SELECT distinct Curriculum_Mapping.term FROM Student " +
-                "INNER JOIN Marks on student.ID = Marks.StudentId and Student.ID =" + studentId +
-                " INNER JOIN Curriculum_Mapping on Marks.SubjectId = Curriculum_Mapping.SubId " +
-                "order by Curriculum_Mapping.Term desc";
-        Query query = em.createNativeQuery(sqlString);
-        List<String> list = query.getResultList();
-        list.stream().findFirst().ifPresent(c -> currentTerm[0] = list.stream().findFirst().get());
+        List<SubjectCurriculumEntity> list = query.getResultList();
 
-        if (!currentTerm[0].equals("0")) {
-            int currentTermNumber = Integer.parseInt(currentTerm[0].replaceAll("[^0-9]", ""));
-            nextTermNumber = currentTermNumber + 1;
+        // Check students score if exist remove
+        if (!list.isEmpty()) {
+            List<String> curriculumSubjects = new ArrayList<>();
+            list.forEach(c -> {
+                if (!curriculumSubjects.contains(c.getSubjectId().getId())) {
+                    curriculumSubjects.add(c.getSubjectId().getId());
+                }
+            });
+            TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+            query2.setParameter("id", student.getId());
+            query2.setParameter("list", curriculumSubjects);
+            List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
+            Iterator<SubjectCurriculumEntity> iterator = list.iterator();
+            while(iterator.hasNext()) {
+                SubjectCurriculumEntity cur = iterator.next();
+                if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectId().getId()))) {
+                    iterator.remove();
+                }
+            }
         }
 
-//        query = em.createQuery("SELECT s FROM CurriculumMappingEntity c, SubjectEntity s " +
-//                                 "WHERE c.term LIKE '%" + nextTermNumber + "' AND c.subjectEntity.id = s.id", SubjectEntity.class);
-//        subjects = (List<SubjectEntity>) query.getResultList();
-//
-        ArrayList<ArrayList<String>> parent = new ArrayList<>();
-//        if (!subjects.isEmpty()) {
-//            subjects.forEach(m -> {
-//                ArrayList<String> tmp = new ArrayList<>();
-//                tmp.add(m.getId());
-//                tmp.add(m.getName());
-//
-//                SubjectEntity cur = subjectService.findSubjectById(m.getId());
-//                boolean exist = false;
-//                for (PrequisiteEntity s : cur.getPrequisiteEntityList()) {
-//                    TypedQuery<MarksEntity> q = em.createQuery("SELECT c FROM MarksEntity c WHERE c.studentId.id = :id AND c.subjectId.subjectId = :sub", MarksEntity.class);
-//                    List<MarksEntity> l = q.setParameter("sub", s.getId()).setParameter("id", studentId).getResultList();
-//                    exist = Ultilities.CheckStudentSubjectFailOrPass(l);
-//                }
+        List<List<String>> result = new ArrayList<>();
+        for (SubjectCurriculumEntity sc : list) {
+            List<String> row = new ArrayList<>();
+            row.add(sc.getSubjectId().getId());
+            row.add(sc.getSubjectId().getName());
 
-//                if (exist) {
-//                    tmp.add("1");
-//                } else {
-//                    tmp.add("0");
-//                }
-//
-//                parent.add(tmp);
-//            });
-//        }
+            result.add(row);
+        }
+
+        return result;
+    }
+
+    public List<List<String>> processCurrentSubject(int stuId) {
+        List<List<String>> displayList = new ArrayList<>();
+
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            List<MarksEntity> list = marksService.getMarksByStudentIdAndStatus(stuId, "studying");
+
+            // Check students score if exist remove
+            if (!list.isEmpty()) {
+                List<String> curriculumSubjects = new ArrayList<>();
+                list.forEach(c -> {
+                    if (!curriculumSubjects.contains(c.getSubjectMarkComponentId().getSubjectId().getId())) {
+                        curriculumSubjects.add(c.getSubjectMarkComponentId().getSubjectId().getId());
+                    }
+                });
+                TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+                query2.setParameter("id", stuId);
+                query2.setParameter("list", curriculumSubjects);
+                List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
+                Iterator<MarksEntity> iterator = list.iterator();
+                while(iterator.hasNext()) {
+                    MarksEntity cur = iterator.next();
+                    if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectMarkComponentId().getSubjectId().getId()))) {
+                        iterator.remove();
+                    }
+                }
+            }
+
+            for (MarksEntity sc : list) {
+                List<String> row = new ArrayList<>();
+                row.add(sc.getSubjectMarkComponentId().getSubjectId().getId());
+                row.add(sc.getSubjectMarkComponentId().getSubjectId().getName());
+                row.add(sc.getStatus());
+
+                displayList.add(row);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return displayList;
+    }
+
+    public List<List<String>> processNotStart(int stuId) {
+        IMarksService marksService = new MarksServiceImpl();
+        List<List<String>> displayList = new ArrayList<>();
+
+        try {
+            List<MarksEntity> list = marksService.getMarksByStudentIdAndStatus(stuId, "start");
+
+            for (MarksEntity sc : list) {
+                List<String> row = new ArrayList<>();
+                row.add(sc.getSubjectMarkComponentId().getSubjectId().getId());
+                row.add(sc.getSubjectMarkComponentId().getSubjectId().getName());
+                row.add(sc.getStatus());
+
+                displayList.add(row);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return displayList;
+    }
+
+    public List<List<String>> processSuggestion(int stuId) {
+        IMarksService marksService = new MarksServiceImpl();
+
+        IStudentService studentService = new StudentServiceImpl();
+
+        StudentEntity student = studentService.findStudentById(stuId);
+
+        List<List<String>> parent = new ArrayList<>();
+        try {
+            /*-----------------------------------Fail Course--------------------------------------------------*/
+            List<MarksEntity> list = marksService.getAllMarksByStudentAndSubject(stuId, "0", "0");
+            List<MarksEntity> newlist = Ultilities.FilterStudentsOnlyPassAndFail(list);
+            List<MarksEntity> resultList = Ultilities.FilterListFailStudent(newlist);
+            List<SubjectEntity> failSubjects = new ArrayList<>();
+            resultList.forEach(c -> {
+                if (!failSubjects.contains(c.getSubjectMarkComponentId().getSubjectId())) {
+                    failSubjects.add(c.getSubjectMarkComponentId().getSubjectId());
+                }
+            });
+
+            /*-------------------------------Get Next Course------------------------------------------------*/
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            String queryStr = "SELECT sc FROM DocumentStudentEntity ds, SubjectCurriculumEntity sc" +
+                    " WHERE ds.studentId.id = :studentId AND ds.createdDate =" +
+                    " (SELECT MAX(ds1.createdDate) FROM DocumentStudentEntity ds1 WHERE ds1.studentId.id = :studentId) " +
+                    " AND ds.curriculumId.id = sc.curriculumId.id" +
+                    " AND sc.termNumber = :term";
+            TypedQuery<SubjectCurriculumEntity> query = em.createQuery(queryStr, SubjectCurriculumEntity.class);
+            query.setParameter("studentId", stuId);
+            query.setParameter("term", student.getTerm() + 1);
+
+            List<SubjectCurriculumEntity> listNextCurri = query.getResultList();
+            List<SubjectEntity> nextSubjects = new ArrayList<>();
+            listNextCurri.forEach(c -> {
+                if (!nextSubjects.contains(c.getSubjectId())) {
+                    nextSubjects.add(c.getSubjectId());
+                }
+            });
+
+            /*-------------------------------Chậm tiến độ------------------------------------------------*/
+            List<MarksEntity> slowList = marksService.getMarksByStudentIdAndStatus(stuId, "start");
+            List<SubjectEntity> slowSubjects = new ArrayList<>();
+            slowList.forEach(c -> {
+                if (!slowSubjects.contains(c.getSubjectMarkComponentId().getSubjectId())) {
+                    slowSubjects.add(c.getSubjectMarkComponentId().getSubjectId());
+                }
+            });
+
+            // gộp chậm tiến độ và fail và sort theo semester
+            List<SubjectEntity> combine = new ArrayList<>();
+            List<SubjectEntity> finalCombine = combine;
+            failSubjects.forEach(c -> {
+                if (!finalCombine.contains(c)) {
+                    finalCombine.add(c);
+                }
+            });
+            slowSubjects.forEach(c -> {
+                if (!finalCombine.contains(c)) {
+                    finalCombine.add(c);
+                }
+            });
+            combine = finalCombine;
+            List<SubjectEntity> sortiedCombine = Ultilities.SortSubjectsByOrdering(combine, stuId);
+
+            /*-----------------------------get Subject List--------------------------------------------------------*/
+            if (sortiedCombine.size() >= 5) {
+                sortiedCombine = sortiedCombine.stream().limit(7).collect(Collectors.toList());
+
+                if (!sortiedCombine.isEmpty()) {
+                    sortiedCombine.forEach(m -> {
+                        ArrayList<String> tmp = new ArrayList<>();
+                        tmp.add(m.getId());
+                        tmp.add(m.getName());
+                        parent.add(tmp);
+
+                    });
+                }
+            } else if (sortiedCombine.size() > 0) {
+                for (SubjectEntity subject : sortiedCombine) {
+                    ArrayList<String> tmp = new ArrayList<>();
+                    tmp.add(subject.getId());
+                    tmp.add(subject.getName());
+                    parent.add(tmp);
+                }
+                if (nextSubjects.size() > (7 - parent.size())) {
+                    for (int i = 0; i < (7 - parent.size()); i++) {
+                        ArrayList<String> tmp = new ArrayList<>();
+                        tmp.add(nextSubjects.get(i).getId());
+                        tmp.add(nextSubjects.get(i).getName());
+                        parent.add(tmp);
+                    }
+                } else {
+                    for (SubjectEntity nextSubject : nextSubjects) {
+                        ArrayList<String> tmp = new ArrayList<>();
+                        tmp.add(nextSubject.getId());
+                        tmp.add(nextSubject.getName());
+                        parent.add(tmp);
+                    }
+                }
+            } else {
+                for (SubjectEntity nextSubject : nextSubjects) {
+                    ArrayList<String> tmp = new ArrayList<>();
+                    tmp.add(nextSubject.getId());
+                    tmp.add(nextSubject.getName());
+                    parent.add(tmp);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return parent;
     }
 }

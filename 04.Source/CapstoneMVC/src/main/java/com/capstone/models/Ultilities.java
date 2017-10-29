@@ -308,22 +308,25 @@ public class Ultilities {
         IStudentService studentService = new StudentServiceImpl();
         StudentEntity student = studentService.findStudentById(studentId);
         List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
-        docs.sort(Comparator.comparingLong(c -> {
-            DocumentStudentEntity d = (DocumentStudentEntity) c;
-            if (d.getCreatedDate() == null) {
-                return 0;
-            } else {
-                return d.getCreatedDate().getTime();
-            }
-        }));
-        CurriculumEntity curriculumEntity = docs.get(docs.size() - 1).getCurriculumId();
-        List<SubjectCurriculumEntity> listCur = curriculumEntity.getSubjectCurriculumEntityList();
-        listCur.sort(Comparator.comparingInt(SubjectCurriculumEntity::getOrdinalNumber));
 
         List<SubjectEntity> result = new ArrayList<>();
-        for (SubjectCurriculumEntity c : listCur) {
-            if (listSubjects.stream().anyMatch(a -> a.getId().equals(c.getSubjectId().getId()))) {
-                result.add(c.getSubjectId());
+        if (docs.size() > 0) {
+            docs.sort(Comparator.comparingLong(c -> {
+                DocumentStudentEntity d = (DocumentStudentEntity) c;
+                if (d.getCreatedDate() == null) {
+                    return 0;
+                } else {
+                    return d.getCreatedDate().getTime();
+                }
+            }));
+            CurriculumEntity curriculumEntity = docs.get(docs.size() - 1).getCurriculumId();
+            List<SubjectCurriculumEntity> listCur = curriculumEntity.getSubjectCurriculumEntityList();
+            listCur.sort(Comparator.comparingInt(SubjectCurriculumEntity::getOrdinalNumber));
+
+            for (SubjectCurriculumEntity c : listCur) {
+                if (listSubjects.stream().anyMatch(a -> a.getId().equals(c.getSubjectId().getId()))) {
+                    result.add(c.getSubjectId());
+                }
             }
         }
 

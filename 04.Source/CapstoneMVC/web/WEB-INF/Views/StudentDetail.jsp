@@ -164,6 +164,7 @@
 
 <form id="export-excel" action="/exportExcel" hidden>
     <input name="objectType"/>
+    <input name="studentId"/>
 </form>
 
 <script>
@@ -483,6 +484,7 @@
 
     function ExportExcel() {
         $("input[name='objectType']").val(2);
+        $("input[name='studentId']").val($('#select').val());
         $("#export-excel").submit();
     }
 
