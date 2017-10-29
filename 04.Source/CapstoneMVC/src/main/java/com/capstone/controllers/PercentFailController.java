@@ -38,7 +38,7 @@ public class PercentFailController {
         ISubjectService service1 = new SubjectServiceImpl();
         ICourseService service2 = new CourseServiceImpl();
         view.addObject("subjects", service1.getAllSubjects());
-        view.addObject("classes", service2.getAllCourseToString());
+        view.addObject("classes", service2.getAllCourse());
         return view;
     }
 
@@ -50,91 +50,82 @@ public class PercentFailController {
         String subjectId = params.get("subject");
         String courseId = params.get("course");
 
-        Comparator<MarksEntity> comparator = (o1, o2) -> new CompareToBuilder()
-                .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
-                .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
-                .toComparison();
-
         EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager manager = fac.createEntityManager();
 
         ArrayList<ArrayList<String>> parent = new ArrayList<>();
 
+        ICourseService service = new CourseServiceImpl();
+
         try {
-            IRealSemesterService service1 = new RealSemesterServiceImpl();
-            for (RealSemesterEntity r : Ultilities.SortSemesters(service1.getAllSemester())) {
+            String queryStr = "SELECT a FROM MarksEntity a";
+            if (!subjectId.equals("0")) {
+                if (!queryStr.contains("WHERE")) queryStr += " WHERE";
+                queryStr += " a.subjectMarkComponentId.subjectId.id = :subject AND";
+            }
+            if (!courseId.equals("0")) {
+                if (!queryStr.contains("WHERE")) queryStr += " WHERE";
+                queryStr += " a.courseId.id = :course AND";
+            }
 
-                TypedQuery<MarksEntity> query = null;
+            System.out.println(queryStr.lastIndexOf("AND") + " - " + queryStr.length());
+            if (queryStr.lastIndexOf("AND") == queryStr.length() - 3) {
+                queryStr = queryStr.substring(0, queryStr.length() - 3).trim();
+            }
 
-                if (subjectId.equals("0") && courseId.equals("0")) {
-                    query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
-                            "m.semesterId.id = :semester", MarksEntity.class);
-                    query.setParameter("semester", r.getId());
-                } else if (!subjectId.equals("0") && courseId.equals("0")) {
-                    query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
-                            "m.subjectMarkComponentId.subjectId = :sub " +
-                            "AND m.semesterId.id = :semester", MarksEntity.class);
-                    query.setParameter("sub", subjectId);
-                    query.setParameter("semester", r.getId());
-                } else if (subjectId.equals("0") && !courseId.equals("0")) {
-//                    query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
-//                            "m.courseId.class1 LIKE :course " +
-//                            "AND m.semesterId.id = :semester", MarksEntity.class);
-//                    query.setParameter("course", "%" + courseId + "%");
-//                    query.setParameter("semester", r.getId());
-                } else {
-//                    query = manager.createQuery("SELECT m FROM MarksEntity m WHERE " +
-//                            "m.subjectMarkComponentId.subjectId = :sub " +
-//                            "AND m.courseId.class1 LIKE :course " +
-//                            "AND m.semesterId.id = :semester", MarksEntity.class);
-//                    query.setParameter("sub", subjectId);
-//                    query.setParameter("course", "%" + courseId + "%");
-//                    query.setParameter("semester", r.getId());
-                }
+            TypedQuery<MarksEntity> query = manager.createQuery(queryStr, MarksEntity.class);
+            if (!subjectId.equals("0")) {
+                query.setParameter("subject", subjectId);
+            }
+            if (!courseId.equals("0")) {
+                query.setParameter("course", Integer.parseInt(courseId));
+            }
 
-                List<MarksEntity> list = query.getResultList();
-                if (!list.isEmpty()) {
-                    Table<String, String, List<MarksEntity>> filtered = FillterPassFailList(list);
+            List<MarksEntity> list = query.getResultList();
 
-                    String sem = "";
-                    String sub = "";
-                    String class1 = "";
-                    int percent = 0;
+            if (!list.isEmpty()) {
+                Table<Integer, String, List<MarksEntity>> filtered = FillterPassFailList(list);
 
-                    Set<String> l = filtered.rowKeySet();
-                    for (String semester : l) {
-                        sem = semester;
-                        Map<String, List<MarksEntity>> subject = filtered.row(semester);
-                        for (Map.Entry<String, List<MarksEntity>> m : subject.entrySet()) {
-                            sub = m.getKey();
+                String sub = "";
+                String class1 = "";
+                int percent = 0;
 
-                            Map<String, List<String>> map = new HashMap<>();
-                            for (MarksEntity mark : m.getValue()) {
-//                                if (map.get(mark.getCourseId().getClass1().trim()) != null) {
-//                                    map.get(mark.getCourseId().getClass1().trim()).add(mark.getStatus());
-//                                } else {
-//                                    List<String> tmp2 = new ArrayList<>();
-//                                    tmp2.add(mark.getStatus());
-//                                    map.put(mark.getCourseId().getClass1().trim(), tmp2);
-//                                }
-                            }
+                Set<Integer> courses = filtered.rowKeySet();
+                for (Integer course : courses) {
 
-                            for (Map.Entry<String, List<String>> last : map.entrySet()) {
-                                class1 = last.getKey();
+                    class1 = service.findCourseById(course).getSemester();
 
-                                float total = (float)last.getValue().stream().count();
-                                float failed = (float)last.getValue().stream().filter(c -> !c.toLowerCase().contains("pass")).count();
-                                percent = Math.round((failed / total) * 100f);
+                    Map<String, List<MarksEntity>> subjects = filtered.row(course);
+                    for (Map.Entry<String, List<MarksEntity>> subject : subjects.entrySet()) {
 
-                                ArrayList<String> tmp = new ArrayList<>();
-                                tmp.add(sem);
-                                tmp.add(sub);
-                                tmp.add(class1);
-                                tmp.add(String.valueOf(percent) + "% failed");
-                                parent.add(tmp);
-                            }
-                        }
+                        sub = subject.getKey();
+
+//                        Map<String, List<String>> map = new HashMap<>();
+//                        for (MarksEntity mark : subject.getValue()) {
+//                            if (map.get(mark.getCourseId().getSemester().trim()) != null) {
+//                                map.get(mark.getCourseId().getSemester().trim()).add(mark.getStatus());
+//                            } else {
+//                                List<String> tmp2 = new ArrayList<>();
+//                                tmp2.add(mark.getStatus());
+//                                map.put(mark.getCourseId().getSemester().trim(), tmp2);
+//                            }
+//                        }
+
+//                        for (Map.Entry<String, List<String>> last : map.entrySet()) {
+//                            class1 = last.getKey();
+
+                            float total = (float) subject.getValue().stream().count();
+                            float failed = (float) subject.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("pass")).count();
+                            percent = Math.round((failed / total) * 100f);
+
+                            ArrayList<String> tmp = new ArrayList<>();
+                            tmp.add(sub);
+                            tmp.add(class1);
+                            tmp.add(String.valueOf(percent) + "% failed");
+                            parent.add(tmp);
+//                        }
                     }
+                }
 
 //                long failed = filtered.stream().filter(c -> !c.getStatus().toLowerCase().contains("pass")).count();
 //                ArrayList<String> tmp = new ArrayList<>();
@@ -145,7 +136,6 @@ public class PercentFailController {
 //                float percent = ((float) failed / (float) filtered.stream().count()) * 100f;
 //                tmp.add(String.valueOf(Math.round(percent) + "%"));
 //                parent.add(tmp);
-                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -161,16 +151,17 @@ public class PercentFailController {
         return data;
     }
 
-    public Table<String, String, List<MarksEntity>> FillterPassFailList(List<MarksEntity> list) {
+    public Table<Integer, String, List<MarksEntity>> FillterPassFailList(List<MarksEntity> list) {
         List<MarksEntity> removed = list.stream().filter(c -> c.getSubjectMarkComponentId() != null).collect(Collectors.toList());
-        Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
+
+        Table<Integer, String, List<MarksEntity>> map = HashBasedTable.create();
         for (MarksEntity m : removed) {
-            if (map.get(m.getSemesterId().getSemester(), m.getSubjectMarkComponentId().getSubjectId()) == null) {
+            if (map.get(m.getCourseId().getId(), m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
                 List<MarksEntity> tmp = new ArrayList<>();
                 tmp.add(m);
-                map.put(m.getSemesterId().getSemester(), m.getSubjectMarkComponentId().getSubjectId().getId(), tmp);
+                map.put(m.getCourseId().getId(), m.getSubjectMarkComponentId().getSubjectId().getId(), tmp);
             } else {
-                map.get(m.getSemesterId().getSemester(), m.getSubjectMarkComponentId().getSubjectId()).add(m);
+                map.get(m.getCourseId().getId(), m.getSubjectMarkComponentId().getSubjectId().getId()).add(m);
             }
         }
 

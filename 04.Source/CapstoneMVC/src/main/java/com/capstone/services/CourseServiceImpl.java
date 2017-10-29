@@ -50,8 +50,7 @@ public class CourseServiceImpl implements ICourseService {
     }
 
     @Override
-    public List<String> getAllCourseToString() {
-        return courseEntityJpaController.findAllToString();
+    public CourseEntity findCourseById(int id) {
+        return courseEntityJpaController.findCourseEntity(id);
     }
-
 }

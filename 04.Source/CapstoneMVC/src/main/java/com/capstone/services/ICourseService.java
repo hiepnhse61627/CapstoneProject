@@ -14,5 +14,5 @@ public interface ICourseService {
     void deleteCourse(int courseId);
     List<CourseEntity> getCourseListForDatatable(DatatableModel model);
     List<CourseEntity> getAllCourse();
-    List<String> getAllCourseToString();
+    CourseEntity findCourseById(int id);
 }

@@ -36,7 +36,7 @@
                             <select id="class" class="select form-control">
                                 <option value="0">All</option>
                                 <c:forEach var="s" items="${classes}">
-                                    <option value="${s}">${s}</option>
+                                    <option value="${s.id}">${s.semester}_${s.subjectCode}</option>
                                 </c:forEach>
                             </select>
                         </div>
@@ -53,7 +53,6 @@
                     <table id="table">
                         <thead>
                         <tr>
-                            <th>Kỳ</th>
                             <th>Môn</th>
                             <th>Lớp</th>
                             <th>Tỉ lệ</th>
@@ -136,7 +135,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3],
+                    "aTargets": [0, 1, 2],
                     "bSortable": false,
                     "sClass": "text-center",
                 },
