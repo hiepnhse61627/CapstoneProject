@@ -97,6 +97,7 @@
           <element id="library" level="project" name="Maven: com.itextpdf:itextpdf:5.5.12" />
           <element id="library" level="project" name="Maven: com.aspose:aspose-cells:17.9" />
           <element id="library" level="project" name="Maven: com.aspose:aspose-cells:16.11.0" />
+          <element id="library" level="project" name="Maven: log4j:log4j:1.2.17" />
         </element>
       </element>
       <element id="javaee-facet-resources" facet="spring-mvc-quickstart/web/Web" />

@@ -65,7 +65,6 @@ public class ExportCurriculumImpl implements IExportObject {
             cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
             int rowIndex = 6;
-            int count = 1;
             for (SubjectCurriculumEntity entity : entities) {
                 Row row = spreadsheet.createRow(rowIndex);
                 Cell cell;
@@ -90,7 +89,6 @@ public class ExportCurriculumImpl implements IExportObject {
                 cell.setCellStyle(cellStyle);
                 cell.setCellValue(entity.getSubjectId().getCredits());
 
-//                ExportStatusReport.StatusStudentDetailExport = "Exporting " + (count++) + " of " + entities.size();
                 rowIndex++;
             }
         }

@@ -75,7 +75,8 @@ public class ExportController {
                 "com.capstone.exporters.ExportStudentFailedPrerequisiteImpl", // 3 = Export student fail prerequisite
                 "com.capstone.exporters.ExportGraduatedStudentsImpl", // 4 = Export graduated student
                 "com.capstone.exporters.ExportPDFGraduatedStudentsImpl", // 5 = Export PDF graduated student
-                "com.capstone.exporters.ExportCurriculumImpl" // 6 = Export curriculum
+                "com.capstone.exporters.ExportCurriculumImpl", // 6 = Export curriculum
+                "com.capstone.exporters.ExportStudentListImpl", // 7 = Export students
         };
 
         try {

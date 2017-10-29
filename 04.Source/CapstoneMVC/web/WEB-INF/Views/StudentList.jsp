@@ -8,7 +8,17 @@
 <section class="content">
     <div class="box">
         <div class="b-header">
-            <h1>Danh sách sinh viên</h1>
+            <div class="row">
+                <div class="col-md-9 title">
+                    <h1>Danh sách sinh viên</h1>
+                </div>
+                <div class="col-md-3 text-right">
+                    <a href="#" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
+                        <i class="fa fa-arrow-circle-up"></i>
+                        <div class="m-l-3">Xuất file excel</div>
+                    </a>
+                </div>
+            </div>
             <hr>
         </div>
 
@@ -28,6 +38,10 @@
         </div>
     </div>
 </section>
+
+<form id="export-excel" action="/exportExcel" hidden>
+    <input name="objectType"/>
+</form>
 
 <div id="markDetail" class="modal fade" role="dialog">
     <div class="modal-dialog">
@@ -101,6 +115,11 @@
     $(document).ready(function () {
         LoadStundentList();
     });
+
+    function ExportExcel() {
+        $("input[name='objectType']").val(7);
+        $("#export-excel").submit();
+    }
 
     function LoadStundentList() {
         tblStudent = $('#tbl-student').dataTable({
