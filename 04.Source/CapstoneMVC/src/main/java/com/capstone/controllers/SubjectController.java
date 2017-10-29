@@ -1,11 +1,14 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.PrequisiteEntity;
+import com.capstone.entities.SubjectCurriculumEntity;
 import com.capstone.entities.SubjectEntity;
-import com.capstone.models.ReadAndSaveFileToServer;
-import com.capstone.models.ReplacementSubject;
-import com.capstone.services.ISubjectService;
-import com.capstone.services.SubjectServiceImpl;
+import com.capstone.models.*;
+import com.capstone.services.*;
+import com.google.common.reflect.TypeToken;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -23,9 +26,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.persistence.*;
+import javax.security.auth.Subject;
 import javax.servlet.ServletContext;
 import java.io.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class SubjectController {
@@ -45,6 +51,10 @@ public class SubjectController {
             File[] listOfFiles = dir.listFiles();
             view.addObject("files", listOfFiles);
         }
+
+//        List<SubjectCurriculumEntity> semesterList = termNumberService.findAllTermNumber();
+
+//        view.addObject("semesterList", semesterList);
         return view;
     }
 
@@ -71,6 +81,162 @@ public class SubjectController {
             read.saveFile(context, file, folder);
         }
         return result;
+    }
+
+    @RequestMapping("/subjectList")
+    public ModelAndView StudentListAll() {
+        ModelAndView view = new ModelAndView("SubjectPage");
+        view.addObject("title", "Danh sách môn học");
+
+        return view;
+    }
+
+    @RequestMapping(value = "/loadSubjectList")
+    @ResponseBody
+    public JsonObject LoadStudentListAll(@RequestParam Map<String, String> params) {
+        JsonObject jsonObj = new JsonObject();
+
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            String sSearch = params.get("sSearch");
+            int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
+            int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
+            int iTotalRecords = 0;
+            int iTotalDisplayRecords = 0;
+
+            String queryStr;
+            // Đếm số lượng subject
+            queryStr = "SELECT COUNT(s) FROM SubjectEntity s";
+            TypedQuery<Integer> queryCounting = em.createQuery(queryStr, Integer.class);
+            iTotalRecords = ((Number) queryCounting.getSingleResult()).intValue();
+
+            // Query danh sách subject
+            queryStr = "SELECT s FROM SubjectEntity s";
+            if (!sSearch.isEmpty()) {
+                queryStr += " WHERE s.id LIKE :sId OR s.name LIKE :sName";
+            }
+
+            TypedQuery<SubjectEntity> query = em.createQuery(queryStr, SubjectEntity.class);
+//                    .setFirstResult(iDisplayStart)
+//                    .setMaxResults(iDisplayLength);
+
+            if (!sSearch.isEmpty()) {
+                query.setParameter("sId", "%" + sSearch + "%");
+                query.setParameter("sName", "%" + sSearch + "%");
+            }
+
+            List<SubjectEntity> subjectList = query.getResultList();
+            iTotalDisplayRecords = subjectList.size();
+            List<List<String>> result = new ArrayList<>();
+            subjectList = subjectList.stream().skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
+
+            for (SubjectEntity std : subjectList) {
+                List<String> dataList = new ArrayList<String>() {{
+                    add(std.getId());
+                    add(std.getName());
+                }};
+                result.add(dataList);
+            }
+
+            JsonArray aaData = (JsonArray) new Gson()
+                    .toJsonTree(result, new TypeToken<List<List<String>>>() {
+                    }.getType());
+
+            jsonObj.addProperty("iTotalRecords", iTotalRecords);
+//            jsonObj.addProperty("iTotalDisplayRecords", iTotalRecords);
+            jsonObj.addProperty("iTotalDisplayRecords", iTotalDisplayRecords);
+            jsonObj.add("aaData", aaData);
+            jsonObj.addProperty("sEcho", params.get("sEcho"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jsonObj;
+    }
+
+    @RequestMapping(value = "/getSubject", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject GetSubject(@RequestParam String subjectId) {
+        JsonObject jsonObj = new JsonObject();
+        ISubjectService subjectService = new SubjectServiceImpl();
+
+        try {
+            SubjectEntity entity = subjectService.findSubjectById(subjectId);
+            String replacementSubject = "";
+            for (SubjectEntity list : entity.getSubjectEntityList()) {
+                replacementSubject = replacementSubject + "," + list.getId();
+            }
+
+            SubjectModel subjectModel = new SubjectModel();
+            subjectModel.setSubjectID(entity.getId());
+            subjectModel.setSubjectName(entity.getName());
+            subjectModel.setPrerequisiteSubject(entity.getPrequisiteEntity().getPrequisiteSubs());
+            subjectModel.setCredits(entity.getCredits());
+            subjectModel.setPrerequisiteEffectStart(entity.getPrerequisiteEffectStart());
+            subjectModel.setPrerequisiteEffectEnd(entity.getPrerequisiteEffectEnd());
+            if (!replacementSubject.equals("")) {
+                subjectModel.setReplacementSubject(replacementSubject.substring(1));
+            } else {
+                subjectModel.setReplacementSubject(replacementSubject);
+            }
+
+
+            String json = new Gson().toJson(subjectModel);
+
+            jsonObj.addProperty("success", true);
+            jsonObj.addProperty("subject", json);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.writeLog(e);
+            jsonObj.addProperty("success", false);
+        }
+
+        return jsonObj;
+    }
+
+
+    @RequestMapping(value = "/subjectList/getDetail", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject GetAllStudentMarks(String subjectId) {
+        JsonObject jsonObj = new JsonObject();
+
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            // Lấy thông tin chi tiết môn
+            String queryStr = "select s.id, s.name, s.credits, s.prerequisiteEffectStart, s.prerequisiteEffectEnd from SubjectEntity s where id = :sId";
+            TypedQuery<SubjectEntity> querySubject = em.createQuery(queryStr, SubjectEntity.class);
+            querySubject.setParameter("sId", subjectId);
+            SubjectEntity subject = querySubject.getSingleResult();
+
+            SubjectModel model = new SubjectModel();
+            model.setSubjectID(subjectId);
+            model.setSubjectName(subject.getName());
+            model.setCredits(subject.getCredits());
+
+            // Lấy môn tiên quyết
+            queryStr = "select p.prequisiteSubs from PrequisiteEntity p where p.subjectId = :sId";
+            TypedQuery<PrequisiteEntity> query = em.createQuery(queryStr, PrequisiteEntity.class);
+            query.setParameter("sId", subjectId);
+
+            PrequisiteEntity prequisiteSubs = query.getSingleResult();
+            model.setPrerequisiteSubject(prequisiteSubs.getPrequisiteSubs());
+            model.setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
+            model.setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
+
+            String result = new Gson().toJson(model);
+
+            jsonObj.addProperty("success", true);
+            jsonObj.addProperty("sSubjectDetail", result);
+        } catch (Exception e) {
+            jsonObj.addProperty("success", false);
+            jsonObj.addProperty("error", e.getMessage());
+        }
+
+        return jsonObj;
     }
 
     private JsonObject ReadFile(MultipartFile file1, File file2, boolean isNewFile) {
@@ -113,7 +279,7 @@ public class SubjectController {
                                 en.setName(cell.getStringCellValue().trim());
                             } else if (cell.getColumnIndex() == 3) { // No. of credits
                                 try {
-                                    en.setCredits((int)cell.getNumericCellValue());
+                                    en.setCredits((int) cell.getNumericCellValue());
                                 } catch (Exception e) {
                                     en.setCredits(null);
                                 }
@@ -166,6 +332,43 @@ public class SubjectController {
         return obj;
     }
 
+    @RequestMapping(value = "/subject/edit")
+    @ResponseBody
+    public JsonObject EditCourse(@RequestParam("sSubjectId") String subjectId, @RequestParam("sSubjectName") String subjectName,
+                                 @RequestParam("sCredits") String credits, @RequestParam("sReplacement") String replacement,
+                                 @RequestParam("sPrerequisite") String prerequisite, @RequestParam("sPreEffectStart") String preEffectStart,
+                                 @RequestParam("sPreEffectEnd") String preEffectEnd) {
+        JsonObject jsonObj = new JsonObject();
+
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            SubjectModel model = new SubjectModel();
+            model.setSubjectID(subjectId);
+            model.setSubjectName(subjectName);
+            model.setCredits(Integer.parseInt(credits));
+            model.setPrerequisiteSubject(prerequisite);
+            model.setReplacementSubject(replacement);
+            model.setPrerequisiteEffectEnd(preEffectEnd);
+            model.setPrerequisiteEffectStart(preEffectStart);
+
+            if(!subjectService.updateSubject(model)){
+                jsonObj.addProperty("success", false);
+            }else{
+                jsonObj.addProperty("success", true);
+            }
+
+
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            jsonObj.addProperty("false", false);
+            jsonObj.addProperty("message", e.getMessage());
+        }
+
+        return jsonObj;
+    }
+
     @RequestMapping("/subject/getlinestatus")
     @ResponseBody
     public JsonObject GetLineStatus() {
@@ -174,4 +377,5 @@ public class SubjectController {
         obj.addProperty("totalLine", subjectService.getTotalLine());
         return obj;
     }
+
 }

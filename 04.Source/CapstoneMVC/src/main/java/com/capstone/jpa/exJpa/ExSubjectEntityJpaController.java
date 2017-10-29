@@ -2,11 +2,13 @@ package com.capstone.jpa.exJpa;
 
 import com.capstone.entities.PrequisiteEntity;
 import com.capstone.entities.SubjectEntity;
-import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.jpa.SubjectEntityJpaController;
+import com.capstone.models.Logger;
 import com.capstone.models.ReplacementSubject;
+import com.capstone.models.SubjectModel;
 
 import javax.persistence.*;
+import javax.security.auth.Subject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +34,49 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         EntityManager em = getEntityManager();
         TypedQuery<SubjectEntity> query = em.createQuery("SELECT a FROM SubjectEntity a", SubjectEntity.class);
         return query.getResultList();
+    }
+
+    public boolean updateSubject(SubjectModel subject) {
+        EntityManager manager = getEntityManager();
+        manager.getTransaction().begin();
+        try {
+
+
+            //update SubjectEntity match SubjectID
+            SubjectEntity uSubject = manager.find(SubjectEntity.class, subject.getSubjectID());
+            uSubject.setName(subject.getSubjectName());
+            uSubject.setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
+            uSubject.setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
+            uSubject.setCredits(subject.getCredits());
+
+            manager.merge(uSubject);
+            manager.flush();
+
+            //update Prerequisite match SubjectID
+            PrequisiteEntity uPrerequisite = manager.find(PrequisiteEntity.class, subject.getSubjectID());
+            uPrerequisite.setPrequisiteSubs(subject.getPrerequisiteSubject());
+            //check if prerequisite is available or not
+            String[] checkers = uPrerequisite.getPrequisiteSubs().split(",");
+            for (String subjectCheck : checkers) {
+                if (manager.find(SubjectEntity.class, subjectCheck) == null) {
+                    return false;
+                }
+            }
+
+
+
+            manager.merge(uPrerequisite);
+            manager.flush();
+
+            //update Replacement if there is any change
+
+        } catch (Exception e) {
+
+            Logger.writeLog(e);
+            return false;
+        }
+        manager.getTransaction().commit();
+        return true;
     }
 
     public void insertSubjectList(List<SubjectEntity> list) {
@@ -93,8 +138,8 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 //                query.setParameter("replace", "%" + id + "%");
 //                return query.getSingleResult();
 //            } catch (NoResultException ex) {
-                System.out.println("Subject " + id + " not found!");
-                return null;
+            System.out.println("Subject " + id + " not found!");
+            return null;
 //            } catch (NonUniqueResultException ex) {
 //                System.out.println("Subject " + id + " more than one result!");
 //                return null;
@@ -160,7 +205,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
                 SubjectEntity sub = manager.find(SubjectEntity.class, replacer.getSubCode());
                 if (sub != null) {
                     String[] rep = replacer.getReplaceCode().split(",");
-                    for (String r : rep ) {
+                    for (String r : rep) {
                         SubjectEntity replace = manager.find(SubjectEntity.class, r.trim());
                         if (!sub.getSubjectEntityList().contains(replace)) {
                             sub.getSubjectEntityList().add(replace);

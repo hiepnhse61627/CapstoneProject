@@ -2,10 +2,12 @@ package com.capstone.services;
 
 import com.capstone.entities.SubjectEntity;
 import com.capstone.models.ReplacementSubject;
+import com.capstone.models.SubjectModel;
 
 import java.util.List;
 
 public interface ISubjectService {
+    boolean updateSubject(SubjectModel subject);
     void insertSubjectList(List<SubjectEntity> list);
     void insertReplacementList(List<ReplacementSubject> list);
     List<SubjectEntity> getAllSubjects();

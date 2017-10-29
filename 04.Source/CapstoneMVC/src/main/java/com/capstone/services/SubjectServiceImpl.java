@@ -3,6 +3,7 @@ package com.capstone.services;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.jpa.exJpa.ExSubjectEntityJpaController;
 import com.capstone.models.ReplacementSubject;
+import com.capstone.models.SubjectModel;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -12,6 +13,11 @@ public class SubjectServiceImpl implements ISubjectService {
 
     private EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
     ExSubjectEntityJpaController controller = new ExSubjectEntityJpaController(emf);
+
+    @Override
+    public boolean updateSubject(SubjectModel subject) {
+        return controller.updateSubject(subject);
+    }
 
     @Override
     public void insertSubjectList(List<SubjectEntity> list) {
