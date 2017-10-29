@@ -3,16 +3,10 @@ package com.capstone.exporters;
 import com.capstone.entities.*;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import org.apache.commons.lang.builder.CompareToBuilder;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.persistence.*;
 import java.io.IOException;
@@ -187,7 +181,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                     nextSubjectCell.setCellValue("N/A");
                 }
 
-                ExportStatusReport.StatusExport = "Exporting " + (count++) + " of " + students.size();
+                ExportStatusReport.StatusStudentDetailExport = "Exporting " + (count++) + " of " + students.size();
                 rowIndex++;
             }
         }

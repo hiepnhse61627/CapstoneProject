@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
@@ -24,27 +23,31 @@ public class ExportController {
     @RequestMapping(value = "/exportExcel")
     @ResponseBody
     public Callable exportFile(@RequestParam Map<String, String> params, HttpServletResponse response) {
-        ExportStatusReport.StatusExportRunning = true;
-        ExportStatusReport.StatusExport = "";
+        ExportStatusReport.StatusExportStudentDetailRunning = true;
+        ExportStatusReport.StatusStudentDetailExport = "";
 
         Callable callable = () -> {
             exportObject = createExportImplementation(Integer.parseInt(params.get("objectType")));
-            // set content attributes for the response
-            response.setContentType(mimeType);
-            // set headers for the response
-            String headerValue = String.format("attachment; filename=\"%s\"", exportObject.getFileName());
-            response.setHeader(headerKey, headerValue);
+
             // get output stream of the response
             OutputStream os;
             try {
+                // set content attributes for the response
+                response.setContentType(mimeType);
+
+                // set headers for the response
+                String headerValue = String.format("attachment; filename=\"%s\"", exportObject.getFileName());
+                response.setHeader(headerKey, headerValue);
+
+                // write data
                 os = response.getOutputStream();
                 exportObject.writeData(os, params);
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
-            ExportStatusReport.StatusExportRunning = false;
-            ExportStatusReport.StatusExport = "";
+            ExportStatusReport.StatusExportStudentDetailRunning = false;
+            ExportStatusReport.StatusStudentDetailExport = "";
 
             return null;
         };
@@ -56,8 +59,8 @@ public class ExportController {
     @ResponseBody
     public JsonObject getStatus() {
         JsonObject data = new JsonObject();
-        data.addProperty("running",  ExportStatusReport.StatusExportRunning);
-        data.addProperty("status",  ExportStatusReport.StatusExport);
+        data.addProperty("running",  ExportStatusReport.StatusExportStudentDetailRunning);
+        data.addProperty("status",  ExportStatusReport.StatusStudentDetailExport);
         return data;
     }
 
@@ -71,7 +74,8 @@ public class ExportController {
                 "com.capstone.exporters.ExportStudentFailedAndNextSubjectImpl", // 2 = export failed subject of each student and next subject
                 "com.capstone.exporters.ExportStudentFailedPrerequisiteImpl", // 3 = Export student fail prerequisite
                 "com.capstone.exporters.ExportGraduatedStudentsImpl", // 4 = Export graduated student
-                "com.capstone.exporters.ExportPDFGraduatedStudentsImpl" // 5 = Export PDF graduated student
+                "com.capstone.exporters.ExportPDFGraduatedStudentsImpl", // 5 = Export PDF graduated student
+                "com.capstone.exporters.ExportCurriculumImpl" // 6 = Export curriculum
         };
 
         try {

@@ -31,6 +31,10 @@
                         <i class="fa fa-arrow-left"></i>
                         <div class="m-l-3">QUAY LẠI</div>
                     </a>
+                    <a href="#" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
+                        <i class="fa fa-arrow-left"></i>
+                        <div class="m-l-3">Xuất file excel</div>
+                    </a>
                 </div>
             </div>
             <hr>
@@ -52,25 +56,25 @@
                             </div>
                         </div>
 
-                        <div class="my-input-group p-l-30">
-                            <div class="left-content" style="width: 90px">
-                                <label class="p-t-8">Ngành học:</label>
-                            </div>
-                            <div class="right-content width-30">
-                                    <select id="program" class="form-control">
-                                        <c:forEach var="p" items="${programs}">
-                                            <c:choose>
-                                                <c:when test="${data.programId.id == p.id}">
-                                                    <option selected value="${p.id}">${p.name}</option>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <option value="${p.id}">${p.name}</option>
-                                                </c:otherwise>
-                                            </c:choose>
-                                        </c:forEach>
-                                    </select>
-                            </div>
-                        </div>
+                        <%--<div class="my-input-group p-l-30">--%>
+                            <%--<div class="left-content" style="width: 90px">--%>
+                                <%--<label class="p-t-8">Ngành học:</label>--%>
+                            <%--</div>--%>
+                            <%--<div class="right-content width-30">--%>
+                                    <%--<select id="program" class="form-control">--%>
+                                        <%--<c:forEach var="p" items="${programs}">--%>
+                                            <%--<c:choose>--%>
+                                                <%--<c:when test="${data.programId.id == p.id}">--%>
+                                                    <%--<option selected value="${p.id}">${p.name}</option>--%>
+                                                <%--</c:when>--%>
+                                                <%--<c:otherwise>--%>
+                                                    <%--<option value="${p.id}">${p.name}</option>--%>
+                                                <%--</c:otherwise>--%>
+                                            <%--</c:choose>--%>
+                                        <%--</c:forEach>--%>
+                                    <%--</select>--%>
+                            <%--</div>--%>
+                        <%--</div>--%>
 
                     </div>
                 </div>
@@ -151,6 +155,11 @@
         <%-- End body--%>
     </div>
 
+    <form id="export-excel" action="/exportExcel" hidden>
+        <input name="objectType"/>
+        <input name="curId"/>
+    </form>
+
 </section>
 
 <script>
@@ -167,6 +176,12 @@
         IntializeRows();
         GetRowsData();
     });
+
+    function ExportExcel() {
+        $("input[name='objectType']").val(6);
+        $("input[name='curId']").val(${data.id});
+        $("#export-excel").submit();
+    }
 
     function GetRowsData() {
         var table = document.getElementById('table');

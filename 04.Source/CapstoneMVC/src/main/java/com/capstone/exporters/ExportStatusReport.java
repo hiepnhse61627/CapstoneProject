@@ -1,6 +1,6 @@
 package com.capstone.exporters;
 
 public class ExportStatusReport {
-    public static boolean StatusExportRunning = false;
-    public static String StatusExport = "";
+    public static boolean StatusExportStudentDetailRunning = false;
+    public static String StatusStudentDetailExport = "";
 }
