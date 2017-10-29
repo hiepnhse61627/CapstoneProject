@@ -174,8 +174,8 @@ public class SubjectController {
             subjectModel.setSubjectName(entity.getName());
             subjectModel.setPrerequisiteSubject(entity.getPrequisiteEntity().getPrequisiteSubs());
             subjectModel.setCredits(entity.getCredits());
-            subjectModel.setPrerequisiteEffectStart(entity.getPrerequisiteEffectStart());
-            subjectModel.setPrerequisiteEffectEnd(entity.getPrerequisiteEffectEnd());
+//            subjectModel.setPrerequisiteEffectStart(entity.getPrerequisiteEffectStart());
+//            subjectModel.setPrerequisiteEffectEnd(entity.getPrerequisiteEffectEnd());
             if (!replacementSubject.equals("")) {
                 subjectModel.setReplacementSubject(replacementSubject.substring(1));
             } else {
@@ -203,34 +203,34 @@ public class SubjectController {
         JsonObject jsonObj = new JsonObject();
 
         try {
-            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-            EntityManager em = emf.createEntityManager();
-
-            // Lấy thông tin chi tiết môn
-            String queryStr = "select s.id, s.name, s.credits, s.prerequisiteEffectStart, s.prerequisiteEffectEnd from SubjectEntity s where id = :sId";
-            TypedQuery<SubjectEntity> querySubject = em.createQuery(queryStr, SubjectEntity.class);
-            querySubject.setParameter("sId", subjectId);
-            SubjectEntity subject = querySubject.getSingleResult();
-
-            SubjectModel model = new SubjectModel();
-            model.setSubjectID(subjectId);
-            model.setSubjectName(subject.getName());
-            model.setCredits(subject.getCredits());
-
-            // Lấy môn tiên quyết
-            queryStr = "select p.prequisiteSubs from PrequisiteEntity p where p.subjectId = :sId";
-            TypedQuery<PrequisiteEntity> query = em.createQuery(queryStr, PrequisiteEntity.class);
-            query.setParameter("sId", subjectId);
-
-            PrequisiteEntity prequisiteSubs = query.getSingleResult();
-            model.setPrerequisiteSubject(prequisiteSubs.getPrequisiteSubs());
-            model.setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
-            model.setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
-
-            String result = new Gson().toJson(model);
-
-            jsonObj.addProperty("success", true);
-            jsonObj.addProperty("sSubjectDetail", result);
+//            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+//            EntityManager em = emf.createEntityManager();
+//
+//            // Lấy thông tin chi tiết môn
+//            String queryStr = "select s.id, s.name, s.credits, s.prerequisiteEffectStart, s.prerequisiteEffectEnd from SubjectEntity s where id = :sId";
+//            TypedQuery<SubjectEntity> querySubject = em.createQuery(queryStr, SubjectEntity.class);
+//            querySubject.setParameter("sId", subjectId);
+//            SubjectEntity subject = querySubject.getSingleResult();
+//
+//            SubjectModel model = new SubjectModel();
+//            model.setSubjectID(subjectId);
+//            model.setSubjectName(subject.getName());
+//            model.setCredits(subject.getCredits());
+//
+//            // Lấy môn tiên quyết
+//            queryStr = "select p.prequisiteSubs from PrequisiteEntity p where p.subjectId = :sId";
+//            TypedQuery<PrequisiteEntity> query = em.createQuery(queryStr, PrequisiteEntity.class);
+//            query.setParameter("sId", subjectId);
+//
+//            PrequisiteEntity prequisiteSubs = query.getSingleResult();
+//            model.setPrerequisiteSubject(prequisiteSubs.getPrequisiteSubs());
+//            model.setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
+//            model.setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
+//
+//            String result = new Gson().toJson(model);
+//
+//            jsonObj.addProperty("success", true);
+//            jsonObj.addProperty("sSubjectDetail", result);
         } catch (Exception e) {
             jsonObj.addProperty("success", false);
             jsonObj.addProperty("error", e.getMessage());

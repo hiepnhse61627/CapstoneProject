@@ -37,10 +37,7 @@ public class SubjectEntity implements Serializable {
     private String id;
     @Column(name = "Name", length = 255)
     private String name;
-    @Column(name = "PrerequisiteEffectStart", length = 50)
-    private String prerequisiteEffectStart;
-    @Column(name = "PrerequisiteEffectEnd", length = 50)
-    private String prerequisiteEffectEnd;
+
     @Column(name = "Abbreviation", length = 255)
     private String abbreviation;
     @Column(name = "Credits")
@@ -62,22 +59,6 @@ public class SubjectEntity implements Serializable {
     private List<SubjectMarkComponentEntity> subjectMarkComponentEntityList;
 
     public SubjectEntity() {
-    }
-
-    public String getPrerequisiteEffectStart() {
-        return prerequisiteEffectStart;
-    }
-
-    public void setPrerequisiteEffectStart(String prerequisiteEffectStart) {
-        this.prerequisiteEffectStart = prerequisiteEffectStart;
-    }
-
-    public String getPrerequisiteEffectEnd() {
-        return prerequisiteEffectEnd;
-    }
-
-    public void setPrerequisiteEffectEnd(String prerequisiteEffectEnd) {
-        this.prerequisiteEffectEnd = prerequisiteEffectEnd;
     }
 
     public SubjectEntity(String id) {

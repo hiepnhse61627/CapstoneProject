@@ -47,13 +47,26 @@ public class PercentFailController {
     public JsonObject GetStudentFailPercent(@RequestParam Map<String, String> params) {
         JsonObject data = new JsonObject();
 
+        List<List<String>> parent = processFailPercent(params);
+
+        JsonArray output = (JsonArray) new Gson().toJsonTree(parent.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList()));
+
+        data.addProperty("iTotalRecords", parent.size());
+        data.addProperty("iTotalDisplayRecords", parent.size());
+        data.add("aaData", output);
+        data.addProperty("sEcho", params.get("sEcho"));
+
+        return data;
+    }
+
+    public List<List<String>> processFailPercent(Map<String, String> params) {
         String subjectId = params.get("subject");
         String courseId = params.get("course");
 
         EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager manager = fac.createEntityManager();
 
-        ArrayList<ArrayList<String>> parent = new ArrayList<>();
+        List<List<String>> parent = new ArrayList<>();
 
         ICourseService service = new CourseServiceImpl();
 
@@ -114,15 +127,15 @@ public class PercentFailController {
 //                        for (Map.Entry<String, List<String>> last : map.entrySet()) {
 //                            class1 = last.getKey();
 
-                            float total = (float) subject.getValue().stream().count();
-                            float failed = (float) subject.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("pass")).count();
-                            percent = Math.round((failed / total) * 100f);
+                        float total = (float) subject.getValue().stream().count();
+                        float failed = (float) subject.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("pass")).count();
+                        percent = Math.round((failed / total) * 100f);
 
-                            ArrayList<String> tmp = new ArrayList<>();
-                            tmp.add(sub);
-                            tmp.add(class1);
-                            tmp.add(String.valueOf(percent) + "% failed");
-                            parent.add(tmp);
+                        ArrayList<String> tmp = new ArrayList<>();
+                        tmp.add(sub);
+                        tmp.add(class1);
+                        tmp.add(String.valueOf(percent) + "% failed");
+                        parent.add(tmp);
 //                        }
                     }
                 }
@@ -141,17 +154,10 @@ public class PercentFailController {
             e.printStackTrace();
         }
 
-        JsonArray output = (JsonArray) new Gson().toJsonTree(parent.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList()));
-
-        data.addProperty("iTotalRecords", parent.size());
-        data.addProperty("iTotalDisplayRecords", parent.size());
-        data.add("aaData", output);
-        data.addProperty("sEcho", params.get("sEcho"));
-
-        return data;
+        return parent;
     }
 
-    public Table<Integer, String, List<MarksEntity>> FillterPassFailList(List<MarksEntity> list) {
+    private Table<Integer, String, List<MarksEntity>> FillterPassFailList(List<MarksEntity> list) {
         List<MarksEntity> removed = list.stream().filter(c -> c.getSubjectMarkComponentId() != null).collect(Collectors.toList());
 
         Table<Integer, String, List<MarksEntity>> map = HashBasedTable.create();

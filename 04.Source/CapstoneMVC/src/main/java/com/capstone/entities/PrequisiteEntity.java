@@ -37,8 +37,28 @@ public class PrequisiteEntity implements Serializable {
     @JoinColumn(name = "SubjectId", referencedColumnName = "Id", nullable = false, insertable = false, updatable = false)
     @OneToOne(optional = false)
     private SubjectEntity subjectEntity;
+    @Column(name = "PrerequisiteEffectStart", length = 50)
+    private String prerequisiteEffectStart;
+    @Column(name = "PrerequisiteEffectEnd", length = 50)
+    private String prerequisiteEffectEnd;
 
     public PrequisiteEntity() {
+    }
+
+    public String getPrerequisiteEffectStart() {
+        return prerequisiteEffectStart;
+    }
+
+    public void setPrerequisiteEffectStart(String prerequisiteEffectStart) {
+        this.prerequisiteEffectStart = prerequisiteEffectStart;
+    }
+
+    public String getPrerequisiteEffectEnd() {
+        return prerequisiteEffectEnd;
+    }
+
+    public void setPrerequisiteEffectEnd(String prerequisiteEffectEnd) {
+        this.prerequisiteEffectEnd = prerequisiteEffectEnd;
     }
 
     public PrequisiteEntity(String subjectId) {

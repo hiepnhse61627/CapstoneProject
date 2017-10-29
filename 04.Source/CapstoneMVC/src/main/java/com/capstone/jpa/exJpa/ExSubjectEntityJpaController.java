@@ -40,17 +40,15 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         EntityManager manager = getEntityManager();
         manager.getTransaction().begin();
         try {
-
-
             //update SubjectEntity match SubjectID
-            SubjectEntity uSubject = manager.find(SubjectEntity.class, subject.getSubjectID());
-            uSubject.setName(subject.getSubjectName());
-            uSubject.setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
-            uSubject.setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
-            uSubject.setCredits(subject.getCredits());
+//            SubjectEntity uSubject = manager.find(SubjectEntity.class, subject.getSubjectID());
+//            uSubject.setName(subject.getSubjectName());
+//            uSubject.setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
+//            uSubject.setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
+//            uSubject.setCredits(subject.getCredits());
 
-            manager.merge(uSubject);
-            manager.flush();
+//            manager.merge(uSubject);
+//            manager.flush();
 
             //update Prerequisite match SubjectID
             PrequisiteEntity uPrerequisite = manager.find(PrequisiteEntity.class, subject.getSubjectID());

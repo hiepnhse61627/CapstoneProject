@@ -4,7 +4,18 @@
 <section class="content">
     <div class="box">
         <div class="b-header">
-            <h1>Tỉ lệ sinh viên rớt môn</h1>
+            <div class="row">
+                <div class="col-md-9 title">
+                    <h1>Tỉ lệ rớt môn</h1>
+                </div>
+                <div class="col-md-3 text-right">
+                    <button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
+                        <i class="glyphicon glyphicon-open"></i>
+                        <%--<i class="fa fa-upload"></i>--%>
+                        <div>XUẤT DỮ LIỆU</div>
+                    </button>
+                </div>
+            </div>
             <hr>
         </div>
         <div class="b-body">
@@ -61,9 +72,14 @@
                     </table>
                 </div>
             </div>
-
         </div>
     </div>
+
+    <form id="export-excel" action="/exportExcel" hidden>
+        <input name="objectType"/>
+        <input name="subject"/>
+        <input name="course"/>
+    </form>
 </section>
 
 <script>
@@ -101,6 +117,13 @@
         });
         return this;
     };
+
+    function ExportExcel() {
+        $("input[name='objectType']").val(8);
+        $("input[name='subject']").val($('#subject').val());
+        $("input[name='course']").val($('#class').val());
+        $("#export-excel").submit();
+    }
 
     $(document).ready(function () {
         $('.select').select2();
