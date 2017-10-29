@@ -49,7 +49,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
         List<StudentEntity> students = studentService.findAllStudents();
 //        StudentEntity stu = studentService.findStudentById(Integer.parseInt(params.get("studentId")));
 //        students.add(stu);
-        writeDataToTable(streamingWorkbook, streamingSheet, students.subList(0, 40));
+        writeDataToTable(streamingWorkbook, streamingSheet, students);
 
         streamingWorkbook.write(os);
     }
