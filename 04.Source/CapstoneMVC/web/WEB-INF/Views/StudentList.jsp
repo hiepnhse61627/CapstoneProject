@@ -1,9 +1,5 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
-
-<%--<section class="content-header">--%>
-<%--<h1>Danh sách sinh viên</h1>--%>
-<%--</section>--%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <section class="content">
     <div class="box">
@@ -19,7 +15,10 @@
                         <thead>
                         <th>MSSV</th>
                         <th>Tên sinh viên</th>
-                        <th>Xem tất cả điểm</th>
+                        <th>Ngày sinh</th>
+                        <th>Giới tính</th>
+                        <th>Chi tiết</th>
+                        <%--<th>Chỉnh sửa</th>--%>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -128,21 +127,25 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2],
-                    "bSortable": false,
-                },
-                {
-                    "aTargets": [0, 2],
+                    "aTargets": [0, 1, 2, 3, 4],
                     "bSortable": false,
                     "sClass": "text-center",
                 },
                 {
-                    "aTargets": [2],
+                    "aTargets": [4],
                     "mRender": function (data, type, row) {
-                        return "<a class='btn btn-primary tbl-btn' onclick='GetMarks(" + data + ")'>" +
+                        var href = "/studentList/" + data;
+                        return "<a href='" + href + "' class='btn btn-success tbl-btn'>" +
                             "<i class='fa fa-eye'></i></a>";
                     }
                 },
+//                {
+//                    "aTargets": [5],
+//                    "mRender": function (data, type, row) {
+//                        return "<a class='btn btn-primary tbl-btn' onclick='GetMarks(" + row[4] + ")'>" +
+//                            "<i class='glyphicon glyphicon-pencil'></i></a>";
+//                    }
+//                },
             ],
             "bAutoWidth": false,
         }).fnSetFilteringDelay(700);

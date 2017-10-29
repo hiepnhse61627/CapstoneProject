@@ -4,7 +4,9 @@ import java.sql.Timestamp;
 import java.util.Date;
 
 public class MarkModel {
+    private int markId;
     private String subject;
+    private String subjectName;
     private String semester;
     private String class1;
     private String status;
@@ -12,6 +14,31 @@ public class MarkModel {
     private Date endDate;
     private double averageMark;
     private int repeatingNumber;
+    private int credits;
+
+    public int getMarkId() {
+        return markId;
+    }
+
+    public void setMarkId(int markId) {
+        this.markId = markId;
+    }
+
+    public String getSubjectName() {
+        return subjectName;
+    }
+
+    public void setSubjectName(String subjectName) {
+        this.subjectName = subjectName;
+    }
+
+    public int getCredits() {
+        return credits;
+    }
+
+    public void setCredits(int credits) {
+        this.credits = credits;
+    }
 
     public String getSubject() {
         return subject;

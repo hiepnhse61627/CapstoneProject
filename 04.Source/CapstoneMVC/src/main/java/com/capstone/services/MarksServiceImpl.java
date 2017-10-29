@@ -14,6 +14,11 @@ public class MarksServiceImpl implements IMarksService {
     ExMarksEntityJpaController marksEntityJpaController = new ExMarksEntityJpaController(emf);
 
     @Override
+    public MarksEntity getMarkById(int id) {
+        return marksEntityJpaController.findMarksEntity(id);
+    }
+
+    @Override
     public void createMark(MarksEntity entity) {
         try {
             marksEntityJpaController.create(entity);
@@ -29,6 +34,11 @@ public class MarksServiceImpl implements IMarksService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void updateMark(MarksEntity entity) throws Exception {
+        marksEntityJpaController.edit(entity);
     }
 
     @Override
@@ -74,6 +84,11 @@ public class MarksServiceImpl implements IMarksService {
     @Override
     public int countMarksByCourseId(int courseId) {
         return marksEntityJpaController.countMarksByCourseId(courseId);
+    }
+
+    @Override
+    public int countAllMarks() {
+        return marksEntityJpaController.countAllMarks();
     }
 
     @Override

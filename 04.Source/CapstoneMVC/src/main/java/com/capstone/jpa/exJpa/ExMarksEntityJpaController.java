@@ -65,6 +65,25 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         }
     }
 
+    public int countAllMarks() {
+        EntityManager em = null;
+        int count = 0;
+
+        try {
+            em = getEntityManager();
+            String queryStr = "SELECT COUNT(m) FROM MarksEntity m";
+            TypedQuery<Integer> query = em.createQuery(queryStr, Integer.class);
+
+            count = ((Number) query.getSingleResult()).intValue();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return count;
+    }
+
     public void createMarks(List<MarksEntity> marks) throws PreexistingEntityException, Exception {
         EntityManager em = null;
         this.totalExistStudent = marks.size();
