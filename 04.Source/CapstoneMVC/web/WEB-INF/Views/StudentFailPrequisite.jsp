@@ -166,6 +166,8 @@
 
         Get();
         GetStudents();
+
+        $('#btn-display-subject').trigger('click');
     });
 
     $('#btn-display-subject').click(function () {
