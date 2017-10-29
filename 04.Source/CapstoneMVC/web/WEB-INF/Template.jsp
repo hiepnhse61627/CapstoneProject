@@ -366,6 +366,25 @@
                             <%--</li>--%>
                         </ul>
                     </li>
+                    <li class="treeview">
+                        <a href="#">
+                            <i class="glyphicon glyphicon-open"></i>
+                            <span>Quản lý học phần</span>
+                            <i class="fa fa-angle-left pull-right"></i>
+                        </a>
+                        <ul class="treeview-menu">
+                            <li>
+                                <a href="/subjectList">
+                                    <div class="menu-child-wrapper">
+                                        <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                        <div class="child-content col-md-11">
+                                            Quản lý môn học
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                         </ul>
+                    </li>
                 </security:authorize>
 
                 <security:authorize access="hasRole('${student}')">
