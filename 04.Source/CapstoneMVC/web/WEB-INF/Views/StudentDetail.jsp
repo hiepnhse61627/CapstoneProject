@@ -486,6 +486,41 @@
         $("input[name='objectType']").val(2);
         $("input[name='studentId']").val($('#select').val());
         $("#export-excel").submit();
+
+        Call();
+    }
+
+    var alert;
+
+    function Call() {
+        swal({
+            title: 'Đang xử lý',
+            html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>' +
+            '<div class="form-group" id="progress"></div>',
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                Run();
+            },
+            allowOutsideClick: false
+        });
+    }
+
+    function Run() {
+        $.ajax({
+            type: "GET",
+            url: "/getStatusExport",
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                $('#progress').html("<div>" + result.status + "</div>");
+                if (result.running) {
+                    setTimeout("Run()", 50);
+                } else {
+                    swal('', 'Download file thành công!', 'success');
+                }
+            }
+        });
     }
 
     function RefreshTable() {

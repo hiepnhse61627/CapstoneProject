@@ -49,7 +49,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
         List<StudentEntity> students = studentService.findAllStudents();
 //        StudentEntity stu = studentService.findStudentById(Integer.parseInt(params.get("studentId")));
 //        students.add(stu);
-        writeDataToTable(streamingWorkbook, streamingSheet, students);
+        writeDataToTable(streamingWorkbook, streamingSheet, students.subList(0, 40));
 
         streamingWorkbook.write(os);
     }
@@ -67,6 +67,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
             cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
             int rowIndex = 6;
+            int count = 1;
             for (StudentEntity student : students) {
                 Row row = spreadsheet.createRow(rowIndex);
                 Cell rollNumberCell = row.createCell(0);
@@ -186,7 +187,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                     nextSubjectCell.setCellValue("N/A");
                 }
 
-                System.out.println("Exporting " + (rowIndex + 1) + " of " + students.size());
+                ExportStatusReport.StatusExport = "Exporting " + (count++) + " of " + students.size();
                 rowIndex++;
             }
         }

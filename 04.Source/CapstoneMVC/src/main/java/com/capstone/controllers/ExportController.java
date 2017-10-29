@@ -1,15 +1,19 @@
 package com.capstone.controllers;
 
+import com.capstone.exporters.ExportStatusReport;
 import com.capstone.exporters.IExportObject;
+import com.google.gson.JsonObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 @Controller
 public class ExportController {
@@ -19,21 +23,42 @@ public class ExportController {
 
     @RequestMapping(value = "/exportExcel")
     @ResponseBody
-    public void exportFile(@RequestParam Map<String, String> params, HttpServletResponse response) {
-        exportObject = createExportImplementation(Integer.parseInt(params.get("objectType")));
-        // set content attributes for the response
-        response.setContentType(mimeType);
-        // set headers for the response
-        String headerValue = String.format("attachment; filename=\"%s\"", exportObject.getFileName());
-        response.setHeader(headerKey, headerValue);
-        // get output stream of the response
-        OutputStream os;
-        try {
-            os = response.getOutputStream();
-            exportObject.writeData(os, params);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public Callable exportFile(@RequestParam Map<String, String> params, HttpServletResponse response) {
+        ExportStatusReport.StatusExportRunning = true;
+        ExportStatusReport.StatusExport = "";
+
+        Callable callable = () -> {
+            exportObject = createExportImplementation(Integer.parseInt(params.get("objectType")));
+            // set content attributes for the response
+            response.setContentType(mimeType);
+            // set headers for the response
+            String headerValue = String.format("attachment; filename=\"%s\"", exportObject.getFileName());
+            response.setHeader(headerKey, headerValue);
+            // get output stream of the response
+            OutputStream os;
+            try {
+                os = response.getOutputStream();
+                exportObject.writeData(os, params);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            ExportStatusReport.StatusExportRunning = false;
+            ExportStatusReport.StatusExport = "";
+
+            return null;
+        };
+
+        return callable;
+    }
+
+    @RequestMapping(value = "/getStatusExport")
+    @ResponseBody
+    public JsonObject getStatus() {
+        JsonObject data = new JsonObject();
+        data.addProperty("running",  ExportStatusReport.StatusExportRunning);
+        data.addProperty("status",  ExportStatusReport.StatusExport);
+        return data;
     }
 
     /**
