@@ -1,8 +1,7 @@
 package com.capstone.models;
 
 import com.capstone.entities.*;
-import com.capstone.services.IMarksService;
-import com.capstone.services.MarksServiceImpl;
+import com.capstone.services.*;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 
@@ -10,6 +9,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
+import javax.security.auth.Subject;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.time.Instant;
@@ -299,6 +299,32 @@ public class Ultilities {
         for (int stId : list) {
             result += stId + (count != list.size() - 1 ? "," : "") ;
             count++;
+        }
+
+        return result;
+    }
+
+    public static List<SubjectEntity> SortSubjectsByOrdering(List<SubjectEntity> listSubjects, int studentId) {
+        IStudentService studentService = new StudentServiceImpl();
+        StudentEntity student = studentService.findStudentById(studentId);
+        List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+        docs.sort(Comparator.comparingLong(c -> {
+            DocumentStudentEntity d = (DocumentStudentEntity) c;
+            if (d.getCreatedDate() == null) {
+                return 0;
+            } else {
+                return d.getCreatedDate().getTime();
+            }
+        }));
+        CurriculumEntity curriculumEntity = docs.get(docs.size() - 1).getCurriculumId();
+        List<SubjectCurriculumEntity> listCur = curriculumEntity.getSubjectCurriculumEntityList();
+        listCur.sort(Comparator.comparingInt(SubjectCurriculumEntity::getOrdinalNumber));
+
+        List<SubjectEntity> result = new ArrayList<>();
+        for (SubjectCurriculumEntity c : listCur) {
+            if (listSubjects.stream().anyMatch(a -> a.getId().equals(c.getSubjectId().getId()))) {
+                result.add(c.getSubjectId());
+            }
         }
 
         return result;

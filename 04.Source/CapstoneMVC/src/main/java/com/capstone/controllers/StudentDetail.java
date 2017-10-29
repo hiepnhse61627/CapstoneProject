@@ -130,6 +130,27 @@ public class StudentDetail {
 
             List<MarksEntity> list = marksService.getMarksByStudentIdAndStatus(stuId, "studying");
 
+            // Check students score if exist remove
+            if (!list.isEmpty()) {
+                List<String> curriculumSubjects = new ArrayList<>();
+                list.forEach(c -> {
+                    if (!curriculumSubjects.contains(c.getSubjectMarkComponentId().getSubjectId().getId())) {
+                        curriculumSubjects.add(c.getSubjectMarkComponentId().getSubjectId().getId());
+                    }
+                });
+                TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+                query2.setParameter("id", stuId);
+                query2.setParameter("list", curriculumSubjects);
+                List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
+                Iterator<MarksEntity> iterator = list.iterator();
+                while(iterator.hasNext()) {
+                    MarksEntity cur = iterator.next();
+                    if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectMarkComponentId().getSubjectId().getId()))) {
+                        iterator.remove();
+                    }
+                }
+            }
+
             List<MarksEntity> set2 = list.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
             List<List<String>> displayList = new ArrayList<>();
@@ -280,23 +301,24 @@ public class StudentDetail {
             // gộp chậm tiến độ và fail và sort theo semester
             List<SubjectEntity> combine = new ArrayList<>();
             List<SubjectEntity> finalCombine = combine;
-            slowSubjects.forEach(c -> {
-                if (!finalCombine.contains(c)) {
-                    finalCombine.add(c);
-                }
-            });
             failSubjects.forEach(c -> {
                 if (!finalCombine.contains(c)) {
                     finalCombine.add(c);
                 }
             });
+            slowSubjects.forEach(c -> {
+                if (!finalCombine.contains(c)) {
+                    finalCombine.add(c);
+                }
+            });
             combine = finalCombine;
+            List<SubjectEntity> sortiedCombine = Ultilities.SortSubjectsByOrdering(combine, stuId);
 
             /*-----------------------------get Subject List--------------------------------------------------------*/
             ArrayList<ArrayList<String>> parent = new ArrayList<>();
-            if (combine.size() >= 5) {
-                combine = combine.stream().limit(7).collect(Collectors.toList());
-                List<SubjectEntity> set2 = combine.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+            if (sortiedCombine.size() >= 5) {
+                sortiedCombine = sortiedCombine.stream().limit(7).collect(Collectors.toList());
+                List<SubjectEntity> set2 = sortiedCombine.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
                 if (!set2.isEmpty()) {
                     set2.forEach(m -> {
@@ -307,8 +329,8 @@ public class StudentDetail {
 
                     });
                 }
-            } else if (combine.size() < 5 && combine.size() > 0) {
-                for (SubjectEntity subject : combine) {
+            } else if (sortiedCombine.size() > 0) {
+                for (SubjectEntity subject : sortiedCombine) {
                     ArrayList<String> tmp = new ArrayList<>();
                     tmp.add(subject.getId());
                     tmp.add(subject.getName());
@@ -322,18 +344,18 @@ public class StudentDetail {
                         parent.add(tmp);
                     }
                 } else {
-                    for (int i = 0; i < nextSubjects.size(); i++) {
+                    for (SubjectEntity nextSubject : nextSubjects) {
                         ArrayList<String> tmp = new ArrayList<>();
-                        tmp.add(nextSubjects.get(i).getId());
-                        tmp.add(nextSubjects.get(i).getName());
+                        tmp.add(nextSubject.getId());
+                        tmp.add(nextSubject.getName());
                         parent.add(tmp);
                     }
                 }
             } else {
-                for (int i = 0; i < nextSubjects.size(); i++) {
+                for (SubjectEntity nextSubject : nextSubjects) {
                     ArrayList<String> tmp = new ArrayList<>();
-                    tmp.add(nextSubjects.get(i).getId());
-                    tmp.add(nextSubjects.get(i).getName());
+                    tmp.add(nextSubject.getId());
+                    tmp.add(nextSubject.getName());
                     parent.add(tmp);
                 }
             }
