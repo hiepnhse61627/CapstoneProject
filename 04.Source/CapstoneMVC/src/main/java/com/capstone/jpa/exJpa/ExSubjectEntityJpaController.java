@@ -6,6 +6,8 @@ import com.capstone.jpa.SubjectEntityJpaController;
 import com.capstone.models.Logger;
 import com.capstone.models.ReplacementSubject;
 import com.capstone.models.SubjectModel;
+import com.capstone.services.ISubjectService;
+import com.capstone.services.SubjectServiceImpl;
 
 import javax.persistence.*;
 import javax.security.auth.Subject;
@@ -36,8 +38,97 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         return query.getResultList();
     }
 
+    public boolean createSubject(SubjectModel subject) {
+        EntityManager manager = getEntityManager();
+        ISubjectService subjectService = new SubjectServiceImpl();
+
+        try {
+
+            manager.getTransaction().begin();
+            //create SubjectEntity match SubjectID
+            SubjectEntity uSubject = manager.find(SubjectEntity.class, subject.getSubjectID());
+            if (uSubject == null) {
+                uSubject = new SubjectEntity();
+                uSubject.setId(subject.getSubjectID());
+                uSubject.setAbbreviation(subject.getSubjectID().substring(0, 3));
+                uSubject.setName(subject.getSubjectName());
+                uSubject.setIsSpecialized(false);
+                uSubject.setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
+                uSubject.setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
+                uSubject.setCredits(subject.getCredits());
+
+                manager.persist(uSubject);
+                manager.flush();
+
+            } else {
+                return false;
+            }
+
+
+            //create Prerequisite match SubjectID
+            PrequisiteEntity uPrerequisite = manager.find(PrequisiteEntity.class, subject.getSubjectID());
+            if (!(uPrerequisite == null)) {
+                return false;
+            } else {
+                uPrerequisite = new PrequisiteEntity();
+                uPrerequisite.setSubjectId(subject.getSubjectID());
+                uPrerequisite.setPrequisiteSubs(subject.getPrerequisiteSubject());
+                uPrerequisite.setFailMark(4);
+                //check if prerequisite is available or not
+                String[] checkers = uPrerequisite.getPrequisiteSubs().split(",");
+                for (String subjectCheck : checkers) {
+                    if (manager.find(SubjectEntity.class, subjectCheck) == null) {
+                        return false;
+                    }
+                }
+                manager.persist(uPrerequisite);
+                manager.flush();
+            }
+
+            //create Replacement
+            try {
+                String[] newRpSubjects = subject.getReplacementSubject().split(",");
+                for (String replacer : newRpSubjects) {
+
+                    if (replacer != null && !replacer.isEmpty()) {
+                        if (manager.find(SubjectEntity.class, replacer) == null) {
+                            return false;
+                        }
+                        SubjectEntity sub = manager.find(SubjectEntity.class, subject.getSubjectID());
+                        if (sub != null) {
+                            String[] rep = replacer.split(",");
+                            for (String r : rep) {
+                                SubjectEntity replace = manager.find(SubjectEntity.class, r.trim());
+                                sub.getSubjectEntityList().clear();
+                                manager.merge(sub);
+                                manager.flush();
+                                if (!sub.getSubjectEntityList().contains(replace)) {
+                                    sub.getSubjectEntityList().add(replace);
+                                }
+                            }
+                            manager.persist(sub);
+                            manager.flush();
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Logger.writeLog(e);
+                return false;
+            }
+
+
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            return false;
+        }
+        manager.getTransaction().commit();
+        return true;
+    }
+
+
     public boolean updateSubject(SubjectModel subject) {
         EntityManager manager = getEntityManager();
+        ISubjectService subjectService = new SubjectServiceImpl();
         manager.getTransaction().begin();
         try {
 
@@ -62,16 +153,42 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
                     return false;
                 }
             }
-
-
-
             manager.merge(uPrerequisite);
             manager.flush();
 
-            //update Replacement if there is any change
+            //update Replacement
+            try {
+                String[] newRpSubjects = subject.getReplacementSubject().split(",");
+                for (String replacer : newRpSubjects) {
+
+                    if (replacer != null && !replacer.isEmpty()) {
+                        if (manager.find(SubjectEntity.class, replacer) == null) {
+                            return false;
+                        }
+                        SubjectEntity sub = manager.find(SubjectEntity.class, subject.getSubjectID());
+                        if (sub != null) {
+                            String[] rep = replacer.split(",");
+                            for (String r : rep) {
+                                SubjectEntity replace = manager.find(SubjectEntity.class, r.trim());
+                                sub.getSubjectEntityList().clear();
+                                manager.merge(sub);
+                                manager.flush();
+                                if (!sub.getSubjectEntityList().contains(replace)) {
+                                    sub.getSubjectEntityList().add(replace);
+                                }
+                            }
+                            manager.merge(sub);
+                            manager.flush();
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Logger.writeLog(e);
+                return false;
+            }
+
 
         } catch (Exception e) {
-
             Logger.writeLog(e);
             return false;
         }

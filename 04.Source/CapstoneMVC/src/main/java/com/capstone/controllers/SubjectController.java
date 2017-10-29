@@ -334,7 +334,7 @@ public class SubjectController {
 
     @RequestMapping(value = "/subject/edit")
     @ResponseBody
-    public JsonObject EditCourse(@RequestParam("sSubjectId") String subjectId, @RequestParam("sSubjectName") String subjectName,
+    public JsonObject EditSubject(@RequestParam("sSubjectId") String subjectId, @RequestParam("sSubjectName") String subjectName,
                                  @RequestParam("sCredits") String credits, @RequestParam("sReplacement") String replacement,
                                  @RequestParam("sPrerequisite") String prerequisite, @RequestParam("sPreEffectStart") String preEffectStart,
                                  @RequestParam("sPreEffectEnd") String preEffectEnd) {
@@ -359,6 +359,42 @@ public class SubjectController {
                 jsonObj.addProperty("success", true);
             }
 
+
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            jsonObj.addProperty("false", false);
+            jsonObj.addProperty("message", e.getMessage());
+        }
+
+        return jsonObj;
+    }
+
+    @RequestMapping(value = "/subject/create")
+    @ResponseBody
+    public JsonObject CreateNewSubject(@RequestParam("sNewSubjectId") String subjectId, @RequestParam("sNewSubjectName") String subjectName,
+                                 @RequestParam("sNewCredits") String credits, @RequestParam("sNewReplacement") String replacement,
+                                 @RequestParam("sNewPrerequisite") String prerequisite, @RequestParam("sNewPreEffectStart") String preEffectStart,
+                                 @RequestParam("sNewPreEffectEnd") String preEffectEnd) {
+        JsonObject jsonObj = new JsonObject();
+
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            SubjectModel model = new SubjectModel();
+            model.setSubjectID(subjectId);
+            model.setSubjectName(subjectName);
+            model.setCredits(Integer.parseInt(credits));
+            model.setPrerequisiteSubject(prerequisite);
+            model.setReplacementSubject(replacement);
+            model.setPrerequisiteEffectEnd(preEffectEnd);
+            model.setPrerequisiteEffectStart(preEffectStart);
+
+            if(!subjectService.createSubject(model)){
+                jsonObj.addProperty("success", false);
+            }else{
+                jsonObj.addProperty("success", true);
+            }
 
         } catch (Exception e) {
             Logger.writeLog(e);
