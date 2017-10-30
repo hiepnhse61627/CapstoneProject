@@ -4,10 +4,7 @@ import com.capstone.entities.*;
 import com.capstone.jpa.MarksEntityJpaController;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
 import com.capstone.models.Ultilities;
-import com.capstone.services.IProgramService;
-import com.capstone.services.IRealSemesterService;
-import com.capstone.services.ProgramServiceImpl;
-import com.capstone.services.RealSemesterServiceImpl;
+import com.capstone.services.*;
 import org.apache.commons.lang3.reflect.Typed;
 
 import javax.persistence.*;
@@ -154,17 +151,27 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             }
         }
 
+        List<String> allSubs = new ArrayList<>();
+        if (!subjectId.equals("0")) {
+            ISubjectService subjectService = new SubjectServiceImpl();
+            SubjectEntity aSub = subjectService.findSubjectById(subjectId);
+            allSubs.add(aSub.getId());
+            for (SubjectEntity s : aSub.getSubjectEntityList()) {
+                allSubs.add(s.getId());
+            }
+        }
+
         EntityManager em = getEntityManager();
 
         String queryStr = "select a from MarksEntity a where a.semesterId.id IN :listSemester";
         if (!subjectId.equals("0")) {
-            queryStr += " and a.subjectMarkComponentId.subjectId.id = :sub";
+            queryStr += " and a.subjectMarkComponentId.subjectId.id IN :sub";
         }
 
         TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
         query.setParameter("listSemester", allSemesters);
         if (!subjectId.equals("0")) {
-            query.setParameter("sub", subjectId);
+            query.setParameter("sub", allSubs);
         }
         marks = query.getResultList();
 
