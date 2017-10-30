@@ -25,7 +25,7 @@ public class CustomLoginService implements UserDetailsService {
             System.out.println("User: " + user.getUsername());
         }
 
-        return new CustomUser(user.getUsername(), user.getPassword(), getGrantedAuthorities(user), user.getFullname(),user.getPicture());
+        return new CustomUser(user.getUsername(), user.getPassword(), getGrantedAuthorities(user), user.getFullname(),user.getPicture(), user.getStudentRollNumber());
     }
 
     private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user){

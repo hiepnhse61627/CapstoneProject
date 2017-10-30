@@ -8,6 +8,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang.builder.CompareToBuilder;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,7 +31,16 @@ public class StudentDetail {
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("StudentDetail");
         view.addObject("title", "Danh sách sinh viên nợ môn");
-        view.addObject("students", studentService.findAllStudents());
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUser principal = (CustomUser) authentication.getPrincipal();
+        if (principal.getRollNumber() == null) {
+            view.addObject("students", studentService.findAllStudents());
+        } else {
+            List<StudentEntity> students = new ArrayList<>();
+            students.add(studentService.findStudentByRollNumber(principal.getRollNumber()));
+            view.addObject("students", students);
+        }
 
         return view;
     }
