@@ -38,6 +38,8 @@ public class CredentialsEntity implements Serializable {
     private String picture;
     @Column(name = "Role", length = 60)
     private String role;
+    @Column(name = "StudentRollNumber", length = 50)
+    private String studentRollNumber;
 
     public CredentialsEntity() {
     }
@@ -50,6 +52,14 @@ public class CredentialsEntity implements Serializable {
         this.id = id;
         this.username = username;
         this.password = password;
+    }
+
+    public String getStudentRollNumber() {
+        return studentRollNumber;
+    }
+
+    public void setStudentRollNumber(String studentRollNumber) {
+        this.studentRollNumber = studentRollNumber;
     }
 
     public Integer getId() {

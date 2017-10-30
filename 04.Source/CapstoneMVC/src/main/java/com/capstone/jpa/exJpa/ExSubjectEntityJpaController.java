@@ -56,9 +56,16 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 
                 PrequisiteEntity uPrerequisite = new PrequisiteEntity();
                 uPrerequisite.setSubjectId(subject.getSubjectID());
-                uPrerequisite.setSubjectId(subject.getSubjectID());
-                uPrerequisite.setPrequisiteSubs(subject.getPrerequisiteSubject());
-                uPrerequisite.setFailMark(4);
+                if (subject.getEffectionSemester().equals("0")) {
+                    uPrerequisite.setEffectionSemester(null);
+                    uPrerequisite.setPrequisiteSubs(subject.getPrerequisiteSubject());
+                    uPrerequisite.setFailMark(subject.getFailMark());
+                } else {
+                    uPrerequisite.setEffectionSemester(subject.getEffectionSemester());
+                    uPrerequisite.setNewPrequisiteSubs(subject.getPrerequisiteSubject());
+                    uPrerequisite.setNewFailMark(subject.getFailMark());
+                }
+
                 //check if prerequisite is available or not
                 if (uPrerequisite.getPrequisiteSubs() != null && !uPrerequisite.getPrequisiteSubs().isEmpty()) {
                     String[] checkers = uPrerequisite.getPrequisiteSubs().split(",");
@@ -72,8 +79,8 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
                 }
                 uSubject.setPrequisiteEntity(uPrerequisite);
 
-                uSubject.getPrequisiteEntity().setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
-                uSubject.getPrequisiteEntity().setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
+//                uSubject.getPrequisiteEntity().setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
+//                uSubject.getPrequisiteEntity().setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
                 uSubject.setCredits(subject.getCredits());
 
                 manager.persist(uSubject);
@@ -161,14 +168,27 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
             //update SubjectEntity match SubjectID
             SubjectEntity uSubject = manager.find(SubjectEntity.class, subject.getSubjectID());
             uSubject.setName(subject.getSubjectName());
-            uSubject.getPrequisiteEntity().setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
-            uSubject.getPrequisiteEntity().setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
+//            uSubject.getPrequisiteEntity().setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
+//            uSubject.getPrequisiteEntity().setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
             uSubject.getPrequisiteEntity().setPrequisiteSubs(null);
             uSubject.setCredits(subject.getCredits());
             uSubject.setSubjectEntityList(new ArrayList<SubjectEntity>());
             uSubject.setSubjectEntityList1(new ArrayList<SubjectEntity>());
+            if (!subject.getEffectionSemester().equals("0")){
+                uSubject.getPrequisiteEntity().setFailMark(null);
+                uSubject.getPrequisiteEntity().setPrequisiteSubs(null);
+                uSubject.getPrequisiteEntity().setEffectionSemester(subject.getEffectionSemester());
+                uSubject.getPrequisiteEntity().setNewFailMark(subject.getFailMark());
+                uSubject.getPrequisiteEntity().setNewPrequisiteSubs(subject.getPrerequisiteSubject());
+            }else{
+                uSubject.getPrequisiteEntity().setNewFailMark(null);
+                uSubject.getPrequisiteEntity().setNewPrequisiteSubs(null);
+                uSubject.getPrequisiteEntity().setFailMark(subject.getFailMark());
+                uSubject.getPrequisiteEntity().setEffectionSemester(null);
+                uSubject.getPrequisiteEntity().setPrequisiteSubs(subject.getPrerequisiteSubject());
+            }
 
-            uSubject.getPrequisiteEntity().setPrequisiteSubs(subject.getPrerequisiteSubject());
+
             //check if prerequisite is available or not
             if (subject.getPrerequisiteSubject() != null && !subject.getPrerequisiteSubject().isEmpty()) {
                 String[] checkers = subject.getPrerequisiteSubject().split(",");
@@ -267,7 +287,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<SubjectEntity> query = em.createQuery("SELECT a FROM SubjectEntity a WHERE a.id = :sub", SubjectEntity.class);
-            query.setParameter("sub", id);
+            query.setParameter("sub", id.trim());
             return query.getSingleResult();
         } catch (NoResultException e) {
 //            try {

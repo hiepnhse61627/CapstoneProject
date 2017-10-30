@@ -22,23 +22,77 @@ public class Ultilities {
 
     public static List<String> notexist = new ArrayList<>();
 
+    public static List<MarksEntity> SortSemestersByMarks(List<MarksEntity> set) {
+        ArrayList<String> seasons = new ArrayList<String>() {{
+            add("spring");
+            add("summer");
+            add("fall");
+            add("n/a");
+        }};
+
+        try {
+            set.sort(Comparator.comparingInt(a -> {
+                MarksEntity mark = (MarksEntity) a;
+                if (mark.getSemesterId() == null) return 0;
+                if (mark.getSemesterId().getSemester().equalsIgnoreCase("n/a")) return 0;
+                String removewhite = mark.getSemesterId().getSemester().replaceAll("\\s+", "");
+                String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
+                Pattern pattern = Pattern.compile("^\\D*(\\d)");
+                Matcher matcher = pattern.matcher(removeline);
+                matcher.find();
+                return Integer.parseInt(removeline.substring(matcher.start(1), removeline.length()));
+            }).thenComparingInt(a -> {
+                MarksEntity mark = (MarksEntity) a;
+                if (mark.getSemesterId() == null) return 0;
+                if (mark.getSemesterId().getSemester().equalsIgnoreCase("n/a")) return seasons.indexOf("n/a");
+                String removewhite = mark.getSemesterId().getSemester().replaceAll("\\s+", "");
+                String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
+                Pattern pattern = Pattern.compile("^\\D*(\\d)");
+                Matcher matcher = pattern.matcher(removeline);
+                matcher.find();
+                String season = removeline.substring(0, matcher.start(1)).toLowerCase();
+                return seasons.indexOf(season);
+            }).thenComparingInt(a -> {
+                MarksEntity mark = (MarksEntity) a;
+                if (mark.getSemesterId() == null) return 0;
+                String semester = mark.getSemesterId().getSemester();
+                return semester.indexOf("_");
+            }));
+        } catch (Exception e) {
+            System.out.println("Sort failed");
+        }
+
+        return set;
+    }
+
     public static List<MarksEntity> FilterStudentsOnlyPassAndFail(List<MarksEntity> set) {
         List<MarksEntity> newSet = set.stream()
                 .filter(c -> !c.getStatus().trim().toLowerCase().contains("study") &&
-                                !c.getStatus().trim().toLowerCase().contains("start") &&
-                                !c.getStatus().trim().toLowerCase().contains(("diem")))
+                        !c.getStatus().trim().toLowerCase().contains("start") &&
+                        !c.getStatus().trim().toLowerCase().contains(("diem")))
                 .collect(Collectors.toList());
         return newSet;
     }
 
-    public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, List<String> prequisiteRow, int mark) {
-        IMarksService marksService = new MarksServiceImpl();
+    public static List<MarksEntity> FilterStudentsOnlyPassAndFailAndStudying(List<MarksEntity> set) {
+        List<MarksEntity> newSet = set.stream()
+                .filter(c -> !c.getStatus().trim().toLowerCase().contains("start") &&
+                        !c.getStatus().trim().toLowerCase().contains(("diem")))
+                .collect(Collectors.toList());
+        return newSet;
+    }
 
-        List<MarksEntity> newList = FilterStudentsOnlyPassAndFail(list);
+    public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, Map<String, PrequisiteEntity> prequisites) {
+        List<String> allSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester())
+                .stream()
+                .map(c -> c.getSemester().trim())
+                .collect(Collectors.toList());
+
+        List<MarksEntity> newList = FilterStudentsOnlyPassAndFailAndStudying(list);
 
         List<FailPrequisiteModel> result = new ArrayList<>();
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
-        list = Ultilities.FilterStudentsOnlyPassAndFail(list.stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
+
         if (!list.isEmpty()) {
             for (MarksEntity m : newList) {
                 if (map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
@@ -52,43 +106,51 @@ public class Ultilities {
 
             Set<String> studentIds = map.rowKeySet();
             for (String studentId : studentIds) {
-                Map<String, List<MarksEntity>> subject = map.row(studentId);
-                if (subject.get(subId) != null && !subject.get(subId).isEmpty()) {
-                    for (MarksEntity m : subject.get(subId)) {
-                        if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt")) {
+                Map<String, List<MarksEntity>> subjects = map.row(studentId);
 
-                            int totalFail = 0;
-                            FailPrequisiteModel failedRow = null;
+                for (Map.Entry<String, PrequisiteEntity> subject : prequisites.entrySet()) {
 
-                            for (String row : prequisiteRow) {
+                    PrequisiteEntity pre = subject.getValue();
+                    if (pre.getPrequisiteSubs() != null && !pre.getPrequisiteSubs().isEmpty()) {
 
-                                boolean isPass = false;
+                        if (subjects.get(subject.getKey()) != null && !subjects.get(subject.getKey()).isEmpty()) {
 
-                                String[] cell = row.trim().split(",");
-                                for (String prequisite : cell) {
-                                    prequisite = prequisite.trim();
+                            for (MarksEntity m : subjects.get(subject.getKey())) {
+                                if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt") || m.getStatus().toLowerCase().contains("studying")) {
 
-                                    // HANDLE LOGIC HERE
-                                    if (subject.get(prequisite) != null && !subject.get(prequisite).isEmpty()) {
-                                        List<MarksEntity> g = FilterStudentsOnlyPassAndFail(subject.get(prequisite));
-                                        MarksEntity tmp = null;
-                                        for (MarksEntity k2 : g) {
-                                            tmp = k2;
-                                            if (k2.getAverageMark() >= mark || k2.getStatus().toLowerCase().contains("exempt")) {
-                                                isPass = true;
-                                                break;
-                                            }
-                                        }
+                                    int totalFail = 0;
+                                    FailPrequisiteModel failedRow = null;
 
-                                        if (!isPass) {
-                                            failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId());
-//                                            break;
+                                    String[] rows;
+                                    if (allSemesters.indexOf(m.getSemesterId().getSemester()) < allSemesters.indexOf(pre.getEffectionSemester())) {
+                                        rows = pre.getPrequisiteSubs().split("OR");
+                                    } else {
+                                        rows = pre.getNewPrequisiteSubs() == null ? pre.getPrequisiteSubs().split("OR") : pre.getNewPrequisiteSubs().split("OR");
+                                    }
 
-                                            for (SubjectEntity replace : tmp.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList()) {
-                                                List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), "0");
-                                                for (MarksEntity marks : replaced) {
-                                                    tmp = marks;
-                                                    if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                    for (String row : rows) {
+                                        row = row.replaceAll("\\(", "").replaceAll("\\)", "");
+
+                                        boolean isPass = false;
+
+                                        String[] cell = row.trim().split(",");
+                                        for (String prequisite : cell) {
+                                            prequisite = prequisite.trim();
+
+                                            // HANDLE LOGIC HERE
+                                            if (subjects.get(prequisite) != null && !subjects.get(prequisite).isEmpty()) {
+                                                MarksEntity tmp = null;
+                                                for (MarksEntity k2 : SortSemestersByMarks(subjects.get(prequisite))) {
+                                                    tmp = k2;
+
+                                                    int failMark;
+                                                    if (allSemesters.indexOf(m.getSemesterId().getSemester()) < allSemesters.indexOf(pre.getEffectionSemester())) {
+                                                        failMark = pre.getFailMark();
+                                                    } else {
+                                                        failMark = pre.getNewFailMark() == null ? pre.getFailMark() : pre.getNewFailMark();
+                                                    }
+
+                                                    if (k2.getAverageMark() >= failMark || k2.getStatus().toLowerCase().contains("exempt")) {
                                                         isPass = true;
                                                         break;
                                                     }
@@ -96,21 +158,40 @@ public class Ultilities {
 
                                                 if (!isPass) {
                                                     failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId());
+
+                                                    for (SubjectEntity replace : tmp.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList()) {
+                                                        List<MarksEntity> replaced = subjects.get(replace.getId());
+                                                        if (replaced != null) {
+                                                            replaced = SortSemestersByMarks(replaced);
+                                                            for (MarksEntity marks : replaced) {
+                                                                tmp = marks;
+                                                                if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                                                    isPass = true;
+                                                                    break;
+                                                                }
+                                                            }
+
+                                                            if (!isPass) {
+                                                                failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId());
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             }
+                                            //////////////////////
+
+                                        }
+
+                                        if (!isPass) {
+                                            totalFail++;
                                         }
                                     }
-                                    //////////////////////
+
+                                    if (totalFail == rows.length) {
+                                        if (failedRow != null) result.add(failedRow);
+                                    }
 
                                 }
-
-                                if (!isPass) {
-                                    totalFail++;
-                                }
-                            }
-
-                            if (totalFail == prequisiteRow.size()) {
-                                if (failedRow != null) result.add(failedRow);
                             }
                         }
                     }
@@ -148,7 +229,6 @@ public class Ultilities {
 
         return connection;
     }
-
 
 
     public static List<RealSemesterEntity> SortSemesters(List<RealSemesterEntity> set) {
@@ -279,8 +359,8 @@ public class Ultilities {
         return resultList;
     }
 
-    public static boolean containsIgnoreCase(String str, String searchStr)     {
-        if(str == null || searchStr == null) return false;
+    public static boolean containsIgnoreCase(String str, String searchStr) {
+        if (str == null || searchStr == null) return false;
 
         final int length = searchStr.length();
         if (length == 0)
@@ -297,7 +377,7 @@ public class Ultilities {
         String result = "";
         int count = 0;
         for (int stId : list) {
-            result += stId + (count != list.size() - 1 ? "," : "") ;
+            result += stId + (count != list.size() - 1 ? "," : "");
             count++;
         }
 

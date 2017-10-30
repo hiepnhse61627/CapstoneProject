@@ -9,11 +9,21 @@ public class CustomUser extends User {
 
     private String fullname;
     private String picture;
+    private String rollNumber;
 
-    public CustomUser(String username, String password, Collection<? extends GrantedAuthority> authorities, String fullname, String picture) {
+    public CustomUser(String username, String password, Collection<? extends GrantedAuthority> authorities, String fullname, String picture, String rollNumber) {
         super(username, password, authorities);
         this.fullname = fullname;
         this.picture = picture;
+        this.rollNumber = rollNumber;
+    }
+
+    public String getRollNumber() {
+        return rollNumber;
+    }
+
+    public void setRollNumber(String rollNumber) {
+        this.rollNumber = rollNumber;
     }
 
     public String getFullname() {

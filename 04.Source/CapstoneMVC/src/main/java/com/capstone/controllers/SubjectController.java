@@ -1,6 +1,7 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.PrequisiteEntity;
+import com.capstone.entities.RealSemesterEntity;
 import com.capstone.entities.SubjectCurriculumEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.models.*;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 public class SubjectController {
     private final String folder = "UploadedSubjectTemplate";
     ISubjectService subjectService = new SubjectServiceImpl();
+    IRealSemesterService realSemesterService = new RealSemesterServiceImpl();
 
     @Autowired
     ServletContext context;
@@ -87,6 +89,9 @@ public class SubjectController {
     public ModelAndView StudentListAll() {
         ModelAndView view = new ModelAndView("SubjectPage");
         view.addObject("title", "Danh sách môn học");
+
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester().stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+        view.addObject("effectionSemester", semesters);
 
         return view;
     }
@@ -172,10 +177,20 @@ public class SubjectController {
             SubjectModel subjectModel = new SubjectModel();
             subjectModel.setSubjectID(entity.getId());
             subjectModel.setSubjectName(entity.getName());
-            subjectModel.setPrerequisiteSubject(entity.getPrequisiteEntity().getPrequisiteSubs());
+            if (entity.getPrequisiteEntity().getEffectionSemester() != null
+                    && !entity.getPrequisiteEntity().getEffectionSemester().isEmpty()) {
+                subjectModel.setEffectionSemester(entity.getPrequisiteEntity().getEffectionSemester());
+                subjectModel.setPrerequisiteSubject(entity.getPrequisiteEntity().getNewPrequisiteSubs());
+                subjectModel.setFailMark(entity.getPrequisiteEntity().getNewFailMark());
+            } else {
+                subjectModel.setEffectionSemester(null);
+                subjectModel.setPrerequisiteSubject(entity.getPrequisiteEntity().getPrequisiteSubs());
+                subjectModel.setFailMark(entity.getPrequisiteEntity().getFailMark());
+            }
+
             subjectModel.setCredits(entity.getCredits());
-            subjectModel.setPrerequisiteEffectStart(entity.getPrequisiteEntity().getPrerequisiteEffectStart());
-            subjectModel.setPrerequisiteEffectEnd(entity.getPrequisiteEntity().getPrerequisiteEffectEnd());
+//            subjectModel.setPrerequisiteEffectStart(entity.getPrequisiteEntity().getPrerequisiteEffectStart());
+//            subjectModel.setPrerequisiteEffectEnd(entity.getPrequisiteEntity().getPrerequisiteEffectEnd());
             if (!replacementSubject.equals("")) {
                 subjectModel.setReplacementSubject(replacementSubject.substring(1));
             } else {
@@ -218,14 +233,14 @@ public class SubjectController {
             model.setCredits(subject.getCredits());
 
             // Lấy môn tiên quyết
-            queryStr = "select p.prequisiteSubs, p.prerequisiteEffectStart ,p.prerequisiteEffectEnd from PrequisiteEntity p where p.subjectId = :sId";
-            TypedQuery<PrequisiteEntity> query = em.createQuery(queryStr, PrequisiteEntity.class);
-            query.setParameter("sId", subjectId);
-
-            PrequisiteEntity prequisiteSubs = query.getSingleResult();
-            model.setPrerequisiteSubject(prequisiteSubs.getPrequisiteSubs());
-            model.setPrerequisiteEffectStart(prequisiteSubs.getPrerequisiteEffectStart());
-            model.setPrerequisiteEffectEnd(prequisiteSubs.getPrerequisiteEffectEnd());
+//            queryStr = "select p.prequisiteSubs, p.prerequisiteEffectStart ,p.prerequisiteEffectEnd from PrequisiteEntity p where p.subjectId = :sId";
+//            TypedQuery<PrequisiteEntity> query = em.createQuery(queryStr, PrequisiteEntity.class);
+//            query.setParameter("sId", subjectId);
+//
+//            PrequisiteEntity prequisiteSubs = query.getSingleResult();
+//            model.setPrerequisiteSubject(prequisiteSubs.getPrequisiteSubs());
+//            model.setPrerequisiteEffectStart(prequisiteSubs.getPrerequisiteEffectStart());
+//            model.setPrerequisiteEffectEnd(prequisiteSubs.getPrerequisiteEffectEnd());
 
             String result = new Gson().toJson(model);
 
@@ -336,8 +351,8 @@ public class SubjectController {
     @ResponseBody
     public JsonObject EditSubject(@RequestParam("sSubjectId") String subjectId, @RequestParam("sSubjectName") String subjectName,
                                   @RequestParam("sCredits") String credits, @RequestParam("sReplacement") String replacement,
-                                  @RequestParam("sPrerequisite") String prerequisite, @RequestParam("sPreEffectStart") String preEffectStart,
-                                  @RequestParam("sPreEffectEnd") String preEffectEnd) {
+                                  @RequestParam("sPrerequisite") String prerequisite, @RequestParam("sEffectionSemester") String effectionSemester,
+                                  @RequestParam("sFailMark") String failMark) {
         JsonObject jsonObj = new JsonObject();
 
         try {
@@ -350,8 +365,13 @@ public class SubjectController {
             model.setCredits(Integer.parseInt(credits));
             model.setPrerequisiteSubject(prerequisite);
             model.setReplacementSubject(replacement);
-            model.setPrerequisiteEffectEnd(preEffectEnd);
-            model.setPrerequisiteEffectStart(preEffectStart);
+            model.setEffectionSemester(effectionSemester);
+            if (failMark.isEmpty()){
+                model.setFailMark(0);
+            }else{
+                model.setFailMark(Integer.parseInt(failMark));
+            }
+
 
             SubjectModel result = subjectService.updateSubject(model);
             if (!result.isResult()) {
@@ -374,8 +394,8 @@ public class SubjectController {
     @ResponseBody
     public JsonObject CreateNewSubject(@RequestParam("sNewSubjectId") String subjectId, @RequestParam("sNewSubjectName") String subjectName,
                                        @RequestParam("sNewCredits") String credits, @RequestParam("sNewReplacement") String replacement,
-                                       @RequestParam("sNewPrerequisite") String prerequisite, @RequestParam("sNewPreEffectStart") String preEffectStart,
-                                       @RequestParam("sNewPreEffectEnd") String preEffectEnd) {
+                                       @RequestParam("sNewPrerequisite") String prerequisite, @RequestParam("sNewEffectionSemester") String newEffectionSemester,
+                                       @RequestParam("sNewFailMark") String newFailMark) {
         JsonObject jsonObj = new JsonObject();
 
         try {
@@ -388,9 +408,8 @@ public class SubjectController {
             model.setCredits(Integer.parseInt(credits));
             model.setPrerequisiteSubject(prerequisite);
             model.setReplacementSubject(replacement);
-            model.setPrerequisiteEffectEnd(preEffectEnd);
-            model.setPrerequisiteEffectStart(preEffectStart);
-
+            model.setEffectionSemester(newEffectionSemester);
+            model.setFailMark(Integer.parseInt(newFailMark));
             SubjectModel result = subjectService.createSubject(model);
             if (!result.isResult()) {
                 jsonObj.addProperty("success", false);
