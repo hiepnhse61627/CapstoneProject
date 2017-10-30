@@ -7,7 +7,7 @@ public class SubjectModel {
     private String prerequisiteSubject;
     private String effectionSemester;
     private String replacementSubject;
-    private int failMark;
+    private Integer failMark;
     private boolean result;
     private String errorMessage;
 
@@ -78,11 +78,11 @@ public class SubjectModel {
         this.errorMessage = errorMessage;
     }
 
-    public int getFailMark() {
+    public Integer getFailMark() {
         return failMark;
     }
 
-    public void setFailMark(int failMark) {
+    public void setFailMark(Integer failMark) {
         this.failMark = failMark;
     }
 }

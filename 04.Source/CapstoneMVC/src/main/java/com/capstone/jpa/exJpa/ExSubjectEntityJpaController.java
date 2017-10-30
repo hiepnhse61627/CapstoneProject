@@ -56,7 +56,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 
                 PrequisiteEntity uPrerequisite = new PrequisiteEntity();
                 uPrerequisite.setSubjectId(subject.getSubjectID());
-                if (subject.getEffectionSemester() != null && !subject.getEffectionSemester().isEmpty()) {
+                if (subject.getEffectionSemester().equals("0")) {
                     uPrerequisite.setEffectionSemester(null);
                     uPrerequisite.setPrequisiteSubs(subject.getPrerequisiteSubject());
                     uPrerequisite.setFailMark(subject.getFailMark());
@@ -174,7 +174,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
             uSubject.setCredits(subject.getCredits());
             uSubject.setSubjectEntityList(new ArrayList<SubjectEntity>());
             uSubject.setSubjectEntityList1(new ArrayList<SubjectEntity>());
-            if (subject.getEffectionSemester() != null && !subject.getEffectionSemester().isEmpty()){
+            if (!subject.getEffectionSemester().equals("0")){
                 uSubject.getPrequisiteEntity().setFailMark(null);
                 uSubject.getPrequisiteEntity().setPrequisiteSubs(null);
                 uSubject.getPrequisiteEntity().setEffectionSemester(subject.getEffectionSemester());

@@ -1,6 +1,7 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.PrequisiteEntity;
+import com.capstone.entities.RealSemesterEntity;
 import com.capstone.entities.SubjectCurriculumEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.models.*;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 public class SubjectController {
     private final String folder = "UploadedSubjectTemplate";
     ISubjectService subjectService = new SubjectServiceImpl();
+    IRealSemesterService realSemesterService = new RealSemesterServiceImpl();
 
     @Autowired
     ServletContext context;
@@ -87,6 +89,9 @@ public class SubjectController {
     public ModelAndView StudentListAll() {
         ModelAndView view = new ModelAndView("SubjectPage");
         view.addObject("title", "Danh sách môn học");
+
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester().stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+        view.addObject("effectionSemester", semesters);
 
         return view;
     }

@@ -58,7 +58,7 @@
                         </div>
                         <div class="form-group">
                             <label for="credits">Tín chỉ:</label>
-                            <input id="credits" type="number" max='100' maxlength="2" class="form-control"/>
+                            <input id="credits" type="text" maxlength="2" class="form-control"/>
                         </div>
                         <div class="form-group">
                             <label for="replacementSubject">Môn thay thế:</label>
@@ -66,7 +66,12 @@
                         </div>
                         <div class="form-group">
                             <label for="effectionSemester">Học kì bắt đầu áp dụng tiên quyết:</label>
-                            <input id="effectionSemester" type="text" class="form-control"/>
+                            <select id="effectionSemester" class="select form-control">
+                                <option value="0"></option>
+                                <c:forEach var="effectionSemester" items="${effectionSemester}">
+                                    <option value="${effectionSemester.semester}">${effectionSemester.semester}</option>
+                                </c:forEach>
+                            </select>
                         </div>
                         <div class="form-group">
                             <label for="failMark">Điểm tiên quyết môn</label>
@@ -121,7 +126,14 @@
                         </div>
                         <div class="form-group">
                             <label for="effectionNewSemester">Học kì bắt đầu áp dụng tiên quyết:</label>
-                            <input id="effectionNewSemester" type="text" class="form-control"/>
+                            <div id="selector" style="">
+                                <select id="effectionNewSemester" class="select form-control">
+                                    <option value="0"></option>
+                                    <c:forEach var="effectionNewSemester" items="${effectionSemester}">
+                                        <option value="${effectionNewSemester.semester}">${effectionNewSemester.semester}</option>
+                                    </c:forEach>
+                                </select>
+                            </div>
                         </div>
                         <div class="form-group">
                             <label for="failNewMark">Điểm tiên quyết:</label>
@@ -182,18 +194,42 @@
         return this;
     };
 
-    $('#credits').on("input", function () {
-        this.value = this.value.replace(/[^0-9]g/, '');
+    $(document).ready(function(){
+        $('[id^=credits]').keypress(validateNumber);
+        $('[id^=newCredits]').keypress(validateNumber);
     });
 
-    $('#newCredits').on("input", function () {
-        this.value = this.value.replace(/[^0-9]g/, '');
-    });
+//    $('#credits').on("input", function () {
+//        $('[id^=edit]').keypress(validateNumber);
+//    });
+//
+//    $('#newCredits').on("input", function () {
+//        $('[id^=edit]').keypress(validateNumber);
+//    });
 
+    function validateNumber(event) {
+        var key = window.event ? event.keyCode : event.which;
+        if (event.keyCode === 8 || event.keyCode === 46) {
+            return true;
+        } else if ( key < 48 || key > 57 ) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 
     $(document).ready(function () {
         LoadSubjectList();
     });
+
+    function myFunction() {
+        var x = document.getElementById("selector");
+        if (x.style.visibility === "none") {
+            x.style.visibility = "hidden";
+        } else {
+            x.style.display = "show";
+        }
+    }
 
     function confirmChange(subjectId, subjectName, prerequisiteSubs, credits, replacementSubject, effectionSemester, failMark) {
 
