@@ -38,7 +38,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         return query.getResultList();
     }
 
-    public boolean createSubject(SubjectModel subject) {
+    public SubjectModel createSubject(SubjectModel subject) {
         EntityManager manager = getEntityManager();
         ISubjectService subjectService = new SubjectServiceImpl();
 
@@ -53,37 +53,57 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
                 uSubject.setAbbreviation(subject.getSubjectID().substring(0, 3));
                 uSubject.setName(subject.getSubjectName());
                 uSubject.setIsSpecialized(false);
-                uSubject.setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
-                uSubject.setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
-                uSubject.setCredits(subject.getCredits());
 
-                manager.persist(uSubject);
-                manager.flush();
-
-            } else {
-                return false;
-            }
-
-
-            //create Prerequisite match SubjectID
-            PrequisiteEntity uPrerequisite = manager.find(PrequisiteEntity.class, subject.getSubjectID());
-            if (!(uPrerequisite == null)) {
-                return false;
-            } else {
-                uPrerequisite = new PrequisiteEntity();
+                PrequisiteEntity uPrerequisite = new PrequisiteEntity();
+                uPrerequisite.setSubjectId(subject.getSubjectID());
                 uPrerequisite.setSubjectId(subject.getSubjectID());
                 uPrerequisite.setPrequisiteSubs(subject.getPrerequisiteSubject());
                 uPrerequisite.setFailMark(4);
                 //check if prerequisite is available or not
-                String[] checkers = uPrerequisite.getPrequisiteSubs().split(",");
-                for (String subjectCheck : checkers) {
-                    if (manager.find(SubjectEntity.class, subjectCheck) == null) {
-                        return false;
+                if (uPrerequisite.getPrequisiteSubs() != null && !uPrerequisite.getPrequisiteSubs().isEmpty()) {
+                    String[] checkers = uPrerequisite.getPrequisiteSubs().split(",");
+                    for (String subjectCheck : checkers) {
+                        if (manager.find(SubjectEntity.class, subjectCheck) == null) {
+                            subject.setErrorMessage("Môn " + subjectCheck + " không tồn tại");
+                            subject.setResult(false);
+                            return subject;
+                        }
                     }
                 }
-                manager.persist(uPrerequisite);
+                uSubject.setPrequisiteEntity(uPrerequisite);
+
+                uSubject.getPrequisiteEntity().setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
+                uSubject.getPrequisiteEntity().setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
+                uSubject.setCredits(subject.getCredits());
+
+                manager.persist(uSubject);
                 manager.flush();
+            } else {
+                subject.setResult(false);
+                subject.setErrorMessage("Môn " + subject.getSubjectID() + "đã tồn tại!");
+                return subject;
             }
+
+
+            //create Prerequisite match SubjectID
+//            PrequisiteEntity uPrerequisite = manager.find(PrequisiteEntity.class, subject.getSubjectID());
+//            if (!(uPrerequisite == null)) {
+//                return false;
+//            } else {
+//                uPrerequisite = new PrequisiteEntity();
+//                uPrerequisite.setSubjectId(subject.getSubjectID());
+//                uPrerequisite.setPrequisiteSubs(subject.getPrerequisiteSubject());
+//                uPrerequisite.setFailMark(4);
+//                //check if prerequisite is available or not
+//                String[] checkers = uPrerequisite.getPrequisiteSubs().split(",");
+//                for (String subjectCheck : checkers) {
+//                    if (manager.find(SubjectEntity.class, subjectCheck) == null) {
+//                        return false;
+//                    }
+//                }
+//                manager.persist(uPrerequisite);
+//                manager.flush();
+//            }
 
             //create Replacement
             try {
@@ -92,7 +112,9 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 
                     if (replacer != null && !replacer.isEmpty()) {
                         if (manager.find(SubjectEntity.class, replacer) == null) {
-                            return false;
+                            subject.setErrorMessage("Môn " + replacer + "không tồn tại!");
+                            subject.setResult(false);
+                            return subject;
                         }
                         SubjectEntity sub = manager.find(SubjectEntity.class, subject.getSubjectID());
                         if (sub != null) {
@@ -113,85 +135,85 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
                 }
             } catch (Exception e) {
                 Logger.writeLog(e);
-                return false;
+                subject.setResult(false);
+                subject.setErrorMessage(e.getMessage());
+                return subject;
             }
 
 
         } catch (Exception e) {
             Logger.writeLog(e);
-            return false;
+            subject.setResult(false);
+            subject.setErrorMessage(e.getMessage());
+            return subject;
         }
         manager.getTransaction().commit();
-        return true;
+        subject.setResult(true);
+        return subject;
     }
 
 
-    public boolean updateSubject(SubjectModel subject) {
+    public SubjectModel updateSubject(SubjectModel subject) {
         EntityManager manager = getEntityManager();
         ISubjectService subjectService = new SubjectServiceImpl();
         manager.getTransaction().begin();
         try {
             //update SubjectEntity match SubjectID
-//            SubjectEntity uSubject = manager.find(SubjectEntity.class, subject.getSubjectID());
-//            uSubject.setName(subject.getSubjectName());
-//            uSubject.setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
-//            uSubject.setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
-//            uSubject.setCredits(subject.getCredits());
+            SubjectEntity uSubject = manager.find(SubjectEntity.class, subject.getSubjectID());
+            uSubject.setName(subject.getSubjectName());
+            uSubject.getPrequisiteEntity().setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
+            uSubject.getPrequisiteEntity().setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
+            uSubject.getPrequisiteEntity().setPrequisiteSubs(null);
+            uSubject.setCredits(subject.getCredits());
+            uSubject.setSubjectEntityList(new ArrayList<SubjectEntity>());
+            uSubject.setSubjectEntityList1(new ArrayList<SubjectEntity>());
 
-//            manager.merge(uSubject);
-//            manager.flush();
-
-            //update Prerequisite match SubjectID
-            PrequisiteEntity uPrerequisite = manager.find(PrequisiteEntity.class, subject.getSubjectID());
-            uPrerequisite.setPrequisiteSubs(subject.getPrerequisiteSubject());
+            uSubject.getPrequisiteEntity().setPrequisiteSubs(subject.getPrerequisiteSubject());
             //check if prerequisite is available or not
-            String[] checkers = uPrerequisite.getPrequisiteSubs().split(",");
-            for (String subjectCheck : checkers) {
-                if (manager.find(SubjectEntity.class, subjectCheck) == null) {
-                    return false;
+            if (subject.getPrerequisiteSubject() != null && !subject.getPrerequisiteSubject().isEmpty()) {
+                String[] checkers = subject.getPrerequisiteSubject().split(",");
+                for (String subjectCheck : checkers) {
+                    if (manager.find(SubjectEntity.class, subjectCheck) == null) {
+                        subject.setResult(false);
+                        subject.setErrorMessage("Môn " + subjectCheck + " không tồn tại");
+                        return subject;
+                    }
                 }
             }
-            manager.merge(uPrerequisite);
-            manager.flush();
 
-            //update Replacement
-            try {
+            if (subject.getReplacementSubject() != null && !subject.getReplacementSubject().isEmpty()) {
                 String[] newRpSubjects = subject.getReplacementSubject().split(",");
                 for (String replacer : newRpSubjects) {
-
                     if (replacer != null && !replacer.isEmpty()) {
                         if (manager.find(SubjectEntity.class, replacer) == null) {
-                            return false;
+                            subject.setResult(false);
+                            subject.setErrorMessage("Môn " + replacer + " không tồn tại!");
+                            return subject;
                         }
                         SubjectEntity sub = manager.find(SubjectEntity.class, subject.getSubjectID());
                         if (sub != null) {
                             String[] rep = replacer.split(",");
                             for (String r : rep) {
                                 SubjectEntity replace = manager.find(SubjectEntity.class, r.trim());
-                                sub.getSubjectEntityList().clear();
-                                manager.merge(sub);
-                                manager.flush();
                                 if (!sub.getSubjectEntityList().contains(replace)) {
                                     sub.getSubjectEntityList().add(replace);
                                 }
                             }
-                            manager.merge(sub);
-                            manager.flush();
                         }
                     }
                 }
-            } catch (Exception e) {
-                Logger.writeLog(e);
-                return false;
             }
-
-
+            manager.merge(uSubject);
+            manager.flush();
         } catch (Exception e) {
             Logger.writeLog(e);
-            return false;
+            subject.setResult(false);
+            subject.setErrorMessage(e.getMessage());
+            return subject;
         }
         manager.getTransaction().commit();
-        return true;
+        subject.setResult(true);
+        return subject;
     }
 
     public void insertSubjectList(List<SubjectEntity> list) {

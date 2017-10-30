@@ -162,20 +162,20 @@ public class SubjectController {
         JsonObject jsonObj = new JsonObject();
         ISubjectService subjectService = new SubjectServiceImpl();
 
+
         try {
             SubjectEntity entity = subjectService.findSubjectById(subjectId);
             String replacementSubject = "";
             for (SubjectEntity list : entity.getSubjectEntityList()) {
                 replacementSubject = replacementSubject + "," + list.getId();
             }
-
             SubjectModel subjectModel = new SubjectModel();
             subjectModel.setSubjectID(entity.getId());
             subjectModel.setSubjectName(entity.getName());
             subjectModel.setPrerequisiteSubject(entity.getPrequisiteEntity().getPrequisiteSubs());
             subjectModel.setCredits(entity.getCredits());
-//            subjectModel.setPrerequisiteEffectStart(entity.getPrerequisiteEffectStart());
-//            subjectModel.setPrerequisiteEffectEnd(entity.getPrerequisiteEffectEnd());
+            subjectModel.setPrerequisiteEffectStart(entity.getPrequisiteEntity().getPrerequisiteEffectStart());
+            subjectModel.setPrerequisiteEffectEnd(entity.getPrequisiteEntity().getPrerequisiteEffectEnd());
             if (!replacementSubject.equals("")) {
                 subjectModel.setReplacementSubject(replacementSubject.substring(1));
             } else {
@@ -203,34 +203,34 @@ public class SubjectController {
         JsonObject jsonObj = new JsonObject();
 
         try {
-//            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-//            EntityManager em = emf.createEntityManager();
-//
-//            // Lấy thông tin chi tiết môn
-//            String queryStr = "select s.id, s.name, s.credits, s.prerequisiteEffectStart, s.prerequisiteEffectEnd from SubjectEntity s where id = :sId";
-//            TypedQuery<SubjectEntity> querySubject = em.createQuery(queryStr, SubjectEntity.class);
-//            querySubject.setParameter("sId", subjectId);
-//            SubjectEntity subject = querySubject.getSingleResult();
-//
-//            SubjectModel model = new SubjectModel();
-//            model.setSubjectID(subjectId);
-//            model.setSubjectName(subject.getName());
-//            model.setCredits(subject.getCredits());
-//
-//            // Lấy môn tiên quyết
-//            queryStr = "select p.prequisiteSubs from PrequisiteEntity p where p.subjectId = :sId";
-//            TypedQuery<PrequisiteEntity> query = em.createQuery(queryStr, PrequisiteEntity.class);
-//            query.setParameter("sId", subjectId);
-//
-//            PrequisiteEntity prequisiteSubs = query.getSingleResult();
-//            model.setPrerequisiteSubject(prequisiteSubs.getPrequisiteSubs());
-//            model.setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
-//            model.setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
-//
-//            String result = new Gson().toJson(model);
-//
-//            jsonObj.addProperty("success", true);
-//            jsonObj.addProperty("sSubjectDetail", result);
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            // Lấy thông tin chi tiết môn
+            String queryStr = "select s.id, s.name, s.credits from SubjectEntity s where s.id = :sId";
+            TypedQuery<SubjectEntity> querySubject = em.createQuery(queryStr, SubjectEntity.class);
+            querySubject.setParameter("sId", subjectId);
+            SubjectEntity subject = querySubject.getSingleResult();
+
+            SubjectModel model = new SubjectModel();
+            model.setSubjectID(subjectId);
+            model.setSubjectName(subject.getName());
+            model.setCredits(subject.getCredits());
+
+            // Lấy môn tiên quyết
+            queryStr = "select p.prequisiteSubs, p.prerequisiteEffectStart ,p.prerequisiteEffectEnd from PrequisiteEntity p where p.subjectId = :sId";
+            TypedQuery<PrequisiteEntity> query = em.createQuery(queryStr, PrequisiteEntity.class);
+            query.setParameter("sId", subjectId);
+
+            PrequisiteEntity prequisiteSubs = query.getSingleResult();
+            model.setPrerequisiteSubject(prequisiteSubs.getPrequisiteSubs());
+            model.setPrerequisiteEffectStart(prequisiteSubs.getPrerequisiteEffectStart());
+            model.setPrerequisiteEffectEnd(prequisiteSubs.getPrerequisiteEffectEnd());
+
+            String result = new Gson().toJson(model);
+
+            jsonObj.addProperty("success", true);
+            jsonObj.addProperty("sSubjectDetail", result);
         } catch (Exception e) {
             jsonObj.addProperty("success", false);
             jsonObj.addProperty("error", e.getMessage());
@@ -335,9 +335,9 @@ public class SubjectController {
     @RequestMapping(value = "/subject/edit")
     @ResponseBody
     public JsonObject EditSubject(@RequestParam("sSubjectId") String subjectId, @RequestParam("sSubjectName") String subjectName,
-                                 @RequestParam("sCredits") String credits, @RequestParam("sReplacement") String replacement,
-                                 @RequestParam("sPrerequisite") String prerequisite, @RequestParam("sPreEffectStart") String preEffectStart,
-                                 @RequestParam("sPreEffectEnd") String preEffectEnd) {
+                                  @RequestParam("sCredits") String credits, @RequestParam("sReplacement") String replacement,
+                                  @RequestParam("sPrerequisite") String prerequisite, @RequestParam("sPreEffectStart") String preEffectStart,
+                                  @RequestParam("sPreEffectEnd") String preEffectEnd) {
         JsonObject jsonObj = new JsonObject();
 
         try {
@@ -353,12 +353,13 @@ public class SubjectController {
             model.setPrerequisiteEffectEnd(preEffectEnd);
             model.setPrerequisiteEffectStart(preEffectStart);
 
-            if(!subjectService.updateSubject(model)){
+            SubjectModel result = subjectService.updateSubject(model);
+            if (!result.isResult()) {
                 jsonObj.addProperty("success", false);
-            }else{
+                jsonObj.addProperty("message", result.getErrorMessage());
+            } else {
                 jsonObj.addProperty("success", true);
             }
-
 
         } catch (Exception e) {
             Logger.writeLog(e);
@@ -372,9 +373,9 @@ public class SubjectController {
     @RequestMapping(value = "/subject/create")
     @ResponseBody
     public JsonObject CreateNewSubject(@RequestParam("sNewSubjectId") String subjectId, @RequestParam("sNewSubjectName") String subjectName,
-                                 @RequestParam("sNewCredits") String credits, @RequestParam("sNewReplacement") String replacement,
-                                 @RequestParam("sNewPrerequisite") String prerequisite, @RequestParam("sNewPreEffectStart") String preEffectStart,
-                                 @RequestParam("sNewPreEffectEnd") String preEffectEnd) {
+                                       @RequestParam("sNewCredits") String credits, @RequestParam("sNewReplacement") String replacement,
+                                       @RequestParam("sNewPrerequisite") String prerequisite, @RequestParam("sNewPreEffectStart") String preEffectStart,
+                                       @RequestParam("sNewPreEffectEnd") String preEffectEnd) {
         JsonObject jsonObj = new JsonObject();
 
         try {
@@ -390,9 +391,11 @@ public class SubjectController {
             model.setPrerequisiteEffectEnd(preEffectEnd);
             model.setPrerequisiteEffectStart(preEffectStart);
 
-            if(!subjectService.createSubject(model)){
+            SubjectModel result = subjectService.createSubject(model);
+            if (!result.isResult()) {
                 jsonObj.addProperty("success", false);
-            }else{
+                jsonObj.addProperty("message", result.getErrorMessage());
+            } else {
                 jsonObj.addProperty("success", true);
             }
 

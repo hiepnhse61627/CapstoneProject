@@ -15,12 +15,12 @@ public class SubjectServiceImpl implements ISubjectService {
     ExSubjectEntityJpaController controller = new ExSubjectEntityJpaController(emf);
 
     @Override
-    public boolean createSubject(SubjectModel subject) {
+    public SubjectModel createSubject(SubjectModel subject) {
         return controller.createSubject(subject);
     }
 
     @Override
-    public boolean updateSubject(SubjectModel subject) {
+    public SubjectModel updateSubject(SubjectModel subject) {
         return controller.updateSubject(subject);
     }
 

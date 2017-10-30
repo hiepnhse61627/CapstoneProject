@@ -8,8 +8,8 @@ import javax.security.auth.Subject;
 import java.util.List;
 
 public interface ISubjectService {
-    boolean createSubject(SubjectModel subject);
-    boolean updateSubject(SubjectModel subject);
+    SubjectModel createSubject(SubjectModel subject);
+    SubjectModel updateSubject(SubjectModel subject);
     void insertSubjectList(List<SubjectEntity> list);
     void insertReplacementList(List<ReplacementSubject> list);
     List<SubjectEntity> getAllSubjects();

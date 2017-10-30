@@ -8,6 +8,8 @@ public class SubjectModel {
     private String prerequisiteEffectStart;
     private String prerequisiteEffectEnd;
     private String replacementSubject;
+    private boolean result;
+    private String errorMessage;
 
     public SubjectModel() {
     }
@@ -66,5 +68,21 @@ public class SubjectModel {
 
     public void setReplacementSubject(String replacementSubject) {
         this.replacementSubject = replacementSubject;
+    }
+
+    public boolean isResult() {
+        return result;
+    }
+
+    public void setResult(boolean result) {
+        this.result = result;
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 }

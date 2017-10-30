@@ -113,7 +113,7 @@
                         </div>
                         <div class="form-group">
                             <label for="newCredits">Tín chỉ:</label>
-                            <input id="newCredits" type="number" max='100' maxlength="2" class="form-control"/>
+                            <input id="newCredits" type="text" maxlength="2" class="form-control"/>
                         </div>
                         <div class="form-group">
                             <label for="replacementNewSubject">Môn thay thế:</label>
@@ -180,6 +180,14 @@
         });
         return this;
     };
+
+    $('#credits').on("input", function () {
+        this.value = this.value.replace(/[^0-9]g/, '');
+    });
+
+    $('#newCredits').on("input", function () {
+        this.value = this.value.replace(/[^0-9]g/, '');
+    });
 
 
     $(document).ready(function () {
@@ -273,7 +281,7 @@
                     });
                     $("#subjectNewDetailModal").modal('toggle');
                 } else {
-                    swal('Đã xảy ra lỗi!', result.message, 'error');
+                    swal('', result.message, 'error');
                 }
             }
         });
@@ -304,7 +312,7 @@
                     });
                     $("#subjectDetailModal").modal('toggle');
                 } else {
-                    swal('Đã xảy ra lỗi!', result.message, 'error');
+                    swal('', result.message, 'error');
                 }
             }
         });
