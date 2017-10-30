@@ -77,7 +77,8 @@ public class ExportController {
                 "com.capstone.exporters.ExportPDFGraduatedStudentsImpl", // 5 = Export PDF graduated student
                 "com.capstone.exporters.ExportCurriculumImpl", // 6 = Export curriculum
                 "com.capstone.exporters.ExportStudentListImpl", // 7 = Export students
-                "com.capstone.exporters.ExportPercentFailImpl" // 8 = Export percent fail
+                "com.capstone.exporters.ExportPercentFailImpl", // 8 = Export percent fail
+                "com.capstone.exporters.ExportGoodStudentsImpl", // 9 = Export good student
         };
 
         try {

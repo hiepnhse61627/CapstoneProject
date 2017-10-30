@@ -4,73 +4,55 @@
 <section class="content">
     <div class="box">
         <div class="b-header">
-            <div class="row">
-                <div class="col-md-9 title">
-                    <h1>Danh sách sinh viên giỏi</h1>
-                </div>
-                <div class="col-md-3 text-right">
-                    <button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
-                        <i class="glyphicon glyphicon-open"></i>
-                        <div>XUẤT DỮ LIỆU</div>
-                    </button>
-                </div>
-            </div>
+            <h1>Thống kê học lại</h1>
             <hr>
         </div>
+
         <div class="b-body">
             <div class="form-group">
                 <div class="row">
+                    <div class="title">
+                        <h4>Học kỳ</h4>
+                    </div>
                     <div class="my-content">
-                        <div class="my-input-group">
-                            <div class="left-content m-r-5">
-                                <label class="p-t-8">Chọn kỳ:</label>
-                            </div>
-                            <div class="right-content width-30 width-m-70">
-                                <select id="cb-semester" class="select">
-                                    <option value="0">All</option>
-                                    <c:forEach var="s" items="${semesterList}">
-                                        <option value="${s.id}">${s.semester}</option>
-                                    </c:forEach>
-                                </select>
-                            </div>
+                        <div class="col-md-12">
+                            <select id="semester" class="select form-control">
+                                <c:forEach var="semester" items="${semesters}">
+                                    <option value="${semester.semester}">${semester.semester}</option>
+                                </c:forEach>
+                            </select>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="form-group">
+                <button type="button" class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>
+            </div>
+
+            <div class="form-group">
                 <div class="row">
                     <div class="col-md-12">
-                        <table id="tbl-student">
+                        <table id="table">
                             <thead>
-                            <tr>
-                                <%--<th>MSSV</th>--%>
-                                <%--<th>Tên sinh viên</th>--%>
-                                <%--<th>Điểm trung bình</th>--%>
-                                <th>MSSV</th>
-                                <th>Tên sinh viên</th>
-                                <th>Học kỳ</th>
-                                <th>Khóa</th>
-                                <th>Kỳ</th>
-                                <th>Điểm trung bình</th>
-                            </tr>
+                                <tr>
+                                    <th>Số nợ đầu kỳ</th>
+                                    <th>Số nợ đầu kỳ đã trả được trong kỳ</th>
+                                    <th>Số nợ phát sinh trong kỳ</th>
+                                    <th>Số nợ cuối kỳ</th>
+                                </tr>
                             </thead>
                         </table>
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
 </section>
 
-<form id="export-excel" action="/exportExcel" hidden>
-    <input name="objectType" />
-    <input name="semesterId" value="0" />
-    <input name="sSearch" value="" />
-</form>
-
 <script>
-    var tblStudent = null;
+    var table = null;
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -90,7 +72,7 @@
             anControl.off('keyup search input').on('keyup search input', function () {
                 var $$this = $this;
 
-                if ((anControl.val().length == 0 || anControl.val().length >= 2) && (sPreviousSearch === null || sPreviousSearch != anControl.val())) {
+                if ((anControl.val().length == 0 || anControl.val().length >= 3) && (sPreviousSearch === null || sPreviousSearch != anControl.val())) {
                     window.clearTimeout(oTimerId);
                     sPreviousSearch = anControl.val();
                     oTimerId = window.setTimeout(function () {
@@ -106,16 +88,9 @@
     };
 
     $(document).ready(function () {
-        $(".select").select2();
-        $("#cb-semester").on("change", function () {
-            RefreshTable();
-        });
+        $('.select').select2();
 
-        LoadGoodStudent();
-    });
-
-    function LoadGoodStudent() {
-        tblStudent = $('#tbl-student').dataTable({
+        table = $('#table').dataTable({
             "bServerSide": true,
             "bFilter": true,
             "bRetrieve": true,
@@ -123,12 +98,9 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/goodStudent/getStudentList",
+            "sAjaxSource": "/failStatistics/details", // url getData.php etc
             "fnServerParams": function (aoData) {
-                aoData.push({
-                    "name": "semesterId",
-                    "value": $('#cb-semester').val() != null ? $('#cb-semester').val() : 0
-                })
+                aoData.push({"name": "semester", "value": $('#semester').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -143,29 +115,26 @@
                     "sNext": "<i class='fa fa-chevron-right'></i>",
                     "sPrevious": "<i class='fa fa-chevron-left'></i>"
                 }
+
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4 ,5],
+                    "aTargets": [0, 1, 2, 3],
                     "bSortable": false,
-                    "sClass": "text-center",
                 },
+                {
+                    "aTargets": [0, 1, 2, 3],
+                    "sClass": "text-center",
+                }
             ],
             "bAutoWidth": false,
         }).fnSetFilteringDelay(1000);
-    }
+    });
 
     function RefreshTable() {
-        if (tblStudent != null) {
-            tblStudent._fnPageChange(0);
-            tblStudent._fnAjaxUpdate();
+        if (table != null) {
+            table._fnPageChange(0);
+            table._fnAjaxUpdate();
         }
     }
-
-    function ExportExcel() {
-        $("input[name='objectType']").val(9);
-        $("input[name='semesterId']").val($('#cb-semester').val() != null ? $('#cb-semester').val() : 0);
-        $("#export-excel").submit();
-    }
-
 </script>

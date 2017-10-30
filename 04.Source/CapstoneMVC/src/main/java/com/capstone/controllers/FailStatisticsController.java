@@ -9,6 +9,8 @@ import com.capstone.services.IMarksService;
 import com.capstone.services.IRealSemesterService;
 import com.capstone.services.MarksServiceImpl;
 import com.capstone.services.RealSemesterServiceImpl;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.springframework.stereotype.Controller;
@@ -39,18 +41,10 @@ public class FailStatisticsController {
      **/
     @RequestMapping("/failStatistics")
     public ModelAndView failStatisticsPage() {
-        ModelAndView modelAndView = new ModelAndView();
+        ModelAndView modelAndView = new ModelAndView("FailStatistics");
 
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester().stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
         modelAndView.addObject("semesters", semesters);
-        List<MarksEntity> failed = listFailedAtTheBeginningOfSemester("SUMMER2017");
-        List<MarksEntity> passed = listPassedInCurrentSemester("SUMMER2017");
-        List<MarksEntity> paid = intersectionOfTwoLists(failed, passed);
-        List<MarksEntity> failedInCurrentTerm = listFailedInCurrentSemester("SUMMER2017");
-        System.out.println(failed.size());
-        System.out.println(passed.size());
-        System.out.println(paid.size());
-        System.out.println(failedInCurrentTerm.size());
 
         return modelAndView;
     }
@@ -64,7 +58,28 @@ public class FailStatisticsController {
     @RequestMapping("/failStatistics/details")
     @ResponseBody
     public JsonObject statisticsDetail(@RequestParam Map<String, String> params) {
+        Gson gson = new Gson();
         JsonObject jsonObject = new JsonObject();
+        String semester = params.get("semester");
+        List<MarksEntity> listFailed = listFailedAtTheBeginningOfSemester(semester);
+        List<MarksEntity> listPassed = listPassedInCurrentSemester(semester);
+        List<MarksEntity> listPaid = intersectionOfTwoLists(listFailed, listPassed);
+        List<MarksEntity> listFailedAtCurrentSemester = listFailedInCurrentSemester(semester);
+
+        ArrayList<ArrayList<String>> resultList = new ArrayList<>();
+        ArrayList<String> record = new ArrayList<>();
+        record.add(String.valueOf(listFailed.size()));
+        record.add(String.valueOf(listPaid.size()));
+        record.add(String.valueOf(listFailedAtCurrentSemester.size()));
+        record.add(String.valueOf(listFailed.size() - listPaid.size() + listFailedAtCurrentSemester.size()));
+        resultList.add(record);
+
+        JsonArray aaData = (JsonArray) gson.toJsonTree(resultList);
+
+        jsonObject.addProperty("iTotalRecords", resultList.size());
+        jsonObject.addProperty("iTotalDisplayRecords",  resultList.size());
+        jsonObject.add("aaData", aaData);
+        jsonObject.addProperty("sEcho", params.get("sEcho"));
 
         return jsonObject;
     }
