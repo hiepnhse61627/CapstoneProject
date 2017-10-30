@@ -133,27 +133,16 @@
                 <!-- Optionally, you can add icons to the links -->
                 <security:authorize access="hasRole('${admin}')">
                     <li>
-                        <a href="/dashboard">
-                            <div class="menu-child-wrapper">
-                                <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                <div class="child-content col-md-11">
-                                    Thống kê
-                                </div>
-                            </div>
-                        </a>
+                        <a href="/dashboard"><i class="fa fa-dashboard"></i> <span>Truy vấn dữ liệu</span></a>
                     </li>
                     <li>
                         <a href="/goSQLQueryPage"><i class="fa fa-search"></i> <span>Truy vấn dữ liệu</span></a>
                     </li>
                     <li>
-                        <a href="/studentList">
-                            <div class="menu-child-wrapper">
-                                <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                <div class="child-content col-md-11">
-                                    Danh sách sinh viên
-                                </div>
-                            </div>
-                        </a>
+                        <a href="/studentList"><i class="fa fa-users"></i> <span>Danh sách sinh viên</span></a>
+                    </li>
+                    <li>
+                        <a href="/markPage"><i class="fa fa-file"></i> <span>Quản lý điểm</span></a>
                     </li>
                     <li>
                         <a href="/course"><i class="fa fa-list"></i> <span>Quản lý khóa học</span></a>

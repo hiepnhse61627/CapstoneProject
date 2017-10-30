@@ -2,27 +2,20 @@ package com.capstone.controllers;
 
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
-import com.capstone.models.MarkModel;
-import com.capstone.models.StudentMarkModel;
-import com.capstone.models.Ultilities;
+import com.capstone.models.*;
+import com.capstone.services.IStudentService;
+import com.capstone.services.StudentServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.persistence.TypedQuery;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import javax.persistence.*;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -34,6 +27,141 @@ public class StudentList {
         view.addObject("title", "Danh sách sinh viên");
 
         return view;
+    }
+
+    @RequestMapping("/studentList/{studentId}")
+    public ModelAndView StudentInfo(@PathVariable("studentId") int studentId) {
+        IStudentService studentService = new StudentServiceImpl();
+        ModelAndView view = new ModelAndView("StudentInfo");
+        view.addObject("title", "Thông tin sinh viên");
+
+        StudentEntity student = studentService.findStudentById(studentId);
+        view.addObject("student", student);
+
+        return view;
+    }
+
+    @RequestMapping(value = "/studentList/marks")
+    @ResponseBody
+    public JsonObject GetStudentMarkList(@RequestParam int studentId) {
+        JsonObject jsonObj = new JsonObject();
+        List<StudentDetailModel> result = new ArrayList<>();
+
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            String queryStr = "SELECT m.id, sub.id, sub.name, sub.credits, m.averageMark, m.status, sc.termNumber" +
+                    " FROM MarksEntity m" +
+                    " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id" +
+                    " INNER JOIN SubjectEntity sub ON smc.subjectId.id = sub.id" +
+                    " INNER JOIN MarkComponentEntity mc ON smc.markComponentId.id = mc.id" +
+                    " INNER JOIN DocumentStudentEntity ds ON ds.studentId.id = m.studentId.id" +
+                    " INNER JOIN SubjectCurriculumEntity sc ON ds.curriculumId.id = sc.curriculumId.id" +
+                    " AND smc.subjectId.id = sc.subjectId.id" +
+                    " AND mc.name LIKE :markComponentName" +
+                    " AND m.studentId.id = :studentId" +
+                    " AND ds.createdDate = (SELECT MAX(tDS.createdDate) FROM DocumentStudentEntity tDS WHERE tDS.id = ds.id)";
+            Query query = em.createQuery(queryStr);
+            query.setParameter("markComponentName", "%average%");
+            query.setParameter("studentId", studentId);
+
+            List<Object[]> specializedMarkList = query.getResultList();
+
+            if (!specializedMarkList.isEmpty()) {
+                List<Integer> markIdList = new ArrayList<>();
+                for (Object[] row : specializedMarkList) {
+                    int curTerm = (int) row[6];
+                    List<MarkModel> curMarkList = null;
+                    for (StudentDetailModel studentDetail : result) {
+                        if (studentDetail.term == curTerm) {
+                            curMarkList = studentDetail.markList;
+                        }
+                    }
+
+                    if (curMarkList == null) {
+                        curMarkList = new ArrayList<>();
+
+                        StudentDetailModel model = new StudentDetailModel();
+                        model.term = curTerm;
+                        model.markList = curMarkList;
+                        result.add(model);
+                    }
+
+                    MarkModel markModel = new MarkModel();
+                    markModel.setMarkId((Integer) row[0]);
+                    markModel.setSubject((String) row[1]);
+                    markModel.setSubjectName((String) row[2]);
+                    markModel.setCredits((Integer) row[3]);
+                    markModel.setAverageMark((Double) row[4]);
+                    markModel.setStatus((String) row[5]);
+
+                    curMarkList.add(markModel);
+                    markIdList.add((Integer) row[0]);
+                }
+
+                Collections.sort(result, new Comparator<StudentDetailModel>() {
+                    @Override
+                    public int compare(StudentDetailModel o1, StudentDetailModel o2) {
+                        return Integer.compare(o1.term, o2.term);
+                    }
+                });
+
+                queryStr = "SELECT m.id, sub.id, sub.name, sub.credits, m.averageMark, m.status" +
+                        " FROM MarksEntity m" +
+                        " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id" +
+                        " INNER JOIN SubjectEntity sub ON smc.subjectId.id = sub.id" +
+                        " INNER JOIN MarkComponentEntity mc ON smc.markComponentId.id = mc.id" +
+                        " AND mc.name LIKE :markComponentName" +
+                        " AND m.studentId.id = :studentId" +
+                        " AND m.id NOT IN :sList";
+                query = em.createQuery(queryStr);
+                query.setParameter("markComponentName", "%average%");
+                query.setParameter("studentId", studentId);
+                query.setParameter("sList", markIdList);
+
+                List<Object[]> otherMarkList = query.getResultList();
+                if (!otherMarkList.isEmpty()) {
+                    List<MarkModel> markList = new ArrayList<>();
+                    for (Object[] row : otherMarkList) {
+                        MarkModel markModel = new MarkModel();
+                        markModel.setMarkId((Integer) row[0]);
+                        markModel.setSubject((String) row[1]);
+                        markModel.setSubjectName((String) row[2]);
+                        markModel.setCredits((Integer) row[3]);
+                        markModel.setAverageMark((Double) row[4]);
+                        markModel.setStatus((String) row[5]);
+
+                        markList.add(markModel);
+                    }
+
+                    StudentDetailModel studentDetailModel = new StudentDetailModel();
+                    studentDetailModel.term = -1;
+                    studentDetailModel.markList = markList;
+                    result.add(studentDetailModel);
+                }
+
+                for (StudentDetailModel studentDetailModel : result) {
+                    Collections.sort(studentDetailModel.markList, new Comparator<MarkModel>() {
+                        @Override
+                        public int compare(MarkModel o1, MarkModel o2) {
+                            return o1.getSubjectName().compareTo(o2.getSubjectName());
+                        }
+                    });
+                }
+            }
+
+            JsonArray detailList = (JsonArray) new Gson().toJsonTree(result);
+            jsonObj.add("detailList", detailList);
+            jsonObj.addProperty("success", true);
+            em.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.writeLog(e);
+            jsonObj.addProperty("success", false);
+        }
+
+        return jsonObj;
     }
 
     @RequestMapping(value = "/loadStudentList")
@@ -64,8 +192,6 @@ public class StudentList {
             }
 
             TypedQuery<StudentEntity> query = em.createQuery(queryStr, StudentEntity.class);
-//                    .setFirstResult(iDisplayStart)
-//                    .setMaxResults(iDisplayLength);
 
             if (!sSearch.isEmpty()) {
                 query.setParameter("sRollNum", "%" + sSearch + "%");
@@ -77,20 +203,24 @@ public class StudentList {
             List<List<String>> result = new ArrayList<>();
             studentList = studentList.stream().skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
 
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             for (StudentEntity std : studentList) {
                 List<String> dataList = new ArrayList<String>() {{
                     add(std.getRollNumber());
                     add(std.getFullName());
+                    add(sdf.format(std.getDateOfBirth()));
+                    add(std.getGender() == Enums.Gender.MALE.getValue()
+                            ? Enums.Gender.MALE.getName() : Enums.Gender.FEMALE.getName());
                     add(std.getId() + "");
                 }};
                 result.add(dataList);
             }
 
             JsonArray aaData = (JsonArray) new Gson()
-                    .toJsonTree(result, new TypeToken<List<List<String>>>() {}.getType());
+                    .toJsonTree(result, new TypeToken<List<List<String>>>() {
+                    }.getType());
 
             jsonObj.addProperty("iTotalRecords", iTotalRecords);
-//            jsonObj.addProperty("iTotalDisplayRecords", iTotalRecords);
             jsonObj.addProperty("iTotalDisplayRecords", iTotalDisplayRecords);
             jsonObj.add("aaData", aaData);
             jsonObj.addProperty("sEcho", params.get("sEcho"));
@@ -146,6 +276,7 @@ public class StudentList {
 
             jsonObj.addProperty("success", true);
             jsonObj.addProperty("studentMarkDetail", result);
+            em.close();
         } catch (Exception e) {
             jsonObj.addProperty("success", false);
             jsonObj.addProperty("error", e.getMessage());
@@ -154,4 +285,11 @@ public class StudentList {
         return jsonObj;
     }
 
+
+    private class StudentDetailModel {
+        public int term;
+        public List<MarkModel> markList;
+    }
 }
+
+

@@ -5,8 +5,10 @@ import com.capstone.entities.MarksEntity;
 import java.util.List;
 
 public interface IMarksService {
+    MarksEntity getMarkById(int id);
     void createMark(MarksEntity entity);
     void createMarks(List<MarksEntity> marksEntities);
+    void updateMark(MarksEntity entity) throws Exception;
     int getTotalExistMarks();
     int getSuccessSavedMark();
     List<MarksEntity> getAllMarks();
@@ -16,6 +18,7 @@ public interface IMarksService {
     List<MarksEntity> getStudentMarksById(int stuId);
     List<MarksEntity> getStudyingStudents(String subjectId, String[] statuses);
     int countMarksByCourseId(int courseId);
+    int countAllMarks();
     List<MarksEntity> getAllMarksByStudentAndSubject(int studentId, String subjectId, String semesterId);
     List<MarksEntity> getMarksByStudentIdAndStatus(int studentId, String status);
     List<MarksEntity> getMarksByMultipleConditions(List<Integer> studentIds, List<String> subjects, List<String> statuses);
