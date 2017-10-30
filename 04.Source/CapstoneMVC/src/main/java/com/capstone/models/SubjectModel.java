@@ -5,9 +5,9 @@ public class SubjectModel {
     private String subjectName;
     private int credits;
     private String prerequisiteSubject;
-    private String prerequisiteEffectStart;
-    private String prerequisiteEffectEnd;
+    private String effectionSemester;
     private String replacementSubject;
+    private int failMark;
     private boolean result;
     private String errorMessage;
 
@@ -46,20 +46,12 @@ public class SubjectModel {
         this.prerequisiteSubject = prerequisiteSubject;
     }
 
-    public String getPrerequisiteEffectStart() {
-        return prerequisiteEffectStart;
+    public String getEffectionSemester() {
+        return effectionSemester;
     }
 
-    public void setPrerequisiteEffectStart(String prerequisiteEffectStart) {
-        this.prerequisiteEffectStart = prerequisiteEffectStart;
-    }
-
-    public String getPrerequisiteEffectEnd() {
-        return prerequisiteEffectEnd;
-    }
-
-    public void setPrerequisiteEffectEnd(String prerequisiteEffectEnd) {
-        this.prerequisiteEffectEnd = prerequisiteEffectEnd;
+    public void setEffectionSemester(String effectionSemester) {
+        this.effectionSemester = effectionSemester;
     }
 
     public String getReplacementSubject() {
@@ -84,5 +76,13 @@ public class SubjectModel {
 
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    public int getFailMark() {
+        return failMark;
+    }
+
+    public void setFailMark(int failMark) {
+        this.failMark = failMark;
     }
 }

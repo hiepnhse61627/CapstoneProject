@@ -65,12 +65,12 @@
                             <input id="replacementSubject" type="text" class="form-control"/>
                         </div>
                         <div class="form-group">
-                            <label for="preEffectStart">Học kì bắt đầu tiên quyết:</label>
-                            <input id="preEffectStart" type="text" class="form-control"/>
+                            <label for="effectionSemester">Học kì bắt đầu áp dụng tiên quyết:</label>
+                            <input id="effectionSemester" type="text" class="form-control"/>
                         </div>
                         <div class="form-group">
-                            <label for="preEffectEnd">Học kì kết thúc tiên quyết:</label>
-                            <input id="preEffectEnd" type="text" class="form-control"/>
+                            <label for="failMark">Điểm tiên quyết môn</label>
+                            <input id="failMark" type="text" class="form-control"/>
                         </div>
 
                     </div>
@@ -80,7 +80,7 @@
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 <button id="btnSubmit" type="button" class="btn btn-primary" onclick="return confirmChange($('#subjectId').val(),$('#subjectName').val()
                 ,$('#prerequisiteSubs').val(),$('#credits').val(),$('#replacementSubject').val(),
-                $('#preEffectStart').val(),$('#preEffectEnd').val())">Thay đổi thông tin
+                $('#effectionSemester').val(),$('#failMark').val())">Thay đổi thông tin
                 </button>
             </div>
         </div>
@@ -120,12 +120,12 @@
                             <input id="replacementNewSubject" type="text" class="form-control"/>
                         </div>
                         <div class="form-group">
-                            <label for="preEffectNewStart">Học kì bắt đầu tiên quyết:</label>
-                            <input id="preEffectNewStart" type="text" class="form-control"/>
+                            <label for="effectionNewSemester">Học kì bắt đầu áp dụng tiên quyết:</label>
+                            <input id="effectionNewSemester" type="text" class="form-control"/>
                         </div>
                         <div class="form-group">
-                            <label for="preEffectNewEnd">Học kì kết thúc tiên quyết:</label>
-                            <input id="preEffectNewEnd" type="text" class="form-control"/>
+                            <label for="failNewMark">Điểm tiên quyết:</label>
+                            <input id="failNewMark" type="text" class="form-control"/>
                         </div>
 
                     </div>
@@ -133,9 +133,10 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button id="btnNewSubmit" type="button" class="btn btn-primary" onclick="return confirmNew($('#subjectNewId').val(),$('#subjectNewName').val()
-                ,$('#prerequisiteNewSubs').val(),$('#newCredits').val(),$('#replacementNewSubject').val(),
-                $('#preEffectNewStart').val(),$('#preEffectNewEnd').val())">Tạo môn học
+                <button id="btnNewSubmit" type="button" class="btn btn-primary" onclick="return confirmNew($('#subjectNewId').val()
+                ,$('#subjectNewName').val(),$('#prerequisiteNewSubs').val(),$('#newCredits').val()
+                ,$('#replacementNewSubject').val(),$('#effectionNewSemester').val()
+                ,$('#failNewMark').val())">Tạo môn học
                 </button>
             </div>
         </div>
@@ -194,21 +195,21 @@
         LoadSubjectList();
     });
 
-    function confirmChange(subjectId, subjectName, prerequisiteSubs, credits, replacementSubject, preEffectStart, preEffectEnd) {
+    function confirmChange(subjectId, subjectName, prerequisiteSubs, credits, replacementSubject, effectionSemester, failMark) {
 
         if (confirm("Xác nhận thay đổi thông tin cho môn " + subjectId + "?")) {
-            EditSubject(subjectId, subjectName, prerequisiteSubs, credits, replacementSubject, preEffectStart, preEffectEnd);
+            EditSubject(subjectId, subjectName, prerequisiteSubs, credits, replacementSubject, effectionSemester, failMark);
         }
     }
 
-    function confirmNew(subjectNewId, subjectNewName, prerequisiteNewSubs, newCredits, replacementNewSubject, preEffectNewStart, preEffectNewEnd) {
+    function confirmNew(subjectNewId, subjectNewName, prerequisiteNewSubs, newCredits, replacementNewSubject, effectionNewSemester, failNewMark) {
 
         if (confirm("Xác nhận tạo môn " + subjectNewId + "?")) {
-            CreateSubject(subjectNewId, subjectNewName, prerequisiteNewSubs, newCredits, replacementNewSubject, preEffectNewStart, preEffectNewEnd);
+            CreateSubject(subjectNewId, subjectNewName, prerequisiteNewSubs, newCredits, replacementNewSubject, effectionNewSemester, failNewMark);
         }
     }
 
-    function CreateNewSubject(){
+    function CreateNewSubject() {
         $("#subjectNewDetailModal").modal('toggle');
     }
     function LoadSubjectList() {
@@ -257,7 +258,7 @@
         }).fnSetFilteringDelay(700);
     }
 
-    function CreateSubject(subjectNewId, subjectNewName, prerequisiteNewSubs, newCredits, replacementNewSubject, preEffectNewStart, preEffectNewEnd) {
+    function CreateSubject(subjectNewId, subjectNewName, prerequisiteNewSubs, newCredits, replacementNewSubject, effectionNewSemester, failNewMark) {
         $.ajax({
             type: "POST",
             url: "/subject/create",
@@ -267,8 +268,8 @@
                 "sNewCredits": newCredits,
                 "sNewReplacement": replacementNewSubject,
                 "sNewPrerequisite": prerequisiteNewSubs,
-                "sNewPreEffectStart": preEffectNewStart,
-                "sNewPreEffectEnd": preEffectNewEnd,
+                "sNewEffectionSemester": effectionSemester,
+                "sNewFailMark": failNewMark,
             },
             success: function (result) {
                 if (result.success) {
@@ -276,7 +277,7 @@
                         title: 'Thành công',
                         text: "Đã tạo môn học!",
                         type: 'success'
-                    }).then(function(){
+                    }).then(function () {
                         RefreshTable();
                     });
                     $("#subjectNewDetailModal").modal('toggle');
@@ -287,7 +288,7 @@
         });
     }
 
-    function EditSubject(subjectId, subjectName, prerequisiteSubs, credits, replacementSubject, preEffectStart, preEffectEnd) {
+    function EditSubject(subjectId, subjectName, prerequisiteSubs, credits, replacementSubject, effectionSemester, failMark) {
 
         $.ajax({
             type: "POST",
@@ -298,8 +299,8 @@
                 "sCredits": credits,
                 "sReplacement": replacementSubject,
                 "sPrerequisite": prerequisiteSubs,
-                "sPreEffectStart": preEffectStart,
-                "sPreEffectEnd": preEffectEnd,
+                "sEffectionSemester": effectionSemester,
+                "sFailMark": failMark,
             },
             success: function (result) {
                 if (result.success) {
@@ -307,7 +308,7 @@
                         title: 'Thành công',
                         text: "Đã cập nhật môn học!",
                         type: 'success'
-                    }).then(function(){
+                    }).then(function () {
                         RefreshTable();
                     });
                     $("#subjectDetailModal").modal('toggle');

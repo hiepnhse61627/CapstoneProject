@@ -172,7 +172,17 @@ public class SubjectController {
             SubjectModel subjectModel = new SubjectModel();
             subjectModel.setSubjectID(entity.getId());
             subjectModel.setSubjectName(entity.getName());
-            subjectModel.setPrerequisiteSubject(entity.getPrequisiteEntity().getPrequisiteSubs());
+            if (entity.getPrequisiteEntity().getEffectionSemester() != null
+                    && !entity.getPrequisiteEntity().getEffectionSemester().isEmpty()) {
+                subjectModel.setEffectionSemester(entity.getPrequisiteEntity().getEffectionSemester());
+                subjectModel.setPrerequisiteSubject(entity.getPrequisiteEntity().getNewPrequisiteSubs());
+                subjectModel.setFailMark(entity.getPrequisiteEntity().getNewFailMark());
+            } else {
+                subjectModel.setEffectionSemester(null);
+                subjectModel.setPrerequisiteSubject(entity.getPrequisiteEntity().getPrequisiteSubs());
+                subjectModel.setFailMark(entity.getPrequisiteEntity().getFailMark());
+            }
+
             subjectModel.setCredits(entity.getCredits());
 //            subjectModel.setPrerequisiteEffectStart(entity.getPrequisiteEntity().getPrerequisiteEffectStart());
 //            subjectModel.setPrerequisiteEffectEnd(entity.getPrequisiteEntity().getPrerequisiteEffectEnd());
@@ -336,8 +346,8 @@ public class SubjectController {
     @ResponseBody
     public JsonObject EditSubject(@RequestParam("sSubjectId") String subjectId, @RequestParam("sSubjectName") String subjectName,
                                   @RequestParam("sCredits") String credits, @RequestParam("sReplacement") String replacement,
-                                  @RequestParam("sPrerequisite") String prerequisite, @RequestParam("sPreEffectStart") String preEffectStart,
-                                  @RequestParam("sPreEffectEnd") String preEffectEnd) {
+                                  @RequestParam("sPrerequisite") String prerequisite, @RequestParam("sEffectionSemester") String effectionSemester,
+                                  @RequestParam("sFailMark") String failMark) {
         JsonObject jsonObj = new JsonObject();
 
         try {
@@ -350,8 +360,13 @@ public class SubjectController {
             model.setCredits(Integer.parseInt(credits));
             model.setPrerequisiteSubject(prerequisite);
             model.setReplacementSubject(replacement);
-            model.setPrerequisiteEffectEnd(preEffectEnd);
-            model.setPrerequisiteEffectStart(preEffectStart);
+            model.setEffectionSemester(effectionSemester);
+            if (failMark.isEmpty()){
+                model.setFailMark(0);
+            }else{
+                model.setFailMark(Integer.parseInt(failMark));
+            }
+
 
             SubjectModel result = subjectService.updateSubject(model);
             if (!result.isResult()) {
@@ -374,8 +389,8 @@ public class SubjectController {
     @ResponseBody
     public JsonObject CreateNewSubject(@RequestParam("sNewSubjectId") String subjectId, @RequestParam("sNewSubjectName") String subjectName,
                                        @RequestParam("sNewCredits") String credits, @RequestParam("sNewReplacement") String replacement,
-                                       @RequestParam("sNewPrerequisite") String prerequisite, @RequestParam("sNewPreEffectStart") String preEffectStart,
-                                       @RequestParam("sNewPreEffectEnd") String preEffectEnd) {
+                                       @RequestParam("sNewPrerequisite") String prerequisite, @RequestParam("sNewEffectionSemester") String newEffectionSemester,
+                                       @RequestParam("sNewFailMark") String newFailMark) {
         JsonObject jsonObj = new JsonObject();
 
         try {
@@ -388,9 +403,8 @@ public class SubjectController {
             model.setCredits(Integer.parseInt(credits));
             model.setPrerequisiteSubject(prerequisite);
             model.setReplacementSubject(replacement);
-            model.setPrerequisiteEffectEnd(preEffectEnd);
-            model.setPrerequisiteEffectStart(preEffectStart);
-
+            model.setEffectionSemester(newEffectionSemester);
+            model.setFailMark(Integer.parseInt(newFailMark));
             SubjectModel result = subjectService.createSubject(model);
             if (!result.isResult()) {
                 jsonObj.addProperty("success", false);
