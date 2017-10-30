@@ -138,31 +138,51 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
     }
 
     public List<MarksEntity> getMarksByConditions(String semesterId, String subjectId, String searchKey) {
-        if (realSemesters == null)
+        if (realSemesters == null) {
             realSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester());
+        }
 
         List<MarksEntity> marks = new ArrayList<>();
-        int row = -1;
+//        int row = -1;
+
+        List<Integer> allSemesters = new ArrayList<>();
         for (RealSemesterEntity r : realSemesters) {
+            allSemesters.add(r.getId());
             if (r.getId() == Integer.parseInt(semesterId)) {
-                row = realSemesters.indexOf(r);
+//                row = realSemesters.indexOf(r);
+                break;
             }
         }
 
-        if (row < 0) {
-            marks = buildQuery(semesterId, subjectId, searchKey);
-        } else {
-            for (int i = 0; i < row + 1; i++) {
-                semesterId = realSemesters.get(i).getId().toString();
-                List<MarksEntity> finalMarks = marks;
-                buildQuery(semesterId, subjectId, searchKey).forEach(o -> {
-                    if (!finalMarks.contains((MarksEntity) o)) {
-                        finalMarks.add((MarksEntity) o);
-                    }
-                });
-                marks = finalMarks;
-            }
+        EntityManager em = getEntityManager();
+
+        String queryStr = "select a from MarksEntity a where a.semesterId.id IN :listSemester";
+        if (!subjectId.equals("0")) {
+            queryStr += " and a.subjectMarkComponentId.subjectId.id = :sub";
         }
+
+        TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
+        query.setParameter("listSemester", allSemesters);
+        if (!subjectId.equals("0")) {
+            query.setParameter("sub", subjectId);
+        }
+        marks = query.getResultList();
+
+//        if (row < 0) {
+//            marks = buildQuery(semesterId, subjectId, searchKey);
+//        } else {
+//            for (int i = 0; i < row + 1; i++) {
+//                semesterId = realSemesters.get(i).getId().toString();
+//                System.out.println("Current " + realSemesters.get(i).getSemester());
+//                List<MarksEntity> finalMarks = marks;
+//                buildQuery(semesterId, subjectId, searchKey).forEach(o -> {
+//                    if (!finalMarks.contains((MarksEntity) o)) {
+//                        finalMarks.add((MarksEntity) o);
+//                    }
+//                });
+//                marks = finalMarks;
+//            }
+//        }
         return marks;
     }
 
