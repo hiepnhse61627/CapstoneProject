@@ -427,40 +427,24 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         return marks;
     }
 
-    public List<MarksEntity> getMarksByMultipleConditions(List<Integer> studentIds, List<String> subjects, List<String> statuses) {
-        EntityManager manager = getEntityManager();
-        String queryStr = "SELECT c FROM MarksEntity c";
-        if (studentIds != null && !studentIds.isEmpty()) {
-            if (!queryStr.contains("WHERE")) {
-                queryStr += " WHERE";
-            }
-            queryStr += " c.studentId.id IN :studentList AND";
-        }
-        if (subjects != null && !subjects.isEmpty()) {
-            if (!queryStr.contains("WHERE")) {
-                queryStr += " WHERE ";
-            }
-            queryStr += " c.subjectMarkComponentId.subjectId.id IN :subjectList AND";
-        }
-        if (statuses != null && !statuses.isEmpty()) {
-            if (!queryStr.contains("WHERE")) {
-                queryStr += " WHERE ";
-            }
-            queryStr += "  c.status IN :statusList";
-        }
+    public List<MarksEntity> getListMarkToCurrentSemester(List<Integer> semesterIds, String[] statuses) {
+        EntityManager em = null;
+        try {
+            em = getEntityManager();
+            String sqlString = "SELECT m FROM MarksEntity m WHERE m.status IN :statuses AND m.semesterId.id IN :semesterIds";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("statuses", Arrays.asList(statuses));
+            query.setParameter("semesterIds", semesterIds);
 
-        TypedQuery<MarksEntity> query = manager.createQuery(queryStr, MarksEntity.class);
+            List<MarksEntity> result = query.getResultList();
 
-        if (studentIds != null && !studentIds.isEmpty()) {
-            query.setParameter("studentList", studentIds);
+            return result;
+        } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
-        if (subjects != null && !subjects.isEmpty()) {
-            query.setParameter("subjectList", subjects);
-        }
-        if (statuses != null && !statuses.isEmpty()) {
-            query.setParameter("statusList", statuses);
-        }
-
-        return query.getResultList();
     }
 }

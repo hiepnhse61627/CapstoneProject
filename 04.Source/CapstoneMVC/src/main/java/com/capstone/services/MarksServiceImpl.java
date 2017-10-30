@@ -101,7 +101,7 @@ public class MarksServiceImpl implements IMarksService {
     }
 
     @Override
-    public List<MarksEntity> getMarksByMultipleConditions(List<Integer> studentIds, List<String> subjects, List<String> statuses) {
-        return marksEntityJpaController.getMarksByMultipleConditions(studentIds, subjects, statuses);
+    public List<MarksEntity> getListMarkToCurrentSemester(List<Integer> semesterIds, String[] statuses) {
+        return marksEntityJpaController.getListMarkToCurrentSemester(semesterIds, statuses);
     }
 }
