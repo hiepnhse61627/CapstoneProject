@@ -71,10 +71,6 @@ public class PrequisiteEntity implements Serializable {
         this.newFailMark = newFailMark;
     }
 
-    public PrequisiteEntity(String subjectId) {
-        this.subjectId = subjectId;
-    }
-
     public String getSubjectId() {
         return subjectId;
     }

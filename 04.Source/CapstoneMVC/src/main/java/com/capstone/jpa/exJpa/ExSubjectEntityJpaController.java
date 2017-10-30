@@ -287,7 +287,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<SubjectEntity> query = em.createQuery("SELECT a FROM SubjectEntity a WHERE a.id = :sub", SubjectEntity.class);
-            query.setParameter("sub", id);
+            query.setParameter("sub", id.trim());
             return query.getSingleResult();
         } catch (NoResultException e) {
 //            try {
