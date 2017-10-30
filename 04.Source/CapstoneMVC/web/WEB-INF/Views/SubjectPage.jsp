@@ -12,7 +12,7 @@
             <h1>Danh sách môn học</h1>
         </div>
         <div class="col-md-3 text-right">
-            <input class="btn btn-primary" type="button" value="Tạo khóa học" onclick="CreateSubject()"/>
+            <input class="btn btn-primary" type="button" value="Tạo khóa học" onclick="CreateNewSubject()"/>
         </div>
     </div>
     </br>
@@ -88,6 +88,61 @@
     </div>
 </div>
 
+<div id="subjectNewDetailModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Chi Tiết Môn học</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="subjectNewId">Mã Môn:</label>
+                            <input id="subjectNewId" type="text" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="subjectNewName">Tên Môn:</label>
+                            <input id="subjectNewName" type="text" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="prerequisiteNewSubs">Tiên quyết:</label>
+                            <input id="prerequisiteNewSubs" type="text" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="newCredits">Tín chỉ:</label>
+                            <input id="newCredits" type="number" max='100' maxlength="2" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="replacementNewSubject">Môn thay thế:</label>
+                            <input id="replacementNewSubject" type="text" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="preEffectNewStart">Học kì bắt đầu tiên quyết:</label>
+                            <input id="preEffectNewStart" type="text" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="preEffectNewEnd">Học kì kết thúc tiên quyết:</label>
+                            <input id="preEffectNewEnd" type="text" class="form-control"/>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button id="btnNewSubmit" type="button" class="btn btn-primary" onclick="return confirmNew($('#subjectNewId').val(),$('#subjectNewName').val()
+                ,$('#prerequisiteNewSubs').val(),$('#newCredits').val(),$('#replacementNewSubject').val(),
+                $('#preEffectNewStart').val(),$('#preEffectNewEnd').val())">Tạo môn học
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 
 <script>
     var tblSubject;
@@ -132,12 +187,22 @@
     });
 
     function confirmChange(subjectId, subjectName, prerequisiteSubs, credits, replacementSubject, preEffectStart, preEffectEnd) {
-        debugger
+
         if (confirm("Xác nhận thay đổi thông tin cho môn " + subjectId + "?")) {
             EditSubject(subjectId, subjectName, prerequisiteSubs, credits, replacementSubject, preEffectStart, preEffectEnd);
         }
     }
 
+    function confirmNew(subjectNewId, subjectNewName, prerequisiteNewSubs, newCredits, replacementNewSubject, preEffectNewStart, preEffectNewEnd) {
+
+        if (confirm("Xác nhận tạo môn " + subjectNewId + "?")) {
+            CreateSubject(subjectNewId, subjectNewName, prerequisiteNewSubs, newCredits, replacementNewSubject, preEffectNewStart, preEffectNewEnd);
+        }
+    }
+
+    function CreateNewSubject(){
+        $("#subjectNewDetailModal").modal('toggle');
+    }
     function LoadSubjectList() {
         tblSubject = $('#tbl-subject').dataTable({
             "bServerSide": true,
@@ -184,13 +249,34 @@
         }).fnSetFilteringDelay(700);
     }
 
-    function CreateSubject() {
-        ClearModal();
-        $("#btnSubmit").html("Tạo");
-        $('#btnSubmit').data("type", "create");
-        $("#btnSubmit").attr("data-subject-id", 0);
-
-        $("#subjectDetailModal").modal('toggle');
+    function CreateSubject(subjectNewId, subjectNewName, prerequisiteNewSubs, newCredits, replacementNewSubject, preEffectNewStart, preEffectNewEnd) {
+        $.ajax({
+            type: "POST",
+            url: "/subject/create",
+            data: {
+                "sNewSubjectId": subjectNewId,
+                "sNewSubjectName": subjectNewName,
+                "sNewCredits": newCredits,
+                "sNewReplacement": replacementNewSubject,
+                "sNewPrerequisite": prerequisiteNewSubs,
+                "sNewPreEffectStart": preEffectNewStart,
+                "sNewPreEffectEnd": preEffectNewEnd,
+            },
+            success: function (result) {
+                if (result.success) {
+                    swal({
+                        title: 'Thành công',
+                        text: "Đã tạo môn học!",
+                        type: 'success'
+                    }).then(function(){
+                        RefreshTable();
+                    });
+                    $("#subjectNewDetailModal").modal('toggle');
+                } else {
+                    swal('Đã xảy ra lỗi!', result.message, 'error');
+                }
+            }
+        });
     }
 
     function EditSubject(subjectId, subjectName, prerequisiteSubs, credits, replacementSubject, preEffectStart, preEffectEnd) {
@@ -213,7 +299,7 @@
                         title: 'Thành công',
                         text: "Đã cập nhật môn học!",
                         type: 'success'
-                    }).then(function () {
+                    }).then(function(){
                         RefreshTable();
                     });
                     $("#subjectDetailModal").modal('toggle');
@@ -232,6 +318,7 @@
     }
 
     function ShowModal(subjectId) {
+        LoadSubjectList();
         var form = new FormData();
         form.append("subjectId", subjectId)
 
@@ -264,6 +351,11 @@
         });
     }
 
-    //cố lên qq :)))
+    function RefreshTable() {
+        if (tblSubject != null) {
+            tblSubject._fnPageChange(0);
+            tblSubject._fnAjaxUpdate();
+        }
+    }
 
 </script>
