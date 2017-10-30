@@ -174,8 +174,8 @@ public class SubjectController {
             subjectModel.setSubjectName(entity.getName());
             subjectModel.setPrerequisiteSubject(entity.getPrequisiteEntity().getPrequisiteSubs());
             subjectModel.setCredits(entity.getCredits());
-            subjectModel.setPrerequisiteEffectStart(entity.getPrequisiteEntity().getPrerequisiteEffectStart());
-            subjectModel.setPrerequisiteEffectEnd(entity.getPrequisiteEntity().getPrerequisiteEffectEnd());
+//            subjectModel.setPrerequisiteEffectStart(entity.getPrequisiteEntity().getPrerequisiteEffectStart());
+//            subjectModel.setPrerequisiteEffectEnd(entity.getPrequisiteEntity().getPrerequisiteEffectEnd());
             if (!replacementSubject.equals("")) {
                 subjectModel.setReplacementSubject(replacementSubject.substring(1));
             } else {
@@ -218,14 +218,14 @@ public class SubjectController {
             model.setCredits(subject.getCredits());
 
             // Lấy môn tiên quyết
-            queryStr = "select p.prequisiteSubs, p.prerequisiteEffectStart ,p.prerequisiteEffectEnd from PrequisiteEntity p where p.subjectId = :sId";
-            TypedQuery<PrequisiteEntity> query = em.createQuery(queryStr, PrequisiteEntity.class);
-            query.setParameter("sId", subjectId);
-
-            PrequisiteEntity prequisiteSubs = query.getSingleResult();
-            model.setPrerequisiteSubject(prequisiteSubs.getPrequisiteSubs());
-            model.setPrerequisiteEffectStart(prequisiteSubs.getPrerequisiteEffectStart());
-            model.setPrerequisiteEffectEnd(prequisiteSubs.getPrerequisiteEffectEnd());
+//            queryStr = "select p.prequisiteSubs, p.prerequisiteEffectStart ,p.prerequisiteEffectEnd from PrequisiteEntity p where p.subjectId = :sId";
+//            TypedQuery<PrequisiteEntity> query = em.createQuery(queryStr, PrequisiteEntity.class);
+//            query.setParameter("sId", subjectId);
+//
+//            PrequisiteEntity prequisiteSubs = query.getSingleResult();
+//            model.setPrerequisiteSubject(prequisiteSubs.getPrequisiteSubs());
+//            model.setPrerequisiteEffectStart(prequisiteSubs.getPrerequisiteEffectStart());
+//            model.setPrerequisiteEffectEnd(prequisiteSubs.getPrerequisiteEffectEnd());
 
             String result = new Gson().toJson(model);
 

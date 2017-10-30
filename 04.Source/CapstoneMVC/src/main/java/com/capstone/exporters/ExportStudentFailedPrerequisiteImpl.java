@@ -139,11 +139,11 @@ public class ExportStudentFailedPrerequisiteImpl implements IExportObject {
             prequisiteQuery.setParameter("sList", processedData);
 
             List<MarksEntity> list = prequisiteQuery.getResultList();
-            Ultilities.FilterStudentPassedSubFailPrequisite(list, subjectId, l, prequisite.getFailMark()).forEach(c -> {
-                if (!result.contains(c)) {
-                    result.add(c);
-                }
-            });
+//            Ultilities.FilterStudentPassedSubFailPrequisite(list, subjectId, l, prequisite.getFailMark()).forEach(c -> {
+//                if (!result.contains(c)) {
+//                    result.add(c);
+//                }
+//            });
         } else {
             for (Map.Entry<String, List<String>> entry : map.entrySet()) {
                 SubjectEntity entity = subjectService.findSubjectById(entry.getKey());
@@ -162,11 +162,11 @@ public class ExportStudentFailedPrerequisiteImpl implements IExportObject {
                 prequisiteQuery.setParameter("sList", processedData);
 
                 List<MarksEntity> list = prequisiteQuery.getResultList();
-                Ultilities.FilterStudentPassedSubFailPrequisite(list, entry.getKey(), entry.getValue(), prequisite.getFailMark()).forEach(c -> {
-                    if (!result.contains(c)) {
-                        result.add(c);
-                    }
-                });
+//                Ultilities.FilterStudentPassedSubFailPrequisite(list, entry.getKey(), entry.getValue(), prequisite.getFailMark()).forEach(c -> {
+//                    if (!result.contains(c)) {
+//                        result.add(c);
+//                    }
+//                });
             }
         }
 

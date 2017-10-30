@@ -72,8 +72,8 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
                 }
                 uSubject.setPrequisiteEntity(uPrerequisite);
 
-                uSubject.getPrequisiteEntity().setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
-                uSubject.getPrequisiteEntity().setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
+//                uSubject.getPrequisiteEntity().setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
+//                uSubject.getPrequisiteEntity().setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
                 uSubject.setCredits(subject.getCredits());
 
                 manager.persist(uSubject);
@@ -161,8 +161,8 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
             //update SubjectEntity match SubjectID
             SubjectEntity uSubject = manager.find(SubjectEntity.class, subject.getSubjectID());
             uSubject.setName(subject.getSubjectName());
-            uSubject.getPrequisiteEntity().setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
-            uSubject.getPrequisiteEntity().setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
+//            uSubject.getPrequisiteEntity().setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
+//            uSubject.getPrequisiteEntity().setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
             uSubject.getPrequisiteEntity().setPrequisiteSubs(null);
             uSubject.setCredits(subject.getCredits());
             uSubject.setSubjectEntityList(new ArrayList<SubjectEntity>());

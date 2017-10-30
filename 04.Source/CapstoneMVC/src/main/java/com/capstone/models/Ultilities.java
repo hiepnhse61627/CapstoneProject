@@ -31,14 +31,16 @@ public class Ultilities {
         return newSet;
     }
 
-    public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, List<String> prequisiteRow, int mark) {
+    public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, String subId, int mark) {
         IMarksService marksService = new MarksServiceImpl();
 
         List<MarksEntity> newList = FilterStudentsOnlyPassAndFail(list);
 
         List<FailPrequisiteModel> result = new ArrayList<>();
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
-        list = Ultilities.FilterStudentsOnlyPassAndFail(list.stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
+
+        list = Ultilities.FilterStudentsOnlyPassAndFail(list);
+
         if (!list.isEmpty()) {
             for (MarksEntity m : newList) {
                 if (map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
@@ -50,72 +52,72 @@ public class Ultilities {
                 }
             }
 
-            Set<String> studentIds = map.rowKeySet();
-            for (String studentId : studentIds) {
-                Map<String, List<MarksEntity>> subject = map.row(studentId);
-                if (subject.get(subId) != null && !subject.get(subId).isEmpty()) {
-                    for (MarksEntity m : subject.get(subId)) {
-                        if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt")) {
-
-                            int totalFail = 0;
-                            FailPrequisiteModel failedRow = null;
-
-                            for (String row : prequisiteRow) {
-
-                                boolean isPass = false;
-
-                                String[] cell = row.trim().split(",");
-                                for (String prequisite : cell) {
-                                    prequisite = prequisite.trim();
-
-                                    // HANDLE LOGIC HERE
-                                    if (subject.get(prequisite) != null && !subject.get(prequisite).isEmpty()) {
-                                        List<MarksEntity> g = FilterStudentsOnlyPassAndFail(subject.get(prequisite));
-                                        MarksEntity tmp = null;
-                                        for (MarksEntity k2 : g) {
-                                            tmp = k2;
-                                            if (k2.getAverageMark() >= mark || k2.getStatus().toLowerCase().contains("exempt")) {
-                                                isPass = true;
-                                                break;
-                                            }
-                                        }
-
-                                        if (!isPass) {
-                                            failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId());
-//                                            break;
-
-                                            for (SubjectEntity replace : tmp.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList()) {
-                                                List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), "0");
-                                                for (MarksEntity marks : replaced) {
-                                                    tmp = marks;
-                                                    if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
-                                                        isPass = true;
-                                                        break;
-                                                    }
-                                                }
-
-                                                if (!isPass) {
-                                                    failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId());
-                                                }
-                                            }
-                                        }
-                                    }
-                                    //////////////////////
-
-                                }
-
-                                if (!isPass) {
-                                    totalFail++;
-                                }
-                            }
-
-                            if (totalFail == prequisiteRow.size()) {
-                                if (failedRow != null) result.add(failedRow);
-                            }
-                        }
-                    }
-                }
-            }
+//            Set<String> studentIds = map.rowKeySet();
+//            for (String studentId : studentIds) {
+//                Map<String, List<MarksEntity>> subject = map.row(studentId);
+//                if (subject.get(subId) != null && !subject.get(subId).isEmpty()) {
+//                    for (MarksEntity m : subject.get(subId)) {
+//                        if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt")) {
+//
+//                            int totalFail = 0;
+//                            FailPrequisiteModel failedRow = null;
+//
+//                            for (String row : prequisiteRow) {
+//
+//                                boolean isPass = false;
+//
+//                                String[] cell = row.trim().split(",");
+//                                for (String prequisite : cell) {
+//                                    prequisite = prequisite.trim();
+//
+//                                    // HANDLE LOGIC HERE
+//                                    if (subject.get(prequisite) != null && !subject.get(prequisite).isEmpty()) {
+//                                        List<MarksEntity> g = FilterStudentsOnlyPassAndFail(subject.get(prequisite));
+//                                        MarksEntity tmp = null;
+//                                        for (MarksEntity k2 : g) {
+//                                            tmp = k2;
+//                                            if (k2.getAverageMark() >= mark || k2.getStatus().toLowerCase().contains("exempt")) {
+//                                                isPass = true;
+//                                                break;
+//                                            }
+//                                        }
+//
+//                                        if (!isPass) {
+//                                            failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId());
+////                                            break;
+//
+//                                            for (SubjectEntity replace : tmp.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList()) {
+//                                                List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), "0");
+//                                                for (MarksEntity marks : replaced) {
+//                                                    tmp = marks;
+//                                                    if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+//                                                        isPass = true;
+//                                                        break;
+//                                                    }
+//                                                }
+//
+//                                                if (!isPass) {
+//                                                    failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId());
+//                                                }
+//                                            }
+//                                        }
+//                                    }
+//                                    //////////////////////
+//
+//                                }
+//
+//                                if (!isPass) {
+//                                    totalFail++;
+//                                }
+//                            }
+//
+//                            if (totalFail == prequisiteRow.size()) {
+//                                if (failedRow != null) result.add(failedRow);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
         }
 
         return result;

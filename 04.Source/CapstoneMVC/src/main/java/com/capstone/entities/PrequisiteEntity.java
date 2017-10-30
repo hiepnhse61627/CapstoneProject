@@ -37,28 +37,38 @@ public class PrequisiteEntity implements Serializable {
     @JoinColumn(name = "SubjectId", referencedColumnName = "Id", nullable = false, insertable = false, updatable = false)
     @OneToOne(optional = false)
     private SubjectEntity subjectEntity;
-    @Column(name = "PrerequisiteEffectStart", length = 50)
-    private String prerequisiteEffectStart;
-    @Column(name = "PrerequisiteEffectEnd", length = 50)
-    private String prerequisiteEffectEnd;
+    @Column(name = "EffectionSemester", length = 50)
+    private String effectionSemester;
+    @Column(name = "NewPrequisiteSubs", length = 2147483647)
+    private String newPrequisiteSubs;
+    @Column(name = "NewFailMark")
+    private Integer newFailMark;
 
     public PrequisiteEntity() {
     }
 
-    public String getPrerequisiteEffectStart() {
-        return prerequisiteEffectStart;
+    public String getEffectionSemester() {
+        return effectionSemester;
     }
 
-    public void setPrerequisiteEffectStart(String prerequisiteEffectStart) {
-        this.prerequisiteEffectStart = prerequisiteEffectStart;
+    public void setEffectionSemester(String effectionSemester) {
+        this.effectionSemester = effectionSemester;
     }
 
-    public String getPrerequisiteEffectEnd() {
-        return prerequisiteEffectEnd;
+    public String getNewPrequisiteSubs() {
+        return newPrequisiteSubs;
     }
 
-    public void setPrerequisiteEffectEnd(String prerequisiteEffectEnd) {
-        this.prerequisiteEffectEnd = prerequisiteEffectEnd;
+    public void setNewPrequisiteSubs(String newPrequisiteSubs) {
+        this.newPrequisiteSubs = newPrequisiteSubs;
+    }
+
+    public Integer getNewFailMark() {
+        return newFailMark;
+    }
+
+    public void setNewFailMark(Integer newFailMark) {
+        this.newFailMark = newFailMark;
     }
 
     public PrequisiteEntity(String subjectId) {
