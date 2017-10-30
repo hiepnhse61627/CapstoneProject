@@ -1,8 +1,11 @@
 package com.capstone.controllers;
 
+import com.capstone.entities.DocumentStudentEntity;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.models.*;
+import com.capstone.services.DocumentStudentServiceImpl;
+import com.capstone.services.IDocumentStudentService;
 import com.capstone.services.IStudentService;
 import com.capstone.services.StudentServiceImpl;
 import com.google.gson.Gson;
@@ -168,6 +171,7 @@ public class StudentList {
     @ResponseBody
     public JsonObject LoadStudentListAll(@RequestParam Map<String, String> params) {
         JsonObject jsonObj = new JsonObject();
+        IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
 
         try {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
@@ -203,16 +207,32 @@ public class StudentList {
             List<List<String>> result = new ArrayList<>();
             studentList = studentList.stream().skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
 
+            List<Integer> studentIdList = studentList.stream().map(s -> s.getId()).collect(Collectors.toList());
+            List<DocumentStudentEntity> docStudentList = documentStudentService.getDocumentStudentByIdList(studentIdList);
+
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            DocumentStudentEntity ds = null;
             for (StudentEntity std : studentList) {
-                List<String> dataList = new ArrayList<String>() {{
-                    add(std.getRollNumber());
-                    add(std.getFullName());
-                    add(sdf.format(std.getDateOfBirth()));
-                    add(std.getGender() == Enums.Gender.MALE.getValue()
-                            ? Enums.Gender.MALE.getName() : Enums.Gender.FEMALE.getName());
-                    add(std.getId() + "");
-                }};
+                List<String> dataList = new ArrayList<String>();
+                ds = null;
+
+                dataList.add(std.getRollNumber());
+                dataList.add(std.getFullName());
+                dataList.add(sdf.format(std.getDateOfBirth()));
+                dataList.add(std.getGender() == Enums.Gender.MALE.getValue()
+                        ? Enums.Gender.MALE.getName() : Enums.Gender.FEMALE.getName());
+                dataList.add(std.getProgramId() != null ? std.getProgramId().getName() : "N/A");
+
+                for (DocumentStudentEntity docStudent : docStudentList){
+                    if (docStudent.getStudentId().getId() == std.getId()) {
+                        ds = docStudent;
+                    }
+                }
+                dataList.add(ds != null
+                        ? ds.getCurriculumId().getProgramId().getName() + "_" + ds.getCurriculumId().getName()
+                        : "N/A");
+                dataList.add(std.getId() + "");
+
                 result.add(dataList);
             }
 
