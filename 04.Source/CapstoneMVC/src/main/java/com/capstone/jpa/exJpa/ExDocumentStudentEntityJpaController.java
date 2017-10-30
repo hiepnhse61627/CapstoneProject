@@ -5,6 +5,8 @@ import com.capstone.jpa.DocumentStudentEntityJpaController;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.TypedQuery;
+import java.util.List;
 
 public class ExDocumentStudentEntityJpaController extends DocumentStudentEntityJpaController {
     public ExDocumentStudentEntityJpaController(EntityManagerFactory emf) {
@@ -25,5 +27,48 @@ public class ExDocumentStudentEntityJpaController extends DocumentStudentEntityJ
         }
 
         return entity;
+    }
+
+    public List<DocumentStudentEntity> getAllLatestDocumentStudent() {
+        List<DocumentStudentEntity> result = null;
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+
+            String queryStr = "SELECT ds FROM DocumentStudentEntity ds" +
+                    " WHERE ds.createdDate = (SELECT MAX(tDS.createdDate) FROM DocumentStudentEntity tDS WHERE tDS.id = ds.id)";
+            TypedQuery<DocumentStudentEntity> query = em.createQuery(queryStr, DocumentStudentEntity.class);
+            result = query.getResultList();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+
+        return result;
+    }
+
+    public List<DocumentStudentEntity> getDocumentStudentByIdList(List<Integer> idList) {
+        List<DocumentStudentEntity> result = null;
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+
+            String queryStr = "SELECT ds FROM DocumentStudentEntity ds" +
+                    " WHERE ds.createdDate = (SELECT MAX(tDS.createdDate) FROM DocumentStudentEntity tDS WHERE tDS.id = ds.id)" +
+                    " AND ds.studentId.id IN :idList";
+            TypedQuery<DocumentStudentEntity> query = em.createQuery(queryStr, DocumentStudentEntity.class);
+            query.setParameter("idList", idList);
+            result = query.getResultList();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
     }
 }
