@@ -80,4 +80,9 @@ public class MarksServiceImpl implements IMarksService {
     public List<MarksEntity> getAllMarksByStudentAndSubject(int studentId, String subjectId, String semesterId) {
         return marksEntityJpaController.getAllMarksByStudentAndSubject(studentId, subjectId, semesterId);
     }
+
+    @Override
+    public List<MarksEntity> getListMarkToCurrentSemester(List<Integer> semesterIds, String[] statuses) {
+        return marksEntityJpaController.getListMarkToCurrentSemester(semesterIds, statuses);
+    }
 }

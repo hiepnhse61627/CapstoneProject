@@ -379,4 +379,25 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         }
         return marks;
     }
+
+    public List<MarksEntity> getListMarkToCurrentSemester(List<Integer> semesterIds, String[] statuses) {
+        EntityManager em = null;
+        try {
+            em = getEntityManager();
+            String sqlString = "SELECT m FROM MarksEntity m WHERE m.status IN :statuses AND m.semesterId.id IN :semesterIds";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("statuses", Arrays.asList(statuses));
+            query.setParameter("semesterIds", semesterIds);
+
+            List<MarksEntity> result = query.getResultList();
+
+            return result;
+        } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
 }
