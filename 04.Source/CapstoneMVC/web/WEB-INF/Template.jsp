@@ -132,6 +132,13 @@
                 <%--<li class="header">HEADER</li>--%>
                 <!-- Optionally, you can add icons to the links -->
                 <security:authorize access="hasRole('${admin}')">
+                    <input id="menu-filter" type="text" value="">
+                    <%--<c:forEach var="menuList" items="${menuName.}">--%>
+                        <%--<li>--%>
+                            <%--<a href="/studentList"><i class="fa fa-dashboard"></i>--%>
+                                <%--<span>Ra Nào</span></a>--%>
+                        <%--</li>--%>
+                    <%--</c:forEach>--%>
                     <li>
                         <a href="/dashboard"><i class="fa fa-dashboard"></i> <span>Thống kê</span></a>
                     </li>
@@ -219,11 +226,11 @@
                                         <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                         <div class="child-content col-md-11">
                                             Danh sách sinh viên giỏi
-										</div>
+                                        </div>
                                     </div>
-								</a>
+                                </a>
                             </li>
-							<li>
+                            <li>
                                 <a href="/studyingorfail">
                                     <div class="menu-child-wrapper">
                                         <div class="child-icon"><i class="fa fa-circle-o"></i></div>
@@ -253,16 +260,16 @@
                                     </div>
                                 </a>
                             </li>
-                            <%--<li>--%>
+                                <%--<li>--%>
                                 <%--<a href="/studying">--%>
-                                    <%--<div class="menu-child-wrapper">--%>
-                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
-                                        <%--<div class="child-content col-md-11">--%>
-                                            <%--Danh sách sinh viên đang học--%>
-                                        <%--</div>--%>
-                                    <%--</div>--%>
+                                <%--<div class="menu-child-wrapper">--%>
+                                <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                <%--<div class="child-content col-md-11">--%>
+                                <%--Danh sách sinh viên đang học--%>
+                                <%--</div>--%>
+                                <%--</div>--%>
                                 <%--</a>--%>
-                            <%--</li>--%>
+                                <%--</li>--%>
                             <li>
                                 <a href="/studentDetail">
                                     <div class="menu-child-wrapper">
@@ -273,46 +280,46 @@
                                     </div>
                                 </a>
                             </li>
-                            <%--<li>--%>
+                                <%--<li>--%>
                                 <%--<a href="/studentsOJT">--%>
-                                    <%--<div class="menu-child-wrapper">--%>
-                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
-                                        <%--<div class="child-content col-md-11">--%>
-                                            <%--Danh sách đi OJT--%>
-                                        <%--</div>--%>
-                                    <%--</div>--%>
+                                <%--<div class="menu-child-wrapper">--%>
+                                <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                <%--<div class="child-content col-md-11">--%>
+                                <%--Danh sách đi OJT--%>
+                                <%--</div>--%>
+                                <%--</div>--%>
                                 <%--</a>--%>
-                            <%--</li>--%>
-                            <%--<li>--%>
+                                <%--</li>--%>
+                                <%--<li>--%>
                                 <%--<a href="#">--%>
-                                    <%--<div class="menu-child-wrapper">--%>
-                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
-                                        <%--<div class="child-content col-md-11">--%>
-                                            <%--Danh sách làm đồ án--%>
-                                        <%--</div>--%>
-                                    <%--</div>--%>
+                                <%--<div class="menu-child-wrapper">--%>
+                                <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                <%--<div class="child-content col-md-11">--%>
+                                <%--Danh sách làm đồ án--%>
+                                <%--</div>--%>
+                                <%--</div>--%>
                                 <%--</a>--%>
-                            <%--</li>--%>
-                            <%--<li>--%>
+                                <%--</li>--%>
+                                <%--<li>--%>
                                 <%--<a href="#">--%>
-                                    <%--<div class="menu-child-wrapper">--%>
-                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
-                                        <%--<div class="child-content col-md-11">--%>
-                                            <%--Danh sách tốt nghiệp--%>
-                                        <%--</div>--%>
-                                    <%--</div>--%>
+                                <%--<div class="menu-child-wrapper">--%>
+                                <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                <%--<div class="child-content col-md-11">--%>
+                                <%--Danh sách tốt nghiệp--%>
+                                <%--</div>--%>
+                                <%--</div>--%>
                                 <%--</a>--%>
-                            <%--</li>--%>
-                            <%--<li>--%>
+                                <%--</li>--%>
+                                <%--<li>--%>
                                 <%--<a href="#">--%>
-                                    <%--<div class="menu-child-wrapper">--%>
-                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
-                                        <%--<div class="child-content col-md-11">--%>
-                                            <%--Danh sách đóng học phí--%>
-                                        <%--</div>--%>
-                                    <%--</div>--%>
+                                <%--<div class="menu-child-wrapper">--%>
+                                <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                <%--<div class="child-content col-md-11">--%>
+                                <%--Danh sách đóng học phí--%>
+                                <%--</div>--%>
+                                <%--</div>--%>
                                 <%--</a>--%>
-                            <%--</li>--%>
+                                <%--</li>--%>
                             <li>
                                 <a href="/checkPrequisite">
                                     <div class="menu-child-wrapper">
@@ -343,16 +350,16 @@
                                     </div>
                                 </a>
                             </li>
-                            <%--<li>--%>
+                                <%--<li>--%>
                                 <%--<a href="#">--%>
-                                    <%--<div class="menu-child-wrapper">--%>
-                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
-                                        <%--<div class="child-content col-md-11">--%>
-                                            <%--Danh sách sinh viên đang học trong kì theo môn học--%>
-                                        <%--</div>--%>
-                                    <%--</div>--%>
+                                <%--<div class="menu-child-wrapper">--%>
+                                <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                <%--<div class="child-content col-md-11">--%>
+                                <%--Danh sách sinh viên đang học trong kì theo môn học--%>
+                                <%--</div>--%>
+                                <%--</div>--%>
                                 <%--</a>--%>
-                            <%--</li>--%>
+                                <%--</li>--%>
                         </ul>
                     </li>
                     <li class="treeview">
@@ -372,19 +379,21 @@
                                     </div>
                                 </a>
                             </li>
-                         </ul>
+                        </ul>
                     </li>
                 </security:authorize>
 
                 <security:authorize access="hasRole('${student}')">
                     <li>
-                        <a href="/studentDetail"><i class="fa fa-list"></i> <span>Thông tin chi tiết của sinh viên</span></a>
+                        <a href="/studentDetail"><i class="fa fa-list"></i>
+                            <span>Thông tin chi tiết của sinh viên</span></a>
                     </li>
                     <li>
                         <a href="/studentMarkHistory"><i class="fa fa-list"></i> <span>Lịch sử môn học</span></a>
                     </li>
                     <li>
-                        <a href="/studentcurriculum/index"><i class="fa fa-list"></i> <span>Bảng điểm sinh viên</span></a>
+                        <a href="/studentcurriculum/index"><i class="fa fa-list"></i>
+                            <span>Bảng điểm sinh viên</span></a>
                     </li>
                 </security:authorize>
             </ul><!-- /.sidebar-menu -->
@@ -400,9 +409,32 @@
 </div><!-- ./wrapper -->
 
 <script>
-    $(document).ready(function() {
+    //ê cái role đó, check kiều gì lúc load dưới menu lên trời
+    $(document).ready(function () {
         $(".select2-selection span").attr('title', '');
     });
+
+    $('#menu-filter').on("input", function () {
+        var html = "${menuList.functionName}";
+//        if ($('#menu-filter').val() == null) {
+//
+//        }
+//        LoadMenu();
+        // chay for i in cai danh sach rat htest cai ne, rui hiu~ a`
+
+        $('#admin-menu').html(html);
+
+    });
+
+    function LoadMenu() {
+        debugger
+        for (var i = 0; i <=${menuList.size}; i++) {
+            console.log(${menuList.functionName});
+        }
+
+    }
+
+
 </script>
 
 </body>
