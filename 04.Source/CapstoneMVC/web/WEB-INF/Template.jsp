@@ -378,7 +378,7 @@
 
                 <security:authorize access="hasRole('${student}')">
                     <li>
-                        <a href="/studentDetail?id=123">
+                        <a href="/studentDetail">
                             <div class="menu-child-wrapper">
                                 <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                 <div class="child-content col-md-11">

@@ -152,7 +152,7 @@ public class LoginController {
 
                     if (edited) service.SaveCredential(user, false);
 
-                    Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(user.getUsername(), user.getPassword(), getGrantedAuthorities(user), user.getFullname(),user.getPicture()),
+                    Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(user.getUsername(), user.getPassword(), getGrantedAuthorities(user), user.getFullname(),user.getPicture(), user.getStudentRollNumber()),
                             user.getPassword(),
                             getGrantedAuthorities(user));
                     SecurityContextHolder.getContext().setAuthentication(auth);
