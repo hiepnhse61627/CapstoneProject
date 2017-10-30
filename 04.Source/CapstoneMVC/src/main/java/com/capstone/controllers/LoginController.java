@@ -141,7 +141,7 @@ public class LoginController {
                 CredentialsEntity user = service.findCredentialByEmail(profile.getEmail());
                 if (user != null) {
                     boolean edited = false;
-                    if (user.getFullname() == null || !user.getFullname().equals(profile.getName())) {
+                    if (user.getFullname() == null) {
                         user.setFullname(profile.getName());
                         edited = true;
                     }

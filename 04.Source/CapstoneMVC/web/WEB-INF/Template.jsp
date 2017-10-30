@@ -100,7 +100,6 @@
                             <img src="/Resources/plugins/dist/img/anonymous.jpg" class="img-circle" alt="User Image">
                         </c:otherwise>
                     </c:choose>
-
                 </div>
                 <div class="pull-left info">
                     <p>
@@ -113,7 +112,6 @@
                                 Ẩn danh
                             </c:otherwise>
                         </c:choose>
-
                     </p>
                     <!-- Status -->
                     <a href="#">
@@ -125,6 +123,12 @@
                             <span> Student</span>
                         </security:authorize>
                     </a>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <a href="/profile/" class="btn btn-primary">Chỉnh profile</a>
+                        <a href="/logout" class="btn btn-warning">Log out</a>
+                    </div>
                 </div>
             </div>
             <!-- Sidebar Menu -->
@@ -219,11 +223,11 @@
                                         <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                         <div class="child-content col-md-11">
                                             Danh sách sinh viên giỏi
-										</div>
+                                        </div>
                                     </div>
-								</a>
+                                </a>
                             </li>
-							<li>
+                            <li>
                                 <a href="/studyingorfail">
                                     <div class="menu-child-wrapper">
                                         <div class="child-icon"><i class="fa fa-circle-o"></i></div>
@@ -253,16 +257,16 @@
                                     </div>
                                 </a>
                             </li>
-                            <%--<li>--%>
+                                <%--<li>--%>
                                 <%--<a href="/studying">--%>
-                                    <%--<div class="menu-child-wrapper">--%>
-                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
-                                        <%--<div class="child-content col-md-11">--%>
-                                            <%--Danh sách sinh viên đang học--%>
-                                        <%--</div>--%>
-                                    <%--</div>--%>
+                                <%--<div class="menu-child-wrapper">--%>
+                                <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                <%--<div class="child-content col-md-11">--%>
+                                <%--Danh sách sinh viên đang học--%>
+                                <%--</div>--%>
+                                <%--</div>--%>
                                 <%--</a>--%>
-                            <%--</li>--%>
+                                <%--</li>--%>
                             <li>
                                 <a href="/studentDetail">
                                     <div class="menu-child-wrapper">
@@ -273,46 +277,46 @@
                                     </div>
                                 </a>
                             </li>
-                            <%--<li>--%>
+                                <%--<li>--%>
                                 <%--<a href="/studentsOJT">--%>
-                                    <%--<div class="menu-child-wrapper">--%>
-                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
-                                        <%--<div class="child-content col-md-11">--%>
-                                            <%--Danh sách đi OJT--%>
-                                        <%--</div>--%>
-                                    <%--</div>--%>
+                                <%--<div class="menu-child-wrapper">--%>
+                                <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                <%--<div class="child-content col-md-11">--%>
+                                <%--Danh sách đi OJT--%>
+                                <%--</div>--%>
+                                <%--</div>--%>
                                 <%--</a>--%>
-                            <%--</li>--%>
-                            <%--<li>--%>
+                                <%--</li>--%>
+                                <%--<li>--%>
                                 <%--<a href="#">--%>
-                                    <%--<div class="menu-child-wrapper">--%>
-                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
-                                        <%--<div class="child-content col-md-11">--%>
-                                            <%--Danh sách làm đồ án--%>
-                                        <%--</div>--%>
-                                    <%--</div>--%>
+                                <%--<div class="menu-child-wrapper">--%>
+                                <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                <%--<div class="child-content col-md-11">--%>
+                                <%--Danh sách làm đồ án--%>
+                                <%--</div>--%>
+                                <%--</div>--%>
                                 <%--</a>--%>
-                            <%--</li>--%>
-                            <%--<li>--%>
+                                <%--</li>--%>
+                                <%--<li>--%>
                                 <%--<a href="#">--%>
-                                    <%--<div class="menu-child-wrapper">--%>
-                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
-                                        <%--<div class="child-content col-md-11">--%>
-                                            <%--Danh sách tốt nghiệp--%>
-                                        <%--</div>--%>
-                                    <%--</div>--%>
+                                <%--<div class="menu-child-wrapper">--%>
+                                <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                <%--<div class="child-content col-md-11">--%>
+                                <%--Danh sách tốt nghiệp--%>
+                                <%--</div>--%>
+                                <%--</div>--%>
                                 <%--</a>--%>
-                            <%--</li>--%>
-                            <%--<li>--%>
+                                <%--</li>--%>
+                                <%--<li>--%>
                                 <%--<a href="#">--%>
-                                    <%--<div class="menu-child-wrapper">--%>
-                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
-                                        <%--<div class="child-content col-md-11">--%>
-                                            <%--Danh sách đóng học phí--%>
-                                        <%--</div>--%>
-                                    <%--</div>--%>
+                                <%--<div class="menu-child-wrapper">--%>
+                                <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                <%--<div class="child-content col-md-11">--%>
+                                <%--Danh sách đóng học phí--%>
+                                <%--</div>--%>
+                                <%--</div>--%>
                                 <%--</a>--%>
-                            <%--</li>--%>
+                                <%--</li>--%>
                             <li>
                                 <a href="/checkPrequisite">
                                     <div class="menu-child-wrapper">
@@ -343,16 +347,16 @@
                                     </div>
                                 </a>
                             </li>
-                            <%--<li>--%>
+                                <%--<li>--%>
                                 <%--<a href="#">--%>
-                                    <%--<div class="menu-child-wrapper">--%>
-                                        <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
-                                        <%--<div class="child-content col-md-11">--%>
-                                            <%--Danh sách sinh viên đang học trong kì theo môn học--%>
-                                        <%--</div>--%>
-                                    <%--</div>--%>
+                                <%--<div class="menu-child-wrapper">--%>
+                                <%--<div class="child-icon"><i class="fa fa-circle-o"></i></div>--%>
+                                <%--<div class="child-content col-md-11">--%>
+                                <%--Danh sách sinh viên đang học trong kì theo môn học--%>
+                                <%--</div>--%>
+                                <%--</div>--%>
                                 <%--</a>--%>
-                            <%--</li>--%>
+                                <%--</li>--%>
                         </ul>
                     </li>
                     <li class="treeview">
@@ -372,19 +376,21 @@
                                     </div>
                                 </a>
                             </li>
-                         </ul>
+                        </ul>
                     </li>
                 </security:authorize>
 
                 <security:authorize access="hasRole('${student}')">
                     <li>
-                        <a href="/studentDetail"><i class="fa fa-list"></i> <span>Thông tin chi tiết của sinh viên</span></a>
+                        <a href="/studentDetail"><i class="fa fa-list"></i>
+                            <span>Thông tin chi tiết của sinh viên</span></a>
                     </li>
                     <li>
                         <a href="/studentMarkHistory"><i class="fa fa-list"></i> <span>Lịch sử môn học</span></a>
                     </li>
                     <li>
-                        <a href="/studentcurriculum/index"><i class="fa fa-list"></i> <span>Bảng điểm sinh viên</span></a>
+                        <a href="/studentcurriculum/index"><i class="fa fa-list"></i>
+                            <span>Bảng điểm sinh viên</span></a>
                     </li>
                 </security:authorize>
             </ul><!-- /.sidebar-menu -->
@@ -400,7 +406,7 @@
 </div><!-- ./wrapper -->
 
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         $(".select2-selection span").attr('title', '');
     });
 </script>
