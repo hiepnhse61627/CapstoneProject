@@ -387,6 +387,9 @@
                             </div>
                         </a>
                     </li>
+                    <li>
+                        <a href="/studentMarkHistory"><i class="fa fa-list"></i> <span>Lịch sử môn học</span></a>
+                    </li>
                 </security:authorize>
             </ul><!-- /.sidebar-menu -->
         </section>

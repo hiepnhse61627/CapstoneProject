@@ -22,6 +22,8 @@
         <intercept-url pattern="/getStudentNotStart**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
         <intercept-url pattern="/getStudentNextCourse**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
         <intercept-url pattern="/getStudentDetail**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
+        <intercept-url pattern="/studentMarkHistory**" access="hasAnyRole('ROLE_STUDENT')"/>
+        <intercept-url pattern="/studentMarkHistory/getMarkList**" access="hasAnyRole('ROLE_STUDENT')"/>
 
         <!-- All other links -->
         <intercept-url pattern="/" access="isAuthenticated()"/>
