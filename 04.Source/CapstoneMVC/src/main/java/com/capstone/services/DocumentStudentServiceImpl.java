@@ -16,4 +16,14 @@ public class DocumentStudentServiceImpl implements IDocumentStudentService {
     public DocumentStudentEntity createDocumentStudent(DocumentStudentEntity entity) {
         return controller.createDocumentStudent(entity);
     }
+
+    @Override
+    public List<DocumentStudentEntity> getAllLatestDocumentStudent() {
+        return controller.getAllLatestDocumentStudent();
+    }
+
+    @Override
+    public List<DocumentStudentEntity> getDocumentStudentByIdList(List<Integer> idList) {
+        return controller.getDocumentStudentByIdList(idList);
+    }
 }

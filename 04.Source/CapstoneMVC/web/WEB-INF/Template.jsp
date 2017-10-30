@@ -133,7 +133,7 @@
                 <!-- Optionally, you can add icons to the links -->
                 <security:authorize access="hasRole('${admin}')">
                     <li>
-                        <a href="/dashboard"><i class="fa fa-dashboard"></i> <span>Truy vấn dữ liệu</span></a>
+                        <a href="/dashboard"><i class="fa fa-dashboard"></i> <span>Thống kê</span></a>
                     </li>
                     <li>
                         <a href="/goSQLQueryPage"><i class="fa fa-search"></i> <span>Truy vấn dữ liệu</span></a>

@@ -9,10 +9,10 @@
                     <h1>Danh sách sinh viên</h1>
                 </div>
                 <div class="col-md-3 text-right">
-                    <a href="#" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
-                        <i class="fa fa-arrow-circle-up"></i>
-                        <div class="m-l-3">Xuất file excel</div>
-                    </a>
+                    <button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
+                        <i class="glyphicon glyphicon-open"></i>
+                        <div>XUẤT DỮ LIỆU</div>
+                    </button>
                 </div>
             </div>
             <hr>
@@ -27,6 +27,8 @@
                         <th>Tên sinh viên</th>
                         <th>Ngày sinh</th>
                         <th>Giới tính</th>
+                        <th>Ngành học</th>
+                        <th>Khung chương trình</th>
                         <th>Chi tiết</th>
                         <%--<th>Chỉnh sửa</th>--%>
                         </thead>
@@ -146,12 +148,12 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4],
+                    "aTargets": [0, 1, 2, 3, 4, 5, 6],
                     "bSortable": false,
                     "sClass": "text-center",
                 },
                 {
-                    "aTargets": [4],
+                    "aTargets": [6],
                     "mRender": function (data, type, row) {
                         var href = "/studentList/" + data;
                         return "<a href='" + href + "' class='btn btn-success tbl-btn'>" +
