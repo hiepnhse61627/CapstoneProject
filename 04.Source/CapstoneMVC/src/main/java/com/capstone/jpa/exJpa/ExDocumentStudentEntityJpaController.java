@@ -29,6 +29,32 @@ public class ExDocumentStudentEntityJpaController extends DocumentStudentEntityJ
         return entity;
     }
 
+    public DocumentStudentEntity getLastestDocumentStudentById(int studentId) {
+        EntityManager em = null;
+        DocumentStudentEntity entity = null;
+
+        try {
+            em = getEntityManager();
+
+            String queryStr = "SELECT ds FROM DocumentStudentEntity ds" +
+                    " WHERE ds.studentId.id = :studentId" +
+                    " AND ds.createdDate = (SELECT (tDS.createdDate) FROM DocumentStudentEntity tDS WHERE tDS.id = ds.id)";
+            TypedQuery<DocumentStudentEntity> query = em.createQuery(queryStr, DocumentStudentEntity.class);
+            query.setParameter("studentId", studentId);
+
+            List<DocumentStudentEntity> list = query.getResultList();
+            if (!list.isEmpty()) {
+                entity = list.get(0);
+            }
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return entity;
+    }
+
     public List<DocumentStudentEntity> getAllLatestDocumentStudent() {
         List<DocumentStudentEntity> result = null;
         EntityManager em = null;
