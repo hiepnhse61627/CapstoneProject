@@ -199,13 +199,6 @@
         $('[id^=newCredits]').keypress(validateNumber);
     });
 
-//    $('#credits').on("input", function () {
-//        $('[id^=edit]').keypress(validateNumber);
-//    });
-//
-//    $('#newCredits').on("input", function () {
-//        $('[id^=edit]').keypress(validateNumber);
-//    });
 
     function validateNumber(event) {
         var key = window.event ? event.keyCode : event.which;
@@ -222,14 +215,6 @@
         LoadSubjectList();
     });
 
-    function myFunction() {
-        var x = document.getElementById("selector");
-        if (x.style.visibility === "none") {
-            x.style.visibility = "hidden";
-        } else {
-            x.style.display = "show";
-        }
-    }
 
     function confirmChange(subjectId, subjectName, prerequisiteSubs, credits, replacementSubject, effectionSemester, failMark) {
 
