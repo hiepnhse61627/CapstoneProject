@@ -82,6 +82,24 @@ public class Ultilities {
         return newSet;
     }
 
+    public static Table<String, String, List<MarksEntity>> StudentSubjectHashmap(List<MarksEntity> list) {
+        Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
+        for (MarksEntity m : list) {
+            if (map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
+                List<MarksEntity> newMarkList = new ArrayList<>();
+                newMarkList.add(m);
+                map.put(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId(), newMarkList);
+            } else {
+                List<MarksEntity> marks = map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId());
+                marks.add(m);
+                marks = SortSemestersByMarks(marks);
+                map.put(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId(), marks);
+            }
+        }
+
+        return map;
+    }
+
     public static List<FailPrequisiteModel> FilterStudentPassedSubFailPrequisite(List<MarksEntity> list, Map<String, PrequisiteEntity> prequisites) {
         List<String> allSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester())
                 .stream()

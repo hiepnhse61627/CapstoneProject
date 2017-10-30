@@ -23,6 +23,9 @@
         <intercept-url pattern="/getStudentNextCourse**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
         <intercept-url pattern="/getStudentDetail**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
 
+        <!-- Student functions-->
+        <intercept-url pattern="/studentcurriculum/**" access="hasAnyRole('ROLE_STUDENT')"/>
+
         <!-- All other links -->
         <intercept-url pattern="/" access="isAuthenticated()"/>
         <intercept-url pattern="/**" access="hasRole('ROLE_ADMIN')"/>

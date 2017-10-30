@@ -387,6 +387,16 @@
                             </div>
                         </a>
                     </li>
+                    <li>
+                        <a href="/studentcurriculum/index">
+                            <div class="menu-child-wrapper">
+                                <div class="child-icon"><i class="fa fa-circle-o"></i></div>
+                                <div class="child-content col-md-11">
+                                    Bảng điểm sinh viên
+                                </div>
+                            </div>
+                        </a>
+                    </li>
                 </security:authorize>
             </ul><!-- /.sidebar-menu -->
         </section>
