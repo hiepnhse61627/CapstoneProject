@@ -3,9 +3,7 @@ package com.capstone.controllers;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.entities.SubjectEntity;
-import com.capstone.models.MarkModel;
-import com.capstone.models.StudentMarkModel;
-import com.capstone.models.Ultilities;
+import com.capstone.models.*;
 import com.capstone.services.*;
 
 import com.google.common.collect.HashBasedTable;
@@ -15,6 +13,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -176,50 +176,50 @@ public class StudentController {
                 Map<String, List<MarksEntity>> subject = map.row(studentId);
                 for (Map.Entry<String, List<MarksEntity>> entry : subject.entrySet()) {
 //                    if (!aReplace.stream().anyMatch(c -> c.getId().equals(entry.getKey()))) {
-                        boolean isPass = false;
+                    boolean isPass = false;
 
-                        List<MarksEntity> g = Ultilities.FilterStudentsOnlyPassAndFail(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
+                    List<MarksEntity> g = Ultilities.FilterStudentsOnlyPassAndFail(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
 
-                        if (!g.isEmpty()) {
-                            MarksEntity tmp = null;
-                            for (MarksEntity k2 : g) {
-                                tmp = k2;
-                                if (k2.getStatus().toLowerCase().contains("pass") || k2.getStatus().toLowerCase().contains("exempt")) {
-                                    isPass = true;
-                                    break;
-                                }
-                            }
-
-                            if (!isPass) {
-                                SubjectEntity sub = tmp.getSubjectMarkComponentId().getSubjectId();
-
-                                int totalFail = 0;
-                                MarksEntity failedRow = tmp;
-
-                                for (SubjectEntity replace : sub.getSubjectEntityList()) {
-//                                    List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), semesterId);
-                                    List<MarksEntity> replaced = subject.get(replace.getId());
-                                    if (replaced != null) {
-                                        for (MarksEntity marks : replaced) {
-                                            tmp = marks;
-                                            if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
-                                                isPass = true;
-                                                break;
-                                            }
-                                        }
-                                    }
-
-                                    if (!isPass) {
-                                        failedRow = tmp;
-                                        totalFail++;
-                                    }
-                                }
-
-                                if (totalFail == sub.getSubjectEntityList().size()) {
-                                    resultList.add(failedRow);
-                                }
+                    if (!g.isEmpty()) {
+                        MarksEntity tmp = null;
+                        for (MarksEntity k2 : g) {
+                            tmp = k2;
+                            if (k2.getStatus().toLowerCase().contains("pass") || k2.getStatus().toLowerCase().contains("exempt")) {
+                                isPass = true;
+                                break;
                             }
                         }
+
+                        if (!isPass) {
+                            SubjectEntity sub = tmp.getSubjectMarkComponentId().getSubjectId();
+
+                            int totalFail = 0;
+                            MarksEntity failedRow = tmp;
+
+                            for (SubjectEntity replace : sub.getSubjectEntityList()) {
+//                                    List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), semesterId);
+                                List<MarksEntity> replaced = subject.get(replace.getId());
+                                if (replaced != null) {
+                                    for (MarksEntity marks : replaced) {
+                                        tmp = marks;
+                                        if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                            isPass = true;
+                                            break;
+                                        }
+                                    }
+                                }
+
+                                if (!isPass) {
+                                    failedRow = tmp;
+                                    totalFail++;
+                                }
+                            }
+
+                            if (totalFail == sub.getSubjectEntityList().size()) {
+                                resultList.add(failedRow);
+                            }
+                        }
+                    }
 //                    }
                 }
             }
@@ -303,5 +303,55 @@ public class StudentController {
         System.out.println(student.getFullName());
         System.out.println(student.getRollNumber());
         return student;
+    }
+
+
+    // ------------------ Role_Student ----------------------
+    @RequestMapping("/studentMarkHistory")
+    public ModelAndView StudentMarkHistory() {
+        ModelAndView view = new ModelAndView("StudentMarkHistory");
+        view.addObject("title", "Lịch sử môn học");
+
+        return view;
+    }
+
+    @RequestMapping("/studentMarkHistory/getMarkList")
+    @ResponseBody
+    public JsonObject StudentMarkHistoryDataTable() {
+        JsonObject jsonObject = new JsonObject();
+        IStudentService studentService = new StudentServiceImpl();
+        IMarksService marksService = new MarksServiceImpl();
+        List<List<String>> result = new ArrayList<>();
+
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            CustomUser customUser = (CustomUser) authentication.getPrincipal();
+            if (customUser.getRollNumber() != null) {
+                StudentEntity student = studentService.findStudentByRollNumber(customUser.getRollNumber());
+                List<MarksEntity> markList = marksService.getStudentMarksById(student.getId());
+                markList = Ultilities.SortSemestersByMarks(markList);
+
+                for (MarksEntity mark : markList) {
+                    List<String> row = new ArrayList<>();
+                    row.add(mark.getSubjectMarkComponentId().getSubjectId().getId());
+                    row.add(mark.getSubjectMarkComponentId().getSubjectId().getName());
+                    row.add(mark.getSemesterId().getSemester());
+                    row.add(mark.getAverageMark() + "");
+                    row.add(mark.getStatus());
+
+                    result.add(row);
+                }
+            }
+
+            JsonArray jsonArray = (JsonArray) new Gson().toJsonTree(result);
+            jsonObject.add("markList", jsonArray);
+            jsonObject.addProperty("success", true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.writeLog(e);
+            jsonObject.addProperty("success", false);
+        }
+
+        return jsonObject;
     }
 }
