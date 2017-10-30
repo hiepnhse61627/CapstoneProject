@@ -59,39 +59,22 @@ public class StudentController {
         try {
             JsonObject data = new JsonObject();
 
-            String semesterId = params.get("semesterId");
-            String subjectId = params.get("subjectId");
             String searchKey = params.get("sSearch");
 
-            List<MarksEntity> dataList = this.GetStudentsList(semesterId, subjectId, searchKey);
-            List<MarksEntity> displayList = new ArrayList<>();
+            List<List<String>> result = processData(params);
 
-            dataList = dataList.stream().filter(c -> c.getStudentId().getRollNumber().contains(searchKey) ||
-                c.getStudentId().getFullName().contains(searchKey)).collect(Collectors.toList());
+            result = result.stream().filter(c -> c.get(0).contains(searchKey) ||
+                    c.get(1).contains(searchKey)).collect(Collectors.toList());
 
-            if (!dataList.isEmpty()) {
-                displayList = dataList.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+            List<List<String>> display = new ArrayList<>();
+            if (!result.isEmpty()) {
+                display = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
             }
 
-            ArrayList<ArrayList<String>> result = new ArrayList<>();
-            if (!displayList.isEmpty()) {
-                displayList.forEach(m -> {
-                    ArrayList<String> tmp = new ArrayList<>();
-                    tmp.add(m.getStudentId().getRollNumber());
-                    tmp.add(m.getStudentId().getFullName());
-                    tmp.add(m.getSubjectMarkComponentId() == null ? "N/A" : m.getSubjectMarkComponentId().getSubjectId().getId());
-                    tmp.add(m.getSemesterId() == null ? "N/A" : m.getSemesterId().getSemester());
-                    tmp.add(String.valueOf(m.getAverageMark()));
-                    tmp.add(m.getStatus());
-                    tmp.add(m.getStudentId().getId() + "");
-                    result.add(tmp);
-                });
-            }
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(display);
 
-            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
-
-            data.addProperty("iTotalRecords", dataList.size());
-            data.addProperty("iTotalDisplayRecords", dataList.size());
+            data.addProperty("iTotalRecords", result.size());
+            data.addProperty("iTotalDisplayRecords", result.size());
             data.add("aaData", aaData);
             data.addProperty("sEcho", params.get("sEcho"));
 
@@ -101,6 +84,33 @@ public class StudentController {
         }
 
         return null;
+    }
+
+    public List<List<String>> processData(Map<String, String> params) {
+        String semesterId = params.get("semesterId");
+        String subjectId = params.get("subjectId");
+        String searchKey = params.get("sSearch");
+
+        List<MarksEntity> dataList = this.GetStudentsList(semesterId, subjectId, searchKey);
+
+        List<List<String>> result = new ArrayList<>();
+        if (!dataList.isEmpty()) {
+            List<List<String>> finalResult = result;
+            dataList.forEach(m -> {
+                ArrayList<String> tmp = new ArrayList<>();
+                tmp.add(m.getStudentId().getRollNumber());
+                tmp.add(m.getStudentId().getFullName());
+                tmp.add(m.getSubjectMarkComponentId() == null ? "N/A" : m.getSubjectMarkComponentId().getSubjectId().getId());
+                tmp.add(m.getSemesterId() == null ? "N/A" : m.getSemesterId().getSemester());
+                tmp.add(String.valueOf(m.getAverageMark()));
+                tmp.add(m.getStatus());
+                tmp.add(m.getStudentId().getId() + "");
+                finalResult.add(tmp);
+            });
+            result = finalResult;
+        }
+
+        return result;
     }
 
     public List<MarksEntity> GetStudentsList(String semesterId, String subjectId, String searchKey) {
