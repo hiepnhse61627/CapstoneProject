@@ -378,27 +378,13 @@
 
                 <security:authorize access="hasRole('${student}')">
                     <li>
-                        <a href="/studentDetail">
-                            <div class="menu-child-wrapper">
-                                <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                <div class="child-content col-md-11">
-                                    Thông tin chi tiết của sinh viên
-                                </div>
-                            </div>
-                        </a>
+                        <a href="/studentDetail"><i class="fa fa-list"></i> <span>Thông tin chi tiết của sinh viên</span></a>
                     </li>
                     <li>
                         <a href="/studentMarkHistory"><i class="fa fa-list"></i> <span>Lịch sử môn học</span></a>
                     </li>
                     <li>
-                        <a href="/studentcurriculum/index">
-                            <div class="menu-child-wrapper">
-                                <div class="child-icon"><i class="fa fa-circle-o"></i></div>
-                                <div class="child-content col-md-11">
-                                    Bảng điểm sinh viên
-                                </div>
-                            </div>
-                        </a>
+                        <a href="/studentcurriculum/index"><i class="fa fa-list"></i> <span>Bảng điểm sinh viên</span></a>
                     </li>
                 </security:authorize>
             </ul><!-- /.sidebar-menu -->

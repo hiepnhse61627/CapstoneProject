@@ -100,13 +100,13 @@
     }
 
     .small-col {
-        width: 16%;
+        width: 20%;
         padding: 0px 15px;
         float: left;
     }
 
     .medium-col {
-        width: 36%;
+        width: 40%;
         padding: 0px 15px;
         float: left;
     }
@@ -137,7 +137,7 @@
                                     <div class="first-col"></div>
                                     <div class="other-col">
                                         <div class="small-col"><span>Mã môn</span></div>
-                                        <div class="small-col"><span>Tên môn</span></div>
+                                        <div class="medium-col text-left"><span>Tên môn</span></div>
                                         <div class="small-col"><span>Điểm</span></div>
                                         <div class="small-col"><span>Trạng thái</span></div>
                                     </div>
@@ -211,10 +211,10 @@
                     html += "<div class='marks'>";
                     for (var j = 0; j < markList.length; j++) {
                         html += "<div class='mark'>"
-                        html += "<div class='medium-col'><span>" + markList[j][0] + "</span></div>";
-                        html += "<div class='medium-col'><span>" + markList[j][1] + "</span></div>";
-                        html += "<div class='medium-col'><span>" + markList[j][2] + "</span></div>";
-                        html += "<div class='medium-col'><span>" + markList[j][3] + "</span></div>";
+                        html += "<div class='small-col'><span>" + markList[j][0] + "</span></div>";
+                        html += "<div class='medium-col text-left'><span>" + markList[j][1] + "</span></div>";
+                        html += "<div class='small-col'><span>" + markList[j][2] + "</span></div>";
+                        html += "<div class='small-col'><span>" + markList[j][3] + "</span></div>";
                         html += "</div>";
                     }
                     html += "</div></div>"
