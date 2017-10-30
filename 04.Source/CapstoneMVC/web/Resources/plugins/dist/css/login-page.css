@@ -37,10 +37,12 @@
 .login-logo {
     margin-bottom: 0px;
     background-color: inherit;
+    border-top: 5px;
 }
 
 .login-box-body {
     background-color: inherit;
+    border-bottom: 5px;
 }
 
 .login-box-body .login-box-msg {

@@ -63,6 +63,12 @@
     </div>
 </section>
 
+<form id="export-excel" action="/exportExcel" hidden>
+    <input name="objectType" />
+    <input name="semesterId" value="0" />
+    <input name="sSearch" value="" />
+</form>
+
 <script>
     var tblStudent = null;
 
@@ -154,6 +160,12 @@
             tblStudent._fnPageChange(0);
             tblStudent._fnAjaxUpdate();
         }
+    }
+
+    function ExportExcel() {
+        $("input[name='objectType']").val(9);
+        $("input[name='semesterId']").val($('#cb-semester').val() != null ? $('#cb-semester').val() : 0);
+        $("#export-excel").submit();
     }
 
 </script>

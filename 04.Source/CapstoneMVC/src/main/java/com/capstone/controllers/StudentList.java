@@ -35,11 +35,24 @@ public class StudentList {
     @RequestMapping("/studentList/{studentId}")
     public ModelAndView StudentInfo(@PathVariable("studentId") int studentId) {
         IStudentService studentService = new StudentServiceImpl();
+        IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
+
         ModelAndView view = new ModelAndView("StudentInfo");
         view.addObject("title", "Thông tin sinh viên");
 
         StudentEntity student = studentService.findStudentById(studentId);
+        DocumentStudentEntity docStudent = documentStudentService.getLastestDocumentStudentById(studentId);
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         view.addObject("student", student);
+        view.addObject("docStudent", docStudent);
+
+        view.addObject("gender", student.getGender() == Enums.Gender.MALE.getValue()
+                ? Enums.Gender.MALE.getName() : Enums.Gender.FEMALE.getName());
+        view.addObject("dateOfBirth", sdf.format(student.getDateOfBirth()));
+        view.addObject("program", student.getProgramId() != null ? student.getProgramId().getName() : "N/A");
+        view.addObject("curriculum", docStudent != null ? docStudent.getCurriculumId().getProgramId().getName()
+                + "_" + docStudent.getCurriculumId().getName() : "N/A");
 
         return view;
     }
@@ -54,7 +67,7 @@ public class StudentList {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em = emf.createEntityManager();
 
-            String queryStr = "SELECT m.id, sub.id, sub.name, sub.credits, m.averageMark, m.status, sc.termNumber" +
+            String queryStr = "SELECT m.id, sub.id, sub.name, m.semesterId.semester, sub.credits, m.averageMark, m.status, sc.termNumber" +
                     " FROM MarksEntity m" +
                     " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id" +
                     " INNER JOIN SubjectEntity sub ON smc.subjectId.id = sub.id" +
@@ -74,7 +87,7 @@ public class StudentList {
             if (!specializedMarkList.isEmpty()) {
                 List<Integer> markIdList = new ArrayList<>();
                 for (Object[] row : specializedMarkList) {
-                    int curTerm = (int) row[6];
+                    int curTerm = (int) row[7];
                     List<MarkModel> curMarkList = null;
                     for (StudentDetailModel studentDetail : result) {
                         if (studentDetail.term == curTerm) {
@@ -95,9 +108,10 @@ public class StudentList {
                     markModel.setMarkId((Integer) row[0]);
                     markModel.setSubject((String) row[1]);
                     markModel.setSubjectName((String) row[2]);
-                    markModel.setCredits((Integer) row[3]);
-                    markModel.setAverageMark((Double) row[4]);
-                    markModel.setStatus((String) row[5]);
+                    markModel.setSemester((String) row[3]);
+                    markModel.setCredits((Integer) row[4]);
+                    markModel.setAverageMark((Double) row[5]);
+                    markModel.setStatus((String) row[6]);
 
                     curMarkList.add(markModel);
                     markIdList.add((Integer) row[0]);
@@ -110,7 +124,7 @@ public class StudentList {
                     }
                 });
 
-                queryStr = "SELECT m.id, sub.id, sub.name, sub.credits, m.averageMark, m.status" +
+                queryStr = "SELECT m.id, sub.id, sub.name, m.semesterId.semester, sub.credits, m.averageMark, m.status" +
                         " FROM MarksEntity m" +
                         " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id" +
                         " INNER JOIN SubjectEntity sub ON smc.subjectId.id = sub.id" +
@@ -131,9 +145,10 @@ public class StudentList {
                         markModel.setMarkId((Integer) row[0]);
                         markModel.setSubject((String) row[1]);
                         markModel.setSubjectName((String) row[2]);
-                        markModel.setCredits((Integer) row[3]);
-                        markModel.setAverageMark((Double) row[4]);
-                        markModel.setStatus((String) row[5]);
+                        markModel.setSemester((String) row[3]);
+                        markModel.setCredits((Integer) row[4]);
+                        markModel.setAverageMark((Double) row[5]);
+                        markModel.setStatus((String) row[6]);
 
                         markList.add(markModel);
                     }
@@ -223,7 +238,7 @@ public class StudentList {
                         ? Enums.Gender.MALE.getName() : Enums.Gender.FEMALE.getName());
                 dataList.add(std.getProgramId() != null ? std.getProgramId().getName() : "N/A");
 
-                for (DocumentStudentEntity docStudent : docStudentList){
+                for (DocumentStudentEntity docStudent : docStudentList) {
                     if (docStudent.getStudentId().getId() == std.getId()) {
                         ds = docStudent;
                     }
