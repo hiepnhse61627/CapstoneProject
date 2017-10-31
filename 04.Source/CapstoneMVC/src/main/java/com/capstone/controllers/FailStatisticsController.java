@@ -175,7 +175,6 @@ public class FailStatisticsController {
      * @DateCreated 28/10/2017
      **/
     private List<MarksEntity> listPassedInCurrentSemester(String semester) {
-        List<MarksEntity> resultList = new ArrayList<>();
         List<MarksEntity> noneDuplicateList = new ArrayList<>();
         RealSemesterEntity currentSemester = realSemesterService.findSemesterByName(semester);
         List<Integer> semesterIds = new ArrayList<>();
@@ -189,37 +188,7 @@ public class FailStatisticsController {
                 noneDuplicateList.add(marksEntity);
             }
         }
-        // Create Map (Student -> List Marks
-        Map<StudentEntity, List<MarksEntity>> studentMarksMap = new HashMap<>();
-        for (MarksEntity mark : noneDuplicateList) {
-            StudentEntity student = mark.getStudentId();
-            if (studentMarksMap.get(student) != null) {
-                studentMarksMap.get(student).add(mark);
-            } else {
-                List<MarksEntity> studentMarks = new ArrayList<>();
-                studentMarks.add(mark);
-                studentMarksMap.put(student, studentMarks);
-            }
-        }
-        // remove subject has replacementSubject contains in passed list
-        for (Map.Entry<StudentEntity, List<MarksEntity>> entry : studentMarksMap.entrySet()) {
-            List<MarksEntity> listMarks = entry.getValue();
-            for (int i = 0; i < listMarks.size(); i++) {
-                Set<String> subjectsInMark = listMarks.stream().map(l -> l.getSubjectMarkComponentId().getSubjectId().getId()).collect(Collectors.toSet());
-                List<SubjectEntity> replacedSubjects = listMarks.get(i).getSubjectMarkComponentId().getSubjectId().getSubjectEntityList();
-                if (replacedSubjects != null && !replacedSubjects.isEmpty()) {
-                    for (SubjectEntity replaceSubject : replacedSubjects) {
-                        String subjectCd = replaceSubject.getId();
-                        if (subjectsInMark.contains(subjectCd)) {
-                            listMarks.remove(i);
-                            break;
-                        }
-                    }
-                }
-            }
-            resultList.addAll(listMarks);
-        }
-        return resultList;
+        return noneDuplicateList;
     }
 
     /**
@@ -234,7 +203,7 @@ public class FailStatisticsController {
         List<Integer> semesterIds = new ArrayList<>();
         semesterIds.add(currentSemester.getId());
         List<MarksEntity> failedList = marksService.getListMarkToCurrentSemester(semesterIds, new String[] {"Fail", "IsSuspended", "IsAttendanceFail"});
-        List<MarksEntity> passedList = marksService.getListMarkToCurrentSemester(semesterIds, new String[] {"Passed", "IsExempt"});
+        List<MarksEntity> passedList = listPassedInCurrentSemester(semester);
         List<MarksEntity> comparedList = new ArrayList<>();
         List<MarksEntity> noneDuplicateList = new ArrayList<>();
         List<MarksEntity> resultList = new ArrayList<>();
