@@ -34,13 +34,13 @@ public class StudentDetail {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUser principal = (CustomUser) authentication.getPrincipal();
-        if (principal.getRollNumber() == null) {
+//        if (principal.getRollNumber() == null) {
             view.addObject("students", studentService.findAllStudents());
-        } else {
-            List<StudentEntity> students = new ArrayList<>();
-            students.add(studentService.findStudentByRollNumber(principal.getRollNumber()));
-            view.addObject("students", students);
-        }
+//        } else {
+//            List<StudentEntity> students = new ArrayList<>();
+//            students.add(studentService.findStudentByRollNumber(principal.getRollNumber()));
+//            view.addObject("students", students);
+//        }
 
         return view;
     }

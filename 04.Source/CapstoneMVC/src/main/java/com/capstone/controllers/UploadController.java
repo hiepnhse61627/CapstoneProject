@@ -747,7 +747,7 @@ public class UploadController {
                         String semester = Ultilities.SortSemestersString(semesters).get(0);
                         importedMarkObject.setSemesterName(semester);
                     } else if (subjectCd.getTermNumber() == termNo && semesters.size() == 0) {
-                        importedMarkObject.setStatus("Studying");
+                        importedMarkObject.setStatus("NotStart");
                         importedMarkObject.setSemesterName(allSemester.get(allSemester.size() - 1).getSemester());
                     } else if (subjectCd.getTermNumber() < termNo && semesters.size() == 0) {
                         importedMarkObject.setStatus("NotStart");

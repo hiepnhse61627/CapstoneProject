@@ -90,12 +90,15 @@ public class FailStatisticsController {
      * @DateCreated 28/10/2017
      **/
     private List<MarksEntity> listFailedAtTheBeginningOfSemester(String semesterName) {
+        List<MarksEntity> resultList = new ArrayList<>();
         List<Integer> semesterIds = getToCurrentSemester(semesterName);
+        if (semesterIds.size() == 1) {
+            return resultList;
+        }
         List<MarksEntity> listFailed = marksService.getListMarkToCurrentSemester(semesterIds, new String[] {"Fail", "IsSuspended", "IsAttendanceFail"});
         List<MarksEntity> listPassed = marksService.getListMarkToCurrentSemester(semesterIds, new String[] {"Passed", "IsExempt"});
         List<MarksEntity> comparedList = new ArrayList<>();
         List<MarksEntity> noneDuplicateList = new ArrayList<>();
-        List<MarksEntity> resultList = new ArrayList<>();
 
         // make comparator
         Comparator<MarksEntity> comparator = (o1, o2) -> new CompareToBuilder()
