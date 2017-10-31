@@ -317,13 +317,31 @@ public class StudentDetail {
             while(iterator2.hasNext()) {
                 MarksEntity mark = iterator2.next();
                 List<String> subs = new ArrayList<>();
+                List<String> subs2 = new ArrayList<>();
                 for (SubjectEntity c : mark.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList()) {
                     if (!subs.contains(c.getId())) subs.add(c.getId());
                 }
+
+                for (SubjectEntity c : mark.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList1()) {
+                    if (!subs2.contains(c.getId())) subs2.add(c.getId());
+                }
+
                 if (!subs.isEmpty()) {
                     TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a from MarksEntity a where a.studentId.id = :id and a.subjectMarkComponentId.subjectId.id in :list", MarksEntity.class);
                     query2.setParameter("id", stuId);
                     query2.setParameter("list", subs);
+                    List<MarksEntity> l = query2.getResultList().stream()
+                            .filter(c -> c.getAverageMark() >= 0)
+                            .collect(Collectors.toList());
+                    if (!l.isEmpty()) {
+                        iterator2.remove();
+                    }
+                }
+
+                if (!subs2.isEmpty()) {
+                    TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a from MarksEntity a where a.studentId.id = :id and a.subjectMarkComponentId.subjectId.id in :list", MarksEntity.class);
+                    query2.setParameter("id", stuId);
+                    query2.setParameter("list", subs2);
                     List<MarksEntity> l = query2.getResultList().stream()
                             .filter(c -> c.getAverageMark() >= 0)
                             .collect(Collectors.toList());
@@ -431,13 +449,29 @@ public class StudentDetail {
             while(iterator.hasNext()) {
                 MarksEntity mark = iterator.next();
                 List<String> subs = new ArrayList<>();
+                List<String> subs2 = new ArrayList<>();
                 for (SubjectEntity c : mark.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList()) {
                     if (!subs.contains(c.getId())) subs.add(c.getId());
+                }
+                for (SubjectEntity c : mark.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList1()) {
+                    if (!subs2.contains(c.getId())) subs2.add(c.getId());
                 }
                 if (!subs.isEmpty()) {
                     TypedQuery<MarksEntity> query = em.createQuery("SELECT a from MarksEntity a where a.studentId.id = :id and a.subjectMarkComponentId.subjectId.id in :list", MarksEntity.class);
                     query.setParameter("id", stuId);
                     query.setParameter("list", subs);
+                    List<MarksEntity> l = query.getResultList().stream()
+                            .filter(c -> c.getAverageMark() >= 0)
+                            .collect(Collectors.toList());
+                    if (!l.isEmpty()) {
+                        iterator.remove();
+                    }
+                }
+
+                if (!subs2.isEmpty()) {
+                    TypedQuery<MarksEntity> query = em.createQuery("SELECT a from MarksEntity a where a.studentId.id = :id and a.subjectMarkComponentId.subjectId.id in :list", MarksEntity.class);
+                    query.setParameter("id", stuId);
+                    query.setParameter("list", subs2);
                     List<MarksEntity> l = query.getResultList().stream()
                             .filter(c -> c.getAverageMark() >= 0)
                             .collect(Collectors.toList());
