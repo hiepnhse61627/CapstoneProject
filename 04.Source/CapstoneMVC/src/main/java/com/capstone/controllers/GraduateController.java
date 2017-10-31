@@ -55,7 +55,18 @@ public class GraduateController {
         try {
             Map<StudentEntity, List<MarksEntity>> map = new HashMap<>();
             List<MarksEntity> marks = markService.getMarkByProgramAndSemester(programId, semesterId);
-            for (MarksEntity mark : marks) {
+            List<MarksEntity> passedList = marks.stream().filter(m -> m.getStatus().contains("pass") || m.getStatus().contains("exempt")).collect(Collectors.toList());
+            // remove duplicate
+            List<MarksEntity> noneDuplicatePassedList = new ArrayList<>();
+            for (MarksEntity marksEntity : passedList) {
+                if (!noneDuplicatePassedList.stream().
+                        anyMatch(n -> n.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(marksEntity.getSubjectMarkComponentId().getSubjectId().getId())
+                                   && n.getStudentId().getRollNumber().equalsIgnoreCase(marksEntity.getStudentId().getRollNumber()))) {
+                    noneDuplicatePassedList.add(marksEntity);
+                }
+            }
+            // create map
+            for (MarksEntity mark : noneDuplicatePassedList) {
                 if (map.get(mark.getStudentId()) != null) {
                     map.get(mark.getStudentId()).add(mark);
                 } else {
@@ -69,16 +80,6 @@ public class GraduateController {
             for (Map.Entry<StudentEntity, List<MarksEntity>> entry : map.entrySet()) {
                 int credits = 0;
                 int specializedCredits = 0;
-                for (MarksEntity c : entry.getValue()) {
-//                    if (c.getStatus().toLowerCase().contains("pass") && c.getSubjectId() != null) {
-//                        System.out.println(c.getSubjectId().getSubjectId());
-//                        int curCredit = c.getSubjectId().getSubjectEntity().getCredits();
-//                        credits += curCredit;
-//                        if (c.getSubjectId().getSubjectEntity().getIsSpecialized()) {
-//                            specializedCredits += curCredit;
-//                        }
-//                    }
-                }
 
                 if (credits >= totalCredit && specializedCredits >= sCredit) {
                     ArrayList<String> tmp = new ArrayList<>();
