@@ -1,44 +1,24 @@
 package com.capstone.models;
 
+import com.capstone.entities.CredentialsEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 
 import java.util.Collection;
 
 public class CustomUser extends User {
+    private CredentialsEntity user;
 
-    private String fullname;
-    private String picture;
-    private String rollNumber;
-
-    public CustomUser(String username, String password, Collection<? extends GrantedAuthority> authorities, String fullname, String picture, String rollNumber) {
+    public CustomUser(String username, String password, Collection<? extends GrantedAuthority> authorities, CredentialsEntity user) {
         super(username, password, authorities);
-        this.fullname = fullname;
-        this.picture = picture;
-        this.rollNumber = rollNumber;
+        this.user = user;
     }
 
-    public String getRollNumber() {
-        return rollNumber;
+    public CredentialsEntity getUser() {
+        return user;
     }
 
-    public void setRollNumber(String rollNumber) {
-        this.rollNumber = rollNumber;
-    }
-
-    public String getFullname() {
-        return fullname;
-    }
-
-    public void setFullname(String fullname) {
-        this.fullname = fullname;
-    }
-
-    public String getPicture() {
-        return picture;
-    }
-
-    public void setPicture(String picture) {
-        this.picture = picture;
+    public void setUser(CredentialsEntity user) {
+        this.user = user;
     }
 }
