@@ -8,31 +8,32 @@
     <http auto-config="true" disable-url-rewriting="true" use-expressions="true">
         <intercept-url pattern="/login" access="isAnonymous()"/>
         <intercept-url pattern="/register**" access="isAnonymous()"/>
-
         <intercept-url pattern="/auth/google" access="isAnonymous()"/>
         <intercept-url pattern="/favicon.ico" access="isAnonymous()"/>
-
-        <!-- Resources allow access -->
         <intercept-url pattern="/Resources/**" access="permitAll()"/>
 
+        <intercept-url pattern="/" access="isAuthenticated()"/>
+        <intercept-url pattern="/dashboard" access="isAuthenticated()"/>
+        <intercept-url pattern="/profile**" access="isAuthenticated()"/>
+        <intercept-url pattern="/profile/**" access="isAuthenticated()"/>
+
         <!-- Student detail for student and api related -->
-        <intercept-url pattern="/studentDetail**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
-        <intercept-url pattern="/getStudentNextCourse**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
-        <intercept-url pattern="/getStudentCurrentCourse**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
-        <intercept-url pattern="/getStudentNotStart**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
-        <intercept-url pattern="/getStudentNextCourse**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
-        <intercept-url pattern="/getStudentDetail**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
-        <intercept-url pattern="/profile**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
-        <intercept-url pattern="/profile/**" access="hasAnyRole('ROLE_ADMIN', 'ROLE_STUDENT')"/>
+        <intercept-url pattern="/studentDetail**" access="hasAnyRole('ROLE_STAFF', 'ROLE_STUDENT', 'ROLL_MANAGER')"/>
+        <intercept-url pattern="/getStudentCurrentCourse**" access="hasAnyRole('ROLE_STAFF', 'ROLE_STUDENT', 'ROLL_MANAGER')"/>
+        <intercept-url pattern="/getStudentNotStart**" access="hasAnyRole('ROLE_STAFF', 'ROLE_STUDENT', 'ROLL_MANAGER')"/>
+        <intercept-url pattern="/getStudentNextCourse**" access="hasAnyRole('ROLE_STAFF', 'ROLE_STUDENT', 'ROLL_MANAGER')"/>
+        <intercept-url pattern="/getStudentDetail**" access="hasAnyRole('ROLE_STAFF', 'ROLE_STUDENT', 'ROLL_MANAGER')"/>
 
         <!-- Student functions-->
         <intercept-url pattern="/studentcurriculum/**" access="hasAnyRole('ROLE_STUDENT')"/>
         <intercept-url pattern="/studentMarkHistory**" access="hasAnyRole('ROLE_STUDENT')"/>
         <intercept-url pattern="/studentMarkHistory/**" access="hasAnyRole('ROLE_STUDENT')"/>
 
+        <!-- Admin -->
+        <intercept-url pattern="/admin/**" access="hasAnyRole('ROLE_ADMIN')"/>
+
         <!-- All other links -->
-        <intercept-url pattern="/" access="isAuthenticated()"/>
-        <intercept-url pattern="/**" access="hasRole('ROLE_ADMIN')"/>
+        <intercept-url pattern="/**" access="hasAnyRole('ROLE_STAFF', 'ROLE_ADMIN', 'ROLL_MANAGER')"/>
 
         <form-login login-page="/login"
                     login-processing-url="/processlogin"

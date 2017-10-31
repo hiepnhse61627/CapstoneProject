@@ -71,6 +71,7 @@ public class Ultilities {
                         !c.getStatus().trim().toLowerCase().contains("start") &&
                         !c.getStatus().trim().toLowerCase().contains(("diem")))
                 .collect(Collectors.toList());
+        newSet = SortSemestersByMarks(newSet);
         return newSet;
     }
 
@@ -79,6 +80,7 @@ public class Ultilities {
                 .filter(c -> !c.getStatus().trim().toLowerCase().contains("start") &&
                         !c.getStatus().trim().toLowerCase().contains(("diem")))
                 .collect(Collectors.toList());
+        newSet = SortSemestersByMarks(newSet);
         return newSet;
     }
 
@@ -218,6 +220,73 @@ public class Ultilities {
         }
 
         return result;
+    }
+
+    public static boolean HasFailedPrequisitesOfOneStudent(List<MarksEntity> list, PrequisiteEntity prequisite) {
+        ISubjectService subjectService = new SubjectServiceImpl();
+
+        List<String> allSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester())
+                .stream()
+                .map(c -> c.getSemester().trim())
+                .collect(Collectors.toList());
+
+        List<MarksEntity> newList = FilterStudentsOnlyPassAndFailAndStudying(list);
+
+        Map<String, List<MarksEntity>> map = new LinkedHashMap<>();
+        if (!list.isEmpty()) {
+            for (MarksEntity m : newList) {
+                if (map.get(m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
+                    List<MarksEntity> newMarkList = new ArrayList<>();
+                    newMarkList.add(m);
+                    map.put(m.getSubjectMarkComponentId().getSubjectId().getId(), newMarkList);
+                } else {
+                    map.get(m.getSubjectMarkComponentId().getSubjectId().getId()).add(m);
+                }
+            }
+
+            PrequisiteEntity pre = prequisite;
+            if (pre.getPrequisiteSubs() != null && !pre.getPrequisiteSubs().isEmpty()) {
+                for (Map.Entry<String, List<MarksEntity>> m : map.entrySet()) {
+
+                    boolean isPass = false;
+                    SubjectEntity sub = subjectService.findSubjectById(m.getKey());
+
+                    for (MarksEntity k2 : SortSemestersByMarks(m.getValue())) {
+
+                        int failMark;
+                        if (allSemesters.indexOf(k2.getSemesterId().getSemester()) < allSemesters.indexOf(pre.getEffectionSemester())) {
+                            failMark = pre.getFailMark();
+                        } else {
+                            failMark = pre.getNewFailMark() == null ? pre.getFailMark() : pre.getNewFailMark();
+                        }
+
+                        if (k2.getAverageMark() >= failMark || k2.getStatus().toLowerCase().contains("exempt")) {
+                            isPass = true;
+                            break;
+                        }
+                    }
+
+                    if (!isPass) {
+                        for (SubjectEntity replace : sub.getSubjectEntityList()) {
+                            List<MarksEntity> replaced = map.get(replace.getId());
+                            if (replaced != null) {
+                                replaced = SortSemestersByMarks(replaced);
+                                for (MarksEntity marks : replaced) {
+                                    if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                        return false;
+                                    }
+                                }
+                            }
+                        }
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     public static Connection getConnection() {

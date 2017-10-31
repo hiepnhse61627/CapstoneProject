@@ -10,9 +10,6 @@
 <%@ taglib prefix="dec" uri="http://www.opensymphony.com/sitemesh/decorator" %>
 <%@ taglib prefix="security" uri="http://www.springframework.org/security/tags" %>
 
-<c:set var="admin" value="ROLE_ADMIN"/>
-<c:set var="student" value="ROLE_STUDENT"/>
-
 <html>
 <head>
     <meta charset="utf-8"/>
@@ -116,12 +113,7 @@
                     <!-- Status -->
                     <a href="#">
                         <i class="fa fa-circle text-success"></i>
-                        <security:authorize access="hasRole('${admin}')">
-                            <span> Admin</span>
-                        </security:authorize>
-                        <security:authorize access="hasRole('${student}')">
-                            <span> Student</span>
-                        </security:authorize>
+                        <span> Online</span>
                     </a>
                 </div>
                 <div class="form-group">
@@ -135,7 +127,7 @@
             <ul class="sidebar-menu">
                 <%--<li class="header">HEADER</li>--%>
                 <!-- Optionally, you can add icons to the links -->
-                <security:authorize access="hasRole('${admin}')">
+                <security:authorize access="hasAnyRole('ROLE_STAFF', 'ROLE_MANAGER')">
                     <li>
                         <a href="/dashboard"><i class="fa fa-dashboard"></i> <span>Thống kê</span></a>
                     </li>
@@ -380,7 +372,7 @@
                     </li>
                 </security:authorize>
 
-                <security:authorize access="hasRole('${student}')">
+                <security:authorize access="hasAnyRole('ROLE_MANAGER')">
                     <li>
                         <a href="/studentDetail"><i class="fa fa-list"></i>
                             <span>Thông tin chi tiết của sinh viên</span></a>
@@ -391,6 +383,27 @@
                     <li>
                         <a href="/studentcurriculum/index"><i class="fa fa-list"></i>
                             <span>Bảng điểm sinh viên</span></a>
+                    </li>
+                </security:authorize>
+
+                <security:authorize access="hasAnyRole('ROLE_STUDENT')">
+                    <li>
+                        <a href="/studentDetail"><i class="fa fa-list"></i>
+                            <span>Thông tin chi tiết của sinh viên</span></a>
+                    </li>
+                    <li>
+                        <a href="/studentMarkHistory"><i class="fa fa-list"></i> <span>Lịch sử môn học</span></a>
+                    </li>
+                    <li>
+                        <a href="/studentcurriculum/index"><i class="fa fa-list"></i>
+                            <span>Bảng điểm sinh viên</span></a>
+                    </li>
+                </security:authorize>
+
+                <security:authorize access="hasAnyRole('ROLE_ADMIN')">
+                    <li>
+                        <a href="/admin/index"><i class="fa fa-list"></i>
+                            <span>Cập nhật quyền cho tài khoản</span></a>
                     </li>
                 </security:authorize>
             </ul><!-- /.sidebar-menu -->
