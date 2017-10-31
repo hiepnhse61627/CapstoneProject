@@ -228,6 +228,28 @@ public class StudentDetail {
                     SubjectCurriculumEntity cur = iterator.next();
                     if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectId().getId()))) {
                         iterator.remove();
+                    } else {
+                        // check prequisite
+                        String str = "SELECT p FROM MarksEntity p WHERE p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id = :sList";
+                        TypedQuery<MarksEntity> prequisiteQuery;
+                        prequisiteQuery = em.createQuery(str, MarksEntity.class);
+                        prequisiteQuery.setParameter("sList", cur.getSubjectId().getId());
+                        prequisiteQuery.setParameter("id", stuId);
+
+                        Map<String, PrequisiteEntity> prequisites = new HashMap<>();
+                        prequisites.put(cur.getSubjectId().getId(), cur.getSubjectId().getPrequisiteEntity());
+
+                        List<FailPrequisiteModel> result = new ArrayList<>();
+                        List<MarksEntity> list2 = prequisiteQuery.getResultList();
+                        Ultilities.FilterStudentPassedSubFailPrequisite(list2, prequisites).forEach(c -> {
+                            if (!result.contains(c)) {
+                                result.add(c);
+                            }
+                        });
+
+                        if (result.stream().anyMatch(c -> c.getSubjectWhichPrequisiteFail().equals(cur.getSubjectId().getId()))) {
+                            iterator.remove();
+                        }
                     }
                 }
             }
