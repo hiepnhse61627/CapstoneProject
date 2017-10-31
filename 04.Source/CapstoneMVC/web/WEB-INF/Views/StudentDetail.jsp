@@ -526,49 +526,60 @@
     }
 
     function RefreshTable() {
-        if (table != null) {
-            table._fnPageChange(0);
-            table._fnAjaxUpdate();
-        } else {
-            // Delete empty table
-            $('#table').dataTable().fnDestroy();
-            CreateDebtTable();
-        }
+        $('#notStart').dataTable().fnDestroy();
+        CreateNotStartTable();
+        $('#table').dataTable().fnDestroy();
+        CreateDebtTable();
+        $('#nextCourseTable').dataTable().fnDestroy();
+        CreateNextCourseTable();
+        $('#curCourseTable').dataTable().fnDestroy();
+        CreateCurrentCourseTable();
+        $('#suggestCourseTable').dataTable().fnDestroy();
+        CreateSuggestCourseTable();
 
-        if (nextCourseTable != null) {
-            nextCourseTable._fnPageChange(0);
-            nextCourseTable._fnAjaxUpdate();
-        } else {
-            // Delete empty table
-            $('#nextCourseTable').dataTable().fnDestroy();
-            CreateNextCourseTable();
-        }
-
-        if (curCourseTable != null) {
-            curCourseTable._fnPageChange(0);
-            curCourseTable._fnAjaxUpdate();
-        } else {
-            // Delete empty table
-            $('#curCourseTable').dataTable().fnDestroy();
-            CreateCurrentCourseTable();
-        }
-
-        if (suggestCourseTable != null) {
-            suggestCourseTable._fnPageChange(0);
-            suggestCourseTable._fnAjaxUpdate();
-        } else {
-            // Delete empty table
-            $('#suggestCourseTable').dataTable().fnDestroy();
-            CreateSuggestCourseTable();
-        }
-
-        if (notStart != null) {
-            notStart._fnPageChange(0);
-            notStart._fnAjaxUpdate();
-        } else {
-            // Delete empty table
-            $('#notStart').dataTable().fnDestroy();
-            CreateNotStartTable();
-        }
+//        if (table != null) {
+//            table._fnPageChange(0);
+//            table._fnAjaxUpdate();
+//        } else {
+//            // Delete empty table
+//            $('#table').dataTable().fnDestroy();
+//            CreateDebtTable();
+//        }
+//
+//        if (nextCourseTable != null) {
+//            nextCourseTable._fnPageChange(0);
+//            nextCourseTable._fnAjaxUpdate();
+//        } else {
+//            // Delete empty table
+//            $('#nextCourseTable').dataTable().fnDestroy();
+//            CreateNextCourseTable();
+//        }
+//
+//        if (curCourseTable != null) {
+//            curCourseTable._fnPageChange(0);
+//            curCourseTable._fnAjaxUpdate();
+//        } else {
+//            // Delete empty table
+//            $('#curCourseTable').dataTable().fnDestroy();
+//            CreateCurrentCourseTable();
+//        }
+//
+//        if (suggestCourseTable != null) {
+//            suggestCourseTable._fnPageChange(0);
+//            suggestCourseTable._fnAjaxUpdate();
+//        } else {
+//            // Delete empty table
+//            $('#suggestCourseTable').dataTable().fnDestroy();
+//            CreateSuggestCourseTable();
+//        }
+//
+//        if (notStart != null) {
+//            notStart._fnPageChange(0);
+//            notStart._fnAjaxUpdate();
+//        } else {
+//            // Delete empty table
+//            $('#notStart').dataTable().fnDestroy();
+//            CreateNotStartTable();
+//        }
     }
 </script>

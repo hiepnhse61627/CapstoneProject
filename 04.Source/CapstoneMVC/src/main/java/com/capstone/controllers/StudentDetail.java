@@ -34,11 +34,11 @@ public class StudentDetail {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         CustomUser principal = (CustomUser) authentication.getPrincipal();
-        if (principal.getRollNumber() == null) {
+        if (principal.getUser().getRole().contains("ADMIN")) {
             view.addObject("students", studentService.findAllStudents());
         } else {
             List<StudentEntity> students = new ArrayList<>();
-            students.add(studentService.findStudentByRollNumber(principal.getRollNumber()));
+            students.add(studentService.findStudentByRollNumber(principal.getUser().getStudentRollNumber()));
             view.addObject("students", students);
         }
 
@@ -142,25 +142,25 @@ public class StudentDetail {
             List<MarksEntity> list = marksService.getMarksByStudentIdAndStatus(stuId, "studying");
 
             // Check students score if exist remove
-            if (!list.isEmpty()) {
-                List<String> curriculumSubjects = new ArrayList<>();
-                list.forEach(c -> {
-                    if (!curriculumSubjects.contains(c.getSubjectMarkComponentId().getSubjectId().getId())) {
-                        curriculumSubjects.add(c.getSubjectMarkComponentId().getSubjectId().getId());
-                    }
-                });
-                TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
-                query2.setParameter("id", stuId);
-                query2.setParameter("list", curriculumSubjects);
-                List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
-                Iterator<MarksEntity> iterator = list.iterator();
-                while(iterator.hasNext()) {
-                    MarksEntity cur = iterator.next();
-                    if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectMarkComponentId().getSubjectId().getId()))) {
-                        iterator.remove();
-                    }
-                }
-            }
+//            if (!list.isEmpty()) {
+//                List<String> curriculumSubjects = new ArrayList<>();
+//                list.forEach(c -> {
+//                    if (!curriculumSubjects.contains(c.getSubjectMarkComponentId().getSubjectId().getId())) {
+//                        curriculumSubjects.add(c.getSubjectMarkComponentId().getSubjectId().getId());
+//                    }
+//                });
+//                TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+//                query2.setParameter("id", stuId);
+//                query2.setParameter("list", curriculumSubjects);
+//                List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
+//                Iterator<MarksEntity> iterator = list.iterator();
+//                while(iterator.hasNext()) {
+//                    MarksEntity cur = iterator.next();
+//                    if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectMarkComponentId().getSubjectId().getId()))) {
+//                        iterator.remove();
+//                    }
+//                }
+//            }
 
             List<MarksEntity> set2 = list.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -273,6 +273,16 @@ public class StudentDetail {
             List<MarksEntity> newlist = Ultilities.FilterStudentsOnlyPassAndFail(list);
             List<MarksEntity> resultList = Ultilities.FilterListFailStudent(newlist);
             List<SubjectEntity> failSubjects = new ArrayList<>();
+
+            List<MarksEntity> list2 = marksService.getMarksByStudentIdAndStatus(stuId, "studying");
+            Iterator<MarksEntity> iterator = resultList.iterator();
+            while(iterator.hasNext()) {
+                MarksEntity cur = iterator.next();
+                if (list2.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectMarkComponentId().getSubjectId().getId()))) {
+                    iterator.remove();
+                }
+            }
+
             resultList.forEach(c -> {
                 if (!failSubjects.contains(c.getSubjectMarkComponentId().getSubjectId())) {
                     failSubjects.add(c.getSubjectMarkComponentId().getSubjectId());
@@ -303,6 +313,25 @@ public class StudentDetail {
             /*-------------------------------Chậm tiến độ------------------------------------------------*/
             List<MarksEntity> slowList = marksService.getMarksByStudentIdAndStatus(stuId, "start");
             List<SubjectEntity> slowSubjects = new ArrayList<>();
+            Iterator<MarksEntity> iterator2 = slowList.iterator();
+            while(iterator2.hasNext()) {
+                MarksEntity mark = iterator2.next();
+                List<String> subs = new ArrayList<>();
+                for (SubjectEntity c : mark.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList()) {
+                    if (!subs.contains(c.getId())) subs.add(c.getId());
+                }
+                if (!subs.isEmpty()) {
+                    TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a from MarksEntity a where a.studentId.id = :id and a.subjectMarkComponentId.subjectId.id in :list", MarksEntity.class);
+                    query2.setParameter("id", stuId);
+                    query2.setParameter("list", subs);
+                    List<MarksEntity> l = query2.getResultList().stream()
+                            .filter(c -> c.getAverageMark() >= 0)
+                            .collect(Collectors.toList());
+                    if (!l.isEmpty()) {
+                        iterator2.remove();
+                    }
+                }
+            }
             slowList.forEach(c -> {
                 if (!slowSubjects.contains(c.getSubjectMarkComponentId().getSubjectId())) {
                     slowSubjects.add(c.getSubjectMarkComponentId().getSubjectId());
@@ -393,8 +422,30 @@ public class StudentDetail {
 
         int stuId = Integer.parseInt(params.get("stuId"));
 
+        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+        EntityManager em = emf.createEntityManager();
+
         try {
             List<MarksEntity> list = marksService.getMarksByStudentIdAndStatus(stuId, "start");
+            Iterator<MarksEntity> iterator = list.iterator();
+            while(iterator.hasNext()) {
+                MarksEntity mark = iterator.next();
+                List<String> subs = new ArrayList<>();
+                for (SubjectEntity c : mark.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList()) {
+                    if (!subs.contains(c.getId())) subs.add(c.getId());
+                }
+                if (!subs.isEmpty()) {
+                    TypedQuery<MarksEntity> query = em.createQuery("SELECT a from MarksEntity a where a.studentId.id = :id and a.subjectMarkComponentId.subjectId.id in :list", MarksEntity.class);
+                    query.setParameter("id", stuId);
+                    query.setParameter("list", subs);
+                    List<MarksEntity> l = query.getResultList().stream()
+                            .filter(c -> c.getAverageMark() >= 0)
+                            .collect(Collectors.toList());
+                    if (!l.isEmpty()) {
+                        iterator.remove();
+                    }
+                }
+            }
 
             List<MarksEntity> set2 = list.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 

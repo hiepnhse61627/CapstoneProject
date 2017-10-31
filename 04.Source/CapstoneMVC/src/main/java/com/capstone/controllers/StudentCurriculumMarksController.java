@@ -48,7 +48,7 @@ public class StudentCurriculumMarksController {
         IStudentService studentService = new StudentServiceImpl();
 
         try {
-            StudentEntity student = studentService.findStudentByRollNumber(getPrincipal().getRollNumber());
+            StudentEntity student = studentService.findStudentByRollNumber(getPrincipal().getUser().getStudentRollNumber());
             if (student != null) {
                 List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
                 docs.sort(Comparator.comparingLong(c -> {

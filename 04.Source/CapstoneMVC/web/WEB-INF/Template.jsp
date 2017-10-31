@@ -91,7 +91,7 @@
             <!-- Sidebar user panel (optional) -->
             <div class="user-panel">
                 <div class="pull-left image">
-                    <security:authentication var="imageUrl" property="principal.picture"/>
+                    <security:authentication var="imageUrl" property="principal.user.picture"/>
                     <c:choose>
                         <c:when test="${not empty imageUrl}">
                             <img src="${imageUrl}" class="img-circle" alt="User Image">
@@ -103,7 +103,7 @@
                 </div>
                 <div class="pull-left info">
                     <p>
-                        <security:authentication var="username" property="principal.fullname"/>
+                        <security:authentication var="username" property="principal.user.username"/>
                         <c:choose>
                             <c:when test="${not empty username}">
                                 ${username}

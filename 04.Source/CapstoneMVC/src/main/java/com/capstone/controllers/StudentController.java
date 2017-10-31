@@ -326,8 +326,8 @@ public class StudentController {
         try {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             CustomUser customUser = (CustomUser) authentication.getPrincipal();
-            if (customUser.getRollNumber() != null) {
-                StudentEntity student = studentService.findStudentByRollNumber(customUser.getRollNumber());
+            if (customUser.getUser().getStudentRollNumber() != null) {
+                StudentEntity student = studentService.findStudentByRollNumber(customUser.getUser().getStudentRollNumber());
                 List<MarksEntity> markList = marksService.getStudentMarksById(student.getId());
                 markList = Ultilities.SortSemestersByMarks(markList);
 
