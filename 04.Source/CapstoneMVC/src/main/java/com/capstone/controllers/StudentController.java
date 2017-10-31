@@ -328,13 +328,23 @@ public class StudentController {
             CustomUser customUser = (CustomUser) authentication.getPrincipal();
             if (customUser.getUser().getStudentRollNumber() != null) {
                 StudentEntity student = studentService.findStudentByRollNumber(customUser.getUser().getStudentRollNumber());
-                List<MarksEntity> markList = marksService.getStudentMarksById(student.getId());
-                markList = Ultilities.SortSemestersByMarks(markList);
+                List<MarksEntity> markList = marksService.getStudentMarksByStudentIdAndSortBySubjectName(student.getId());
 
                 for (MarksEntity mark : markList) {
                     List<String> row = new ArrayList<>();
+
+                    List<SubjectEntity> replacementSubjects = mark.getSubjectMarkComponentId()
+                            .getSubjectId().getSubjectEntityList();
+                    String tmp = "";
+                    int count = 0;
+                    for (SubjectEntity subject : replacementSubjects) {
+                        tmp += subject.getId() + (count != replacementSubjects.size() - 1 ? ", " : "");
+                        count++;
+                    }
+
                     row.add(mark.getSubjectMarkComponentId().getSubjectId().getId());
                     row.add(mark.getSubjectMarkComponentId().getSubjectId().getName());
+                    row.add(tmp);
                     row.add(mark.getSemesterId().getSemester());
                     row.add(mark.getAverageMark() + "");
                     row.add(mark.getStatus());

@@ -73,7 +73,7 @@
                     <div class="col-md-6 p-l-5 p-r-5">
                         <div class="my-tbl-wrapper bg-gray-light overflow">
                             <div class="title text-center">
-                                <h4>Danh sách môn học tiếp theo</h4>
+                                <h4>Danh sách môn học trong kỳ tiếp theo</h4>
                             </div>
                             <div class="my-content">
                                 <table id="nextCourseTable">

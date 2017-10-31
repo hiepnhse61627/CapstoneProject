@@ -454,4 +454,25 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             }
         }
     }
+
+    public List<MarksEntity> getStudentMarksByStudentIdAndSortBySubjectName(int studentId) {
+        List<MarksEntity> result = new ArrayList<>();
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+            String queryStr = "SELECT m FROM MarksEntity m WHERE m.studentId.id = :studentId" +
+                    " ORDER BY m.subjectMarkComponentId.subjectId.name";
+            TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
+            query.setParameter("studentId", studentId);
+
+            result = query.getResultList();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
+    }
 }
