@@ -9,6 +9,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,17 +32,6 @@ public class StudentDetail {
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("StudentDetail");
         view.addObject("title", "Danh sách sinh viên nợ môn");
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        CustomUser principal = (CustomUser) authentication.getPrincipal();
-//        if (principal.getRollNumber() == null) {
-            view.addObject("students", studentService.findAllStudents());
-//        } else {
-//            List<StudentEntity> students = new ArrayList<>();
-//            students.add(studentService.findStudentByRollNumber(principal.getRollNumber()));
-//            view.addObject("students", students);
-//        }
-
         return view;
     }
 
@@ -52,7 +42,22 @@ public class StudentDetail {
         searchValue = searchValue == null ? "" : searchValue.trim();
 
         try {
-            List<StudentEntity> studentList = studentService.findStudentsByValue(searchValue);
+            List<StudentEntity> students;
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            CustomUser principal = (CustomUser) authentication.getPrincipal();
+            if (principal.getUser().getRole().contains("ADMIN") || principal.getUser().getRole().contains("STAFF") || principal.getUser().getRole().contains("MANAGER")) {
+                students = studentService.findAllStudents();
+            } else {
+                students = new ArrayList<>();
+                students.add(studentService.findStudentByRollNumber(principal.getUser().getStudentRollNumber()));
+            }
+
+            String finalSearchValue = searchValue;
+            List<StudentEntity> studentList = students.stream()
+                    .filter(c -> c.getRollNumber().toLowerCase().contains(finalSearchValue.toLowerCase()) ||
+                            c.getFullName().toLowerCase().contains(finalSearchValue.toLowerCase()))
+                    .collect(Collectors.toList());
+
             List<SelectItem> itemList = new ArrayList<>();
             for (StudentEntity student : studentList) {
                 SelectItem item = new SelectItem();
@@ -92,7 +97,7 @@ public class StudentDetail {
             //remove studying marks from fail list
             List<MarksEntity> studyingList = marksService.getMarksByStudentIdAndStatus(studentId, "studying");
             Iterator<MarksEntity> iterator = resultList.iterator();
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 MarksEntity current = iterator.next();
                 if (studyingList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(current.getSubjectMarkComponentId().getSubjectId().getId()))) {
                     iterator.remove();
@@ -142,25 +147,25 @@ public class StudentDetail {
             List<MarksEntity> list = marksService.getMarksByStudentIdAndStatus(stuId, "studying");
 
             // Check students score if exist remove
-//            if (!list.isEmpty()) {
-//                List<String> curriculumSubjects = new ArrayList<>();
-//                list.forEach(c -> {
-//                    if (!curriculumSubjects.contains(c.getSubjectMarkComponentId().getSubjectId().getId())) {
-//                        curriculumSubjects.add(c.getSubjectMarkComponentId().getSubjectId().getId());
-//                    }
-//                });
-//                TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
-//                query2.setParameter("id", stuId);
-//                query2.setParameter("list", curriculumSubjects);
-//                List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
-//                Iterator<MarksEntity> iterator = list.iterator();
-//                while(iterator.hasNext()) {
-//                    MarksEntity cur = iterator.next();
-//                    if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectMarkComponentId().getSubjectId().getId()))) {
-//                        iterator.remove();
-//                    }
-//                }
-//            }
+            if (!list.isEmpty()) {
+                List<String> curriculumSubjects = new ArrayList<>();
+                list.forEach(c -> {
+                    if (!curriculumSubjects.contains(c.getSubjectMarkComponentId().getSubjectId().getId())) {
+                        curriculumSubjects.add(c.getSubjectMarkComponentId().getSubjectId().getId());
+                    }
+                });
+                TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+                query2.setParameter("id", stuId);
+                query2.setParameter("list", curriculumSubjects);
+                List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
+                Iterator<MarksEntity> iterator = list.iterator();
+                while (iterator.hasNext()) {
+                    MarksEntity cur = iterator.next();
+                    if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectMarkComponentId().getSubjectId().getId()))) {
+                        iterator.remove();
+                    }
+                }
+            }
 
             List<MarksEntity> set2 = list.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -226,7 +231,7 @@ public class StudentDetail {
                 query2.setParameter("list", curriculumSubjects);
                 List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
                 Iterator<SubjectCurriculumEntity> iterator = list.iterator();
-                while(iterator.hasNext()) {
+                while (iterator.hasNext()) {
                     SubjectCurriculumEntity cur = iterator.next();
                     if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectId().getId()))) {
                         iterator.remove();
@@ -312,7 +317,7 @@ public class StudentDetail {
 
             List<MarksEntity> list2 = marksService.getMarksByStudentIdAndStatus(stuId, "studying");
             Iterator<MarksEntity> iterator = resultList.iterator();
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 MarksEntity cur = iterator.next();
                 if (list2.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectMarkComponentId().getSubjectId().getId()))) {
                     iterator.remove();
@@ -350,7 +355,7 @@ public class StudentDetail {
             List<MarksEntity> slowList = marksService.getMarksByStudentIdAndStatus(stuId, "start");
             List<SubjectEntity> slowSubjects = new ArrayList<>();
             Iterator<MarksEntity> iterator2 = slowList.iterator();
-            while(iterator2.hasNext()) {
+            while (iterator2.hasNext()) {
                 MarksEntity mark = iterator2.next();
                 List<String> subs = new ArrayList<>();
                 List<String> subs2 = new ArrayList<>();
@@ -482,7 +487,7 @@ public class StudentDetail {
         try {
             List<MarksEntity> list = marksService.getMarksByStudentIdAndStatus(stuId, "start");
             Iterator<MarksEntity> iterator = list.iterator();
-            while(iterator.hasNext()) {
+            while (iterator.hasNext()) {
                 MarksEntity mark = iterator.next();
                 List<String> subs = new ArrayList<>();
                 List<String> subs2 = new ArrayList<>();

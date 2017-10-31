@@ -23,6 +23,7 @@
         <intercept-url pattern="/getStudentNotStart**" access="hasAnyRole('ROLE_STAFF', 'ROLE_STUDENT', 'ROLE_MANAGER')"/>
         <intercept-url pattern="/getStudentNextCourse**" access="hasAnyRole('ROLE_STAFF', 'ROLE_STUDENT', 'ROLE_MANAGER')"/>
         <intercept-url pattern="/getStudentDetail**" access="hasAnyRole('ROLE_STAFF', 'ROLE_STUDENT', 'ROLE_MANAGER')"/>
+        <intercept-url pattern="/getStudentList**" access="hasAnyRole('ROLE_STAFF', 'ROLE_STUDENT', 'ROLE_MANAGER', 'ROLE_STUDENT')"/>
 
         <!-- Student functions-->
         <intercept-url pattern="/studentcurriculum/**" access="hasAnyRole('ROLE_STUDENT')"/>
