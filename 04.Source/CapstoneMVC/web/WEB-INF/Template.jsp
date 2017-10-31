@@ -103,7 +103,7 @@
                 </div>
                 <div class="pull-left info">
                     <p>
-                        <security:authentication var="username" property="principal.user.username"/>
+                        <security:authentication var="username" property="principal.user.fullname"/>
                         <c:choose>
                             <c:when test="${not empty username}">
                                 ${username}
