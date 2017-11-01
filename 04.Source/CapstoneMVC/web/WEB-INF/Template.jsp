@@ -397,15 +397,8 @@
 
                 <security:authorize access="hasAnyRole('ROLE_MANAGER')">
                     <li>
-                        <a href="/studentDetail"><i class="fa fa-list"></i>
-                            <span>Thông tin chi tiết của sinh viên</span></a>
-                    </li>
-                    <li>
-                        <a href="/studentMarkHistory"><i class="fa fa-list"></i> <span>Lịch sử môn học</span></a>
-                    </li>
-                    <li>
-                        <a href="/studentcurriculum/index"><i class="fa fa-list"></i>
-                            <span>Bảng điểm sinh viên</span></a>
+                        <a href="/managerrole/changecurriculum"><i class="fa fa-list"></i>
+                            <span>Chuyển ngành sinh viên</span></a>
                     </li>
                 </security:authorize>
 

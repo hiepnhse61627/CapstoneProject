@@ -30,6 +30,10 @@
         <intercept-url pattern="/studentMarkHistory**" access="hasAnyRole('ROLE_STUDENT')"/>
         <intercept-url pattern="/studentMarkHistory/**" access="hasAnyRole('ROLE_STUDENT')"/>
 
+        <!-- Manager functions-->
+        <intercept-url pattern="/manager/**" access="hasAnyRole('ROLE_MANAGER')"/>
+        <intercept-url pattern="/manager**" access="hasAnyRole('ROLE_MANAGER')"/>
+
         <!-- Admin -->
         <intercept-url pattern="/admin/**" access="hasAnyRole('ROLE_ADMIN')"/>
 
