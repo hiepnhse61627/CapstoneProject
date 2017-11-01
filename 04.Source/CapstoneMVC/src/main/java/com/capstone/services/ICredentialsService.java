@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface ICredentialsService {
     CredentialsEntity findCredential(String username);
+    CredentialsEntity findCredentialById(int id);
     CredentialsEntity findCredentialByEmail(String email);
     CredentialsEntity findCredential(String username, String password);
     void CreateCredentiall(CredentialsEntity entity);

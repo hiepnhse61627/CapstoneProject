@@ -117,7 +117,8 @@ public class StudentFailPrequisite {
             parent = parent.stream().filter(c -> c.get(0).toLowerCase().contains(search) ||
                     c.get(1).toLowerCase().contains(search) ||
                     c.get(4).toLowerCase().contains(search) ||
-                    c.get(5).toLowerCase().contains(search)).collect(Collectors.toList());
+                    c.get(5).toLowerCase().contains(search) ||
+                    c.get(7).toLowerCase().contains(search)).collect(Collectors.toList());
 
             List<List<String>> displayList = new ArrayList<>();
             if (!parent.isEmpty()) {

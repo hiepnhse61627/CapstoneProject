@@ -141,7 +141,7 @@ public class LoginController {
                 CredentialsEntity user = service.findCredentialByEmail(profile.getEmail());
                 if (user != null) {
                     boolean edited = false;
-                    if (user.getFullname() == null || !user.getFullname().equals(profile.getName())) {
+                    if (user.getFullname() == null) {
                         user.setFullname(profile.getName());
                         edited = true;
                     }
@@ -152,7 +152,7 @@ public class LoginController {
 
                     if (edited) service.SaveCredential(user, false);
 
-                    Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(user.getUsername(), user.getPassword(), getGrantedAuthorities(user), user.getFullname(),user.getPicture(), user.getStudentRollNumber()),
+                    Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(user.getUsername(), user.getPassword(), getGrantedAuthorities(user), user),
                             user.getPassword(),
                             getGrantedAuthorities(user));
                     SecurityContextHolder.getContext().setAuthentication(auth);

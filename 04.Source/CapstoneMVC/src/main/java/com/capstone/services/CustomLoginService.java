@@ -25,12 +25,15 @@ public class CustomLoginService implements UserDetailsService {
             System.out.println("User: " + user.getUsername());
         }
 
-        return new CustomUser(user.getUsername(), user.getPassword(), getGrantedAuthorities(user), user.getFullname(),user.getPicture(), user.getStudentRollNumber());
+        return new CustomUser(user.getUsername(), user.getPassword(), getGrantedAuthorities(user), user);
     }
 
     private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user){
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(user.getRole()));
+        String[] roles = user.getRole().split(",");
+        for (String role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role.trim()));
+        }
         return authorities;
     }
 

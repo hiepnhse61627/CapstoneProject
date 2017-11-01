@@ -36,10 +36,10 @@
                             </div>
                             <div class="right-content width-30 width-m-70">
                                 <select id="select" class="select">
-                                    <option value="0">-- Select --</option>
-                                    <c:forEach var="stu" items="${students}">
-                                        <option value="${stu.id}">${stu.rollNumber} - ${stu.fullName}</option>
-                                    </c:forEach>
+                                    <%--<option value="0">-- Select --</option>--%>
+                                    <%--<c:forEach var="stu" items="${students}">--%>
+                                        <%--<option value="${stu.id}">${stu.rollNumber} - ${stu.fullName}</option>--%>
+                                    <%--</c:forEach>--%>
                                 </select>
                             </div>
                         </div>
@@ -223,34 +223,34 @@
     });
 
     function CreateSelect() {
-//        $('#select').select2({
-//            width: 'resolve',
-//            minimumInputLength: 2,
-//            ajax: {
-//                url: '/getStudentList',
-//                data: function (params) {
-//                    var queryParameters = {
-//                        searchValue: params.term
-//                    }
-//                    return queryParameters;
-//                },
-//                processResults: function (result) {
-//                    if (result.success) {
-//                        return {
-//                            results: $.map(result.items, function (item) {
-//                                return {
-//                                    id: item.value,
-//                                    text: item.text,
-//                                }
-//                            })
-//                        };
-//                    } else {
-//                        swal('', 'Có lỗi xảy ra, vui lòng thử lại', 'warning');
-//                    }
-//                }
-//            }
-//        });
-        $('#select').select2();
+        $('#select').select2({
+            width: 'resolve',
+            minimumInputLength: 2,
+            ajax: {
+                url: '/getStudentList',
+                data: function (params) {
+                    var queryParameters = {
+                        searchValue: params.term
+                    }
+                    return queryParameters;
+                },
+                processResults: function (result) {
+                    if (result.success) {
+                        return {
+                            results: $.map(result.items, function (item) {
+                                return {
+                                    id: item.value,
+                                    text: item.text,
+                                }
+                            })
+                        };
+                    } else {
+                        swal('', 'Có lỗi xảy ra, vui lòng thử lại', 'warning');
+                    }
+                }
+            }
+        });
+//        $('#select').select2();
     }
 
     function CreateDebtTable() {
@@ -526,49 +526,60 @@
     }
 
     function RefreshTable() {
-        if (table != null) {
-            table._fnPageChange(0);
-            table._fnAjaxUpdate();
-        } else {
-            // Delete empty table
-            $('#table').dataTable().fnDestroy();
-            CreateDebtTable();
-        }
+        $('#notStart').dataTable().fnDestroy();
+        CreateNotStartTable();
+        $('#table').dataTable().fnDestroy();
+        CreateDebtTable();
+        $('#nextCourseTable').dataTable().fnDestroy();
+        CreateNextCourseTable();
+        $('#curCourseTable').dataTable().fnDestroy();
+        CreateCurrentCourseTable();
+        $('#suggestCourseTable').dataTable().fnDestroy();
+        CreateSuggestCourseTable();
 
-        if (nextCourseTable != null) {
-            nextCourseTable._fnPageChange(0);
-            nextCourseTable._fnAjaxUpdate();
-        } else {
-            // Delete empty table
-            $('#nextCourseTable').dataTable().fnDestroy();
-            CreateNextCourseTable();
-        }
-
-        if (curCourseTable != null) {
-            curCourseTable._fnPageChange(0);
-            curCourseTable._fnAjaxUpdate();
-        } else {
-            // Delete empty table
-            $('#curCourseTable').dataTable().fnDestroy();
-            CreateCurrentCourseTable();
-        }
-
-        if (suggestCourseTable != null) {
-            suggestCourseTable._fnPageChange(0);
-            suggestCourseTable._fnAjaxUpdate();
-        } else {
-            // Delete empty table
-            $('#suggestCourseTable').dataTable().fnDestroy();
-            CreateSuggestCourseTable();
-        }
-
-        if (notStart != null) {
-            notStart._fnPageChange(0);
-            notStart._fnAjaxUpdate();
-        } else {
-            // Delete empty table
-            $('#notStart').dataTable().fnDestroy();
-            CreateNotStartTable();
-        }
+//        if (table != null) {
+//            table._fnPageChange(0);
+//            table._fnAjaxUpdate();
+//        } else {
+//            // Delete empty table
+//            $('#table').dataTable().fnDestroy();
+//            CreateDebtTable();
+//        }
+//
+//        if (nextCourseTable != null) {
+//            nextCourseTable._fnPageChange(0);
+//            nextCourseTable._fnAjaxUpdate();
+//        } else {
+//            // Delete empty table
+//            $('#nextCourseTable').dataTable().fnDestroy();
+//            CreateNextCourseTable();
+//        }
+//
+//        if (curCourseTable != null) {
+//            curCourseTable._fnPageChange(0);
+//            curCourseTable._fnAjaxUpdate();
+//        } else {
+//            // Delete empty table
+//            $('#curCourseTable').dataTable().fnDestroy();
+//            CreateCurrentCourseTable();
+//        }
+//
+//        if (suggestCourseTable != null) {
+//            suggestCourseTable._fnPageChange(0);
+//            suggestCourseTable._fnAjaxUpdate();
+//        } else {
+//            // Delete empty table
+//            $('#suggestCourseTable').dataTable().fnDestroy();
+//            CreateSuggestCourseTable();
+//        }
+//
+//        if (notStart != null) {
+//            notStart._fnPageChange(0);
+//            notStart._fnAjaxUpdate();
+//        } else {
+//            // Delete empty table
+//            $('#notStart').dataTable().fnDestroy();
+//            CreateNotStartTable();
+//        }
     }
 </script>

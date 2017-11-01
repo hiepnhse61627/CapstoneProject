@@ -91,7 +91,7 @@
             <!-- Sidebar user panel (optional) -->
             <div class="user-panel">
                 <div class="pull-left image">
-                    <security:authentication var="imageUrl" property="principal.picture"/>
+                    <security:authentication var="imageUrl" property="principal.user.picture"/>
                     <c:choose>
                         <c:when test="${not empty imageUrl}">
                             <img src="${imageUrl}" class="img-circle" alt="User Image">
@@ -100,11 +100,10 @@
                             <img src="/Resources/plugins/dist/img/anonymous.jpg" class="img-circle" alt="User Image">
                         </c:otherwise>
                     </c:choose>
-
                 </div>
                 <div class="pull-left info">
                     <p>
-                        <security:authentication var="username" property="principal.fullname"/>
+                        <security:authentication var="username" property="principal.user.fullname"/>
                         <c:choose>
                             <c:when test="${not empty username}">
                                 ${username}
@@ -113,7 +112,6 @@
                                 Ẩn danh
                             </c:otherwise>
                         </c:choose>
-
                     </p>
                     <!-- Status -->
                     <a href="#">
@@ -126,19 +124,18 @@
                         </security:authorize>
                     </a>
                 </div>
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <a href="/profile/" class="btn btn-primary">Chỉnh profile</a>
+                        <a href="/logout" class="btn btn-warning">Log out</a>
+                    </div>
+                </div>
             </div>
             <!-- Sidebar Menu -->
             <ul class="sidebar-menu">
                 <%--<li class="header">HEADER</li>--%>
                 <!-- Optionally, you can add icons to the links -->
                 <security:authorize access="hasRole('${admin}')">
-                    <input id="menu-filter" type="text" value="">
-                    <%--<c:forEach var="menuList" items="${menuName.}">--%>
-                        <%--<li>--%>
-                            <%--<a href="/studentList"><i class="fa fa-dashboard"></i>--%>
-                                <%--<span>Ra Nào</span></a>--%>
-                        <%--</li>--%>
-                    <%--</c:forEach>--%>
                     <li>
                         <a href="/dashboard"><i class="fa fa-dashboard"></i> <span>Thống kê</span></a>
                     </li>
@@ -409,32 +406,9 @@
 </div><!-- ./wrapper -->
 
 <script>
-    //ê cái role đó, check kiều gì lúc load dưới menu lên trời
     $(document).ready(function () {
         $(".select2-selection span").attr('title', '');
     });
-
-    $('#menu-filter').on("input", function () {
-        var html = "${menuList.functionName}";
-//        if ($('#menu-filter').val() == null) {
-//
-//        }
-//        LoadMenu();
-        // chay for i in cai danh sach rat htest cai ne, rui hiu~ a`
-
-        $('#admin-menu').html(html);
-
-    });
-
-    function LoadMenu() {
-        debugger
-        for (var i = 0; i <=${menuList.size}; i++) {
-            console.log(${menuList.functionName});
-        }
-
-    }
-
-
 </script>
 
 </body>
