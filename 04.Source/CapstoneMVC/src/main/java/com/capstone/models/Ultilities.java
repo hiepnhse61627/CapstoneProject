@@ -164,7 +164,7 @@ public class Ultilities {
                                                     tmp = k2;
 
                                                     int failMark;
-                                                    if (allSemesters.indexOf(m.getSemesterId().getSemester()) < allSemesters.indexOf(pre.getEffectionSemester())) {
+                                                    if (allSemesters.indexOf(k2.getSemesterId().getSemester()) < allSemesters.indexOf(pre.getEffectionSemester())) {
                                                         failMark = pre.getFailMark();
                                                     } else {
                                                         failMark = pre.getNewFailMark() == null ? pre.getFailMark() : pre.getNewFailMark();
