@@ -499,4 +499,24 @@ public class Ultilities {
 
         return result;
     }
+
+    public static List<String> getStudentCurriculumSubjects(StudentEntity student) {
+        List<String> subs = new ArrayList<>();
+//        IStudentService service = new StudentServiceImpl();
+//        StudentEntity student = service.findStudentById(studentId);
+        if (student != null) {
+            List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+            docs.sort(Comparator.comparingLong(c -> {
+                DocumentStudentEntity doc = (DocumentStudentEntity) c;
+                if (doc.getCreatedDate() == null) return 0;
+                else return doc.getCreatedDate().getTime();
+            }));
+            List<SubjectCurriculumEntity> cursubs = docs.get(docs.size() - 1).getCurriculumId().getSubjectCurriculumEntityList();
+            for (SubjectCurriculumEntity s : cursubs) {
+                if (!subs.contains(s.getSubjectId().getId())) subs.add(s.getSubjectId().getId());
+            }
+        }
+
+        return subs;
+    }
 }

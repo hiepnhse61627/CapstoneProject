@@ -94,6 +94,10 @@ public class StudentDetail {
             List<MarksEntity> newlist = Ultilities.FilterStudentsOnlyPassAndFail(list);
             List<MarksEntity> resultList = Ultilities.FilterListFailStudent(newlist);
 
+            // subjects in student curriculum
+            StudentEntity stu = studentService.findStudentById(studentId);
+            List<String> l = Ultilities.getStudentCurriculumSubjects(stu);
+
             //remove studying marks from fail list
             List<MarksEntity> studyingList = marksService.getMarksByStudentIdAndStatus(studentId, "studying");
             Iterator<MarksEntity> iterator = resultList.iterator();
@@ -101,6 +105,11 @@ public class StudentDetail {
                 MarksEntity current = iterator.next();
                 if (studyingList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(current.getSubjectMarkComponentId().getSubjectId().getId()))) {
                     iterator.remove();
+                } else {
+                    SubjectEntity su = current.getSubjectMarkComponentId().getSubjectId();
+                    if (!l.stream().anyMatch(a -> a.equals(su.getId()))) {
+                        iterator.remove();
+                    }
                 }
             }
 
@@ -148,23 +157,31 @@ public class StudentDetail {
 
             // Check students score if exist remove
             if (!list.isEmpty()) {
+                StudentEntity stu = studentService.findStudentById(stuId);
+                List<String> l = Ultilities.getStudentCurriculumSubjects(stu);
+
                 List<String> curriculumSubjects = new ArrayList<>();
                 list.forEach(c -> {
                     if (!curriculumSubjects.contains(c.getSubjectMarkComponentId().getSubjectId().getId())) {
                         curriculumSubjects.add(c.getSubjectMarkComponentId().getSubjectId().getId());
                     }
                 });
-                TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
-                query2.setParameter("id", stuId);
-                query2.setParameter("list", curriculumSubjects);
-                List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
-                Iterator<MarksEntity> iterator = list.iterator();
-                while (iterator.hasNext()) {
-                    MarksEntity cur = iterator.next();
-                    if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectMarkComponentId().getSubjectId().getId()))) {
-                        iterator.remove();
-                    }
-                }
+//                TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+//                query2.setParameter("id", stuId);
+//                query2.setParameter("list", curriculumSubjects);
+//                List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
+//                Iterator<MarksEntity> iterator = list.iterator();
+//                while (iterator.hasNext()) {
+//                    MarksEntity cur = iterator.next();
+//                    if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectMarkComponentId().getSubjectId().getId()))) {
+//                        iterator.remove();
+//                    }  else {
+//                        SubjectEntity su = cur.getSubjectMarkComponentId().getSubjectId();
+//                        if (!l.stream().anyMatch(a -> a.equals(su.getId()))) {
+//                            iterator.remove();
+//                        }
+//                    }
+//                }
             }
 
             List<MarksEntity> set2 = list.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
@@ -304,12 +321,15 @@ public class StudentDetail {
         IMarksService marksService = new MarksServiceImpl();
 
         IStudentService studentService = new StudentServiceImpl();
+        ISubjectService subjectService = new SubjectServiceImpl();
 
         int stuId = Integer.parseInt(params.get("stuId"));
         StudentEntity student = studentService.findStudentById(stuId);
 
         try {
             /*-----------------------------------Fail Course--------------------------------------------------*/
+            List<String> l2 = Ultilities.getStudentCurriculumSubjects(student);
+
             List<MarksEntity> list = marksService.getAllMarksByStudentAndSubject(Integer.parseInt(params.get("stuId")), "0", "0");
             List<MarksEntity> newlist = Ultilities.FilterStudentsOnlyPassAndFail(list);
             List<MarksEntity> resultList = Ultilities.FilterListFailStudent(newlist);
@@ -321,6 +341,11 @@ public class StudentDetail {
                 MarksEntity cur = iterator.next();
                 if (list2.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectMarkComponentId().getSubjectId().getId()))) {
                     iterator.remove();
+                } else {
+                    SubjectEntity su = cur.getSubjectMarkComponentId().getSubjectId();
+                    if (!l2.stream().anyMatch(a -> a.equals(su.getId()))) {
+                        iterator.remove();
+                    }
                 }
             }
 
@@ -350,6 +375,51 @@ public class StudentDetail {
                     nextSubjects.add(c.getSubjectId());
                 }
             });
+            List<String> curriculumSubjects = nextSubjects.stream().map(c -> c.getId()).collect(Collectors.toList());
+            TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+            query2.setParameter("id", stuId);
+            query2.setParameter("list", curriculumSubjects);
+            List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
+            Iterator<SubjectEntity> iterator3 = nextSubjects.iterator();
+            while (iterator3.hasNext()) {
+                SubjectEntity entity = iterator3.next();
+                if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(entity.getId()))) {
+                    iterator3.remove();
+                } else {
+                    // check prequisite
+                    List<String> processedData = new ArrayList<>();
+                    String preSubs = entity.getPrequisiteEntity().getPrequisiteSubs();
+                    String[] rows = preSubs == null ? (entity.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : entity.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
+                    for (String row : rows) {
+                        row = row.replaceAll("\\(", "").replaceAll("\\)", "");
+                        String[] cells = row.split(",");
+                        for (String cell : cells) {
+                            cell = cell.trim();
+                            SubjectEntity c = subjectService.findSubjectById(cell);
+                            if (c != null) processedData.add(cell);
+                        }
+                    }
+                    if (!entity.getSubjectEntityList().isEmpty()) {
+                        for (SubjectEntity replaces : entity.getSubjectEntityList()) {
+                            processedData.add(replaces.getId());
+                        }
+                    }
+
+                    if (!processedData.isEmpty()) {
+                        String str = "SELECT p FROM MarksEntity p WHERE p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList";
+                        TypedQuery<MarksEntity> prequisiteQuery;
+                        prequisiteQuery = em.createQuery(str, MarksEntity.class);
+                        prequisiteQuery.setParameter("sList", processedData);
+                        prequisiteQuery.setParameter("id", stuId);
+
+                        List<MarksEntity> list3 = prequisiteQuery.getResultList();
+                        boolean failed = Ultilities.HasFailedPrequisitesOfOneStudent(list3, entity.getPrequisiteEntity());
+                        if (failed) {
+                            iterator3.remove();
+                        }
+                    }
+                }
+            }
 
             /*-------------------------------Chậm tiến độ------------------------------------------------*/
             List<MarksEntity> slowList = marksService.getMarksByStudentIdAndStatus(stuId, "start");
@@ -368,10 +438,10 @@ public class StudentDetail {
                 }
 
                 if (!subs.isEmpty()) {
-                    TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a from MarksEntity a where a.studentId.id = :id and a.subjectMarkComponentId.subjectId.id in :list", MarksEntity.class);
-                    query2.setParameter("id", stuId);
-                    query2.setParameter("list", subs);
-                    List<MarksEntity> l = query2.getResultList().stream()
+                    TypedQuery<MarksEntity> query4 = em.createQuery("SELECT a from MarksEntity a where a.studentId.id = :id and a.subjectMarkComponentId.subjectId.id in :list", MarksEntity.class);
+                    query4.setParameter("id", stuId);
+                    query4.setParameter("list", subs);
+                    List<MarksEntity> l = query4.getResultList().stream()
                             .filter(c -> c.getAverageMark() >= 0)
                             .collect(Collectors.toList());
                     if (!l.isEmpty()) {
@@ -380,10 +450,10 @@ public class StudentDetail {
                 }
 
                 if (!subs2.isEmpty()) {
-                    TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a from MarksEntity a where a.studentId.id = :id and a.subjectMarkComponentId.subjectId.id in :list", MarksEntity.class);
-                    query2.setParameter("id", stuId);
-                    query2.setParameter("list", subs2);
-                    List<MarksEntity> l = query2.getResultList().stream()
+                    TypedQuery<MarksEntity> query3 = em.createQuery("SELECT a from MarksEntity a where a.studentId.id = :id and a.subjectMarkComponentId.subjectId.id in :list", MarksEntity.class);
+                    query3.setParameter("id", stuId);
+                    query3.setParameter("list", subs2);
+                    List<MarksEntity> l = query3.getResultList().stream()
                             .filter(c -> c.getAverageMark() >= 0)
                             .collect(Collectors.toList());
                     if (!l.isEmpty()) {
@@ -425,7 +495,6 @@ public class StudentDetail {
                         tmp.add(m.getId());
                         tmp.add(m.getName());
                         parent.add(tmp);
-
                     });
                 }
             } else if (sortiedCombine.size() > 0) {
