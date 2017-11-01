@@ -10,6 +10,18 @@
 <%@ taglib prefix="dec" uri="http://www.opensymphony.com/sitemesh/decorator" %>
 <%@ taglib prefix="security" uri="http://www.springframework.org/security/tags" %>
 
+<security:authentication var="imageUrl" property="principal.user.picture"/>
+<security:authentication var="username" property="principal.user.fullname"/>
+<security:authentication var="role" property="principal.user.role"/>
+
+<c:if test="${empty username}">
+    <c:set var="username" value="Vô danh"/>
+</c:if>
+
+<c:if test="${empty imageUrl}">
+    <c:set var="imageUrl" value="/Resources/plugins/dist/img/anonymous.jpg"/>
+</c:if>
+
 <html>
 <head>
     <meta charset="utf-8"/>
@@ -77,6 +89,37 @@
             <a href="#" class="sidebar-toggle" data-toggle="offcanvas" role="button">
                 <span class="sr-only">Toggle navigation</span>
             </a>
+
+            <!-- Navbar Right Menu -->
+            <div class="navbar-custom-menu">
+                <ul class="nav navbar-nav">
+                    <li class="dropdown user user-menu">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                            <img src="${imageUrl}" class="user-image">
+                            <span class="hidden-xs">
+                                ${username}
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li class="user-header">
+                                <img src="https://lh3.googleusercontent.com/-k6bCYGfNq1Y/AAAAAAAAAAI/AAAAAAAAAB4/rfXw1T4k6tU/s96-c/photo.jpg"
+                                     class="img-circle" alt="User Image">
+                                <p>${username} - ${role}</p>
+                            </li>
+
+                            <li class="user-footer">
+                                <div class="pull-left">
+                                    <a href="/profile/" class="btn btn-default btn-flat">Profile</a>
+                                </div>
+                                <div class="pull-right">
+                                    <a href="/logout" class="btn btn-default btn-flat">Đăng xuất</a>
+                                </div>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
         </nav>
     </header>
     <!-- Left side column. contains the logo and sidebar -->
@@ -87,40 +130,20 @@
 
             <!-- Sidebar user panel (optional) -->
             <div class="user-panel">
-                <div class="pull-left image">
-                    <security:authentication var="imageUrl" property="principal.user.picture"/>
-                    <c:choose>
-                        <c:when test="${not empty imageUrl}">
-                            <img src="${imageUrl}" class="img-circle" alt="User Image">
-                        </c:when>
-                        <c:otherwise>
-                            <img src="/Resources/plugins/dist/img/anonymous.jpg" class="img-circle" alt="User Image">
-                        </c:otherwise>
-                    </c:choose>
-                </div>
+                <a href="/profile/" class="pull-left image">
+                    <img src="${imageUrl}" class="img-circle" alt="User Image">
+                </a>
                 <div class="pull-left info">
                     <p>
-                        <security:authentication var="username" property="principal.user.fullname"/>
-                        <c:choose>
-                            <c:when test="${not empty username}">
-                                ${username}
-                            </c:when>
-                            <c:otherwise>
-                                Ẩn danh
-                            </c:otherwise>
-                        </c:choose>
+                        <a href="/profile/">
+                            ${username}
+                        </a>
                     </p>
                     <!-- Status -->
-                    <a href="#">
+                    <a>
                         <i class="fa fa-circle text-success"></i>
                         <span> Online</span>
                     </a>
-                </div>
-                <div class="form-group">
-                    <div class="col-md-12">
-                        <a href="/profile/" class="btn btn-primary">Chỉnh profile</a>
-                        <a href="/logout" class="btn btn-warning">Log out</a>
-                    </div>
                 </div>
             </div>
             <!-- Sidebar Menu -->
@@ -389,7 +412,7 @@
                 <security:authorize access="hasAnyRole('ROLE_STUDENT')">
                     <li>
                         <a href="/studentDetail"><i class="fa fa-list"></i>
-                            <span>Thông tin chi tiết của sinh viên</span></a>
+                            <span>Thông tin chi tiết</span></a>
                     </li>
                     <li>
                         <a href="/studentMarkHistory"><i class="fa fa-list"></i> <span>Lịch sử môn học</span></a>
