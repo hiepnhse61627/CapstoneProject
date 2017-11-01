@@ -61,6 +61,25 @@ public class FailStatisticsController {
         Gson gson = new Gson();
         JsonObject jsonObject = new JsonObject();
         String semester = params.get("semester");
+
+        ArrayList<ArrayList<String>> resultList = processData(semester);
+        JsonArray aaData = (JsonArray) gson.toJsonTree(resultList);
+
+        jsonObject.addProperty("iTotalRecords", resultList.size());
+        jsonObject.addProperty("iTotalDisplayRecords",  resultList.size());
+        jsonObject.add("aaData", aaData);
+        jsonObject.addProperty("sEcho", params.get("sEcho"));
+
+        return jsonObject;
+    }
+
+    /**
+     * @param semester
+     * @return resultList
+     * @author HiepNH
+     * @DateCreated 28/10/2017
+     **/
+    public ArrayList<ArrayList<String>> processData(String semester) {
         List<MarksEntity> listFailed = listFailedAtTheBeginningOfSemester(semester);
         List<MarksEntity> listPassed = listPassedInCurrentSemester(semester);
         List<MarksEntity> listPaid = intersectionOfTwoLists(listFailed, listPassed);
@@ -74,14 +93,7 @@ public class FailStatisticsController {
         record.add(String.valueOf(listFailed.size() - listPaid.size() + listFailedAtCurrentSemester.size()));
         resultList.add(record);
 
-        JsonArray aaData = (JsonArray) gson.toJsonTree(resultList);
-
-        jsonObject.addProperty("iTotalRecords", resultList.size());
-        jsonObject.addProperty("iTotalDisplayRecords",  resultList.size());
-        jsonObject.add("aaData", aaData);
-        jsonObject.addProperty("sEcho", params.get("sEcho"));
-
-        return jsonObject;
+        return resultList;
     }
 
     /**

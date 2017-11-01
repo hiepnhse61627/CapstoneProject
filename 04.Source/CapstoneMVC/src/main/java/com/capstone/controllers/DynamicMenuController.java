@@ -23,7 +23,7 @@ public class DynamicMenuController {
     public ModelAndView AllMenuList() {
         ModelAndView view = new ModelAndView("dashboard");
         view.addObject("title", "Menu List");
-        HttpSession session
+//        HttpSession session
 
         List<DynamicMenuEntity> menuName = dynamicMenuService.getAllMenu();
         List<DynamicMenuEntity> menuGroup = dynamicMenuService.getAllMenu().stream().filter(s -> !s.getFunctionGroup().contains("N/A")).collect(Collectors.toList());
