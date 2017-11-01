@@ -20,4 +20,9 @@ public class DocumentServiceImpl implements IDocumentService {
     public DocumentEntity createDocument(DocumentEntity entity) {
         return controller.createDocument(entity);
     }
+
+    @Override
+    public DocumentEntity getDocumentById(int id) {
+        return controller.findDocumentEntity(id);
+    }
 }

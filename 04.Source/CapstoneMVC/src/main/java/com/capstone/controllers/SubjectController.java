@@ -15,6 +15,7 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.formula.functions.Replace;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -280,13 +281,17 @@ public class SubjectController {
                     SubjectEntity en = new SubjectEntity();
                     en.setIsSpecialized(false);
                     ReplacementSubject re = new ReplacementSubject();
+                    PrequisiteEntity prequisiteEntity = null;
                     while (cellIterator.hasNext()) {
                         Cell cell = cellIterator.next();
                         if (row.getRowNum() > 3) { //To filter column headings
-                            System.out.println(row.getRowNum());
+//                            System.out.println(row.getRowNum());
                             if (cell.getColumnIndex() == 0) { // Subject code
                                 en.setId(cell.getStringCellValue().trim());
-                                // set sub code
+
+                                prequisiteEntity = new PrequisiteEntity();
+                                prequisiteEntity.setSubjectId(en.getId());
+
                                 re.setSubCode(en.getId());
                             } else if (cell.getColumnIndex() == 1) { // Abbreviation
                                 en.setAbbreviation(cell.getStringCellValue().trim());
@@ -300,30 +305,42 @@ public class SubjectController {
                                 }
                             } else if (cell.getColumnIndex() == 4) { // Prerequisite
                                 String prequisite = cell.getStringCellValue().trim();
-                                PrequisiteEntity prequisiteEntity = new PrequisiteEntity();
-                                prequisiteEntity.setSubjectId(en.getId());
-                                if (prequisite != null && !prequisite.isEmpty()) {
-                                    prequisiteEntity.setFailMark(4);
+                                if (prequisiteEntity != null && prequisite != null && !prequisite.isEmpty()) {
                                     prequisiteEntity.setPrequisiteSubs(prequisite);
                                 }
                                 en.setPrequisiteEntity(prequisiteEntity);
-                            } else if (cell.getColumnIndex() == 5) { // Replacement
+                            } else if (cell.getColumnIndex() == 5) {
+                                if (cell.getCellType() != Cell.CELL_TYPE_BLANK && cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+                                    double mark = cell.getNumericCellValue();
+                                    if (prequisiteEntity != null) {
+                                        prequisiteEntity.setFailMark((int)mark);
+                                    }
+                                }
+                            } else if (cell.getColumnIndex() == 6) {
                                 String replacers = cell.getStringCellValue().trim();
                                 re.setReplaceCode(replacers);
-//                                if (replacers != null && !replacers.isEmpty()) {
-//                                    String processed = "";
-//                                    String[] data = replacers.split("OR");
-//                                    for (String d : data) {
-//                                        processed += d.trim() + ",";
-//                                    }
-//                                    if (processed.lastIndexOf(",") == processed.length() - 1) {
-//                                        processed = processed.substring(0, processed.lastIndexOf(","));
-//                                    }
-//                                    en.setReplacementId(processed.trim());
-//                                }
+                            } else if (cell.getColumnIndex() == 7) {
+                                String semester = cell.getStringCellValue().trim();
+                                if (prequisiteEntity != null && semester != null && !semester.isEmpty()) {
+                                    prequisiteEntity.setEffectionSemester(semester);
+                                }
+                            }  else if (cell.getColumnIndex() == 8) {
+                                String presub = cell.getStringCellValue().trim();
+                                if (prequisiteEntity != null && presub != null && !presub.isEmpty()) {
+                                    prequisiteEntity.setNewPrequisiteSubs(presub);
+                                }
+                            } else if (cell.getColumnIndex() == 9) {
+                                if (cell.getCellType() != Cell.CELL_TYPE_BLANK && cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+                                    double newmark = cell.getNumericCellValue();
+                                    if (prequisiteEntity != null) {
+                                        prequisiteEntity.setNewFailMark((int)newmark);
+                                    }
+                                }
+
                             }
                         }
                     }
+                    if (prequisiteEntity != null) en.setPrequisiteEntity(prequisiteEntity);
 
                     if (en.getName() != null && !en.getName().isEmpty() && !columndata.stream().anyMatch(c -> c.getId().equals(en.getId()))) {
                         columndata.add(en);

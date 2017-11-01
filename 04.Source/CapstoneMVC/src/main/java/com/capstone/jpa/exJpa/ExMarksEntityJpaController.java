@@ -123,8 +123,8 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                 em.getTransaction().commit();
             }
         } catch (Exception ex) {
-            em.getTransaction().rollback();
-            throw ex;
+//            em.getTransaction().rollback();
+            ex.printStackTrace();
         } finally {
             if (em != null) {
                 em.close();
@@ -453,5 +453,26 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                 em.close();
             }
         }
+    }
+
+    public List<MarksEntity> getStudentMarksByStudentIdAndSortBySubjectName(int studentId) {
+        List<MarksEntity> result = new ArrayList<>();
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+            String queryStr = "SELECT m FROM MarksEntity m WHERE m.studentId.id = :studentId" +
+                    " ORDER BY m.subjectMarkComponentId.subjectId.name";
+            TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
+            query.setParameter("studentId", studentId);
+
+            result = query.getResultList();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
     }
 }

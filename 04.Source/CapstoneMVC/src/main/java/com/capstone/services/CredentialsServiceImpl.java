@@ -45,4 +45,9 @@ public class CredentialsServiceImpl implements ICredentialsService {
     public void SaveCredential(CredentialsEntity entity, boolean persist) {
         controller.saveCredential(entity, persist);
     }
+
+    @Override
+    public List<CredentialsEntity> getAllCredentials() {
+        return controller.findCredentialsEntityEntities();
+    }
 }

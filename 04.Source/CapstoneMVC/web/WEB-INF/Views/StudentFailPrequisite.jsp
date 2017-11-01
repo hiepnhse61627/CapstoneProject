@@ -86,10 +86,11 @@
                                 <tr>
                                     <th>MSSV</th>
                                     <th>Tên</th>
-                                    <th>Môn hiện tại</th>
-                                    <th>Môn tiên quyết</th>
+                                    <th>Môn đậu</th>
+                                    <th>Kỳ đậu</th>
+                                    <th>Môn rớt (tiên quyết)</th>
+                                    <th>Kỳ rớt</th>
                                     <th>Lớp</th>
-                                    <th>Semester</th>
                                     <th>Điểm</th>
                                     <th>Tình trạng</th>
                                 </tr>
@@ -288,14 +289,14 @@
                 },
                 "aoColumnDefs": [
                     {
-                        "aTargets": [0, 2, 3, 4, 5, 6, 7],
+                        "aTargets": [0, 2, 3, 4, 5, 6, 7, 8],
                         "bSortable": false,
                         "sClass": "text-center",
                     },
                     {
                         "aTargets": [1],
                         "mRender": function (data, type, row) {
-                            return "<a onclick='GetAllStudentMarks(" + row[8] + ")'>" + data + "</a>";
+                            return "<a onclick='GetAllStudentMarks(" + row[9] + ")'>" + data + "</a>";
                         }
                     },
                 ],

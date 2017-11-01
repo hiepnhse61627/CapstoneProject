@@ -15,6 +15,7 @@
                         <thead>
                         <th>Mã môn</th>
                         <th>Tên môn</th>
+                        <th>Mã môn thay thế</th>
                         <th>Học kỳ</th>
                         <th>Điểm</th>
                         <th>Trạng thái</th>
@@ -77,7 +78,6 @@
             contentType: false,
             data: form,
             success: function (result) {
-                debugger
                 if (result.success) {
                     CreateMarkTable(result.markList);
                 } else {
@@ -113,7 +113,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4],
+                    "aTargets": [0, 1, 2, 3, 4, 5],
                     "bSortable": false,
                     "sClass": "text-center",
                 },

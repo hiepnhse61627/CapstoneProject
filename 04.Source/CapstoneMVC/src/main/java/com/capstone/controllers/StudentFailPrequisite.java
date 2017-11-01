@@ -204,9 +204,10 @@ public class StudentFailPrequisite {
                 tmp.add(m.getMark().getStudentId().getRollNumber());
                 tmp.add(m.getMark().getStudentId().getFullName());
                 tmp.add(m.getSubjectWhichPrequisiteFail() == null ? "N/A" : m.getSubjectWhichPrequisiteFail());
+                tmp.add(m.getSemester() == null ? "N/A" : m.getSemester());
                 tmp.add(m.getMark().getSubjectMarkComponentId() == null ? "N/A" : m.getMark().getSubjectMarkComponentId().getSubjectId().getId());
-                tmp.add(m.getMark().getCourseId() == null ? "N/A" : m.getMark().getCourseId().getSemester());
                 tmp.add(m.getMark().getSemesterId() == null ? "N/A" : m.getMark().getSemesterId().getSemester());
+                tmp.add(m.getMark().getCourseId() == null ? "N/A" : m.getMark().getCourseId().getSemester());
                 tmp.add(String.valueOf(m.getMark().getAverageMark()));
                 tmp.add(m.getMark().getStatus());
                 tmp.add(m.getMark().getStudentId().getId() + "");
