@@ -123,8 +123,8 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                 em.getTransaction().commit();
             }
         } catch (Exception ex) {
-            em.getTransaction().rollback();
-            throw ex;
+//            em.getTransaction().rollback();
+            ex.printStackTrace();
         } finally {
             if (em != null) {
                 em.close();
