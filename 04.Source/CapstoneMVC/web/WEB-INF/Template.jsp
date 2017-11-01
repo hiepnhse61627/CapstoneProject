@@ -102,7 +102,7 @@
                         </a>
                         <ul class="dropdown-menu">
                             <li class="user-header">
-                                <img src="https://lh3.googleusercontent.com/-k6bCYGfNq1Y/AAAAAAAAAAI/AAAAAAAAAB4/rfXw1T4k6tU/s96-c/photo.jpg"
+                                <img src="${imageUrl}"
                                      class="img-circle" alt="User Image">
                                 <p>${username} - ${role}</p>
                             </li>
