@@ -6,13 +6,23 @@ import org.apache.commons.lang.builder.CompareToBuilder;
 public class FailPrequisiteModel {
     private MarksEntity mark;
     private String subjectWhichPrequisiteFail;
+    private String semester;
 
     public FailPrequisiteModel() {
     }
 
-    public FailPrequisiteModel(MarksEntity mark, String subjectWhichPrequisiteFail) {
+    public FailPrequisiteModel(MarksEntity mark, String subjectWhichPrequisiteFail, String semester) {
         this.mark = mark;
         this.subjectWhichPrequisiteFail = subjectWhichPrequisiteFail;
+        this.semester = semester;
+    }
+
+    public String getSemester() {
+        return semester;
+    }
+
+    public void setSemester(String semester) {
+        this.semester = semester;
     }
 
     public MarksEntity getMark() {
