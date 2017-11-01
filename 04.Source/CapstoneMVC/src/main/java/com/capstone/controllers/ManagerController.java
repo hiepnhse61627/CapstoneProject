@@ -133,6 +133,7 @@ public class ManagerController {
             List<SubjectEntity> newSubs = this.GetCurrentCurriculumSubjects(newId);
 
             List<SubjectEntity> common = new ArrayList<>();
+
             for (SubjectEntity s : subs) {
                 if (newSubs.stream().anyMatch(c -> c.getId().equals(s.getId()))) {
                     common.add(s);
@@ -192,6 +193,38 @@ public class ManagerController {
         } catch (Exception e) {
             Logger.writeLog(e);
             e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    @RequestMapping("/change")
+    @ResponseBody
+    public JsonObject Change(@RequestParam int stuId, @RequestParam int curId, @RequestParam int newId) {
+        JsonObject result = new JsonObject();
+
+        try {
+            IStudentService studentService = new StudentServiceImpl();
+            ICurriculumService curriculumService = new CurriculumServiceImpl();
+            IDocumentService documentService = new DocumentServiceImpl();
+
+            StudentEntity stu = studentService.findStudentById(stuId);
+            CurriculumEntity newCur = curriculumService.getCurriculumById(newId);
+
+            DocumentStudentEntity doc = new DocumentStudentEntity();
+            doc.setStudentId(stu);
+            doc.setCurriculumId(newCur);
+            doc.setDocumentId(documentService.getDocumentById(4));
+            doc.setCreatedDate(Calendar.getInstance().getTime());
+            stu.getDocumentStudentEntityList().add(doc);
+            studentService.saveStudent(stu);
+
+            result.addProperty("success", true);
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            e.printStackTrace();
+            result.addProperty("success", false);
+            result.addProperty("msg", e.getMessage());
         }
 
         return result;

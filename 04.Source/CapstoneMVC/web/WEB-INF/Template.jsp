@@ -44,6 +44,7 @@
     <link rel="stylesheet" href="/Resources/plugins/daterangepicker-2.1.25/daterangepicker.css"/>
     <link rel="stylesheet" href="/Resources/plugins/dist/css/template.css"/>
     <link rel="stylesheet" href="/Resources/plugins/dist/css/custom-scrollbar.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/bootstrap-switch/css/bootstrap3/bootstrap-switch.min.css"/>
 
     <!-- REQUIRED JS SCRIPTS -->
 
@@ -63,6 +64,7 @@
     <script src="/Resources/plugins/daterangepicker-2.1.25/moment.min.js"></script>
     <script src="/Resources/plugins/daterangepicker-2.1.25/daterangepicker.js"></script>
     <script src="/Resources/plugins/dist/js/template.js"></script>
+    <script src="/Resources/plugins/bootstrap-switch/js/bootstrap-switch.js"></script>
 
 </head>
 <body class="hold-transition skin-black-light sidebar-mini">

@@ -7,4 +7,5 @@ import java.util.List;
 public interface IDocumentService {
     List<DocumentEntity> getAllDocuments();
     DocumentEntity createDocument(DocumentEntity entity);
+    DocumentEntity getDocumentById(int id);
 }

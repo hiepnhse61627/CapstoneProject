@@ -74,22 +74,29 @@
                             </div>
                             <div class="form-group">
                                 <div class="row">
-                                    <div class="col-md-8">
-                                        <select id="curriculum" class="select form-control">
-                                            <c:forEach var="cur" items="${curs}">
-                                                <option value="${cur.id}">${cur.programId.name}_${cur.name}</option>
-                                            </c:forEach>
-                                        </select>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <select id="curriculum" class="select form-control">
+                                                <c:forEach var="cur" items="${curs}">
+                                                    <option value="${cur.id}">${cur.programId.name}_${cur.name}</option>
+                                                </c:forEach>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                            <button type="button" class="btn btn-success" onclick="Change()">Chuyển ngành</button>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6 text-center">
-                                        <p>Các môn chung</p>
-                                        <table id="yes"></table>
+                                        <p><b>Các môn chung</b></p>
+                                        <table id="yes" class="table"></table>
                                     </div>
                                     <div class="col-md-6 text-center">
-                                        <p>Các môn không chung</p>
-                                        <table id="no"></table>
+                                        <p><b>Các môn không chung</b></p>
+                                        <table id="no" class="table"></table>
                                     </div>
                                 </div>
                             </div>
@@ -123,6 +130,28 @@
         Get();
     });
 
+    function Change() {
+        var stuId = $('#select').val();
+        var curId = $('#curid').val();
+        var newId = $('#curriculum').val();
+
+        $.ajax({
+            type: "GET",
+            url: "/managerrole/change",
+            data: {"curId": curId, "newId": newId, "stuId": stuId},
+            success: function (result) {
+                console.log(result.data);
+                if (result.success) {
+                    swal('Thành công', 'Sinh viên đã chuyển ngành', 'success').then(function () {
+                        location.reload();
+                    });
+                } else {
+                    swal('Lỗi', result.msg, 'error');
+                }
+            }
+        });
+    }
+
     function GetCurrent() {
         $.ajax({
             type: "GET",
@@ -139,9 +168,11 @@
                         html += data[i][j];
                         html += "</td>";
                     }
+                    html += "<td><input type='checkbox' value='" + data[i][0] +"' checked/></td>";
                     html += "</tr>";
                 }
                 $('#yes').html(html);
+                $("input[type='checkbox']").bootstrapSwitch();
             }
         });
     }
@@ -162,9 +193,11 @@
                         html += data[i][j];
                         html += "</td>";
                     }
+                    html += "<td><input type='checkbox' value='" + data[i][0] +"' checked/></td>";
                     html += "</tr>";
                 }
                 $('#no').html(html);
+                $("input[type='checkbox']").bootstrapSwitch();
             }
         });
     }

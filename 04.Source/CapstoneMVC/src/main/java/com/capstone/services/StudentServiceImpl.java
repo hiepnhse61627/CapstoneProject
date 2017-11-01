@@ -43,6 +43,11 @@ public class StudentServiceImpl implements IStudentService {
     }
 
     @Override
+    public void saveStudent(StudentEntity stu) throws Exception {
+        studentEntityJpaController.saveStudent(stu);
+    }
+
+    @Override
     public int getCurrentLine() {
         return studentEntityJpaController.getCurrentLine();
     }

@@ -1,9 +1,6 @@
 package com.capstone.jpa.exJpa;
 
-import com.capstone.entities.DocumentStudentEntity;
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.RealSemesterEntity;
-import com.capstone.entities.StudentEntity;
+import com.capstone.entities.*;
 import com.capstone.jpa.StudentEntityJpaController;
 import com.capstone.models.Logger;
 import com.capstone.services.DocumentStudentServiceImpl;
@@ -29,6 +26,27 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
 
     public int getTotalLine() {
         return totalLine;
+    }
+
+    public void saveStudent(StudentEntity student) {
+        try {
+            EntityManager manager = getEntityManager();
+            manager.getTransaction().begin();
+            for (DocumentStudentEntity doc : student.getDocumentStudentEntityList()) {
+                if (doc.getId() == null) {
+                    manager.persist(doc);
+                    manager.flush();
+                    manager.merge(doc);
+                    manager.refresh(doc);
+                }
+            }
+            manager.merge(student);
+            manager.flush();
+            manager.getTransaction().commit();
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            e.printStackTrace();
+        }
     }
 
     public void createStudentList(List<DocumentStudentEntity> students) {
