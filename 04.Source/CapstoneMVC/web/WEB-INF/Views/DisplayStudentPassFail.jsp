@@ -204,7 +204,7 @@
                 }
             ],
             "bAutoWidth": false,
-            "initComplete" : function (settings, json) {
+            "fnDrawCallback" : function (settings, json) {
                 sInfo()
             }
         }).fnSetFilteringDelay(1000);
