@@ -172,9 +172,12 @@ public class LoginController {
         return "redirect:/dashboard";
     }
 
-    private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user) {
+    private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user){
         List<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(new SimpleGrantedAuthority(user.getRole()));
+        String[] roles = user.getRole().split(",");
+        for (String role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role.trim()));
+        }
         return authorities;
     }
 }

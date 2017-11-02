@@ -54,6 +54,9 @@ public class ExCredentialsEntityJpaController extends CredentialsEntityJpaContro
         manager.getTransaction().begin();
         if (persist) manager.persist(entity);
         else manager.merge(entity);
+        manager.flush();
         manager.getTransaction().commit();
+        entity = manager.merge(entity);
+        manager.refresh(entity);
     }
 }

@@ -410,7 +410,7 @@
 
                 <security:authorize access="hasAnyRole('ROLE_STUDENT')">
                     <li>
-                        <a href="/studentDetail"><i class="fa fa-list"></i>
+                        <a href="/student/studentDetail"><i class="fa fa-list"></i>
                             <span>Thông tin chi tiết</span></a>
                     </li>
                     <li>
