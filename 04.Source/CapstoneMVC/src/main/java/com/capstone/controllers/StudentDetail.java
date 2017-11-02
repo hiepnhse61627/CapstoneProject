@@ -140,6 +140,7 @@ public class StudentDetail {
                         List<MarksEntity> rep = queryCheckPass.getResultList();
                         if (!rep.isEmpty()) {
                             iterator.remove();
+                            break;
                         }
                     }
                 }
@@ -346,6 +347,7 @@ public class StudentDetail {
                                 List<MarksEntity> rep = queryCheckPass.getResultList();
                                 if (!rep.isEmpty()) {
                                     iterator.remove();
+                                    break;
                                 }
                             }
                         }
@@ -430,6 +432,7 @@ public class StudentDetail {
                         List<MarksEntity> rep = queryCheckPass.getResultList();
                         if (!rep.isEmpty()) {
                             iterator.remove();
+                            break;
                         }
                     }
                 }
@@ -515,7 +518,8 @@ public class StudentDetail {
                             queryCheckPass.setParameter("sub", s.getId());
                             List<MarksEntity> rep = queryCheckPass.getResultList();
                             if (!rep.isEmpty()) {
-                                iterator.remove();
+                                iterator3.remove();
+                                break;
                             }
                         }
                     }
@@ -536,7 +540,8 @@ public class StudentDetail {
                 queryCheckPass.setParameter("sub", s.getId());
                 List<MarksEntity> rep = queryCheckPass.getResultList();
                 if (!rep.isEmpty()) {
-                    iterator.remove();
+                    iterator2.remove();
+                    break;
                 }
             }
         }
@@ -652,6 +657,7 @@ public class StudentDetail {
                 List<MarksEntity> rep = queryCheckPass.getResultList();
                 if (!rep.isEmpty()) {
                     iterator.remove();
+                    break;
                 }
             }
         }

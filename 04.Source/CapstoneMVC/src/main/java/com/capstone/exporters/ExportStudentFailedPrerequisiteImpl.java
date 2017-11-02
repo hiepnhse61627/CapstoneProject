@@ -40,7 +40,7 @@ public class ExportStudentFailedPrerequisiteImpl implements IExportObject {
     }
 
     @Override
-    public void writeData(OutputStream os, Map<String, String> params) throws IOException {
+    public void writeData(OutputStream os, Map<String, String> params) throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream is = classLoader.getResourceAsStream(EXCEL_TEMPLATE);
 
@@ -56,7 +56,7 @@ public class ExportStudentFailedPrerequisiteImpl implements IExportObject {
         streamingWorkbook.write(os);
     }
 
-    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, Map<String, String> params) {
+    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, Map<String, String> params) throws Exception {
         // process list
         StudentFailPrequisite controller = new StudentFailPrequisite();
         List<List<String>> models = controller.processData(params);

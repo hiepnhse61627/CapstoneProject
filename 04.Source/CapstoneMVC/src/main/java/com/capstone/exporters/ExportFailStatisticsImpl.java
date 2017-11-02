@@ -25,7 +25,7 @@ public class ExportFailStatisticsImpl implements IExportObject {
     }
 
     @Override
-    public void writeData(OutputStream os, Map<String, String> params) throws IOException {
+    public void writeData(OutputStream os, Map<String, String> params) throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream is = classLoader.getResourceAsStream(EXCEL_TEMPLATE);
 
@@ -38,7 +38,7 @@ public class ExportFailStatisticsImpl implements IExportObject {
         xssfWorkbook.write(os);
     }
 
-    private void writeDataToTable(XSSFWorkbook workbook, XSSFSheet spreadsheet, String semester) {
+    private void writeDataToTable(XSSFWorkbook workbook, XSSFSheet spreadsheet, String semester) throws Exception {
         // process list
         FailStatisticsController failStatisticsController = new FailStatisticsController();
         ArrayList<ArrayList<String >> result = failStatisticsController.processData(semester);

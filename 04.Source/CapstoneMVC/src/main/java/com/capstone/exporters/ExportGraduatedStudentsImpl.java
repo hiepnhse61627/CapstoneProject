@@ -30,7 +30,7 @@ public class ExportGraduatedStudentsImpl implements IExportObject {
     }
 
     @Override
-    public void writeData(OutputStream os, Map<String, String> params) throws IOException {
+    public void writeData(OutputStream os, Map<String, String> params) throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream is = classLoader.getResourceAsStream(EXCEL_TEMPLATE);
 
@@ -42,7 +42,7 @@ public class ExportGraduatedStudentsImpl implements IExportObject {
         workbook.write(os);
     }
 
-    private void writeDataToTable(XSSFWorkbook workbook, XSSFSheet sheet, Map<String, String> params) {
+    private void writeDataToTable(XSSFWorkbook workbook, XSSFSheet sheet, Map<String, String> params) throws Exception{
         // style
         CellStyle cellStyle = workbook.createCellStyle();
         cellStyle.setBorderBottom(BorderStyle.THIN);

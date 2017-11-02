@@ -66,11 +66,16 @@ public class ManagerController {
                 if (doc.getCreatedDate() == null) return 0;
                 else return doc.getCreatedDate().getTime();
             }));
-            DocumentStudentEntity d = docs.get(docs.size() - 1);
-            String data = d.getCurriculumId().getProgramId().getName() + "_" + d.getCurriculumId().getName();
+
+            String data = "";
+            DocumentStudentEntity d = null;
+            if (!docs.isEmpty()) {
+                d = docs.get(docs.size() - 1);
+                data = d.getCurriculumId().getProgramId().getName() + "_" + d.getCurriculumId().getName();
+            }
 
             result.addProperty("info", data);
-            result.addProperty("curriculum", d.getCurriculumId().getId());
+            result.addProperty("curriculum", d == null ? -1 : d.getCurriculumId().getId());
         } catch (Exception e) {
             Logger.writeLog(e);
             e.printStackTrace();

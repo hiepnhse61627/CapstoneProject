@@ -511,9 +511,11 @@ public class Ultilities {
                 if (doc.getCreatedDate() == null) return 0;
                 else return doc.getCreatedDate().getTime();
             }));
-            List<SubjectCurriculumEntity> cursubs = docs.get(docs.size() - 1).getCurriculumId().getSubjectCurriculumEntityList();
-            for (SubjectCurriculumEntity s : cursubs) {
-                if (!subs.contains(s.getSubjectId().getId())) subs.add(s.getSubjectId().getId());
+            if (!docs.isEmpty()) {
+                List<SubjectCurriculumEntity> cursubs = docs.get(docs.size() - 1).getCurriculumId().getSubjectCurriculumEntityList();
+                for (SubjectCurriculumEntity s : cursubs) {
+                    if (!subs.contains(s.getSubjectId().getId())) subs.add(s.getSubjectId().getId());
+                }
             }
         }
 

@@ -160,12 +160,10 @@
             </div>
         </div>
     </div>
-
 </section>
 
 <form id="export-excel" action="/exportExcel" hidden>
     <input name="objectType"/>
-    <input name="studentId"/>
 </form>
 
 <script>
@@ -498,10 +496,22 @@
         swal({
             title: 'Đang xử lý',
             html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>' +
-            '<div class="form-group" id="progress"></div>',
+            '<div class="form-group" id="progress"></div>' +
+            '<div><button id="stop">Stop</button></div>',
             type: 'info',
             onOpen: function () {
                 swal.showLoading();
+                $('#stop').click(function () {
+                    $.ajax({
+                        type: "GET",
+                        url: "/pauseexportStudentDetail",
+                        processData: false,
+                        contentType: false,
+                        success: function (result) {
+                            swal('', 'Dừng thành công', 'success');
+                        }
+                    });
+                });
                 Run();
             },
             allowOutsideClick: false
