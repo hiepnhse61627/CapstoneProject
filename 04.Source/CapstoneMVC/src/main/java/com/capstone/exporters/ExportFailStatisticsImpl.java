@@ -6,6 +6,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.IOException;
@@ -29,19 +30,15 @@ public class ExportFailStatisticsImpl implements IExportObject {
         InputStream is = classLoader.getResourceAsStream(EXCEL_TEMPLATE);
 
         XSSFWorkbook xssfWorkbook = new XSSFWorkbook(is);
-        is.close();
-        // change to streaming working
-        SXSSFWorkbook streamingWorkbook = new SXSSFWorkbook(xssfWorkbook);
-        SXSSFSheet streamingSheet = streamingWorkbook.getSheetAt(0);
-        streamingSheet.setRandomAccessWindowSize(100);
+        XSSFSheet spreadsheet = xssfWorkbook.getSheetAt(0);
         // write data to table
         String semester = params.get("semesterId");
-        writeDataToTable(streamingWorkbook, streamingSheet, semester);
+        writeDataToTable(xssfWorkbook, spreadsheet, semester);
         // write os
-        streamingWorkbook.write(os);
+        xssfWorkbook.write(os);
     }
 
-    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, String semester) {
+    private void writeDataToTable(XSSFWorkbook workbook, XSSFSheet spreadsheet, String semester) {
         // process list
         FailStatisticsController failStatisticsController = new FailStatisticsController();
         ArrayList<ArrayList<String >> result = failStatisticsController.processData(semester);
@@ -52,7 +49,7 @@ public class ExportFailStatisticsImpl implements IExportObject {
             cellStyle.setBorderLeft(BorderStyle.THIN);
             cellStyle.setBorderRight(BorderStyle.THIN);
             cellStyle.setBorderTop(BorderStyle.THIN);
-            cellStyle.setAlignment(HorizontalAlignment.LEFT);
+            cellStyle.setAlignment(HorizontalAlignment.CENTER);
             cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
             CellStyle headerCellStyle = workbook.createCellStyle();
@@ -82,9 +79,11 @@ public class ExportFailStatisticsImpl implements IExportObject {
                 RegionUtil.setBorderTop(BorderStyle.THIN, range1, spreadsheet);
 
                 rowIndex = rowIndex + 1;
-                Cell failedCell = row.createCell(rowIndex);
+                row = spreadsheet.getRow(rowIndex);
+                Cell failedCell = row.createCell(5);
                 failedCell.setCellValue(record.get(0));
-                failedCell.setCellStyle(headerCellStyle);
+                failedCell.setCellStyle(cellStyle);
+                range1 = new CellRangeAddress(rowIndex, rowIndex, 5, 6);
                 spreadsheet.addMergedRegion(range1);
                 RegionUtil.setBorderBottom(BorderStyle.THIN, range1, spreadsheet);
                 RegionUtil.setBorderLeft(BorderStyle.THIN, range1, spreadsheet);
@@ -92,9 +91,11 @@ public class ExportFailStatisticsImpl implements IExportObject {
                 RegionUtil.setBorderTop(BorderStyle.THIN, range1, spreadsheet);
 
                 rowIndex = rowIndex + 1;
-                Cell paidCell = row.createCell(rowIndex);
+                row = spreadsheet.getRow(rowIndex);
+                Cell paidCell = row.createCell(5);
                 paidCell.setCellValue(record.get(1));
                 paidCell.setCellStyle(cellStyle);
+                range1 = new CellRangeAddress(rowIndex, rowIndex, 5, 6);
                 spreadsheet.addMergedRegion(range1);
                 RegionUtil.setBorderBottom(BorderStyle.THIN, range1, spreadsheet);
                 RegionUtil.setBorderLeft(BorderStyle.THIN, range1, spreadsheet);
@@ -102,9 +103,11 @@ public class ExportFailStatisticsImpl implements IExportObject {
                 RegionUtil.setBorderTop(BorderStyle.THIN, range1, spreadsheet);
 
                 rowIndex = rowIndex + 1;
-                Cell failedInCurrentCell = row.createCell(rowIndex);
+                row = spreadsheet.getRow(rowIndex);
+                Cell failedInCurrentCell = row.createCell(5);
                 failedInCurrentCell.setCellValue(record.get(2));
                 failedInCurrentCell.setCellStyle(cellStyle);
+                range1 = new CellRangeAddress(rowIndex, rowIndex, 5, 6);
                 spreadsheet.addMergedRegion(range1);
                 RegionUtil.setBorderBottom(BorderStyle.THIN, range1, spreadsheet);
                 RegionUtil.setBorderLeft(BorderStyle.THIN, range1, spreadsheet);
@@ -112,9 +115,11 @@ public class ExportFailStatisticsImpl implements IExportObject {
                 RegionUtil.setBorderTop(BorderStyle.THIN, range1, spreadsheet);
 
                 rowIndex = rowIndex + 1;
-                Cell failedInTheEndSemesterCell = row.createCell(rowIndex);
+                row = spreadsheet.getRow(rowIndex);
+                Cell failedInTheEndSemesterCell = row.createCell(5);
                 failedInTheEndSemesterCell.setCellValue(record.get(3));
                 failedInTheEndSemesterCell.setCellStyle(cellStyle);
+                range1 = new CellRangeAddress(rowIndex, rowIndex, 5, 6);
                 spreadsheet.addMergedRegion(range1);
                 RegionUtil.setBorderBottom(BorderStyle.THIN, range1, spreadsheet);
                 RegionUtil.setBorderLeft(BorderStyle.THIN, range1, spreadsheet);
