@@ -420,6 +420,10 @@
                         <a href="/studentcurriculum/index"><i class="fa fa-list"></i>
                             <span>Bảng điểm sinh viên</span></a>
                     </li>
+                    <li>
+                        <a href="#"><i class="fa fa-list"></i>
+                            <span>Khung Chương Trình</span></a>
+                    </li>
                 </security:authorize>
 
                 <security:authorize access="hasAnyRole('ROLE_ADMIN')">

@@ -33,6 +33,8 @@ public class StudentController {
     @Autowired
     ServletContext context;
 
+    private String searchKey = "";
+
     IMarksService marksService = new MarksServiceImpl();
 
     @RequestMapping("/create")
@@ -86,7 +88,22 @@ public class StudentController {
         return null;
     }
 
+    @RequestMapping(value = "/getstudents/studentsDistinct", method = RequestMethod.GET)
+    @ResponseBody
+    public JsonObject getStudentDistinctNumber(@RequestParam("semesterId") String semesterId, @RequestParam("subjectId") String subjectId) {
+        JsonObject jsonObject = new JsonObject();
+
+        List<MarksEntity> dataList = this.GetStudentsList(semesterId, subjectId, this.searchKey);
+        List<String> studentList = dataList.stream().map(d -> d.getStudentId().getRollNumber()).distinct().collect(Collectors.toList());
+
+        jsonObject.addProperty("success", true);
+        jsonObject.addProperty("studentSize", studentList.size());
+
+        return jsonObject;
+    }
+
     public List<List<String>> processData(Map<String, String> params) {
+        this.searchKey = params.get("sSearch");
         String semesterId = params.get("semesterId");
         String subjectId = params.get("subjectId");
         String searchKey = params.get("sSearch");
