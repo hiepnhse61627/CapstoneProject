@@ -169,10 +169,11 @@ public class ExCurriculumEntityJpaController extends CurriculumEntityJpaControll
 
         try {
             em = getEntityManager();
-
             em.getTransaction().begin();
             em.persist(entity);
             em.flush();
+            entity = em.merge(entity);
+            em.refresh(entity);
             em.getTransaction().commit();
         } finally {
             em.close();

@@ -62,6 +62,7 @@
                                     <th>Ngành</th>
                                     <th>Quyết định</th>
                                     <th>Ngày tạo</th>
+                                    <%--<th>Xóa</th>--%>
                                 </tr>
                                 </thead>
                             </table>
@@ -86,6 +87,7 @@
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <button type="button" class="btn btn-success" onclick="Change()">Chuyển ngành</button>
+                                            <a href="/subcurriculum" class="btn btn-google">Tạo khung chương trình</a>
                                         </div>
                                     </div>
                                 </div>
@@ -252,6 +254,13 @@
                         "bSortable": false,
                         "sClass": "text-center",
                     },
+//                    {
+//                        "aTargets": [3],
+//                        "mRender": function (data, type, row) {
+//                            var id = row[0];
+//                            return "<a class='btn btn-warning' onclick='Delete(" + id + ")'>Xóa</a>";
+//                        }
+//                    }
                 ],
                 "bAutoWidth": false,
             });

@@ -45,19 +45,10 @@
                     <div class="my-content">
                         <div class="my-input-group p-l-30">
                             <div class="left-content">
-                                <label class="p-t-8">Tên:</label>
+                                <label class="p-t-8">Khóa:</label>
                             </div>
                             <div class="right-content">
                                 <input id="name" type="text" class="form-control"/>
-                            </div>
-                        </div>
-
-                        <div class="my-input-group p-l-30">
-                            <div class="left-content">
-                                <label class="p-t-8">Mô tả:</label>
-                            </div>
-                            <div class="right-content">
-                                <input id="des" type="text" class="form-control"/>
                             </div>
                         </div>
 
@@ -67,7 +58,6 @@
                             </div>
                             <div class="right-content">
                                 <select id="program" class="form-control">
-                                    <option value="-1">- Chọn ngành -</option>
                                     <c:forEach var="p" items="${programs}">
                                         <c:choose>
                                             <c:when test="${data.programId.id == p.id}">
@@ -144,11 +134,11 @@
     var dnd;
 
     $(document).ready(function () {
-        dnd = $('#table').tableDnD({
-            onDrop: function (table, row) {
-                GetRowsData();
-            },
-        });
+//        dnd = $('#table').tableDnD({
+//            onDrop: function (table, row) {
+//                GetRowsData();
+//            },
+//        });
 
         Add();
         IntializeRows();
@@ -227,19 +217,18 @@
             "</tr>");
         IntializeRows();
         GetRowsData();
-        dnd = $('#table').tableDnD({
-            onDrop: function (table, row) {
-                GetRowsData();
-            },
-            activeCols: ["draggable"]
-        });
+//        dnd = $('#table').tableDnD({
+//            onDrop: function (table, row) {
+//                GetRowsData();
+//            },
+//            activeCols: ["draggable"]
+//        });
     }
 
     function Send() {
         var form = new FormData();
         form.append("data", data);
         form.append("name", $('#name').val());
-        form.append("des", $('#des').val());
         form.append("programId", $('#program').val());
 
         $.ajax({

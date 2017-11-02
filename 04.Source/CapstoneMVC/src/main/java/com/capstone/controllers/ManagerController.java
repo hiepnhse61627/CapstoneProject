@@ -33,6 +33,7 @@ public class ManagerController {
         view.addObject("students", list);
         ICurriculumService curriculumService = new CurriculumServiceImpl();
         List<CurriculumEntity> list2 = curriculumService.getAllCurriculums();
+        list2.sort(Comparator.comparing(c -> c.getProgramId().getName() + "_" + c.getName()));
         view.addObject("curs", list2);
         return view;
     }

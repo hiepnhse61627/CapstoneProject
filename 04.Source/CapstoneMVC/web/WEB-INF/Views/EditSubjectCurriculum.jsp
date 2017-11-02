@@ -44,17 +44,17 @@
             <div class="form-group">
                 <div class="row">
                     <div class="title">
-                        <h4>Thông tin chi tiết</h4>
+                        <%--<h4>Thông tin chi tiết</h4>--%>
                     </div>
                     <div class="my-content">
-                        <div class="my-input-group p-l-30">
-                            <div class="left-content" style="width: 90px">
-                                <label class="p-t-8">Khóa:</label>
-                            </div>
-                            <div class="right-content width-30">
-                                <input id="curriculumName" type="text" class="form-control" value="${data.name}"/>
-                            </div>
-                        </div>
+                        <%--<div class="my-input-group p-l-30">--%>
+                            <%--<div class="left-content" style="width: 90px">--%>
+                                <%--<label class="p-t-8">Khóa:</label>--%>
+                            <%--</div>--%>
+                            <%--<div class="right-content width-30">--%>
+                                <%--<input id="curriculumName" type="text" class="form-control" value="${data.name}"/>--%>
+                            <%--</div>--%>
+                        <%--</div>--%>
 
                         <%--<div class="my-input-group p-l-30">--%>
                             <%--<div class="left-content" style="width: 90px">--%>
@@ -167,11 +167,11 @@
     var dnd;
 
     $(document).ready(function () {
-        dnd = $('#table').tableDnD({
-            onDrop: function (table, row) {
-                GetRowsData();
-            },
-        });
+//        dnd = $('#table').tableDnD({
+//            onDrop: function (table, row) {
+//                GetRowsData();
+//            },
+//        });
 
         IntializeRows();
         GetRowsData();
@@ -255,25 +255,25 @@
             "</tr>");
         IntializeRows();
         GetRowsData();
-        dnd = $('#table').tableDnD({
-            onDrop: function (table, row) {
-                GetRowsData();
-            },
-            activeCols: ["draggable"]
-        });
+//        dnd = $('#table').tableDnD({
+//            onDrop: function (table, row) {
+//                GetRowsData();
+//            },
+//            activeCols: ["draggable"]
+//        });
     }
 
     function Send() {
-        if ($('#curriculumName').val().trim() == '') {
-            swal('', 'Tên khóa không được để trống', 'error');
-            return;
-        }
+//        if ($('#curriculumName').val() == '') {
+//            swal('', 'Tên khóa không được để trống', 'error');
+//            return;
+//        }
 
         var form = new FormData();
         form.append("data", data);
         form.append("curriculumId", '${data.id}');
-        form.append("curriculumName", $('#curriculumName').val());
-        form.append("programId", $('#program').val());
+//        form.append("curriculumName", $('#curriculumName').val());
+//        form.append("programId", $('#program').val());
 
         $.ajax({
             type: "POST",
