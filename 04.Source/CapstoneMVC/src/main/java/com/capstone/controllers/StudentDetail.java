@@ -288,38 +288,38 @@ public class StudentDetail {
                     if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectId().getId()))) {
                         iterator.remove();
                     } else {
-                        // check prequisite
-                        List<String> processedData = new ArrayList<>();
-                        SubjectEntity entity = cur.getSubjectId();
-                        String preSubs = entity.getPrequisiteEntity().getPrequisiteSubs();
-                        String[] rows = preSubs == null ? (entity.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : entity.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
-                        for (String row : rows) {
-                            row = row.replaceAll("\\(", "").replaceAll("\\)", "");
-                            String[] cells = row.split(",");
-                            for (String cell : cells) {
-                                cell = cell.trim();
-                                SubjectEntity c = subjectService.findSubjectById(cell);
-                                if (c != null) processedData.add(cell);
-                            }
-                        }
-                        if (!entity.getSubjectEntityList().isEmpty()) {
-                            for (SubjectEntity replaces : entity.getSubjectEntityList()) {
-                                processedData.add(replaces.getId());
-                            }
-                        }
-                        if (!processedData.isEmpty()) {
-                            String str = "SELECT p FROM MarksEntity p WHERE p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList";
-                            TypedQuery<MarksEntity> prequisiteQuery;
-                            prequisiteQuery = em.createQuery(str, MarksEntity.class);
-                            prequisiteQuery.setParameter("sList", processedData);
-                            prequisiteQuery.setParameter("id", stuId);
-
-                            List<MarksEntity> list2 = prequisiteQuery.getResultList();
-                            boolean failed = Ultilities.HasFailedPrequisitesOfOneStudent(list2, cur.getSubjectId().getPrequisiteEntity());
-                            if (failed) {
-                                iterator.remove();
-                            }
-                        }
+//                        // check prequisite
+//                        List<String> processedData = new ArrayList<>();
+//                        SubjectEntity entity = cur.getSubjectId();
+//                        String preSubs = entity.getPrequisiteEntity().getPrequisiteSubs();
+//                        String[] rows = preSubs == null ? (entity.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : entity.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
+//                        for (String row : rows) {
+//                            row = row.replaceAll("\\(", "").replaceAll("\\)", "");
+//                            String[] cells = row.split(",");
+//                            for (String cell : cells) {
+//                                cell = cell.trim();
+//                                SubjectEntity c = subjectService.findSubjectById(cell);
+//                                if (c != null) processedData.add(cell);
+//                            }
+//                        }
+//                        if (!entity.getSubjectEntityList().isEmpty()) {
+//                            for (SubjectEntity replaces : entity.getSubjectEntityList()) {
+//                                processedData.add(replaces.getId());
+//                            }
+//                        }
+//                        if (!processedData.isEmpty()) {
+//                            String str = "SELECT p FROM MarksEntity p WHERE p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList";
+//                            TypedQuery<MarksEntity> prequisiteQuery;
+//                            prequisiteQuery = em.createQuery(str, MarksEntity.class);
+//                            prequisiteQuery.setParameter("sList", processedData);
+//                            prequisiteQuery.setParameter("id", stuId);
+//
+//                            List<MarksEntity> list2 = prequisiteQuery.getResultList();
+//                            boolean failed = Ultilities.HasFailedPrequisitesOfOneStudent(list2, cur.getSubjectId().getPrequisiteEntity());
+//                            if (failed) {
+//                                iterator.remove();
+//                            }
+//                        }
                     }
                 }
             }

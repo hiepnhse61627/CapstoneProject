@@ -195,7 +195,7 @@
                         html += data[i][j];
                         html += "</td>";
                     }
-                    html += "<td><input type='checkbox' value='" + data[i][0] +"' checked/></td>";
+                    html += "<td><input type='checkbox' value='" + data[i][0] +"'/></td>";
                     html += "</tr>";
                 }
                 $('#no').html(html);
@@ -213,6 +213,9 @@
                 console.log(result);
                 $('#info').html(result.info);
                 $('#curid').val(result.curriculum);
+
+                GetCurrent();
+                GetNew();
             }
         });
     }
