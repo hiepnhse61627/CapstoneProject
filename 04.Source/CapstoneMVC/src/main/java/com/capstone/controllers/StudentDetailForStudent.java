@@ -118,7 +118,7 @@ public class StudentDetailForStudent {
         int stuId = Integer.parseInt(params.get("stuId"));
 
         try {
-            List<List<String>> result = detail.processNext(stuId);
+            List<List<String>> result = detail.processNext(stuId, false);
 
             List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
