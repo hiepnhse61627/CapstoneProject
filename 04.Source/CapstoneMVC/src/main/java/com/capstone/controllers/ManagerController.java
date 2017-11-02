@@ -163,7 +163,7 @@ public class ManagerController {
                 row.add(semesterNameMap.get(semesId));
                 row.add(subjectName);
                 row.add(numOfStudent + "");
-                row.add((Math.round(numOfStudent / 30.0 * 100.0) / 100.0) + ""); // Average number of students in one class
+                row.add((Math.round(numOfStudent / 25.0 * 100.0) / 100.0) + ""); // Average number of students in one class
                 result.add(row);
             }
 
