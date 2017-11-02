@@ -23,4 +23,23 @@ public class Enums {
         }
     }
 
+    public enum MarkComponent {
+        QUIZ("QUIZ"),
+        ASSIGNMENT("ASSIGNMENT"),
+        PRESENTATION("PRESENTATION"),
+        MID_TERM("MID-TERM"),
+        FINAL("FINAL"),
+        AVERAGE("AVERAGE");
+
+        private final String value;
+
+        private MarkComponent(final String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return this.value;
+        }
+    }
+
 }

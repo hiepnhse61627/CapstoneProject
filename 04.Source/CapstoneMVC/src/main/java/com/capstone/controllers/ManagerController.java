@@ -18,6 +18,7 @@ import javax.jws.WebParam;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/managerrole")
@@ -33,6 +34,19 @@ public class ManagerController {
         ICurriculumService curriculumService = new CurriculumServiceImpl();
         List<CurriculumEntity> list2 = curriculumService.getAllCurriculums();
         view.addObject("curs", list2);
+        return view;
+    }
+
+    @RequestMapping("/averageStudentInClass")
+    public ModelAndView AverageClass() {
+        ModelAndView view = new ModelAndView("AverageStudentInClass");
+        view.addObject("title", "Sĩ số trung bình lớp môn học theo kỳ");
+
+        IRealSemesterService semesterService = new RealSemesterServiceImpl();
+        List<RealSemesterEntity> semesters = semesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+        view.addObject("semesters", semesters);
+
         return view;
     }
 
@@ -100,6 +114,70 @@ public class ManagerController {
         }
 
         return result;
+    }
+
+    @RequestMapping("/averageStudentInClass/getList")
+    @ResponseBody
+    public JsonObject GetAverageStudentInClassForDataTable(@RequestParam Map<String, String> params) {
+        IMarksService marksService = new MarksServiceImpl();
+        IRealSemesterService semesterService = new RealSemesterServiceImpl();
+        JsonObject jsonObj = new JsonObject();
+
+        int semesterId = Integer.parseInt(params.get("semesterId"));
+        int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
+        int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
+
+        try {
+            List<RealSemesterEntity> semesterList = Ultilities.SortSemesters(semesterService.getAllSemester());
+            Map<Integer, String> semesterNameMap = new HashMap<>();
+            final Map<Integer, Integer> semesterPositionMap = new HashMap<>();
+            for (int i = 0; i < semesterList.size(); ++i) {
+                RealSemesterEntity curSemester = semesterList.get(i);
+                semesterNameMap.put(curSemester.getId(), curSemester.getSemester());
+                semesterPositionMap.put(curSemester.getId(), i);
+            }
+
+            List<Object[]> countList = marksService.getTotalStudentsGroupBySemesterAndSubject(semesterId);
+            countList.sort(Comparator.comparingInt(a -> {
+                Object[] arr = (Object[]) a;
+                return semesterPositionMap.get(arr[0]);
+            }).thenComparing(new Comparator<Object>() {
+                @Override
+                public int compare(Object o1, Object o2) {
+                    Object[] arr1 = (Object[]) o1;
+                    Object[] arr2 = (Object[]) o2;
+                    return arr1[1].toString().compareTo(arr2[1].toString());
+                }
+            }));
+
+            List<List<String>> result = new ArrayList<>();
+            for (Object[] arr : countList.stream().skip(iDisplayStart)
+                    .limit(iDisplayLength).collect(Collectors.toList())) {
+                List<String> row = new ArrayList<>();
+
+                int semesId = (int) arr[0];
+                String subjectName = arr[1].toString();
+                long numOfStudent = (long) arr[2];
+
+                row.add(semesterNameMap.get(semesId));
+                row.add(subjectName);
+                row.add(numOfStudent + "");
+                row.add((Math.round(numOfStudent / 30.0 * 100.0) / 100.0) + ""); // Average number of students in one class
+                result.add(row);
+            }
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
+
+            jsonObj.addProperty("iTotalRecords", countList.size());
+            jsonObj.addProperty("iTotalDisplayRecords", countList.size());
+            jsonObj.add("aaData", aaData);
+            jsonObj.addProperty("sEcho", params.get("sEcho"));
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            e.printStackTrace();
+        }
+
+        return jsonObj;
     }
 
     public List<SubjectEntity> GetCurrentCurriculumSubjects(int curId) {
@@ -229,4 +307,5 @@ public class ManagerController {
 
         return result;
     }
+
 }

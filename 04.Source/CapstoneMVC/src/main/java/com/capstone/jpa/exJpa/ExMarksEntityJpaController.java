@@ -3,6 +3,7 @@ package com.capstone.jpa.exJpa;
 import com.capstone.entities.*;
 import com.capstone.jpa.MarksEntityJpaController;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
+import com.capstone.models.Enums;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import org.apache.commons.lang3.reflect.Typed;
@@ -465,6 +466,38 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                     " ORDER BY m.subjectMarkComponentId.subjectId.name";
             TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
             query.setParameter("studentId", studentId);
+
+            result = query.getResultList();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
+    }
+
+    public List<Object[]> getTotalStudentsGroupBySemesterAndSubject(int semesterId) {
+        IMarkComponentService markComponentService = new MarkComponentServiceImpl();
+        List<Object[]> result = null;
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+
+            MarkComponentEntity markComponent = markComponentService.getMarkComponentByName(
+                    Enums.MarkComponent.AVERAGE.getValue());
+
+            String queryStr = "SELECT m.semesterId.id, smc.subjectId.id, COUNT(m) FROM MarksEntity m" +
+                    " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id" +
+                    " AND smc.markComponentId.id = :markComponentId" +
+                    (semesterId > 0 ? " AND m.semesterId.id = :semesterId" : "") +
+                    " GROUP BY m.semesterId.id, smc.subjectId.id";
+            Query query = em.createQuery(queryStr);
+            query.setParameter("markComponentId", markComponent.getId());
+            if (semesterId > 0) {
+                query.setParameter("semesterId", semesterId);
+            }
 
             result = query.getResultList();
         } finally {

@@ -23,4 +23,7 @@ public interface IMarksService {
     List<MarksEntity> getAllMarksByStudentAndSubject(int studentId, String subjectId, String semesterId);
     List<MarksEntity> getMarksByStudentIdAndStatus(int studentId, String status);
     List<MarksEntity> getListMarkToCurrentSemester(List<Integer> semesterIds, String[] statuses);
+
+    // ----- Manager function ----
+    List<Object[]> getTotalStudentsGroupBySemesterAndSubject(int semesterId);
 }
