@@ -79,6 +79,7 @@ public class ExportController {
                 "com.capstone.exporters.ExportStudentListImpl", // 7 = Export students
                 "com.capstone.exporters.ExportPercentFailImpl", // 8 = Export percent fail
                 "com.capstone.exporters.ExportGoodStudentsImpl", // 9 = Export good student
+                "com.capstone.exporters.ExportFailStatisticsImpl" // 10 = Export fail statistics
         };
 
         try {

@@ -362,9 +362,6 @@
                 if (result.success) {
                     var subject = JSON.parse(result.subject);
 
-                    console.log("yas");
-                    console.log(subject);
-
                     $("#subjectId").val(subject.subjectID);
                     $("#subjectName").val(subject.subjectName);
                     $("#prerequisiteSubs").val(subject.prerequisiteSubject);
