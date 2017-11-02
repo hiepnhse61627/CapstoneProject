@@ -375,51 +375,59 @@ public class StudentDetail {
                     nextSubjects.add(c.getSubjectId());
                 }
             });
-            List<String> curriculumSubjects = nextSubjects.stream().map(c -> c.getId()).collect(Collectors.toList());
-            TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
-            query2.setParameter("id", stuId);
-            query2.setParameter("list", curriculumSubjects);
-            List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
-            Iterator<SubjectEntity> iterator3 = nextSubjects.iterator();
-            while (iterator3.hasNext()) {
-                SubjectEntity entity = iterator3.next();
-                if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(entity.getId()))) {
-                    iterator3.remove();
-                } else {
-                    // check prequisite
-                    List<String> processedData = new ArrayList<>();
-                    String preSubs = entity.getPrequisiteEntity().getPrequisiteSubs();
-                    String[] rows = preSubs == null ? (entity.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : entity.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
-                    for (String row : rows) {
-                        row = row.replaceAll("\\(", "").replaceAll("\\)", "");
-                        String[] cells = row.split(",");
-                        for (String cell : cells) {
-                            cell = cell.trim();
-                            SubjectEntity c = subjectService.findSubjectById(cell);
-                            if (c != null) processedData.add(cell);
+            List<String> curriculumSubjects = new ArrayList<>();
+            for (SubjectEntity s : nextSubjects) {
+                if (!curriculumSubjects.contains(s.getId())) {
+                    curriculumSubjects.add(s.getId());
+                }
+            }
+            if (!curriculumSubjects.isEmpty()) {
+                TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+                query2.setParameter("id", stuId);
+                query2.setParameter("list", curriculumSubjects);
+                List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
+                Iterator<SubjectEntity> iterator3 = nextSubjects.iterator();
+                while (iterator3.hasNext()) {
+                    SubjectEntity entity = iterator3.next();
+                    if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(entity.getId()))) {
+                        iterator3.remove();
+                    } else {
+                        // check prequisite
+                        List<String> processedData = new ArrayList<>();
+                        String preSubs = entity.getPrequisiteEntity().getPrequisiteSubs();
+                        String[] rows = preSubs == null ? (entity.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : entity.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
+                        for (String row : rows) {
+                            row = row.replaceAll("\\(", "").replaceAll("\\)", "");
+                            String[] cells = row.split(",");
+                            for (String cell : cells) {
+                                cell = cell.trim();
+                                SubjectEntity c = subjectService.findSubjectById(cell);
+                                if (c != null) processedData.add(cell);
+                            }
                         }
-                    }
-                    if (!entity.getSubjectEntityList().isEmpty()) {
-                        for (SubjectEntity replaces : entity.getSubjectEntityList()) {
-                            processedData.add(replaces.getId());
+                        if (!entity.getSubjectEntityList().isEmpty()) {
+                            for (SubjectEntity replaces : entity.getSubjectEntityList()) {
+                                processedData.add(replaces.getId());
+                            }
                         }
-                    }
 
-                    if (!processedData.isEmpty()) {
-                        String str = "SELECT p FROM MarksEntity p WHERE p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList";
-                        TypedQuery<MarksEntity> prequisiteQuery;
-                        prequisiteQuery = em.createQuery(str, MarksEntity.class);
-                        prequisiteQuery.setParameter("sList", processedData);
-                        prequisiteQuery.setParameter("id", stuId);
+                        if (!processedData.isEmpty()) {
+                            String str = "SELECT p FROM MarksEntity p WHERE p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList";
+                            TypedQuery<MarksEntity> prequisiteQuery;
+                            prequisiteQuery = em.createQuery(str, MarksEntity.class);
+                            prequisiteQuery.setParameter("sList", processedData);
+                            prequisiteQuery.setParameter("id", stuId);
 
-                        List<MarksEntity> list3 = prequisiteQuery.getResultList();
-                        boolean failed = Ultilities.HasFailedPrequisitesOfOneStudent(list3, entity.getPrequisiteEntity());
-                        if (failed) {
-                            iterator3.remove();
+                            List<MarksEntity> list3 = prequisiteQuery.getResultList();
+                            boolean failed = Ultilities.HasFailedPrequisitesOfOneStudent(list3, entity.getPrequisiteEntity());
+                            if (failed) {
+                                iterator3.remove();
+                            }
                         }
                     }
                 }
             }
+
 
             /*-------------------------------Chậm tiến độ------------------------------------------------*/
             List<MarksEntity> slowList = marksService.getMarksByStudentIdAndStatus(stuId, "start");
