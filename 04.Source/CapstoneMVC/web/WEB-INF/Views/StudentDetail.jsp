@@ -17,6 +17,11 @@
                     <h1>Danh sách sinh viên nợ môn</h1>
                 </div>
                 <div class="col-md-3 text-right">
+                    <button type="button" class="btn btn-warning btn-with-icon" onclick="ExportExcelForOneStudent()">
+                        <i class="glyphicon glyphicon-open"></i>
+                        <%--<i class="fa fa-upload"></i>--%>
+                        <div>Xuất dữ liêu cho sinh viên đang được chọn</div>
+                    </button>
                     <button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
                         <i class="glyphicon glyphicon-open"></i>
                         <%--<i class="fa fa-upload"></i>--%>
@@ -164,6 +169,7 @@
 
 <form id="export-excel" action="/exportExcel" hidden>
     <input name="objectType"/>
+    <input name="studentId"/>
 </form>
 
 <script>
@@ -483,6 +489,14 @@
     }
 
     function ExportExcel() {
+        $("input[name='objectType']").val(2);
+        $("input[name='studentId']").val("-1");
+        $("#export-excel").submit();
+
+        Call();
+    }
+
+    function ExportExcelForOneStudent() {
         $("input[name='objectType']").val(2);
         $("input[name='studentId']").val($('#select').val());
         $("#export-excel").submit();

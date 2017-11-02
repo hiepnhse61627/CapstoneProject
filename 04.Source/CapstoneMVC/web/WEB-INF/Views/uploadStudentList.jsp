@@ -55,6 +55,7 @@
             </div>
             <div class="form-group">
                 <button type="button" onclick="Add()" class="btn btn-success">Import</button>
+                <button type="button" onclick="Update()" class="btn btn-success">Cập nhật list sinh viên</button>
             </div>
         </div>
     </div>
@@ -129,6 +130,46 @@
     function Add() {
         var form = new FormData();
         form.append('file', $('#file')[0].files[0]);
+        form.append('update', false);
+
+        swal({
+            title: 'Đang xử lý',
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                isRunning = true;
+                $.ajax({
+                    type: "POST",
+                    url: "/uploadStudentList",
+                    processData: false,
+                    contentType: false,
+                    data: form,
+                    success: function (result) {
+                        isRunning = false;
+                        if (result.success) {
+                            swal({
+                                title: 'Thành công',
+                                text: "Đã import các sinh viên!",
+                                type: 'success'
+                            }).then(function () {
+                                location.reload();
+                            });
+                        } else {
+                            swal('Đã xảy ra lỗi!', result.message, 'error');
+                        }
+                    }
+                });
+                waitForTaskFinish(isRunning);
+            },
+            allowOutsideClick: false
+        });
+    }
+
+    function Update() {
+        var form = new FormData();
+        form.append('file', $('#file')[0].files[0]);
+        form.append('update', true);
 
         swal({
             title: 'Đang xử lý',
