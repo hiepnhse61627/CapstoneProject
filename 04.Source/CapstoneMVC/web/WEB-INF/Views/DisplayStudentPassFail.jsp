@@ -50,6 +50,10 @@
             </div>
 
             <div class="form-group">
+                <div id="studentsNumber" class="title"></div>
+            </div>
+
+            <div class="form-group">
                 <div class="row">
                     <div class="col-md-12">
                         <table id="table">
@@ -149,6 +153,8 @@
     $(document).ready(function () {
         $('.select').select2();
 
+        var studentDistinctNumber = 0;
+
         table = $('#table').dataTable({
             "bServerSide": true,
             "bFilter": true,
@@ -166,7 +172,7 @@
                 "sSearchPlaceholder": "",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
-                "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
+                "sInfo": 'Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng',
                 "sEmptyTable": "Không có dữ liệu",
                 "sInfoFiltered": " - lọc ra từ _MAX_ dòng",
                 "sLengthMenu": "Hiển thị _MENU_ dòng",
@@ -198,7 +204,28 @@
                 }
             ],
             "bAutoWidth": false,
+            "initComplete" : function (settings, json) {
+                sInfo()
+            }
         }).fnSetFilteringDelay(1000);
+
+        function sInfo() {
+            $.ajax({
+                type : 'GET',
+                url: '/getstudents/studentsDistinct',
+                data: {
+                    "semesterId" : $('#semester').val(),
+                    "subjectId" : $('#subject').val()
+                },
+                success: function (result) {
+                    if (result) {
+                        studentDistinctNumber = result.studentSize;
+                        return $('#studentsNumber').html('<h4>_Số sinh viên đang nợ ' + studentDistinctNumber + '</h4>');
+                        alert(studentDistinctNumber);
+                    }
+                }
+            });
+        }
     });
 
     function GetAllStudentMarks(studentId) {
