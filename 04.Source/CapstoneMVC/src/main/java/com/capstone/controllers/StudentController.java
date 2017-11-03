@@ -218,7 +218,7 @@ public class StudentController {
             EntityManager em = emf.createEntityManager();
 
             TypedQuery<MarksEntity> query = em.createQuery(
-                    "SELECT m FROM MarksEntity m WHERE m.studentId.id = :sid", MarksEntity.class);
+                    "SELECT m FROM MarksEntity m WHERE m.active = true and m.studentId.id = :sid", MarksEntity.class);
             query.setParameter("sid", studentId);
             List<MarksEntity> mlist = query.getResultList();
             mlist = Ultilities.FilterStudentsOnlyPassAndFail(mlist);

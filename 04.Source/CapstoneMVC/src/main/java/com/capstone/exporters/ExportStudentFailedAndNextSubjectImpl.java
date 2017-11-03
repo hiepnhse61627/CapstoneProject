@@ -19,14 +19,12 @@ import java.util.stream.Collectors;
 public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
 
     private IStudentService studentService = new StudentServiceImpl();
-    private IMarksService marksService = new MarksServiceImpl();
-    private ISubjectService subjectService = new SubjectServiceImpl();
 
-    private String EXCEL_TEMPL = "/template/DSSV_HL_MTT.xlsx";
+    private String EXCEL_TEMPL = "/template/Kehoachhocdihoclai.xlsx";
 
     @Override
     public String getFileName() {
-        return "DSSV_HL_MTT.xlsx";
+        return "Kehoachhocdihoclai.xlsx";
     }
 
     @Override
@@ -93,6 +91,19 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 studentEmail.setCellStyle(cellStyle);
                 studentEmail.setCellValue(student.getEmail() == null ? "N/A" : student.getEmail());
 
+                Cell tinchi = row.createCell(3);
+                tinchi.setCellStyle(cellStyle);
+
+                List<MarksEntity> marksCredits = student.getMarksEntityList()
+                        .stream()
+                        .filter(c -> c.isActive() && (c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt")))
+                        .collect(Collectors.toList());
+                int credits = 0;
+                for (MarksEntity mark : marksCredits) {
+                    credits += mark.getSubjectMarkComponentId().getSubjectId().getCredits() == null ? 0 : mark.getSubjectMarkComponentId().getSubjectId().getCredits();
+                }
+                tinchi.setCellValue(credits);
+
                 // failed subject
                 List<List<String>> marks = processFailedSubject(student);
                 if (marks != null && !marks.isEmpty()) {
@@ -102,11 +113,11 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                         failedSubject += ",";
                     }
                     failedSubject = Character.toString(failedSubject.charAt(failedSubject.length() - 1)).equals(",") ? failedSubject.substring(0, failedSubject.length() - 1) : failedSubject;
-                    Cell failedSubjectCell = row.createCell(3);
+                    Cell failedSubjectCell = row.createCell(4);
                     failedSubjectCell.setCellStyle(cellStyle);
                     failedSubjectCell.setCellValue(failedSubject);
                 } else {
-                    Cell failedSubjectCell = row.createCell(3);
+                    Cell failedSubjectCell = row.createCell(4);
                     failedSubjectCell.setCellStyle(cellStyle);
                     failedSubjectCell.setCellValue("N/A");
                 }
@@ -125,11 +136,11 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                         next = "N/A";
                     }
 
-                    Cell nextSubjectCell = row.createCell(4);
+                    Cell nextSubjectCell = row.createCell(5);
                     nextSubjectCell.setCellStyle(cellStyle);
                     nextSubjectCell.setCellValue(next);
                 } else {
-                    Cell nextSubjectCell = row.createCell(4);
+                    Cell nextSubjectCell = row.createCell(5);
                     nextSubjectCell.setCellStyle(cellStyle);
                     nextSubjectCell.setCellValue("N/A");
                 }
@@ -148,11 +159,11 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                         next = "N/A";
                     }
 
-                    Cell nextSubjectCell = row.createCell(5);
+                    Cell nextSubjectCell = row.createCell(6);
                     nextSubjectCell.setCellStyle(cellStyle);
                     nextSubjectCell.setCellValue(next);
                 } else {
-                    Cell nextSubjectCell = row.createCell(5);
+                    Cell nextSubjectCell = row.createCell(6);
                     nextSubjectCell.setCellStyle(cellStyle);
                     nextSubjectCell.setCellValue("N/A");
                 }
@@ -171,11 +182,11 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                         next = "N/A";
                     }
 
-                    Cell nextSubjectCell = row.createCell(6);
+                    Cell nextSubjectCell = row.createCell(7);
                     nextSubjectCell.setCellStyle(cellStyle);
                     nextSubjectCell.setCellValue(next);
                 } else {
-                    Cell nextSubjectCell = row.createCell(6);
+                    Cell nextSubjectCell = row.createCell(7);
                     nextSubjectCell.setCellStyle(cellStyle);
                     nextSubjectCell.setCellValue("N/A");
                 }
@@ -194,11 +205,11 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                         next = "N/A";
                     }
 
-                    Cell nextSubjectCell = row.createCell(7);
+                    Cell nextSubjectCell = row.createCell(8);
                     nextSubjectCell.setCellStyle(cellStyle);
                     nextSubjectCell.setCellValue(next);
                 } else {
-                    Cell nextSubjectCell = row.createCell(7);
+                    Cell nextSubjectCell = row.createCell(8);
                     nextSubjectCell.setCellStyle(cellStyle);
                     nextSubjectCell.setCellValue("N/A");
                 }

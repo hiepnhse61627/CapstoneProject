@@ -71,19 +71,12 @@ public class PercentFailController {
         ICourseService service = new CourseServiceImpl();
 
         try {
-            String queryStr = "SELECT a FROM MarksEntity a";
+            String queryStr = "SELECT a FROM MarksEntity a WHERE a.active = TRUE";
             if (!subjectId.equals("0")) {
-                if (!queryStr.contains("WHERE")) queryStr += " WHERE";
-                queryStr += " a.subjectMarkComponentId.subjectId.id = :subject AND";
+                queryStr += " AND a.subjectMarkComponentId.subjectId.id = :subject";
             }
             if (!courseId.equals("0")) {
-                if (!queryStr.contains("WHERE")) queryStr += " WHERE";
-                queryStr += " a.courseId.id = :course AND";
-            }
-
-            System.out.println(queryStr.lastIndexOf("AND") + " - " + queryStr.length());
-            if (queryStr.lastIndexOf("AND") == queryStr.length() - 3) {
-                queryStr = queryStr.substring(0, queryStr.length() - 3).trim();
+                queryStr += " AND a.courseId.id = :course";
             }
 
             TypedQuery<MarksEntity> query = manager.createQuery(queryStr, MarksEntity.class);

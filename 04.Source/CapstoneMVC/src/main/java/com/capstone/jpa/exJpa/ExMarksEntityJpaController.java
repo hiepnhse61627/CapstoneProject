@@ -41,7 +41,8 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             String sqlString = "SELECT m FROM MarksEntity m " +
                     "WHERE m.studentId.id = :studentId " +
                     "AND m.subjectMarkComponentId.id = :subjectMarkComponentId " +
-                    "AND m.semesterId.id = :semesterId";
+                    "AND m.semesterId.id = :semesterId " +
+                    "AND m.active = TRUE";
             Query query = em.createQuery(sqlString);
             query.setParameter("studentId", marksEntity.getStudentId().getId());
             query.setParameter("subjectMarkComponentId", marksEntity.getSubjectMarkComponentId().getId());
@@ -164,7 +165,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
         EntityManager em = getEntityManager();
 
-        String queryStr = "select a from MarksEntity a where a.semesterId.id IN :listSemester";
+        String queryStr = "select a from MarksEntity a where a.active = true and a.semesterId.id IN :listSemester";
         if (!subjectId.equals("0")) {
             queryStr += " and a.subjectMarkComponentId.subjectId.id IN :sub";
         }
@@ -259,7 +260,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
         try {
             em = getEntityManager();
-            String queryStr = "SELECT m FROM MarksEntity m";
+            String queryStr = "SELECT m FROM MarksEntity m WHERE m.active = true";
 
             ProgramEntity program = null;
             if (programId != 0) {
@@ -322,14 +323,14 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
     public List<MarksEntity> getAllMarksByStudent(int studentId) {
         EntityManager manager = getEntityManager();
-        TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.studentId.id = :id", MarksEntity.class);
+        TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.active = true and c.studentId.id = :id", MarksEntity.class);
         query.setParameter("id", studentId);
         return query.getResultList();
     }
 
     public List<MarksEntity> getMarksByStudentIdAndStatus(int studentId, String status) {
         EntityManager manager = getEntityManager();
-        TypedQuery<MarksEntity> query = manager.createQuery("SELECT a FROM MarksEntity a WHERE a.studentId.id = :id AND LOWER(a.status) LIKE :stat", MarksEntity.class);
+        TypedQuery<MarksEntity> query = manager.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true and a.studentId.id = :id AND LOWER(a.status) LIKE :stat", MarksEntity.class);
         query.setParameter("id", studentId);
         query.setParameter("stat", "%" + status + "%");
         return query.getResultList();
@@ -337,7 +338,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
     public List<MarksEntity> getStudyingStudents(String subjectId, String[] statuses) {
         EntityManager manager = getEntityManager();
-        String queryStr = "SELECT c FROM MarksEntity c WHERE c.status IN :list ";
+        String queryStr = "SELECT c FROM MarksEntity c WHERE c.active = true and c.status IN :list ";
         if (subjectId != null) {
             queryStr += "AND c.subjectMarkComponentId.subjectId.id = :sub";
         }
@@ -439,7 +440,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         EntityManager em = null;
         try {
             em = getEntityManager();
-            String sqlString = "SELECT m FROM MarksEntity m WHERE m.status IN :statuses AND m.semesterId.id IN :semesterIds";
+            String sqlString = "SELECT m FROM MarksEntity m WHERE m.active = true and m.status IN :statuses AND m.semesterId.id IN :semesterIds";
             Query query = em.createQuery(sqlString);
             query.setParameter("statuses", Arrays.asList(statuses));
             query.setParameter("semesterIds", semesterIds);
@@ -462,7 +463,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
         try {
             em = getEntityManager();
-            String queryStr = "SELECT m FROM MarksEntity m WHERE m.studentId.id = :studentId" +
+            String queryStr = "SELECT m FROM MarksEntity m WHERE m.active = true and m.studentId.id = :studentId" +
                     " ORDER BY m.subjectMarkComponentId.subjectId.name";
             TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
             query.setParameter("studentId", studentId);

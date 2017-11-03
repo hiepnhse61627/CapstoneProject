@@ -186,7 +186,7 @@ public class StudentFailPrequisite {
             }
         }
 
-        String queryStr = "SELECT p FROM MarksEntity p WHERE p.subjectMarkComponentId.subjectId.id IN :sList";
+        String queryStr = "SELECT p FROM MarksEntity p WHERE p.active = true and p.subjectMarkComponentId.subjectId.id IN :sList";
         TypedQuery<MarksEntity> prequisiteQuery;
         prequisiteQuery = em.createQuery(queryStr, MarksEntity.class);
         prequisiteQuery.setParameter("sList", processedData);

@@ -287,7 +287,7 @@ public class StudentList {
             model.setRollNumber(student.getRollNumber());
 
             // Lấy danh sách điểm
-            queryStr = "SELECT m FROM MarksEntity m WHERE m.studentId.id = :sId";
+            queryStr = "SELECT m FROM MarksEntity m WHERE m.active = true and m.studentId.id = :sId";
             TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
             query.setParameter("sId", studentId);
 

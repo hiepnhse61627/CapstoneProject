@@ -15,7 +15,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "Marks", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "MarksEntity.findAll", query = "SELECT m FROM MarksEntity m")})
+    @NamedQuery(name = "MarksEntity.findAll", query = "SELECT m FROM MarksEntity m WHERE m.active = true")})
 public class MarksEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
