@@ -114,6 +114,8 @@
 
 <script>
     var table = null;
+    var current = null;
+    var newcurrent = null;
 
     $(document).ready(function () {
         $('.select').select2();
@@ -137,10 +139,19 @@
         var curId = $('#curid').val();
         var newId = $('#curriculum').val();
 
+        current = [];
+        $.each($("input[name='current']:not(:checked)"), function() {
+            current.push($(this).val());
+        });
+        newcurrent = [];
+        $.each($("input[name='newcurrent']:not(:checked)"), function() {
+            newcurrent.push($(this).val());
+        });
+
         $.ajax({
             type: "GET",
             url: "/managerrole/change",
-            data: {"curId": curId, "newId": newId, "stuId": stuId},
+            data: {"curId": curId, "newId": newId, "stuId": stuId, "current": JSON.stringify(current), "newcurrent": JSON.stringify(newcurrent)},
             success: function (result) {
                 console.log(result.data);
                 if (result.success) {
@@ -170,7 +181,7 @@
                         html += data[i][j];
                         html += "</td>";
                     }
-                    html += "<td><input type='checkbox' value='" + data[i][0] +"' checked/></td>";
+                    html += "<td><input name='current' type='checkbox' value='" + data[i][0] +"' checked/></td>";
                     html += "</tr>";
                 }
                 $('#yes').html(html);
@@ -195,7 +206,7 @@
                         html += data[i][j];
                         html += "</td>";
                     }
-                    html += "<td><input type='checkbox' value='" + data[i][0] +"'/></td>";
+                    html += "<td><input name='newcurrent' type='checkbox' value='" + data[i][0] +"'/></td>";
                     html += "</tr>";
                 }
                 $('#no').html(html);

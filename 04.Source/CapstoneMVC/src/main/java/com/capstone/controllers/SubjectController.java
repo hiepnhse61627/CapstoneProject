@@ -1,9 +1,6 @@
 package com.capstone.controllers;
 
-import com.capstone.entities.PrequisiteEntity;
-import com.capstone.entities.RealSemesterEntity;
-import com.capstone.entities.SubjectCurriculumEntity;
-import com.capstone.entities.SubjectEntity;
+import com.capstone.entities.*;
 import com.capstone.models.*;
 import com.capstone.services.*;
 import com.google.common.reflect.TypeToken;
@@ -40,6 +37,7 @@ public class SubjectController {
     private final String folder = "UploadedSubjectTemplate";
     ISubjectService subjectService = new SubjectServiceImpl();
     IRealSemesterService realSemesterService = new RealSemesterServiceImpl();
+    IDynamicMenuService dynamicMenuService = new DynamicMenuServiceImpl();
 
     @Autowired
     ServletContext context;
@@ -313,7 +311,7 @@ public class SubjectController {
                                 if (cell.getCellType() != Cell.CELL_TYPE_BLANK && cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
                                     double mark = cell.getNumericCellValue();
                                     if (prequisiteEntity != null) {
-                                        prequisiteEntity.setFailMark((int)mark);
+                                        prequisiteEntity.setFailMark((int) mark);
                                     }
                                 }
                             } else if (cell.getColumnIndex() == 6) {
@@ -324,7 +322,7 @@ public class SubjectController {
                                 if (prequisiteEntity != null && semester != null && !semester.isEmpty()) {
                                     prequisiteEntity.setEffectionSemester(semester);
                                 }
-                            }  else if (cell.getColumnIndex() == 8) {
+                            } else if (cell.getColumnIndex() == 8) {
                                 String presub = cell.getStringCellValue().trim();
                                 if (prequisiteEntity != null && presub != null && !presub.isEmpty()) {
                                     prequisiteEntity.setNewPrequisiteSubs(presub);
@@ -333,7 +331,7 @@ public class SubjectController {
                                 if (cell.getCellType() != Cell.CELL_TYPE_BLANK && cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
                                     double newmark = cell.getNumericCellValue();
                                     if (prequisiteEntity != null) {
-                                        prequisiteEntity.setNewFailMark((int)newmark);
+                                        prequisiteEntity.setNewFailMark((int) newmark);
                                     }
                                 }
 
@@ -373,6 +371,7 @@ public class SubjectController {
         JsonObject jsonObj = new JsonObject();
 
         try {
+
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em = emf.createEntityManager();
 
@@ -383,9 +382,9 @@ public class SubjectController {
             model.setPrerequisiteSubject(prerequisite);
             model.setReplacementSubject(replacement);
             model.setEffectionSemester(effectionSemester);
-            if (failMark.isEmpty()){
+            if (failMark.isEmpty()) {
                 model.setFailMark(0);
-            }else{
+            } else {
                 model.setFailMark(Integer.parseInt(failMark));
             }
 

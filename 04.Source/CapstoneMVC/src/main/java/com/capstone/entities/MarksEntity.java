@@ -40,12 +40,22 @@ public class MarksEntity implements Serializable {
     @JoinColumn(name = "SubjectMarkComponentId", referencedColumnName = "Id")
     @ManyToOne
     private SubjectMarkComponentEntity subjectMarkComponentId;
+    @Column(name = "IsActivated")
+    private boolean active;
 
     public MarksEntity() {
     }
 
     public MarksEntity(Integer id) {
         this.id = id;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public Integer getId() {

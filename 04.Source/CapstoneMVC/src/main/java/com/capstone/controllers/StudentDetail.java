@@ -489,13 +489,12 @@ public class StudentDetail {
                             SubjectEntity c = subjectService.findSubjectById(cell);
                             if (c != null) processedData.add(cell);
                         }
-                    }
-                    if (!entity.getSubjectEntityList().isEmpty()) {
-                        for (SubjectEntity replaces : entity.getSubjectEntityList()) {
-                            processedData.add(replaces.getId());
+                        if (!entity.getSubjectEntityList().isEmpty()) {
+                            for (SubjectEntity replaces : entity.getSubjectEntityList()) {
+                                processedData.add(replaces.getId());
+                            }
                         }
                     }
-
                     boolean failed = false;
                     if (!processedData.isEmpty()) {
                         String str = "SELECT p FROM MarksEntity p WHERE p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList";
@@ -526,6 +525,7 @@ public class StudentDetail {
                 }
             }
         }
+
 
             /*-------------------------------Chậm tiến độ------------------------------------------------*/
         List<MarksEntity> slowList = marksService.getMarksByStudentIdAndStatus(stuId, "start");
