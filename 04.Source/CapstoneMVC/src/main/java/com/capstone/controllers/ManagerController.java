@@ -7,6 +7,7 @@ import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -220,7 +221,13 @@ public class ManagerController {
 
             for (SubjectEntity s : subs) {
                 if (newSubs.stream().anyMatch(c -> c.getId().equals(s.getId()))) {
-                    common.add(s);
+                    if (!common.contains(s)) common.add(s);
+                }
+            }
+
+            for (SubjectEntity s : newSubs) {
+                if (subs.stream().anyMatch(c -> c.getId().equals(s.getId()))) {
+                    if (!common.contains(s)) common.add(s);
                 }
             }
 
@@ -254,16 +261,22 @@ public class ManagerController {
             List<SubjectEntity> subs = this.GetCurrentCurriculumSubjects(curId);
             List<SubjectEntity> newSubs = this.GetCurrentCurriculumSubjects(newId);
 
-            List<SubjectEntity> common = new ArrayList<>();
+            List<SubjectEntity> notcommon = new ArrayList<>();
             for (SubjectEntity s : subs) {
                 if (!newSubs.stream().anyMatch(c -> c.getId().equals(s.getId()))) {
-                    common.add(s);
+                    if (!notcommon.contains(s)) notcommon.add(s);
+                }
+            }
+
+            for (SubjectEntity s : newSubs) {
+                if (!subs.stream().anyMatch(c -> c.getId().equals(s.getId()))) {
+                    if (!notcommon.contains(s)) notcommon.add(s);
                 }
             }
 
             List<List<String>> parent = new ArrayList<>();
-            if (!common.isEmpty()) {
-                common.forEach(c -> {
+            if (!notcommon.isEmpty()) {
+                notcommon.forEach(c -> {
                     List<String> tmp = new ArrayList<>();
                     tmp.add(c.getId());
                     tmp.add(c.getName());
@@ -284,10 +297,21 @@ public class ManagerController {
 
     @RequestMapping("/change")
     @ResponseBody
-    public JsonObject Change(@RequestParam int stuId, @RequestParam int curId, @RequestParam int newId) {
+    public JsonObject Change(@RequestParam int stuId,
+                             @RequestParam int curId,
+                             @RequestParam int newId,
+                             @RequestParam String current,
+                             @RequestParam String newcurrent) {
         JsonObject result = new JsonObject();
 
         try {
+            Gson gson = new Gson();
+            List<String> activeSubs = new ArrayList<>();
+            List<String> curList = gson.fromJson(current, new TypeToken<List<String>>(){}.getType());
+            curList.forEach(c -> { if (!activeSubs.contains(c)) activeSubs.add(c); });
+            curList = gson.fromJson(newcurrent, new TypeToken<List<String>>(){}.getType());
+            curList.forEach(c -> { if (!activeSubs.contains(c)) activeSubs.add(c); });
+
             IStudentService studentService = new StudentServiceImpl();
             ICurriculumService curriculumService = new CurriculumServiceImpl();
             IDocumentService documentService = new DocumentServiceImpl();
@@ -301,6 +325,16 @@ public class ManagerController {
             doc.setDocumentId(documentService.getDocumentById(4));
             doc.setCreatedDate(Calendar.getInstance().getTime());
             stu.getDocumentStudentEntityList().add(doc);
+
+            List<MarksEntity> marks = stu.getMarksEntityList();
+            for (MarksEntity mark : marks) {
+                if (curList.stream().anyMatch(c -> c.equals(mark.getSubjectMarkComponentId().getSubjectId().getId()))) {
+                    mark.setActive(false);
+                } else {
+                    mark.setActive(true);
+                }
+            }
+
             studentService.saveStudent(stu);
 
             result.addProperty("success", true);
