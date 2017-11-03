@@ -118,7 +118,7 @@ public class StudentDetailForStudent {
         int stuId = Integer.parseInt(params.get("stuId"));
 
         try {
-            List<List<String>> result = detail.processNext(stuId, false);
+            List<List<String>> result = detail.processNext(stuId, false, false);
 
             List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -169,6 +169,32 @@ public class StudentDetailForStudent {
 
         try {
             List<List<String>> result = detail.processNotStart(stuId);
+
+            List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(set2);
+
+            jsonObject.addProperty("iTotalRecords", result.size());
+            jsonObject.addProperty("iTotalDisplayRecords", result.size());
+            jsonObject.add("aaData", aaData);
+            jsonObject.addProperty("sEcho", params.get("sEcho"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jsonObject;
+    }
+
+    @RequestMapping("/getStudentNotNextCourse")
+    @ResponseBody
+    public JsonObject GetStudentCantStudy(@RequestParam Map<String, String> params) {
+
+        JsonObject jsonObject = new JsonObject();
+
+        int stuId = Integer.parseInt(params.get("stuId"));
+
+        try {
+            List<List<String>> result = detail.processNext(stuId, true, true);
 
             List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 

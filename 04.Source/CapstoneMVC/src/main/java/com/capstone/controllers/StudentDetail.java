@@ -25,8 +25,6 @@ import java.util.stream.Collectors;
 public class StudentDetail {
 
     IStudentService studentService = new StudentServiceImpl();
-    IMarksService service2 = new MarksServiceImpl();
-    ISubjectService service3 = new SubjectServiceImpl();
 
     @RequestMapping("/studentDetail")
     public ModelAndView Index() {
@@ -247,7 +245,7 @@ public class StudentDetail {
         int stuId = Integer.parseInt(params.get("stuId"));
 
         try {
-            List<List<String>> result = processNext(stuId, false);
+            List<List<String>> result = processNext(stuId, false, false);
 
             List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -264,7 +262,33 @@ public class StudentDetail {
         return jsonObject;
     }
 
-    public List<List<String>> processNext(int stuId, boolean checkPrequisite) {
+    @RequestMapping("/getStudentNotNextCourse")
+    @ResponseBody
+    public JsonObject GetStudentCantStudy(@RequestParam Map<String, String> params) {
+
+        JsonObject jsonObject = new JsonObject();
+
+        int stuId = Integer.parseInt(params.get("stuId"));
+
+        try {
+            List<List<String>> result = processNext(stuId, true, true);
+
+            List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(set2);
+
+            jsonObject.addProperty("iTotalRecords", result.size());
+            jsonObject.addProperty("iTotalDisplayRecords", result.size());
+            jsonObject.add("aaData", aaData);
+            jsonObject.addProperty("sEcho", params.get("sEcho"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jsonObject;
+    }
+
+    public List<List<String>> processNext(int stuId, boolean checkPrequisite, boolean getFailPrequisiteList) {
         IStudentService studentService = new StudentServiceImpl();
         ISubjectService subjectService = new SubjectServiceImpl();
 
@@ -283,6 +307,8 @@ public class StudentDetail {
         query.setParameter("term", student.getTerm() + 1);
 
         List<SubjectCurriculumEntity> list = query.getResultList();
+
+        List<SubjectEntity> failedPrequisiteList = new ArrayList<>();
 
         // Check students score if exist remove
         if (!list.isEmpty()) {
@@ -337,6 +363,7 @@ public class StudentDetail {
                         }
 
                         if (failed) {
+                            failedPrequisiteList.add(cur.getSubjectId());
                             iterator.remove();
                         } else {
                             List<SubjectEntity> replacers = cur.getSubjectId().getSubjectEntityList();
@@ -357,13 +384,24 @@ public class StudentDetail {
         }
 
         List<List<String>> result = new ArrayList<>();
-        for (SubjectCurriculumEntity sc : list) {
-            List<String> row = new ArrayList<>();
-            row.add(sc.getSubjectId().getId());
-            row.add(sc.getSubjectId().getName());
+        if (!getFailPrequisiteList) {
+            for (SubjectCurriculumEntity sc : list) {
+                List<String> row = new ArrayList<>();
+                row.add(sc.getSubjectId().getId());
+                row.add(sc.getSubjectId().getName());
 
-            result.add(row);
+                result.add(row);
+            }
+        } else {
+            for (SubjectEntity sc : failedPrequisiteList) {
+                List<String> row = new ArrayList<>();
+                row.add(sc.getId());
+                row.add(sc.getName());
+
+                result.add(row);
+            }
         }
+
 
         return result;
     }

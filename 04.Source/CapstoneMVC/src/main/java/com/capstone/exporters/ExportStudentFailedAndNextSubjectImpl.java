@@ -227,7 +227,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
 
     private List<List<String>> processNextSubject(StudentEntity student) {
         StudentDetail detail = new StudentDetail();
-        return detail.processNext(student.getId(), true);
+        return detail.processNext(student.getId(), true, false);
     }
 
     public List<List<String>> processCurrentSubject(int stuId) {

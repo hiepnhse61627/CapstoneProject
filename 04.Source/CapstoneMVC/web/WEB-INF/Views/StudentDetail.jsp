@@ -161,6 +161,25 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-md-6 p-l-5 p-r-5">
+                        <div class="my-tbl-wrapper bg-gray-light overflow">
+                            <div class="title text-center">
+                                <h4>Danh sách môn không được học</h4>
+                            </div>
+                            <div class="my-content">
+                                <div class="col-md-12">
+                                    <table id="cantStudy">
+                                        <thead>
+                                        <tr>
+                                            <th>Mã môn</th>
+                                            <th>Tên môn</th>
+                                        </tr>
+                                        </thead>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -178,6 +197,7 @@
     var curCourseTable = null;
     var suggestCourseTable = null;
     var notStart = null;
+    var cantStudyTable = null;
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -219,11 +239,11 @@
 
         CreateSelect();
 
-        CreateEmptyDataTable('#table');
-        CreateEmptyDataTable('#nextCourseTable');
-        CreateEmptyDataTable('#curCourseTable');
-        CreateEmptyDataTable('#suggestCourseTable');
-        CreateEmptyDataTable('#notStart');
+//        CreateEmptyDataTable('#table');
+//        CreateEmptyDataTable('#nextCourseTable');
+//        CreateEmptyDataTable('#curCourseTable');
+//        CreateEmptyDataTable('#suggestCourseTable');
+//        CreateEmptyDataTable('#notStart');
     });
 
     function CreateSelect() {
@@ -306,6 +326,44 @@
             "bProcessing": true,
             "bSort": false,
             "sAjaxSource": "/getStudentNextCourse", // url getData.php etc
+            "fnServerParams": function (aoData) {
+                aoData.push({"name": "stuId", "value": $('#select').val()})
+            },
+            "oLanguage": {
+                "sSearchPlaceholder": "",
+                "sSearch": "Tìm kiếm:",
+                "sZeroRecords": "Không có dữ liệu phù hợp",
+                "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
+                "sEmptyTable": "Không có dữ liệu",
+                "sInfoFiltered": " - lọc ra từ _MAX_ dòng",
+                "sLengthMenu": "Hiển thị _MENU_ dòng",
+                "sProcessing": "Đang xử lý...",
+                "oPaginate": {
+                    "sNext": "<i class='fa fa-chevron-right'></i>",
+                    "sPrevious": "<i class='fa fa-chevron-left'></i>"
+                }
+
+            },
+            "aoColumnDefs": [
+                {
+                    "aTargets": [0, 1],
+                    "sClass": "text-center",
+                },
+            ],
+            "bAutoWidth": false,
+        }).fnSetFilteringDelay(1000);
+    }
+
+    function CreateCantStudyTable() {
+        cantStudyTable = $('#cantStudy').dataTable({
+            "bServerSide": true,
+            "bFilter": true,
+            "bRetrieve": true,
+            "sScrollX": "100%",
+            "bScrollCollapse": true,
+            "bProcessing": true,
+            "bSort": false,
+            "sAjaxSource": "/getStudentNotNextCourse", // url getData.php etc
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "stuId", "value": $('#select').val()})
             },
@@ -560,6 +618,8 @@
         CreateCurrentCourseTable();
         $('#suggestCourseTable').dataTable().fnDestroy();
         CreateSuggestCourseTable();
+        $('#cantStudy').dataTable().fnDestroy();
+        CreateCantStudyTable();
 
 //        if (table != null) {
 //            table._fnPageChange(0);
