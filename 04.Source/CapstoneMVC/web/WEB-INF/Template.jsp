@@ -241,7 +241,6 @@
                                     </div>
                                 </a>
                             </li>
-
                         </c:forEach>
                     </ul>
                 </li>
