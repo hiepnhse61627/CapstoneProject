@@ -14,7 +14,7 @@
         <div class="b-header">
             <div class="row">
                 <div class="col-md-9 title">
-                    <h1>Danh sách sinh viên nợ môn</h1>
+                    <h1>Thông tin chi tiết sinh viên</h1>
                 </div>
                 <div class="col-md-3 text-right">
                     <button type="button" class="btn btn-warning btn-with-icon" onclick="ExportExcelForOneStudent()">
@@ -57,7 +57,7 @@
                     <div class="col-md-6 p-l-5 p-r-5 m-b-10">
                         <div class="my-tbl-wrapper bg-gray-light">
                             <div class="title text-center">
-                                <h4>Danh sách môn còn nợ</h4>
+                                <h4>Danh sách môn chưa đạt</h4>
                             </div>
                             <div class="my-content">
                                 <table id="table">
@@ -100,7 +100,7 @@
                     <div class="col-md-6 p-l-5 p-r-5">
                         <div class="my-tbl-wrapper bg-gray-light overflow">
                             <div class="title text-center">
-                                <h4>Danh sách môn đang học trong kỳ</h4>
+                                <h4>Danh sách môn đang được học trong kỳ</h4>
                             </div>
                             <div class="my-content">
                                 <div class="col-md-12">
@@ -120,7 +120,7 @@
                     <div class="col-md-6 p-l-5 p-r-5">
                         <div class="my-tbl-wrapper bg-gray-light overflow">
                             <div class="title text-center">
-                                <h4>Danh sách môn học đề xuất tiếp theo</h4>
+                                <h4>Danh sách môn học được đề xuất tiếp theo</h4>
                             </div>
                             <div class="my-content">
                                 <div class="col-md-12">
@@ -144,7 +144,7 @@
                     <div class="col-md-6 p-l-5 p-r-5">
                         <div class="my-tbl-wrapper bg-gray-light overflow">
                             <div class="title text-center">
-                                <h4>Danh sách môn chậm tiến độ</h4>
+                                <h4>Danh sách môn đang bị chậm tiến độ</h4>
                             </div>
                             <div class="my-content">
                                 <div class="col-md-12">

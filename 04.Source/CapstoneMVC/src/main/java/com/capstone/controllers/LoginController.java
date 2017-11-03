@@ -181,7 +181,7 @@ public class LoginController implements ServletContextAware {
             Logger.writeLog(e);
         }
 
-        return "redirect:/dashboard";
+        return "redirect:/";
     }
 
     private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user){
