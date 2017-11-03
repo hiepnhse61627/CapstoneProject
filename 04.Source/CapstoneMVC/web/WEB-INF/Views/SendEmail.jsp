@@ -35,23 +35,40 @@
                         <h4>Danh sách sinh viên được gửi</h4>
                     </div>
                     <div class="my-content">
-                        <table id="table">
-                        </table>
+                        <div class="col-md-12">
+                            <button type="button" class="btn btn-warning" onclick="SelectAll()">Chọn tất cả</button>
+                            <button type="button" class="btn btn-warning" onclick="SelectOnlyFail()">Chỉ chọn sv có rớt môn</button>
+                            <button type="button" class="btn btn-success pull-right" onclick="Send()">Gửi</button>
+                        </div>
+                        <div class="col-md-12">
+                            <table id="table">
+                                <thead>
+                                <tr>
+                                    <th>Chọn</th>
+                                    <th>MSSV</th>
+                                    <th>Họ tên</th>
+                                    <th>Email</th>
+                                    <th>tín chỉ tích lũySV</th>
+                                    <th>môn nợ</th>
+                                    <th>môn tiếp theo</th>
+                                    <th>môn đang học trong kỳ</th>
+                                    <th>môn chậm tiến độ</th>
+                                    <th>Danh sách môn học dự kiến tiếp theo</th>
+                                </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <button type="button" onclick="Send()">Gửi</button>
         </div>
-
     </div>
 </section>
 
 <script>
-    var array = null;
-
     $(document).ready(function () {
-
+        $('#table').DataTable();
     });
 
     function Add() {
@@ -75,25 +92,37 @@
                         isRunning = false;
                         if (result.success) {
                             array = result.data;
+                            $('#table').DataTable().destroy();
                             $('#table').DataTable({
-                                data: array,
-                                columns: [
-                                    { title: "MSSV" },
-                                    { title: "họ tên" },
-                                    { title: "môn nợ" },
-                                    { title: "môn tiếp theo" },
-                                    { title: "môn đang học trong kỳ" },
-                                    { title: "Danh sách môn học dự kiến tiếp theo" }
-                                ]
+                                "data": array,
+                                "deferRender": true,
+                                "scrollY": 600,
+                                "scrollX": true,
+                                "scrollCollapse": true,
+                                "scroller": true,
+                                "columnDefs": [
+                                    {
+                                        "targets": [1, 2, 3, 4, 5, 6, 7, 8],
+                                        "sortable": false,
+                                        "class": "text-center",
+                                    },
+                                    {
+                                        "targets": [0],
+                                        "render": function (data, type, row) {
+                                            return "<input name='send' type='checkbox'/>";
+                                        },
+                                        "sortable": false,
+                                    }
+                                ],
+                                "search": false,
+                                "filter": false
                             });
                             swal.close();
-//                            swal({
-//                                title: 'Thành công',
-//                                text: "Đã import các khóa học!",
-//                                type: 'success'
-//                            }).then(function () {
-//                                location.reload();
-//                            });
+                            $('input').iCheck({
+                                checkboxClass: 'icheckbox_square-blue',
+                                radioClass: 'iradio_square-blue',
+                                increaseArea: '20%' // optional
+                            });
                         } else {
                             swal('Đã xảy ra lỗi!', result.message, 'error');
                         }
@@ -104,13 +133,86 @@
         });
     }
 
+    var select = true;
+    function SelectAll() {
+        if (select) {
+            $("input[name='send']").iCheck('check');
+            select = false;
+        } else {
+            $("input[name='send']").iCheck('uncheck');
+            select = true;
+        }
+    }
+
+    function SelectOnlyFail() {
+        $.each($("#table").find('tr'), function () {
+            var data = $(this).find('td').eq(5).html();
+            if (data == 'N/A') {
+                $(this).closest("tr").find("input[name='send']").iCheck('check');
+            }
+        });
+    }
+
     function Send() {
+        var array = [];
+        $.each($("input[name='send']:checked").closest("tr"), function () {
+            var values = [];
+            $(this).find("td").each(function (i) {
+                if (i > 0) {
+                    values.push($(this).html());
+                }
+            });
+            array.push(values);
+        });
+
+        swal({
+            title: 'Đang xử lý',
+            html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>' +
+            '<div class="form-group" id="progress"></div>' +
+            '<div><button id="stop">Stop</button></div>',
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                $.ajax({
+                    type: "POST",
+                    url: "/email/send",
+                    data: {"params": JSON.stringify(array)},
+                    success: function (result) {
+                        if (result.success) {
+                            swal('', 'Đã gửi thành công', 'success');
+                        } else {
+                            swal('', result.msg, 'error');
+                        }
+                    }
+                });
+                $('#stop').click(function () {
+                    $.ajax({
+                        type: "GET",
+                        url: "/email/stop",
+                        processData: false,
+                        contentType: false,
+                        success: function (result) {
+                            console.log(result);
+                        }
+                    });
+                });
+                Run();
+            },
+            allowOutsideClick: false
+        });
+    }
+
+    function Run() {
         $.ajax({
-            type: "POST",
-            url: "/email/send",
-            data: { "params" : JSON.stringify(array)},
+            type: "GET",
+            url: "/email/status",
+            processData: false,
+            contentType: false,
             success: function (result) {
-                console.log(result);
+                $('#progress').html("<div>" + result.status + "</div>");
+                if (result.run) {
+                    setTimeout("Run()", 50);
+                }
             }
         });
     }

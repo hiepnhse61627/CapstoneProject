@@ -32,6 +32,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Callable;
 
 @Controller
 @RequestMapping("/email")
@@ -40,13 +41,15 @@ public class SendEmailController {
     private final String xlsExcelExtension = "xls";
     private final String xlsxExcelExtension = "xlsx";
 
-    final String smtpServer = "smtp.gmail.com";
-    final String userAccount = "fptsendtestemail@gmail.com"; // Sender Account.
-    //    final String password = "lhhsqhsbagjpjhxa"; // Password -> Application Specific Password.
-    final String password = "namlai120"; // Password -> Application Specific Password.
-    final String SOCKET_FACTORY = "javax.net.ssl.SSLSocketFactory";
-    final String smtpPort = "587";
-    final String PORT = "465";
+    private final String smtpServer = "smtp.gmail.com";
+    private final String userAccount = "fptsendtestemail@gmail.com"; // Sender Account.
+    private final String password = "namlai120"; // Password -> Application Specific Password.
+    private final String SOCKET_FACTORY = "javax.net.ssl.SSLSocketFactory";
+    private final String smtpPort = "587";
+    private final String PORT = "465";
+
+    private String status = "";
+    private boolean run = true;
 
     @RequestMapping("/index")
     public String Index() {
@@ -92,10 +95,12 @@ public class SendEmailController {
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
                     List<String> tmp = new ArrayList<>();
+                    tmp.add(String.valueOf(rowIndex));
                     for (int i = 0; i < row.getLastCellNum(); i++) {
                         Cell cell = row.getCell(i);
                         String str;
                         if (cell.getCellType() == Cell.CELL_TYPE_BLANK) str = "N/A";
+                        else if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) str = String.valueOf(cell.getNumericCellValue());
                         else str = cell.getStringCellValue();
                         tmp.add(str);
                     }
@@ -119,66 +124,105 @@ public class SendEmailController {
         return obj;
     }
 
+
+    @RequestMapping("/status")
+    @ResponseBody
+    public JsonObject Status() {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("status", status);
+        obj.addProperty("run", run);
+        return obj;
+    }
+
+    @RequestMapping("/stop")
+    @ResponseBody
+    public JsonObject Stop() {
+        JsonObject obj = new JsonObject();
+        run = false;
+        obj.addProperty("success", true);
+        obj.addProperty("msg", "Stop succesfull");
+        return obj;
+    }
+
     @RequestMapping("/send")
     @ResponseBody
-    public JsonObject SendEmail(@RequestParam Map<String, String> params) {
-        JsonObject obj = new JsonObject();
+    public Callable<JsonObject> SendEmail(@RequestParam Map<String, String> params) {
+        run = true;
+        status = "";
 
-        try {
-            Gson gson = new Gson();
-            List<List<String>> list = gson.fromJson(params.get("params"), new TypeToken<List<List<String>>>() {
-            }.getType());
+        Callable<JsonObject> callable = () -> {
+            JsonObject obj = new JsonObject();
 
-            final Properties props = new Properties();
-            props.put("mail.smtp.host", smtpServer);
-            props.put("mail.smtp.user", userAccount);
-            props.put("mail.smtp.password", password);
-            props.put("mail.smtp.port", smtpPort);
-            props.put("mail.smtp.auth", true);
-            props.put("mail.smtp.starttls.enable", "true");
-            props.put("mail.smtp.debug", "false");
-            props.put("mail.smtp.socketFactory.port", PORT);
-            props.put("mail.smtp.socketFactory.class", SOCKET_FACTORY);
-            props.put("mail.smtp.socketFactory.fallback", "false");
+            try {
+                Gson gson = new Gson();
+                List<List<String>> list = gson.fromJson(params.get("params"), new TypeToken<List<List<String>>>() {}.getType());
 
-            Session session = Session.getInstance(props,
-                    new javax.mail.Authenticator() {
-                        protected PasswordAuthentication getPasswordAuthentication() {
-                            return new PasswordAuthentication(userAccount, password);
-                        }
-                    });
+                Properties props = new Properties();
+                props.put("mail.smtp.host", smtpServer);
+                props.put("mail.smtp.user", userAccount);
+                props.put("mail.smtp.password", password);
+                props.put("mail.smtp.port", smtpPort);
+                props.put("mail.smtp.auth", true);
+                props.put("mail.smtp.starttls.enable", "true");
+                props.put("mail.smtp.debug", "false");
+                props.put("mail.smtp.socketFactory.port", PORT);
+                props.put("mail.smtp.socketFactory.class", SOCKET_FACTORY);
+                props.put("mail.smtp.socketFactory.fallback", "false");
 
-            for (List<String> student : list) {
-                MimeMessage mimeMessage = new MimeMessage(session);
-                final Address toAddress = new InternetAddress(student.get(2)); // toAddress
-                final Address fromAddress = new InternetAddress(userAccount);
-                String msg = "<div>" +
-                        "<h3>Thông tin sinh viên</h3>" +
-                        "<p>Họ têm: " + student.get(0) + "</p>" +
-                        "<p>MSSV: " + student.get(1) + "</p>" +
-                        "<p>Môn nợ: " + student.get(3) + "</p>" +
-                        "<p>Môn tiếp theo theo tiến trình: " + student.get(4) + "</p>" +
-                        "<p>Môn đang học: " + student.get(5) + "</p>" +
-                        "<p>Môn châm tiến độ: " + student.get(6) + "</p>" +
-                        "<p>Môn dề xuất dự kiến: " + student.get(7) + "</p>" +
-                        "</div>";
-                mimeMessage.setContent(msg, "text/html; charset=UTF-8");
-                mimeMessage.setFrom(fromAddress);
-                mimeMessage.setRecipient(javax.mail.Message.RecipientType.TO, toAddress);
-                mimeMessage.setSubject("Thông báo!");
-                Transport transport = session.getTransport("smtp");
-                transport.connect(smtpServer, userAccount, password);
-                transport.sendMessage(mimeMessage, mimeMessage.getAllRecipients());
+                Session session = Session.getInstance(props,
+                        new Authenticator() {
+                            protected PasswordAuthentication getPasswordAuthentication() {
+                                return new PasswordAuthentication(userAccount, password);
+                            }
+                        });
+
+                int i = 1;
+                for (List<String> student : list) {
+                    if (!run) {
+                        System.out.println("Send email has been canceled");
+                        break;
+                    }
+
+                    MimeMessage mimeMessage = new MimeMessage(session);
+                    Address toAddress = new InternetAddress(student.get(2));
+                    Address fromAddress = new InternetAddress(userAccount, "FPT Automatic Email System!");
+                    String msg = "<div>" +
+                            "<h3>Thông tin sinh viên</h3>" +
+                            "<p>Họ tên: " + student.get(0) + "</p>" +
+                            "<p>MSSV: " + student.get(1) + "</p>" +
+                            "<p>Tín chỉ: " + student.get(3) + "</p>" +
+                            "<p>Môn nợ: " + student.get(4) + "</p>" +
+                            "<p>Môn tiếp theo theo tiến trình: " + student.get(5) + "</p>" +
+                            "<p>Môn đang học: " + student.get(6) + "</p>" +
+                            "<p>Môn châm tiến độ: " + student.get(7) + "</p>" +
+                            "<p>Môn dề xuất dự kiến: " + student.get(8) + "</p>" +
+                            "</div>";
+                    mimeMessage.setContent(msg, "text/html; charset=UTF-8");
+                    mimeMessage.setFrom(fromAddress);
+                    mimeMessage.setRecipient(Message.RecipientType.TO, toAddress);
+                    mimeMessage.setSubject("Thông báo!", "utf-8");
+                    Transport transport = session.getTransport("smtp");
+                    transport.connect(smtpServer, userAccount, password);
+                    transport.sendMessage(mimeMessage, mimeMessage.getAllRecipients());
+
+                    status = "Đã gửi cho " + i++ + " trên " + list.size() + " sinh viên";
+                    System.out.println(status);
+                }
+
+                obj.addProperty("success", true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                obj.addProperty("success", false);
+                obj.addProperty("msg", e.getMessage());
+                e.printStackTrace();
             }
 
-            obj.addProperty("success", true);
-        } catch (Exception e) {
-            e.printStackTrace();
-            obj.addProperty("success", false);
-            obj.addProperty("message", e.getMessage());
-            e.printStackTrace();
-        }
+            run = false;
+            status = "";
 
-        return obj;
+            return obj;
+        };
+
+        return callable;
     }
 }
