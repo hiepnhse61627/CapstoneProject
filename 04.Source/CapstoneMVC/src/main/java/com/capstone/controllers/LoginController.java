@@ -5,6 +5,7 @@ import com.capstone.entities.DynamicMenuEntity;
 import com.capstone.models.CustomUser;
 import com.capstone.models.GoogleProfile;
 import com.capstone.models.Logger;
+import com.capstone.models.Ultilities;
 import com.capstone.services.CredentialsServiceImpl;
 import com.capstone.services.DynamicMenuServiceImpl;
 import com.capstone.services.ICredentialsService;
@@ -25,6 +26,7 @@ import org.springframework.security.web.authentication.logout.SecurityContextLog
 import org.springframework.security.web.authentication.rememberme.PersistentTokenBasedRememberMeServices;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.ServletContextAware;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -37,13 +39,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Controller
-public class LoginController {
+public class LoginController implements ServletContextAware {
 
-    @Autowired
-    private ServletContext servletContext;
+    private ServletContext context;
 
     @Autowired
     @Qualifier("rememberMeAuthenticationProvider")
@@ -109,14 +111,14 @@ public class LoginController {
     }
 
     @RequestMapping(value = "/auth/google")
-    public String Google(@RequestParam(name = "code") String code, HttpServletRequest request, HttpServletResponse response) {
+    public String Google(@RequestParam Map<String, String> params, HttpServletRequest request, HttpServletResponse response) {
         try {
             URL obj = new URL("https://www.googleapis.com/oauth2/v4/token");
             HttpURLConnection con = (HttpURLConnection) obj.openConnection();
             con.setRequestMethod("POST");
             con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
-            String POST_PARAMS = "code=" + code +
+            String POST_PARAMS = "code=" + params.get("code") +
                     "&client_id=154261814473-m5o6qqmt4768ij676ore7280qbpgf03u.apps.googleusercontent.com" +
                     "&client_secret=ZYZPU782sB6P1Q54J7L4tM2z" +
                     "&redirect_uri=http://localhost:8080/auth/google" +
@@ -168,6 +170,8 @@ public class LoginController {
                         @Override public String getParameter(String name) { return "true"; }
                     };
                     rememberMeServices.loginSuccess(wrapper, response, auth);
+
+                    Ultilities.GetMenu(context, user);
                 } else {
                     return "redirect:/register?email=" + profile.getEmail() + "&disable=true";
                 }
@@ -187,5 +191,10 @@ public class LoginController {
             authorities.add(new SimpleGrantedAuthority(role.trim()));
         }
         return authorities;
+    }
+
+    @Override
+    public void setServletContext(ServletContext servletContext) {
+        context = servletContext;
     }
 }
