@@ -26,4 +26,5 @@ public interface IMarksService {
 
     // ----- Manager function ----
     List<Object[]> getTotalStudentsGroupBySemesterAndSubject(int semesterId);
+    void getAverageSubjectLearnedByStudent(int programId);
 }

@@ -33,7 +33,7 @@ public class PercentFailController {
     @RequestMapping("/index")
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("ByClassPercent");
-        view.addObject("title", "Tỉ lệ sinh viên rớt môn");
+        view.addObject("title", "Tỉ lệ môn đạt");
 
         ISubjectService service1 = new SubjectServiceImpl();
         ICourseService service2 = new CourseServiceImpl();
@@ -48,6 +48,9 @@ public class PercentFailController {
         JsonObject data = new JsonObject();
 
         List<List<String>> parent = processFailPercent(params);
+        String searchKey = params.get("sSearch").toLowerCase();
+        parent = parent.stream().filter(c -> c.get(0).toLowerCase().contains(searchKey) ||
+                c.get(1).toLowerCase().contains(searchKey)).collect(Collectors.toList());
 
         JsonArray output = (JsonArray) new Gson().toJsonTree(parent.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList()));
 
@@ -106,20 +109,6 @@ public class PercentFailController {
 
                         sub = subject.getKey();
 
-//                        Map<String, List<String>> map = new HashMap<>();
-//                        for (MarksEntity mark : subject.getValue()) {
-//                            if (map.get(mark.getCourseId().getSemester().trim()) != null) {
-//                                map.get(mark.getCourseId().getSemester().trim()).add(mark.getStatus());
-//                            } else {
-//                                List<String> tmp2 = new ArrayList<>();
-//                                tmp2.add(mark.getStatus());
-//                                map.put(mark.getCourseId().getSemester().trim(), tmp2);
-//                            }
-//                        }
-
-//                        for (Map.Entry<String, List<String>> last : map.entrySet()) {
-//                            class1 = last.getKey();
-
                         float total = (float) subject.getValue().stream().count();
                         float failed = (float) subject.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("pass")).count();
                         percent = Math.round((failed / total) * 100f);
@@ -127,21 +116,10 @@ public class PercentFailController {
                         ArrayList<String> tmp = new ArrayList<>();
                         tmp.add(sub);
                         tmp.add(class1);
-                        tmp.add(String.valueOf(percent) + "% failed");
+                        tmp.add(String.valueOf(100 - percent) + "% passed");
                         parent.add(tmp);
-//                        }
                     }
                 }
-
-//                long failed = filtered.stream().filter(c -> !c.getStatus().toLowerCase().contains("pass")).count();
-//                ArrayList<String> tmp = new ArrayList<>();
-//                tmp.add(subjectId);
-//                tmp.add(r.getSemester());
-//                tmp.add(courseId);
-//
-//                float percent = ((float) failed / (float) filtered.stream().count()) * 100f;
-//                tmp.add(String.valueOf(Math.round(percent) + "%"));
-//                parent.add(tmp);
             }
         } catch (Exception e) {
             e.printStackTrace();

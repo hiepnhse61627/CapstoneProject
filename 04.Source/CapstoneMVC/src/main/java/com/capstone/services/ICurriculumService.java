@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface ICurriculumService {
     List<CurriculumEntity> getAllCurriculums();
+    List<CurriculumEntity> getAllCurriculumsByProgramId(int programId);
     List<CurriculumEntity> getCurriculums(int firstResult, int maxResult, String searchValue);
     int countCurriculums(String searchValue);
     int countAllCurriculums();

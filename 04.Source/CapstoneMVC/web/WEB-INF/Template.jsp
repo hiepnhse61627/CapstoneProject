@@ -480,6 +480,14 @@
                 <%--<a href="/managerrole/changecurriculum"><i class="fa fa-list"></i>--%>
                 <%--<span>Chuyển ngành sinh viên</span></a>--%>
                 <%--</li>--%>
+                <%--<li>--%>
+                    <%--<a href="/managerrole/averageStudentInClass"><i class="fa fa-list"></i>--%>
+                        <%--<span>Sĩ số trung bình lớp môn học theo kỳ</span></a>--%>
+                <%--</li>--%>
+                <%--<li>--%>
+                    <%--<a href="/managerrole/averageSubject"><i class="fa fa-list"></i>--%>
+                        <%--<span>Sĩ số trung bình môn đã học trên một sinh viên</span></a>--%>
+                <%--</li>--%>
                 <%--</security:authorize>--%>
 
                 <%--<security:authorize access="hasAnyRole('ROLE_STUDENT')">--%>

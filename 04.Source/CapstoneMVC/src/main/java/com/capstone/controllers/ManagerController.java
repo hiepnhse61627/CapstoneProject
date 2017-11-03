@@ -52,6 +52,18 @@ public class ManagerController {
         return view;
     }
 
+    @RequestMapping("/averageSubject")
+    public ModelAndView AverageSubject() {
+        ModelAndView view = new ModelAndView("AverageSubject");
+        view.addObject("title", "Sĩ số trung bình môn đã học trên một sinh viên");
+
+        IProgramService programService = new ProgramServiceImpl();
+        List<ProgramEntity> programs = programService.getAllPrograms();
+        view.addObject("programs", programs);
+
+        return view;
+    }
+
     @RequestMapping("/getinfo")
     @ResponseBody
     public JsonObject GetInfo(@RequestParam(value = "stuId") int stuId) {
@@ -177,6 +189,35 @@ public class ManagerController {
 
             jsonObj.addProperty("iTotalRecords", countList.size());
             jsonObj.addProperty("iTotalDisplayRecords", countList.size());
+            jsonObj.add("aaData", aaData);
+            jsonObj.addProperty("sEcho", params.get("sEcho"));
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            e.printStackTrace();
+        }
+
+        return jsonObj;
+    }
+
+    @RequestMapping("/averageSubject/getList")
+    @ResponseBody
+    public JsonObject GetAverageSubjectForDataTable(@RequestParam Map<String, String> params) {
+        JsonObject jsonObj = new JsonObject();
+        IProgramService programService = new ProgramServiceImpl();
+        IMarksService marksService = new MarksServiceImpl();
+
+        int programId = Integer.parseInt(params.get("programId"));
+        int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
+        int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
+
+        try {
+//            marksService.getAverageSubjectLearnedByStudent(programId);
+
+            List<List<String>> result = new ArrayList<>();
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
+
+            jsonObj.addProperty("iTotalRecords", result.size());
+            jsonObj.addProperty("iTotalDisplayRecords", result.size());
             jsonObj.add("aaData", aaData);
             jsonObj.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {

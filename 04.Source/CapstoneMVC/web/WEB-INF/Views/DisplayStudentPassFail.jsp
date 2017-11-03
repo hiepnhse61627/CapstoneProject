@@ -1,6 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+<style>
+    .dataTables_filter input {
+        width: 250px;
+    }
+</style>
+
 <section class="content">
     <div class="box">
         <div class="b-header">
@@ -169,7 +175,7 @@
                     aoData.push({"name": "subjectId", "value": $('#subject').val()})
             },
             "oLanguage": {
-                "sSearchPlaceholder": "",
+                "sSearchPlaceholder": "Tìm theo MSSV, Môn học, Học Kỳ, Status",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": 'Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng',

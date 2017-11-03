@@ -18,6 +18,11 @@ public class CurriculumServiceImpl implements  ICurriculumService {
     }
 
     @Override
+    public List<CurriculumEntity> getAllCurriculumsByProgramId(int programId) {
+        return controller.getAllCurriculumsByProgramId(programId);
+    }
+
+    @Override
     public List<CurriculumEntity> getCurriculums(int firstResult, int maxResult, String searchValue) {
         return controller.getCurriculums(firstResult, maxResult, searchValue);
     }

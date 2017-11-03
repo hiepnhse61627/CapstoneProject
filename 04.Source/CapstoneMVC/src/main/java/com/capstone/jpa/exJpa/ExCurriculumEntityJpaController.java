@@ -23,6 +23,27 @@ public class ExCurriculumEntityJpaController extends CurriculumEntityJpaControll
         return this.findCurriculumEntity(id);
     }
 
+    public List<CurriculumEntity> getAllCurriculumsByProgramId(int programId) {
+        List<CurriculumEntity> result = null;
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+
+            String queryStr = "SELECT c FROM CurriculumEntity c WHERE c.programId.id = :programId";
+            TypedQuery<CurriculumEntity> query = em.createQuery(queryStr, CurriculumEntity.class);
+            query.setParameter("programId", programId);
+
+            result = query.getResultList();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
+    }
+
     public int countAllCurriculums() {
         EntityManager em = null;
         int result = 0;

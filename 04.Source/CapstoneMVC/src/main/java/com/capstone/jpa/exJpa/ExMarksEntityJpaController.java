@@ -10,9 +10,7 @@ import org.apache.commons.lang3.reflect.Typed;
 
 import javax.persistence.*;
 import javax.persistence.criteria.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import static org.bouncycastle.asn1.x500.style.RFC4519Style.o;
 
@@ -508,5 +506,134 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         }
 
         return result;
+    }
+
+    public void getAverageSubjectLearnedByStudent(int programId) {
+        IMarkComponentService markComponentService = new MarkComponentServiceImpl();
+        IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
+        IProgramService programService = new ProgramServiceImpl();
+        EntityManager em = null;
+
+        try {
+//            em = getEntityManager();
+//
+//            MarkComponentEntity markComponent = markComponentService
+//                    .getMarkComponentByName(Enums.MarkComponent.AVERAGE.getValue());
+//
+//            // Get mark list by programId
+//            String queryStr =
+//                    "SELECT m.studentId.id, (SELECT smc.subjectId.id" +
+//                            "    FROM SubjectMarkComponentEntity smc" +
+//                            "    WHERE smc.id = m.subjectMarkComponentId.id AND smc.markComponentId.id = :markComponentId)" +
+//                            " FROM MarksEntity m " +
+//                            (programId > 0 ? " INNER JOIN DocumentStudentEntity ds ON m.studentId.id = ds.studentId.id" +
+//                                    " AND ds.curriculumId.programId.id = :programId" +
+//                                    " AND ds.CreatedDate = (SELECT MAX(tDS.CreatedDate) FROM DocumentStudentEntity tDS WHERE tDS.id = ds.id)" +
+//                                    " AND" : " WHERE") +
+//                            " m.status != :status" +
+//                            " GROUP BY m.studentId.id, m.subjectMarkComponentId.id";
+//            Query queryMarkList = em.createQuery(queryStr);
+//            queryMarkList.setParameter("status", Enums.MarkStatus.NOT_START.getValue());
+//            queryMarkList.setParameter("markComponentId", markComponent.getId());
+//            if (programId > 0) {
+//                queryMarkList.setParameter("programId", programId);
+//            }
+//
+//            // Object[] -> [0]: studentId, [1]: subjectId
+//            List<Object[]> studentSubjectList = queryMarkList.getResultList();
+//
+//            List<AverageSubject_StudentModel> studentList = new ArrayList<>();
+//            for (Object[] row : studentSubjectList) {
+//                int studentId = (int) row[0];
+//                String subjectId = (String) row[1];
+//
+//                AverageSubject_StudentModel curStudent = null;
+//                for (AverageSubject_StudentModel student : studentList) {
+//                    if (student.studentId == studentId) {
+//                        curStudent = student;
+//                        break;
+//                    }
+//                }
+//
+//                if (curStudent == null) {
+//                    curStudent = new AverageSubject_StudentModel();
+//
+//                    curStudent.studentId = studentId;
+//                    curStudent.subjectList = new ArrayList<>();
+//                    studentList.add(curStudent);
+//                }
+//                curStudent.subjectList.add(subjectId);
+//            }
+//
+//            // Get lastest document_student
+//            List<DocumentStudentEntity> docStudentList;
+//            if (programId > 0) {
+//                docStudentList = documentStudentService.getAllLatestDocumentStudentByProgramId(programId);
+//            } else {
+//                docStudentList = documentStudentService.getAllLatestDocumentStudent();
+//            }
+//
+//            Map<Integer, List<AverageSubject_StudentModel>> currciculumStudentMap = new HashMap<>();
+//            for (DocumentStudentEntity docStudent : docStudentList) {
+//                for (AverageSubject_StudentModel student : studentList) {
+//                    if (student.studentId == docStudent.getStudentId().getId()) {
+//                        int curCurriculumId = docStudent.getCurriculumId().getId();
+//                        student.curriculumId = curCurriculumId;
+//                        List<AverageSubject_StudentModel> list = currciculumStudentMap.get(curCurriculumId);
+//                        if (list == null) {
+//                            list = new ArrayList<>();
+//                            list.add(student);
+//                            currciculumStudentMap.put(curCurriculumId, list);
+//                        } else {
+//                            list.add(student);
+//                        }
+//                    }
+//                    break;
+//                }
+//            }
+//
+//            // Get program list
+//            List<ProgramEntity> programEntityList;
+//            if (programId > 0) {
+//                List<ProgramEntity> temp = new ArrayList<>();
+//                temp.add(programService.getProgramById(programId));
+//                programEntityList = temp;
+//            } else {
+//                programEntityList = programService.getAllPrograms();
+//            }
+//
+//            List<AverageSubject_ProgramModel> programList = new ArrayList<>();
+//            for (ProgramEntity program : programEntityList) {
+//                AverageSubject_ProgramModel newProgramModel = new AverageSubject_ProgramModel();
+//                newProgramModel.program = program;
+//                newProgramModel.students = new ArrayList<>();
+//
+//                for (CurriculumEntity curriculum : program.getCurriculumEntityList()) {
+//                    for (Integer curriculumId : currciculumStudentMap.keySet()) {
+//                        if (curriculum.getId() == curriculumId) {
+//                            newProgramModel.students.addAll(currciculumStudentMap.get(curriculumId));
+//                        }
+//                    }
+//                }
+//                programList.add(newProgramModel);
+//            }
+
+
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    private class AverageSubject_ProgramModel {
+        public ProgramEntity program;
+        public List<AverageSubject_StudentModel> students;
+    }
+
+    private class AverageSubject_StudentModel {
+        public int studentId;
+        public int curriculumId;
+        public List<String> subjectList;
     }
 }

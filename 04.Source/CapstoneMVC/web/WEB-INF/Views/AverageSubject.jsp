@@ -1,18 +1,12 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
-<style>
-    .dataTables_filter input {
-        width: 250px;
-    }
-</style>
-
 <section class="content">
     <div class="box">
         <div class="b-header">
             <div class="row">
                 <div class="col-md-9 title">
-                    <h1>Sĩ số trung bình lớp môn học theo kỳ</h1>
+                    <h1>Sĩ số trung bình môn đã học trên một sinh viên</h1>
                 </div>
                 <div class="col-md-3 text-right">
                     <button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
@@ -27,14 +21,14 @@
             <div class="form-group">
                 <div class="row">
                     <div class="title">
-                        <h4>Học kỳ</h4>
+                        <h4>Ngành học</h4>
                     </div>
                     <div class="my-content">
                         <div class="col-md-12">
-                            <select id="cb-semester" class="select form-control">
+                            <select id="cb-program" class="select form-control">
                                 <option value="0">All</option>
-                                <c:forEach var="s" items="${semesters}">
-                                    <option value="${s.id}">${s.semester}</option>
+                                <c:forEach var="p" items="${programs}">
+                                    <option value="${p.id}">${p.name}</option>
                                 </c:forEach>
                             </select>
                         </div>
@@ -44,14 +38,13 @@
 
             <div class="row">
                 <div class="col-md-12">
-                    <table id="tbl-average-student">
+                    <table id="tbl-average-subject">
                         <thead>
                         <tr>
-                            <th>Học kỳ</th>
-                            <th>Môn</th>
+                            <th>Ngành học</th>
                             <th>Số sinh viên</th>
-                            <%--<th>Số lớp</th>--%>
-                            <th>Trung bình</th>
+                            <th>Số môn học hiện tại</th>
+                            <th>Trung bình môn học</th>
                         </tr>
                         </thead>
                     </table>
@@ -68,7 +61,7 @@
 </section>
 
 <script>
-    var tblAverageStudent = null;
+    var tblAverageSubject = null;
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -120,7 +113,7 @@
     });
 
     function CreateTable() {
-        tblAverageStudent = $('#tbl-average-student').dataTable({
+        tblAverageStudent = $('#tbl-average-subject').dataTable({
             "bServerSide": true,
             "bFilter": true,
             "bRetrieve": true,
@@ -128,9 +121,9 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/managerrole/averageStudentInClass/getList",
+            "sAjaxSource": "/managerrole/averageSubject/getList",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "semesterId", "value": $('#cb-semester').val()})
+                aoData.push({"name": "programId", "value": $('#cb-program').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -165,9 +158,9 @@
     }
 
     function RefreshTable() {
-        if (tblAverageStudent != null) {
-            tblAverageStudent._fnPageChange(0);
-            tblAverageStudent._fnAjaxUpdate();
+        if (tblAverageSubject != null) {
+            tblAverageSubject._fnPageChange(0);
+            tblAverageSubject._fnAjaxUpdate();
         }
     }
 </script>
