@@ -232,7 +232,12 @@ public class StudentController {
                                 }
                             }
 
-                            if (totalFail == sub.getSubjectEntityList().size()) {
+                            String studentRollNumber = failedRow.getStudentId().getRollNumber();
+                            String subjectCd = failedRow.getSubjectMarkComponentId().getSubjectId().getId();
+
+                            if (totalFail == sub.getSubjectEntityList().size()
+                                    && !resultList.stream().anyMatch(r -> r.getStudentId().getRollNumber().equalsIgnoreCase(studentRollNumber)
+                                                                     && r.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(subjectCd))) {
                                 resultList.add(failedRow);
                             }
                         }
