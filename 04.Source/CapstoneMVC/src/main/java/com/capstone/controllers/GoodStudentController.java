@@ -94,7 +94,7 @@ public class GoodStudentController {
                 " INNER JOIN Document_Student ds ON m.StudentId = ds.StudentId" +
                 " INNER JOIN Subject_Curriculum sc ON ds.CurriculumId = sc.CurriculumId" +
                 " AND mc.Name LIKE '%average%' AND smc.SubjectId = sc.SubjectId" +
-                " AND ds.CreatedDate = (SELECT MAX(CreatedDate) FROM Document_Student WHERE Id = ds.Id)" +
+                " AND ds.CreatedDate = (SELECT MAX(CreatedDate) FROM Document_Student WHERE StudentId = m.StudentId)" +
                 ((semesterId != 0) ? " AND m.SemesterId = ?" : "") +
                 (!sSearch.isEmpty() ? " AND m.StudentId IN (SELECT Id FROM Student WHERE RollNumber LIKE ? OR FullName LIKE ?)" : "") +
                 " ORDER BY m.StudentId, sc.TermNumber";
