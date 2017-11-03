@@ -524,14 +524,11 @@
             var name = list[i].getElementsByClassName('name')[0].innerHTML;
             console.log(name);
             if (name.toLowerCase().search(filter) != -1)
-                //chỗ này nè
                 list[i].style.display = 'list-item';
             else
                 list[i].style.display = 'none';
         }
     }
-//nó là cái style để hiện, như thằng none là hidden d
-//cái tree view nó tự ẩn child node đi
 </script>
 
 </body>
