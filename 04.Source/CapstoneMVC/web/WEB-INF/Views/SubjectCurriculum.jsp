@@ -11,7 +11,7 @@
                 </div>
                 <div class="col-md-3 text-right">
                     <input class="btn btn-warning" type="button" value="Nhập dữ liệu" onclick="ShowImportModal()"/>
-                    <%--<a class="btn btn-success" href="/createcurriculum">Tạo mới</a>--%>
+                    <a class="btn btn-success" href="/createcurriculum">Tạo mới</a>
                 </div>
             </div>
             <hr>

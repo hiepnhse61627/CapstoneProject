@@ -104,8 +104,14 @@ public class UploadController {
 
     @RequestMapping(value = "/uploadStudentList", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject uploadFile(@RequestParam("file") MultipartFile file) {
-        JsonObject obj = ReadFile(file, null, true);
+    public JsonObject uploadFile(@RequestParam("file") MultipartFile file, @RequestParam boolean update) {
+        JsonObject obj;
+        if (update) {
+            obj = UpdateFile(file, null, true);
+        } else {
+            obj = ReadFile(file, null, true);
+        }
+
         if (obj.get("success").getAsBoolean()) {
             ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
             read.saveFile(context, file, folder);
@@ -176,6 +182,7 @@ public class UploadController {
             int programNameIndex = 5;
             int curriculumIndex = 13;
             int termIndex = 14;
+            int email = 26;
 
             int mainClass = 15;
 
@@ -191,6 +198,7 @@ public class UploadController {
                     Cell genderCell = row.getCell(genderIndex);
                     Cell programNameCell = row.getCell(programNameIndex);
                     Cell curriculumCell = row.getCell(curriculumIndex);
+                    Cell emailcell = row.getCell(email);
 
                     Cell termCell = row.getCell(termIndex);
 
@@ -201,6 +209,15 @@ public class UploadController {
                                 "" : Integer.toString((int) rollNumberCell.getNumericCellValue()));
                         if (!rollNumber.isEmpty()) {
                             student.setRollNumber(rollNumber);
+                        }
+                    }
+
+                    if (emailcell != null) {
+                        String e = emailcell.getCellType() == Cell.CELL_TYPE_STRING ?
+                                emailcell.getStringCellValue() : (emailcell.getNumericCellValue() == 0 ?
+                                "" : Integer.toString((int) emailcell.getNumericCellValue()));
+                        if (!e.isEmpty()) {
+                            student.setEmail(e);
                         }
                     }
 
@@ -263,6 +280,181 @@ public class UploadController {
             }
 
             studentService.createStudentList(studentList);
+        } catch (Exception e) {
+            obj.addProperty("success", false);
+            obj.addProperty("message", e.getMessage());
+            e.printStackTrace();
+            return obj;
+        }
+
+        obj.addProperty("success", true);
+        return obj;
+    }
+
+    private JsonObject UpdateFile(MultipartFile file, File file2, boolean isNewFile) {
+        JsonObject obj = new JsonObject();
+
+        try {
+            InputStream is = isNewFile ? file.getInputStream() : new FileInputStream(file2);
+
+            String originalFileName = isNewFile ? file.getOriginalFilename() : file2.getName();
+            String extension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1, originalFileName.length());
+
+//            List<DocumentStudentEntity> studentList = new ArrayList<>();
+            List<ProgramEntity> programList = programService.getAllPrograms();
+            List<CurriculumEntity> curriculumList = curriculumService.getAllCurriculums();
+            Date now = new Date();
+
+            // Get template document
+            List<DocumentEntity> docList = documentService.getAllDocuments();
+            DocumentEntity templateDoc = null;
+            if (!docList.isEmpty()) {
+                templateDoc = docList.get(0);
+            } else {
+                List<DocTypeEntity> docTypeList = docTypeService.getAllDocTypes();
+                DocTypeEntity docType = null;
+                if (!docTypeList.isEmpty()) {
+                    docType = docTypeList.get(0);
+                } else {
+                    docType = new DocTypeEntity();
+                    docType.setName("Đang học");
+                    docTypeService.createDocType(docType);
+                }
+                templateDoc = new DocumentEntity();
+                templateDoc.setDocTypeId(docType);
+                templateDoc.setCode("000000");
+
+                documentService.createDocument(templateDoc);
+            }
+
+            Workbook workbook = null;
+            Sheet spreadsheet = null;
+            Row row = null;
+            if (extension.equals(xlsExcelExtension)) {
+                workbook = new HSSFWorkbook(is);
+                spreadsheet = workbook.getSheetAt(0);
+
+            } else if (extension.equals(xlsxExcelExtension)) {
+                workbook = new XSSFWorkbook(is);
+                spreadsheet = workbook.getSheetAt(0);
+            } else {
+                obj.addProperty("success", false);
+                obj.addProperty("message", "Chỉ chấp nhận file excel");
+                return obj;
+            }
+
+            int excelDataIndex = 1;
+
+            int rollNumberIndex = 0;
+            int studentNameIndex = 2;
+            int dateOfBirthIndex = 3;
+            int genderIndex = 4;
+            int programNameIndex = 5;
+            int curriculumIndex = 13;
+            int termIndex = 14;
+            int email = 26;
+
+            int mainClass = 15;
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+            for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+                if (row != null) {
+//                    StudentEntity student = new StudentEntity();
+
+                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    Cell studentNameCell = row.getCell(studentNameIndex);
+                    Cell dateOfBirthCell = row.getCell(dateOfBirthIndex);
+                    Cell genderCell = row.getCell(genderIndex);
+                    Cell programNameCell = row.getCell(programNameIndex);
+                    Cell curriculumCell = row.getCell(curriculumIndex);
+                    Cell emailcell = row.getCell(email);
+
+                    Cell termCell = row.getCell(termIndex);
+
+                    // Get Student Info
+                    if (rollNumberCell != null) {
+                        String rollNumber = rollNumberCell.getCellType() == Cell.CELL_TYPE_STRING ?
+                                rollNumberCell.getStringCellValue() : (rollNumberCell.getNumericCellValue() == 0 ?
+                                "" : Integer.toString((int) rollNumberCell.getNumericCellValue()));
+                        if (!rollNumber.isEmpty()) {
+                            StudentEntity student = studentService.findStudentByRollNumber(rollNumber);
+                            if (student != null) {
+                                student.setRollNumber(rollNumber);
+
+                                // update student
+                                if (emailcell != null) {
+                                    String e = emailcell.getCellType() == Cell.CELL_TYPE_STRING ?
+                                            emailcell.getStringCellValue() : (emailcell.getNumericCellValue() == 0 ?
+                                            "" : Integer.toString((int) emailcell.getNumericCellValue()));
+                                    if (!e.isEmpty()) {
+                                        student.setEmail(e);
+                                    }
+                                }
+
+                                String studentFullName;
+                                if (studentNameCell != null &&
+                                        !(studentFullName = studentNameCell.getStringCellValue().trim()).isEmpty()) {
+                                    student.setFullName(studentFullName);
+                                }
+
+                                String dateOfBirth;
+                                if (dateOfBirthCell != null &&
+                                        !(dateOfBirth = dateOfBirthCell.getStringCellValue().trim()).isEmpty()) {
+                                    if (dateOfBirth.matches("\\d{1,2}-\\d{1,2}-\\d{4}")) {
+                                        student.setDateOfBirth(sdf.parse(dateOfBirth));
+                                    }
+                                }
+
+                                String gender;
+                                if (genderCell != null &&
+                                        !(gender = genderCell.getStringCellValue().trim()).isEmpty()) {
+                                    student.setGender(gender.equalsIgnoreCase("Nam"));
+                                }
+
+                                ProgramEntity studentProgram;
+                                String programName;
+                                if (programNameCell != null &&
+                                        !(programName = programNameCell.getStringCellValue().trim()).isEmpty()) {
+                                    studentProgram = this.findOrCreateProgram(programList, programName);
+                                    student.setProgramId(studentProgram);
+                                }
+
+                                CurriculumEntity currentCurriculum = null;
+                                String curriculumStr;
+                                if (curriculumCell != null &&
+                                        !(curriculumStr = curriculumCell.getStringCellValue().trim()).isEmpty()) {
+                                    int pos = curriculumStr.indexOf("_");
+                                    if (pos != -1) {
+                                        String curPogramName = curriculumStr.substring(0, pos);
+                                        String curCurriName = curriculumStr.substring(pos + 1);
+
+                                        currentCurriculum = findOrCreateCurriculum(programList, curriculumList, curPogramName, curCurriName);
+                                    }
+                                }
+
+                                if (termCell != null) {
+                                    double term = termCell.getNumericCellValue();
+                                    student.setTerm(((Number) term).intValue());
+                                }
+
+                                if (student.getRollNumber() != null) {
+                                    DocumentStudentEntity docStd = new DocumentStudentEntity();
+                                    docStd.setStudentId(student);
+                                    docStd.setCurriculumId(currentCurriculum);
+                                    docStd.setDocumentId(templateDoc);
+                                    docStd.setCreatedDate(now);
+                                    student.getDocumentStudentEntityList().add(docStd);
+                                }
+
+                                studentService.saveStudent(student);
+                            }
+                        }
+                    }
+                }
+            }
+
+//            studentService.createStudentList(studentList);
         } catch (Exception e) {
             obj.addProperty("success", false);
             obj.addProperty("message", e.getMessage());

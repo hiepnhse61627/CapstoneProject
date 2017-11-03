@@ -28,7 +28,7 @@ public class ExportStudentListImpl implements IExportObject {
     }
 
     @Override
-    public void writeData(OutputStream os, Map<String, String> params) throws IOException {
+    public void writeData(OutputStream os, Map<String, String> params) throws Exception {
         ICurriculumService curriculumService = new CurriculumServiceImpl();
 
         ClassLoader classLoader = getClass().getClassLoader();
@@ -47,7 +47,7 @@ public class ExportStudentListImpl implements IExportObject {
         streamingWorkbook.write(os);
     }
 
-    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet) {
+    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet) throws Exception {
         // start data table row
         IStudentService studentService = new StudentServiceImpl();
         IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();

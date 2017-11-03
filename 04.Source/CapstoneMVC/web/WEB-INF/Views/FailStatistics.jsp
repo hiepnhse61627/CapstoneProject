@@ -27,7 +27,8 @@
             </div>
 
             <div class="form-group">
-                <button type="button" class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>
+                <button type="button" class="btn btn-default" onclick="RefreshTable()">Tìm kiếm</button>
+                <button type="button" class="btn btn-success" onclick="ExportExcel()">Xuất dữ liệu</button>
             </div>
 
             <div class="form-group">
@@ -50,6 +51,11 @@
         </div>
     </div>
 </section>
+
+<form id="export-excel" action="/exportExcel" hidden>
+    <input name="objectType"/>
+    <input name="semesterId"/>
+</form>
 
 <script>
     var table = null;
@@ -136,5 +142,12 @@
             table._fnPageChange(0);
             table._fnAjaxUpdate();
         }
+    }
+
+    function ExportExcel() {
+        $("input[name='objectType']").val(10);
+        $("input[name='semesterId']").val($('#semester').val());
+
+        $("#export-excel").submit();
     }
 </script>

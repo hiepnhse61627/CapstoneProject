@@ -1,6 +1,12 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+<style>
+    .dataTables_filter input {
+        width: 250px;
+    }
+</style>
+
 <section class="content">
     <div class="box">
         <div class="b-header">
@@ -47,6 +53,10 @@
             <div class="form-group">
                 <button type="button" class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>
                 <button type="button" class="btn btn-primary" onclick="ExportExcel()">Xuất dữ liệu</button>
+            </div>
+
+            <div class="form-group">
+                <div id="studentsNumber" class="title"></div>
             </div>
 
             <div class="form-group">
@@ -149,6 +159,8 @@
     $(document).ready(function () {
         $('.select').select2();
 
+        var studentDistinctNumber = 0;
+
         table = $('#table').dataTable({
             "bServerSide": true,
             "bFilter": true,
@@ -163,10 +175,10 @@
                     aoData.push({"name": "subjectId", "value": $('#subject').val()})
             },
             "oLanguage": {
-                "sSearchPlaceholder": "",
+                "sSearchPlaceholder": "Tìm theo MSSV, Môn học, Học Kỳ, Status",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
-                "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
+                "sInfo": 'Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng',
                 "sEmptyTable": "Không có dữ liệu",
                 "sInfoFiltered": " - lọc ra từ _MAX_ dòng",
                 "sLengthMenu": "Hiển thị _MENU_ dòng",
@@ -198,7 +210,28 @@
                 }
             ],
             "bAutoWidth": false,
+            "fnDrawCallback" : function (settings, json) {
+                sInfo()
+            }
         }).fnSetFilteringDelay(1000);
+
+        function sInfo() {
+            $.ajax({
+                type : 'GET',
+                url: '/getstudents/studentsDistinct',
+                data: {
+                    "semesterId" : $('#semester').val(),
+                    "subjectId" : $('#subject').val()
+                },
+                success: function (result) {
+                    if (result) {
+                        studentDistinctNumber = result.studentSize;
+                        return $('#studentsNumber').html('<h4>_Số sinh viên đang nợ ' + studentDistinctNumber + '</h4>');
+                        alert(studentDistinctNumber);
+                    }
+                }
+            });
+        }
     });
 
     function GetAllStudentMarks(studentId) {

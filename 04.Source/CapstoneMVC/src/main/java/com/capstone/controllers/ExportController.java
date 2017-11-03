@@ -20,11 +20,21 @@ public class ExportController {
     private final String headerKey = "Content-Disposition";
     private IExportObject exportObject;
 
+    @RequestMapping(value = "/pauseexportStudentDetail")
+    @ResponseBody
+    public JsonObject Stop() {
+        ExportStatusReport.StopExporting = true;
+        JsonObject obj = new JsonObject();
+        obj.addProperty("success", true);
+        return obj;
+	}
+
     @RequestMapping(value = "/exportExcel")
     @ResponseBody
     public Callable exportFile(@RequestParam Map<String, String> params, HttpServletResponse response) {
         ExportStatusReport.StatusExportStudentDetailRunning = true;
         ExportStatusReport.StatusStudentDetailExport = "";
+        ExportStatusReport.StopExporting = false;
 
         Callable callable = () -> {
             exportObject = createExportImplementation(Integer.parseInt(params.get("objectType")));
@@ -48,6 +58,7 @@ public class ExportController {
 
             ExportStatusReport.StatusExportStudentDetailRunning = false;
             ExportStatusReport.StatusStudentDetailExport = "";
+            ExportStatusReport.StopExporting = false;
 
             return null;
         };
@@ -79,6 +90,7 @@ public class ExportController {
                 "com.capstone.exporters.ExportStudentListImpl", // 7 = Export students
                 "com.capstone.exporters.ExportPercentFailImpl", // 8 = Export percent fail
                 "com.capstone.exporters.ExportGoodStudentsImpl", // 9 = Export good student
+                "com.capstone.exporters.ExportFailStatisticsImpl" // 10 = Export fail statistics
         };
 
         try {

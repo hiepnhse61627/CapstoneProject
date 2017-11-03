@@ -26,7 +26,7 @@ public class ExportPercentFailImpl implements IExportObject {
     }
 
     @Override
-    public void writeData(OutputStream os, Map<String, String> params) throws IOException {
+    public void writeData(OutputStream os, Map<String, String> params) throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream is = classLoader.getResourceAsStream(EXCEL_TEMPL);
 
@@ -45,7 +45,7 @@ public class ExportPercentFailImpl implements IExportObject {
         streamingWorkbook.write(os);
     }
 
-    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, List<List<String>> entities) {
+    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, List<List<String>> entities) throws Exception {
         // start data table row
         if (entities != null && !entities.isEmpty()) {
             // style

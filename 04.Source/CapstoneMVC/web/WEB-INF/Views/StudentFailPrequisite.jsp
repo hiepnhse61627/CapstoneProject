@@ -22,6 +22,10 @@
         margin-right: 5px;
     }
 
+    .dataTables_filter input {
+        width: 250px;
+    }
+
     #btn-display-subject,
     #btn-search {
         width: 85px;
@@ -273,7 +277,7 @@
                         aoData.push({"name": "prequisiteId", "value": $('#hidden').val()})
                 },
                 "oLanguage": {
-                    "sSearchPlaceholder": "",
+                    "sSearchPlaceholder": "Tìm theo MSSV, Tên SV, Tình Trạng",
                     "sSearch": "Tìm kiếm:",
                     "sZeroRecords": "Không có dữ liệu phù hợp",
                     "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",

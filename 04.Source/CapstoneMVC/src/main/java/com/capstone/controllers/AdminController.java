@@ -3,6 +3,7 @@ package com.capstone.controllers;
 import com.capstone.entities.CredentialsEntity;
 import com.capstone.entities.MarksEntity;
 import com.capstone.models.CustomCredentialsEntity;
+import com.capstone.models.CustomUser;
 import com.capstone.models.Ultilities;
 import com.capstone.services.CredentialsServiceImpl;
 import com.capstone.services.ICredentialsService;
@@ -12,6 +13,11 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.springframework.security.access.method.P;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -114,6 +120,9 @@ public class AdminController {
                     c.setPassword(encodedPass);
                 }
                 service.SaveCredential(c, false);
+
+                Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(c.getUsername(), c.getPassword(), getGrantedAuthorities(c), c), c.getPassword(), getGrantedAuthorities(c));
+                SecurityContextHolder.getContext().setAuthentication(auth);
             }
 
             data.addProperty("success", true);
@@ -122,5 +131,14 @@ public class AdminController {
         }
 
         return data;
+    }
+
+    private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user){
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        String[] roles = user.getRole().split(",");
+        for (String role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role.trim()));
+        }
+        return authorities;
     }
 }

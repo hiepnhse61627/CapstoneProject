@@ -62,6 +62,7 @@
                                     <th>Ngành</th>
                                     <th>Quyết định</th>
                                     <th>Ngày tạo</th>
+                                    <%--<th>Xóa</th>--%>
                                 </tr>
                                 </thead>
                             </table>
@@ -86,6 +87,7 @@
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <button type="button" class="btn btn-success" onclick="Change()">Chuyển ngành</button>
+                                            <a href="/subcurriculum" class="btn btn-google">Tạo khung chương trình</a>
                                         </div>
                                     </div>
                                 </div>
@@ -112,6 +114,8 @@
 
 <script>
     var table = null;
+    var current = null;
+    var newcurrent = null;
 
     $(document).ready(function () {
         $('.select').select2();
@@ -135,10 +139,19 @@
         var curId = $('#curid').val();
         var newId = $('#curriculum').val();
 
+        current = [];
+        $.each($("input[name='current']:not(:checked)"), function() {
+            current.push($(this).val());
+        });
+        newcurrent = [];
+        $.each($("input[name='newcurrent']:not(:checked)"), function() {
+            newcurrent.push($(this).val());
+        });
+
         $.ajax({
             type: "GET",
             url: "/managerrole/change",
-            data: {"curId": curId, "newId": newId, "stuId": stuId},
+            data: {"curId": curId, "newId": newId, "stuId": stuId, "current": JSON.stringify(current), "newcurrent": JSON.stringify(newcurrent)},
             success: function (result) {
                 console.log(result.data);
                 if (result.success) {
@@ -168,7 +181,7 @@
                         html += data[i][j];
                         html += "</td>";
                     }
-                    html += "<td><input type='checkbox' value='" + data[i][0] +"' checked/></td>";
+                    html += "<td><input name='current' type='checkbox' value='" + data[i][0] +"' checked/></td>";
                     html += "</tr>";
                 }
                 $('#yes').html(html);
@@ -193,7 +206,7 @@
                         html += data[i][j];
                         html += "</td>";
                     }
-                    html += "<td><input type='checkbox' value='" + data[i][0] +"' checked/></td>";
+                    html += "<td><input name='newcurrent' type='checkbox' value='" + data[i][0] +"'/></td>";
                     html += "</tr>";
                 }
                 $('#no').html(html);
@@ -211,6 +224,9 @@
                 console.log(result);
                 $('#info').html(result.info);
                 $('#curid').val(result.curriculum);
+
+                GetCurrent();
+                GetNew();
             }
         });
     }
@@ -252,6 +268,13 @@
                         "bSortable": false,
                         "sClass": "text-center",
                     },
+//                    {
+//                        "aTargets": [3],
+//                        "mRender": function (data, type, row) {
+//                            var id = row[0];
+//                            return "<a class='btn btn-warning' onclick='Delete(" + id + ")'>Xóa</a>";
+//                        }
+//                    }
                 ],
                 "bAutoWidth": false,
             });

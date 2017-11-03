@@ -21,7 +21,7 @@ public class ExportGoodStudentsImpl implements IExportObject {
     }
 
     @Override
-    public void writeData(OutputStream os, Map<String, String> params) throws IOException {
+    public void writeData(OutputStream os, Map<String, String> params) throws Exception {
         GoodStudentController goodStudentController = new GoodStudentController();
         List<List<String>> studentList = goodStudentController.getGoodStudentList(params);
 
@@ -41,7 +41,7 @@ public class ExportGoodStudentsImpl implements IExportObject {
         streamingWorkbook.write(os);
     }
 
-    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, List<List<String>> studentList) {
+    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, List<List<String>> studentList) throws Exception {
 
 
         if (!studentList.isEmpty()) {

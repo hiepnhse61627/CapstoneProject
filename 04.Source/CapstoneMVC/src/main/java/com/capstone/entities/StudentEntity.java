@@ -31,6 +31,8 @@ public class StudentEntity implements Serializable {
     private String rollNumber;
     @Column(name = "FullName", length = 150)
     private String fullName;
+    @Column(name = "Email", length = 255)
+    private String email;
     @Column(name = "DateOfBirth")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateOfBirth;
@@ -40,7 +42,7 @@ public class StudentEntity implements Serializable {
     private Integer term;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
     private List<DocumentStudentEntity> documentStudentEntityList;
-    @OneToMany(mappedBy = "studentId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
     private List<MarksEntity> marksEntityList;
     @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
     @ManyToOne
@@ -60,6 +62,14 @@ public class StudentEntity implements Serializable {
 
     public Integer getId() {
         return id;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public void setId(Integer id) {

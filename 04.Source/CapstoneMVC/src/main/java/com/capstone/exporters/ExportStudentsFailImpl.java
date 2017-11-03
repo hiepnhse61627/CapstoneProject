@@ -26,7 +26,7 @@ public class ExportStudentsFailImpl implements IExportObject {
     }
 
     @Override
-    public void writeData(OutputStream os, Map<String, String> params) throws IOException {
+    public void writeData(OutputStream os, Map<String, String> params) throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream is = classLoader.getResourceAsStream(STUDENTS_FAIL_EXCEL_TEMPL);
 
@@ -53,7 +53,7 @@ public class ExportStudentsFailImpl implements IExportObject {
         streamingWorkbook.write(os);
     }
 
-    private void buildListTitle(SXSSFWorkbook workbook, SXSSFSheet spreadsheet) {
+    private void buildListTitle(SXSSFWorkbook workbook, SXSSFSheet spreadsheet) throws Exception {
         Row row = spreadsheet.createRow(0);
         Cell cell = row.createCell(3);
         row.setHeight((short) 800);
@@ -136,7 +136,7 @@ public class ExportStudentsFailImpl implements IExportObject {
         RegionUtil.setBorderTop(BorderStyle.THIN, range3, spreadsheet);
     }
 
-    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, List<MarksEntity> marks) throws IOException {
+    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, List<MarksEntity> marks) throws Exception {
         // style
         CellStyle cellStyle = workbook.createCellStyle();
         cellStyle.setBorderBottom(BorderStyle.THIN);

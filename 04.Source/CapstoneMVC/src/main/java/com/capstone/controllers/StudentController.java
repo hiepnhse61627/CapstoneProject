@@ -33,6 +33,8 @@ public class StudentController {
     @Autowired
     ServletContext context;
 
+    private String searchKey = "";
+
     IMarksService marksService = new MarksServiceImpl();
 
     @RequestMapping("/create")
@@ -58,13 +60,12 @@ public class StudentController {
     public JsonObject GetStudents(@RequestParam Map<String, String> params) {
         try {
             JsonObject data = new JsonObject();
-
-            String searchKey = params.get("sSearch");
-
             List<List<String>> result = processData(params);
-
-            result = result.stream().filter(c -> c.get(0).contains(searchKey) ||
-                    c.get(1).contains(searchKey)).collect(Collectors.toList());
+            String searchKey = params.get("sSearch").toLowerCase();
+            result = result.stream().filter(c -> c.get(0).toLowerCase().contains(searchKey) ||
+                    c.get(2).toLowerCase().contains(searchKey) ||
+                    c.get(3).toLowerCase().contains(searchKey) ||
+                    c.get(5).toLowerCase().contains(searchKey)).collect(Collectors.toList());
 
             List<List<String>> display = new ArrayList<>();
             if (!result.isEmpty()) {
@@ -86,7 +87,22 @@ public class StudentController {
         return null;
     }
 
+    @RequestMapping(value = "/getstudents/studentsDistinct", method = RequestMethod.GET)
+    @ResponseBody
+    public JsonObject getStudentDistinctNumber(@RequestParam("semesterId") String semesterId, @RequestParam("subjectId") String subjectId) {
+        JsonObject jsonObject = new JsonObject();
+
+        List<MarksEntity> dataList = this.GetStudentsList(semesterId, subjectId, this.searchKey);
+        List<String> studentList = dataList.stream().map(d -> d.getStudentId().getRollNumber()).distinct().collect(Collectors.toList());
+
+        jsonObject.addProperty("success", true);
+        jsonObject.addProperty("studentSize", studentList.size());
+
+        return jsonObject;
+    }
+
     public List<List<String>> processData(Map<String, String> params) {
+        this.searchKey = params.get("sSearch");
         String semesterId = params.get("semesterId");
         String subjectId = params.get("subjectId");
         String searchKey = params.get("sSearch");
@@ -117,39 +133,6 @@ public class StudentController {
         List<MarksEntity> markList = marksService.getMarkByConditions(semesterId, subjectId, searchKey);
         // result list
         List<MarksEntity> resultList = new ArrayList<>();
-//        // compared list
-//        List<MarksEntity> comparedList = new ArrayList<>();
-//        // Init students passed and failed
-//        List<MarksEntity> listPassed = markList.stream().filter(p -> p.getStatus().contains("Passed") || p.getStatus().contains("Exempt")).collect(Collectors.toList());
-//        List<MarksEntity> listFailed = markList.stream().filter(f -> !f.getStatus().contains("Passed") || !f.getStatus().contains("Exempt")).collect(Collectors.toList());
-//        // make comparator
-//        Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
-//            @Override
-//            public int compare(MarksEntity o1, MarksEntity o2) {
-//                return new CompareToBuilder()
-//                        .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
-//                        .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
-//                        .toComparison();
-//            }
-//        };
-//        Collections.sort(listPassed, comparator);
-//        // start compare failed list to passed list
-//        for (int i = 0; i < listFailed.size(); i++) {
-//            MarksEntity keySearch = listFailed.get(i);
-//            int index = Collections.binarySearch(listPassed, keySearch, comparator);
-//            if (index < 0) {
-//                comparedList.add(keySearch);
-//            }
-//        }
-//        // remove duplicate
-//
-//        for (MarksEntity marksEntity : comparedList) {
-//            if (marksEntity.getSubjectMarkComponentId() != null && !resultList.stream().anyMatch(r -> r.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase().equals(marksEntity.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
-//                                                && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
-//                resultList.add(marksEntity);
-//            }
-//        }
-
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
         if (!markList.isEmpty()) {
             for (MarksEntity m : markList) {
@@ -161,15 +144,6 @@ public class StudentController {
                     map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId()).add(m);
                 }
             }
-
-//            ISubjectService subjectService = new SubjectServiceImpl();
-//            SubjectEntity aSub = subjectService.findSubjectById(subjectId);
-//            List<SubjectEntity> aReplace;
-//            if (aSub != null) {
-//                aReplace = aSub.getSubjectEntityList();
-//            } else {
-//                aReplace = new ArrayList<>();
-//            }
 
             Set<String> studentIds = map.rowKeySet();
             for (String studentId : studentIds) {
@@ -215,7 +189,12 @@ public class StudentController {
                                 }
                             }
 
-                            if (totalFail == sub.getSubjectEntityList().size()) {
+                            String studentRollNumber = failedRow.getStudentId().getRollNumber();
+                            String subjectCd = failedRow.getSubjectMarkComponentId().getSubjectId().getId();
+
+                            if (totalFail == sub.getSubjectEntityList().size()
+                                    && !resultList.stream().anyMatch(r -> r.getStudentId().getRollNumber().equalsIgnoreCase(studentRollNumber)
+                                                                     && r.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(subjectCd))) {
                                 resultList.add(failedRow);
                             }
                         }

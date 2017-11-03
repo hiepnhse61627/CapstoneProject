@@ -46,7 +46,12 @@ public class GoodStudentController {
         int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
 
         try {
+            String searchKey = params.get("sSearch").toLowerCase();
             List<List<String>> studentList = this.getGoodStudentList(params);
+            studentList = studentList.stream().filter(c -> c.get(0).toLowerCase().contains(searchKey) ||
+                    c.get(2).toLowerCase().contains(searchKey) ||
+                    c.get(3).toLowerCase().contains(searchKey) ||
+                    c.get(4).toLowerCase().contains(searchKey)).collect(Collectors.toList());
 
             List<List<String>> result = studentList.stream().skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
             JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);

@@ -9,7 +9,10 @@ import com.capstone.services.IStudentService;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,6 +24,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -74,6 +78,9 @@ public class ProfileController {
                 }
 
                 service.SaveCredential(c, false);
+
+                Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(c.getUsername(), c.getPassword(), getGrantedAuthorities(c), c), c.getPassword(), getGrantedAuthorities(c));
+                SecurityContextHolder.getContext().setAuthentication(auth);
             }
 
             data.addProperty("success", true);
@@ -82,5 +89,14 @@ public class ProfileController {
         }
 
         return data;
+    }
+
+    private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user){
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        String[] roles = user.getRole().split(",");
+        for (String role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role.trim()));
+        }
+        return authorities;
     }
 }

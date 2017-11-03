@@ -15,4 +15,5 @@ public interface IStudentService {
     List<StudentEntity> findAllStudents();
     List<StudentEntity> findStudentsByProgramName(String programName);
     void saveStudent(StudentEntity stu) throws Exception;
+
 }

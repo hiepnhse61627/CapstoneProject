@@ -7,10 +7,6 @@
         padding: 10px;
     }
 
-    .dataTables_filter, .dataTables_info {
-        display: none;
-    }
-
 </style>
 
 <section class="content">
@@ -18,19 +14,7 @@
         <div class="b-header">
             <div class="row">
                 <div class="col-md-9 title">
-                    <h1>Thông tin chi tiết sinh viên</h1>
-                </div>
-                <div class="col-md-3 text-right">
-                    <button type="button" class="btn btn-warning btn-with-icon" onclick="ExportExcelForOneStudent()">
-                        <i class="glyphicon glyphicon-open"></i>
-                        <%--<i class="fa fa-upload"></i>--%>
-                        <div>Xuất dữ liêu cho sinh viên đang được chọn</div>
-                    </button>
-                    <button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
-                        <i class="glyphicon glyphicon-open"></i>
-                        <%--<i class="fa fa-upload"></i>--%>
-                        <div>XUẤT DỮ LIỆU</div>
-                    </button>
+                    <h1>Danh sách sinh viên nợ môn</h1>
                 </div>
             </div>
             <hr>
@@ -38,30 +22,10 @@
         <div class="b-body">
             <div class="form-group">
                 <div class="row">
-                    <div class="my-content">
-                        <div class="my-input-group">
-                            <div class="left-content m-r-5">
-                                <label class="p-t-8">Chọn sinh viên:</label>
-                            </div>
-                            <div class="right-content width-30 width-m-70">
-                                <select id="select" class="select">
-                                    <%--<option value="0">-- Select --</option>--%>
-                                    <%--<c:forEach var="stu" items="${students}">--%>
-                                        <%--<option value="${stu.id}">${stu.rollNumber} - ${stu.fullName}</option>--%>
-                                    <%--</c:forEach>--%>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="row">
                     <div class="col-md-6 p-l-5 p-r-5 m-b-10">
                         <div class="my-tbl-wrapper bg-gray-light">
                             <div class="title text-center">
-                                <h4>Danh sách môn chưa đạt</h4>
+                                <h4>Danh sách môn còn nợ</h4>
                             </div>
                             <div class="my-content">
                                 <table id="table">
@@ -82,7 +46,7 @@
                     <div class="col-md-6 p-l-5 p-r-5">
                         <div class="my-tbl-wrapper bg-gray-light overflow">
                             <div class="title text-center">
-                                <h4>Danh sách môn học theo tiến độ</h4>
+                                <h4>Danh sách môn học trong kỳ tiếp theo</h4>
                             </div>
                             <div class="my-content">
                                 <table id="nextCourseTable">
@@ -104,7 +68,7 @@
                     <div class="col-md-6 p-l-5 p-r-5">
                         <div class="my-tbl-wrapper bg-gray-light overflow">
                             <div class="title text-center">
-                                <h4>Danh sách môn đang được học trong kỳ</h4>
+                                <h4>Danh sách môn đang học trong kỳ</h4>
                             </div>
                             <div class="my-content">
                                 <div class="col-md-12">
@@ -124,7 +88,7 @@
                     <div class="col-md-6 p-l-5 p-r-5">
                         <div class="my-tbl-wrapper bg-gray-light overflow">
                             <div class="title text-center">
-                                <h4>Danh sách môn học được đề xuất tiếp theo</h4>
+                                <h4>Danh sách môn học dự kiến tiếp theo</h4>
                             </div>
                             <div class="my-content">
                                 <div class="col-md-12">
@@ -148,7 +112,7 @@
                     <div class="col-md-6 p-l-5 p-r-5">
                         <div class="my-tbl-wrapper bg-gray-light overflow">
                             <div class="title text-center">
-                                <h4>Danh sách môn đang bị chậm tiến độ</h4>
+                                <h4>Danh sách môn chậm tiến độ</h4>
                             </div>
                             <div class="my-content">
                                 <div class="col-md-12">
@@ -169,12 +133,8 @@
             </div>
         </div>
     </div>
-</section>
 
-<form id="export-excel" action="/exportExcel" hidden>
-    <input name="objectType"/>
-    <input name="studentId"/>
-</form>
+</section>
 
 <script>
     var table = null;
@@ -182,6 +142,8 @@
     var curCourseTable = null;
     var suggestCourseTable = null;
     var notStart = null;
+
+    var stuId = '${studentId}';
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -217,62 +179,21 @@
     };
 
     $(document).ready(function () {
-        $('#select').on("change", function () {
-            RefreshTable();
-        });
-
-        CreateSelect();
-
-        CreateEmptyDataTable('#table');
-        CreateEmptyDataTable('#nextCourseTable');
-        CreateEmptyDataTable('#curCourseTable');
-        CreateEmptyDataTable('#suggestCourseTable');
-        CreateEmptyDataTable('#notStart');
+        RefreshTable();
     });
-
-    function CreateSelect() {
-        $('#select').select2({
-            width: 'resolve',
-            minimumInputLength: 2,
-            ajax: {
-                url: '/getStudentList',
-                data: function (params) {
-                    var queryParameters = {
-                        searchValue: params.term
-                    }
-                    return queryParameters;
-                },
-                processResults: function (result) {
-                    if (result.success) {
-                        return {
-                            results: $.map(result.items, function (item) {
-                                return {
-                                    id: item.value,
-                                    text: item.text,
-                                }
-                            })
-                        };
-                    } else {
-                        swal('', 'Có lỗi xảy ra, vui lòng thử lại', 'warning');
-                    }
-                }
-            }
-        });
-//        $('#select').select2();
-    }
 
     function CreateDebtTable() {
         table = $('#table').dataTable({
             "bServerSide": true,
-            "bFilter": false,
+            "bFilter": true,
             "bRetrieve": true,
             "sScrollX": "100%",
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/getStudentDetail", // url getData.php etc
+            "sAjaxSource": "/student/getStudentDetail", // url getData.php etc
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#select').val()})
+                aoData.push({"name": "stuId", "value": stuId})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -303,15 +224,15 @@
     function CreateNextCourseTable() {
         nextCourseTable = $('#nextCourseTable').dataTable({
             "bServerSide": true,
-            "bFilter": false,
+            "bFilter": true,
             "bRetrieve": true,
             "sScrollX": "100%",
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/getStudentNextCourse", // url getData.php etc
+            "sAjaxSource": "/student/getStudentNextCourse", // url getData.php etc
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#select').val()})
+                aoData.push({"name": "stuId", "value": stuId})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -351,15 +272,15 @@
     function CreateCurrentCourseTable() {
         curCourseTable = $('#curCourseTable').dataTable({
             "bServerSide": true,
-            "bFilter": false,
+            "bFilter": true,
             "bRetrieve": true,
             "sScrollX": "100%",
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/getStudentCurrentCourse", // url getData.php etc
+            "sAjaxSource": "/student/getStudentCurrentCourse", // url getData.php etc
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#select').val()})
+                aoData.push({"name": "stuId", "value": stuId})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -399,15 +320,15 @@
     function CreateSuggestCourseTable() {
         suggestCourseTable = $('#suggestCourseTable').dataTable({
             "bServerSide": true,
-            "bFilter": false,
+            "bFilter": true,
             "bRetrieve": true,
             "sScrollX": "100%",
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/getStudentNextCourseSuggestion", // url getData.php etc
+            "sAjaxSource": "/student/getStudentNextCourseSuggestion", // url getData.php etc
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#select').val()})
+                aoData.push({"name": "stuId", "value": stuId})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -445,17 +366,17 @@
     }
 
     function CreateNotStartTable() {
-        curCourseTable = $('#notStart').dataTable({
+        notStart = $('#notStart').dataTable({
             "bServerSide": true,
-            "bFilter": false,
+            "bFilter": true,
             "bRetrieve": true,
             "sScrollX": "100%",
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/getStudentNotStart", // url getData.php etc
+            "sAjaxSource": "/student/getStudentNotStart", // url getData.php etc
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#select').val()})
+                aoData.push({"name": "stuId", "value": stuId})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -492,67 +413,6 @@
         }).fnSetFilteringDelay(1000);
     }
 
-    function ExportExcel() {
-        $("input[name='objectType']").val(2);
-        $("input[name='studentId']").val("-1");
-        $("#export-excel").submit();
-
-        Call();
-    }
-
-    function ExportExcelForOneStudent() {
-        $("input[name='objectType']").val(2);
-        $("input[name='studentId']").val($('#select').val());
-        $("#export-excel").submit();
-
-        Call();
-    }
-
-    var alert;
-
-    function Call() {
-        swal({
-            title: 'Đang xử lý',
-            html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>' +
-            '<div class="form-group" id="progress"></div>' +
-            '<div><button id="stop">Stop</button></div>',
-            type: 'info',
-            onOpen: function () {
-                swal.showLoading();
-                $('#stop').click(function () {
-                    $.ajax({
-                        type: "GET",
-                        url: "/pauseexportStudentDetail",
-                        processData: false,
-                        contentType: false,
-                        success: function (result) {
-                            swal('', 'Dừng thành công', 'success');
-                        }
-                    });
-                });
-                Run();
-            },
-            allowOutsideClick: false
-        });
-    }
-
-    function Run() {
-        $.ajax({
-            type: "GET",
-            url: "/getStatusExport",
-            processData: false,
-            contentType: false,
-            success: function (result) {
-                $('#progress').html("<div>" + result.status + "</div>");
-                if (result.running) {
-                    setTimeout("Run()", 50);
-                } else {
-                    swal('', 'Download file thành công!', 'success');
-                }
-            }
-        });
-    }
-
     function RefreshTable() {
         $('#notStart').dataTable().fnDestroy();
         CreateNotStartTable();
@@ -564,50 +424,5 @@
         CreateCurrentCourseTable();
         $('#suggestCourseTable').dataTable().fnDestroy();
         CreateSuggestCourseTable();
-
-//        if (table != null) {
-//            table._fnPageChange(0);
-//            table._fnAjaxUpdate();
-//        } else {
-//            // Delete empty table
-//            $('#table').dataTable().fnDestroy();
-//            CreateDebtTable();
-//        }
-//
-//        if (nextCourseTable != null) {
-//            nextCourseTable._fnPageChange(0);
-//            nextCourseTable._fnAjaxUpdate();
-//        } else {
-//            // Delete empty table
-//            $('#nextCourseTable').dataTable().fnDestroy();
-//            CreateNextCourseTable();
-//        }
-//
-//        if (curCourseTable != null) {
-//            curCourseTable._fnPageChange(0);
-//            curCourseTable._fnAjaxUpdate();
-//        } else {
-//            // Delete empty table
-//            $('#curCourseTable').dataTable().fnDestroy();
-//            CreateCurrentCourseTable();
-//        }
-//
-//        if (suggestCourseTable != null) {
-//            suggestCourseTable._fnPageChange(0);
-//            suggestCourseTable._fnAjaxUpdate();
-//        } else {
-//            // Delete empty table
-//            $('#suggestCourseTable').dataTable().fnDestroy();
-//            CreateSuggestCourseTable();
-//        }
-//
-//        if (notStart != null) {
-//            notStart._fnPageChange(0);
-//            notStart._fnAjaxUpdate();
-//        } else {
-//            // Delete empty table
-//            $('#notStart').dataTable().fnDestroy();
-//            CreateNotStartTable();
-//        }
     }
 </script>

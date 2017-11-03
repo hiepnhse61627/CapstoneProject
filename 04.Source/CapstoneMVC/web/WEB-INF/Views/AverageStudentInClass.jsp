@@ -1,6 +1,12 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
+<style>
+    .dataTables_filter input {
+        width: 250px;
+    }
+</style>
+
 <section class="content">
     <div class="box">
         <div class="b-header">
