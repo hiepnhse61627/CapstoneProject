@@ -110,6 +110,22 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
         currentLine = 0;
     }
 
+    public List<StudentEntity> findStudentByIsActivated() {
+        EntityManager em = getEntityManager();
+        try {
+            String sqlString = "select distinct s.* from Student s, Marks m where s.Id = m.StudentId and m.IsActivated = 0";
+            Query query = em.createNativeQuery(sqlString,StudentEntity.class);
+            List<StudentEntity> objectList = query.getResultList();
+            return objectList;
+        } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
     public StudentEntity findStudentByRollNumber(String rollNumber) {
         EntityManager em = getEntityManager();
         StudentEntity studentEntity = new StudentEntity();
@@ -144,9 +160,9 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
             return students;
         } catch (NoResultException nrEx) {
             return null;
-		}
-	}	
-			
+        }
+    }
+
     public List<StudentEntity> findStudentsByValue(String value) {
         EntityManager em = getEntityManager();
         List<StudentEntity> result = null;

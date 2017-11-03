@@ -38,6 +38,11 @@ public class StudentServiceImpl implements IStudentService {
     }
 
     @Override
+    public List<StudentEntity> findAllStudentsWithoutCurChange() {
+        return studentEntityJpaController.findStudentByIsActivated();
+    }
+
+    @Override
     public List<StudentEntity> findStudentsByProgramName(String programName) {
         return studentEntityJpaController.findStudentByProgramName(programName);
     }

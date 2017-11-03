@@ -13,6 +13,7 @@ public interface IStudentService {
     StudentEntity findStudentByRollNumber(String rollNumber);
     List<StudentEntity> findStudentsByValue(String value);
     List<StudentEntity> findAllStudents();
+    List<StudentEntity> findAllStudentsWithoutCurChange();
     List<StudentEntity> findStudentsByProgramName(String programName);
     void saveStudent(StudentEntity stu) throws Exception;
 

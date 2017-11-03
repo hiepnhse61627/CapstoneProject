@@ -95,6 +95,17 @@ public class SubjectController {
         return view;
     }
 
+    @RequestMapping("/studentCurriculumDetail")
+    public ModelAndView subjectCurriculumDetail() {
+        ModelAndView view = new ModelAndView("StudentCurriculumDetail");
+        view.addObject("title", "Danh sách sinh viên chuyển ngành");
+        IStudentService studentService = new StudentServiceImpl();
+        List<StudentEntity> list = studentService.findAllStudents();
+        view.addObject("students", list);
+
+        return view;
+    }
+
     @RequestMapping(value = "/loadSubjectList")
     @ResponseBody
     public JsonObject LoadStudentListAll(@RequestParam Map<String, String> params) {
