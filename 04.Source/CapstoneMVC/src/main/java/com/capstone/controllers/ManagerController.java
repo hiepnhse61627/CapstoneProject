@@ -1,7 +1,6 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.*;
-import com.capstone.models.CustomModel;
 import com.capstone.models.Logger;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
@@ -17,7 +16,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.jws.WebParam;
-import javax.persistence.*;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -27,29 +25,14 @@ import java.util.stream.Collectors;
 @RequestMapping("/managerrole")
 public class ManagerController {
 
-    IStudentService studentService = new StudentServiceImpl();
-    ICurriculumService curriculumService = new CurriculumServiceImpl();
-
     @RequestMapping("/changecurriculum")
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("ChangeCurriculum");
         view.addObject("title", "Đổi ngành");
+        IStudentService studentService = new StudentServiceImpl();
         List<StudentEntity> list = studentService.findAllStudents();
         view.addObject("students", list);
-
-        List<CurriculumEntity> list2 = curriculumService.getAllCurriculums();
-        list2.sort(Comparator.comparing(c -> c.getProgramId().getName() + "_" + c.getName()));
-        view.addObject("curs", list2);
-        return view;
-    }
-
-    @RequestMapping("/studentCurriculumDetail")
-    public ModelAndView studentCurriculumDetail() {
-        ModelAndView view = new ModelAndView("StudentCurriculumDetail");
-        view.addObject("title", "Đổi ngành");
-        List<StudentEntity> list = studentService.findAllStudentsWithoutCurChange();
-        view.addObject("studentsFilter", list);
-
+        ICurriculumService curriculumService = new CurriculumServiceImpl();
         List<CurriculumEntity> list2 = curriculumService.getAllCurriculums();
         list2.sort(Comparator.comparing(c -> c.getProgramId().getName() + "_" + c.getName()));
         view.addObject("curs", list2);
@@ -79,45 +62,6 @@ public class ManagerController {
         view.addObject("programs", programs);
 
         return view;
-    }
-
-    @RequestMapping("/getDetailInfo")
-    @ResponseBody
-    public JsonObject GetDetailInfo(@RequestParam(value = "stuId") int stuId, @RequestParam Map<String, String> params) {
-        JsonObject json = new JsonObject();
-        try {
-
-            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-            EntityManager em = emf.createEntityManager();
-            int studentId = stuId;
-
-            String queryStr;
-            queryStr = "select distinct sm.SubjectId,sb.Name, m.IsActivated " +
-                    "from Marks m, Student s, Subject_MarkComponent sm, Subject sb " +
-                    "where m.StudentId = s.Id and m.Status = 'Passed' and m.IsActivated = 0 " +
-                    "and sm.Id = m.SubjectMarkComponentId AND sb.Id = sm.SubjectId and s.Id = ?";
-            Query query = em.createNativeQuery(queryStr);
-            query.setParameter(1, studentId);
-            List<Object[]> searchList = query.getResultList();
-
-            List<List<String>> result = new ArrayList<>();
-            for (Object[] data : searchList) {
-                List<String> row = new ArrayList<String>();
-                row.add(data[0].toString());
-                row.add(data[1].toString());
-                row.add(data[2].toString());
-                result.add(row);
-            }
-            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
-
-            json.addProperty("iTotalRecords", searchList.size());
-            json.addProperty("iTotalDisplayRecords", searchList.size());
-            json.add("aaData", aaData);
-            json.addProperty("sEcho", params.get("sEcho"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return json;
     }
 
     @RequestMapping("/getinfo")
@@ -392,28 +336,82 @@ public class ManagerController {
         return result;
     }
 
+    @RequestMapping("/getother")
+    @ResponseBody
+    public JsonObject GetOther(@RequestParam int stuId, @RequestParam int curId, @RequestParam int newId) {
+        JsonObject result = new JsonObject();
+
+        try {
+            IStudentService studentService = new StudentServiceImpl();
+
+            StudentEntity stu = studentService.findStudentById(stuId);
+            List<MarksEntity> list = stu.getMarksEntityList();
+            List<SubjectEntity> subs = this.GetCurrentCurriculumSubjects(curId);
+            List<SubjectEntity> newSubs = this.GetCurrentCurriculumSubjects(newId);
+
+            // chung va khong chung
+            List<SubjectEntity> common = new ArrayList<>();
+            for (SubjectEntity s : subs) {
+                if (newSubs.stream().anyMatch(c -> c.getId().equals(s.getId()))) {
+                    if (!common.contains(s)) common.add(s);
+                }
+            }
+            for (SubjectEntity s : newSubs) {
+                if (subs.stream().anyMatch(c -> c.getId().equals(s.getId()))) {
+                    if (!common.contains(s)) common.add(s);
+                }
+            }
+            for (SubjectEntity s : subs) {
+                if (!newSubs.stream().anyMatch(c -> c.getId().equals(s.getId()))) {
+                    if (!common.contains(s)) common.add(s);
+                }
+            }
+            for (SubjectEntity s : newSubs) {
+                if (!subs.stream().anyMatch(c -> c.getId().equals(s.getId()))) {
+                    if (!common.contains(s)) common.add(s);
+                }
+            }
+
+            // còn lại
+            List<SubjectEntity> others = new ArrayList<>();
+            for (MarksEntity mark : list) {
+                if (!common.stream().anyMatch(c -> c.getId().equals(mark.getSubjectMarkComponentId().getSubjectId().getId()))) {
+                    if (!others.contains(mark.getSubjectMarkComponentId().getSubjectId())) others.add(mark.getSubjectMarkComponentId().getSubjectId());
+                }
+            }
+
+            List<List<String>> parent = new ArrayList<>();
+            if (!others.isEmpty()) {
+                others.forEach(c -> {
+                    List<String> tmp = new ArrayList<>();
+                    tmp.add(c.getId());
+                    tmp.add(c.getName());
+                    parent.add(tmp);
+                });
+            }
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(parent);
+
+            result.add("data", aaData);
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
     @RequestMapping("/change")
     @ResponseBody
     public JsonObject Change(@RequestParam int stuId,
                              @RequestParam int curId,
                              @RequestParam int newId,
-                             @RequestParam String current,
-                             @RequestParam String newcurrent) {
+                             @RequestParam String data) {
         JsonObject result = new JsonObject();
 
         try {
             Gson gson = new Gson();
-            List<String> activeSubs = new ArrayList<>();
-            List<String> curList = gson.fromJson(current, new TypeToken<List<String>>() {
-            }.getType());
-            curList.forEach(c -> {
-                if (!activeSubs.contains(c)) activeSubs.add(c);
-            });
-            curList = gson.fromJson(newcurrent, new TypeToken<List<String>>() {
-            }.getType());
-            curList.forEach(c -> {
-                if (!activeSubs.contains(c)) activeSubs.add(c);
-            });
+            List<String> curList = gson.fromJson(data, new TypeToken<List<String>>(){}.getType());
 
             IStudentService studentService = new StudentServiceImpl();
             ICurriculumService curriculumService = new CurriculumServiceImpl();
@@ -438,7 +436,7 @@ public class ManagerController {
                 }
             }
 
-            studentService.saveStudent(stu);
+//            studentService.saveStudent(stu);
 
             result.addProperty("success", true);
         } catch (Exception e) {

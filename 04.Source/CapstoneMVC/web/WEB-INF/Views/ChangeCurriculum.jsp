@@ -37,22 +37,15 @@
             <div class="form-group">
                 <div class="row">
                     <div class="my-content">
-                        <div class="col-md-12">
-                            <div id="prequisite" class="m-b-7">
+                        <div class="col-md-6">
+                            <div class="m-b-7">
                                 <b>Thông tin</b>
                             </div>
+                            <div class="m-b-7">
+                                Ngành hiện tại: <span id="info"></span>
+                            </div>
                         </div>
-                        <div class="col-md-12">
-                            Ngành hiện tại: <span id="info"></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <div class="row">
-                    <div class="my-content">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <div class="title">
                                 <h4>Danh sách document</h4>
                             </div>
@@ -62,12 +55,18 @@
                                     <th>Ngành</th>
                                     <th>Quyết định</th>
                                     <th>Ngày tạo</th>
-                                    <%--<th>Xóa</th>--%>
                                 </tr>
                                 </thead>
                             </table>
                         </div>
-                        <div class="col-md-8">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="my-content">
+                        <div class="col-md-12">
                             <div class="form-group">
                                 <div class="title">
                                     Chọn ngành/khung
@@ -92,13 +91,17 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-6 text-center">
+                                    <div class="col-md-3 text-center">
                                         <p><b>Các môn chung</b></p>
                                         <table id="yes" class="table"></table>
                                     </div>
-                                    <div class="col-md-6 text-center">
+                                    <div class="col-md-3 text-center">
                                         <p><b>Các môn không chung</b></p>
                                         <table id="no" class="table"></table>
+                                    </div>
+                                    <div class="col-md-3 text-center">
+                                        <p><b>Các môn nằm ngoài cả 2 khung</b></p>
+                                        <table id="other" class="table"></table>
                                     </div>
                                 </div>
                             </div>
@@ -114,8 +117,6 @@
 
 <script>
     var table = null;
-    var current = null;
-    var newcurrent = null;
 
     $(document).ready(function () {
         $('.select').select2();
@@ -128,6 +129,7 @@
         $('#curriculum').on('change', function () {
             GetCurrent();
             GetNew();
+            GetOther();
         });
 
         RefreshTable();
@@ -139,21 +141,22 @@
         var curId = $('#curid').val();
         var newId = $('#curriculum').val();
 
-        current = [];
+        var data = [];
         $.each($("input[name='current']:not(:checked)"), function() {
-            current.push($(this).val());
+            data.push($(this).val());
         });
-        newcurrent = [];
         $.each($("input[name='newcurrent']:not(:checked)"), function() {
-            newcurrent.push($(this).val());
+            data.push($(this).val());
+        });
+        $.each($("input[name='others']:not(:checked)"), function() {
+            data.push($(this).val());
         });
 
         $.ajax({
             type: "GET",
             url: "/managerrole/change",
-            data: {"curId": curId, "newId": newId, "stuId": stuId, "current": JSON.stringify(current), "newcurrent": JSON.stringify(newcurrent)},
+            data: {"curId": curId, "newId": newId, "stuId": stuId, "data": JSON.stringify(data)},
             success: function (result) {
-                console.log(result.data);
                 if (result.success) {
                     swal('Thành công', 'Sinh viên đã chuyển ngành', 'success').then(function () {
                         location.reload();
@@ -171,7 +174,6 @@
             url: "/managerrole/getcurrent",
             data: {"curId": $('#curid').val(), "newId": $('#curriculum').val()},
             success: function (result) {
-                console.log(result.data);
                 var data = result.data;
                 var html = "";
                 for (var i = 0; i < data.length; i++) {
@@ -185,6 +187,30 @@
                     html += "</tr>";
                 }
                 $('#yes').html(html);
+                $("input[type='checkbox']").bootstrapSwitch();
+            }
+        });
+    }
+
+    function GetOther() {
+        $.ajax({
+            type: "GET",
+            url: "/managerrole/getother",
+            data: {"stuId": $('#select').val(), "curId": $('#curid').val(), "newId": $('#curriculum').val()},
+            success: function (result) {
+                var data = result.data;
+                var html = "";
+                for (var i = 0; i < data.length; i++) {
+                    html += "<tr>";
+                    for (var j = 0; j < data[i].length; j++) {
+                        html += "<td>";
+                        html += data[i][j];
+                        html += "</td>";
+                    }
+                    html += "<td><input name='others' type='checkbox' value='" + data[i][0] +"'/></td>";
+                    html += "</tr>";
+                }
+                $('#other').html(html);
                 $("input[type='checkbox']").bootstrapSwitch();
             }
         });
@@ -227,6 +253,7 @@
 
                 GetCurrent();
                 GetNew();
+                GetOther();
             }
         });
     }
