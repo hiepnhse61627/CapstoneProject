@@ -7,6 +7,10 @@
         padding: 10px;
     }
 
+    .dataTables_filter, .dataTables_info {
+        display: none;
+    }
+
 </style>
 
 <section class="content">
@@ -260,7 +264,7 @@
     function CreateDebtTable() {
         table = $('#table').dataTable({
             "bServerSide": true,
-            "bFilter": true,
+            "bFilter": false,
             "bRetrieve": true,
             "sScrollX": "100%",
             "bScrollCollapse": true,
@@ -299,7 +303,7 @@
     function CreateNextCourseTable() {
         nextCourseTable = $('#nextCourseTable').dataTable({
             "bServerSide": true,
-            "bFilter": true,
+            "bFilter": false,
             "bRetrieve": true,
             "sScrollX": "100%",
             "bScrollCollapse": true,
@@ -347,7 +351,7 @@
     function CreateCurrentCourseTable() {
         curCourseTable = $('#curCourseTable').dataTable({
             "bServerSide": true,
-            "bFilter": true,
+            "bFilter": false,
             "bRetrieve": true,
             "sScrollX": "100%",
             "bScrollCollapse": true,
@@ -395,7 +399,7 @@
     function CreateSuggestCourseTable() {
         suggestCourseTable = $('#suggestCourseTable').dataTable({
             "bServerSide": true,
-            "bFilter": true,
+            "bFilter": false,
             "bRetrieve": true,
             "sScrollX": "100%",
             "bScrollCollapse": true,
@@ -443,7 +447,7 @@
     function CreateNotStartTable() {
         curCourseTable = $('#notStart').dataTable({
             "bServerSide": true,
-            "bFilter": true,
+            "bFilter": false,
             "bRetrieve": true,
             "sScrollX": "100%",
             "bScrollCollapse": true,

@@ -60,13 +60,12 @@ public class StudentController {
     public JsonObject GetStudents(@RequestParam Map<String, String> params) {
         try {
             JsonObject data = new JsonObject();
-
-            String searchKey = params.get("sSearch");
-
             List<List<String>> result = processData(params);
-
-            result = result.stream().filter(c -> c.get(0).contains(searchKey) ||
-                    c.get(1).contains(searchKey)).collect(Collectors.toList());
+            String searchKey = params.get("sSearch").toLowerCase();
+            result = result.stream().filter(c -> c.get(0).toLowerCase().contains(searchKey) ||
+                    c.get(2).toLowerCase().contains(searchKey) ||
+                    c.get(3).toLowerCase().contains(searchKey) ||
+                    c.get(5).toLowerCase().contains(searchKey)).collect(Collectors.toList());
 
             List<List<String>> display = new ArrayList<>();
             if (!result.isEmpty()) {

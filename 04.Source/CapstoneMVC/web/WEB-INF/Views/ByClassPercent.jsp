@@ -1,17 +1,22 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 
+<style>
+    .dataTables_filter input {
+        width: 250px;
+    }
+</style>
+
 <section class="content">
     <div class="box">
         <div class="b-header">
             <div class="row">
                 <div class="col-md-9 title">
-                    <h1>Tỉ lệ rớt môn</h1>
+                    <h1>Tỉ lệ môn đạt theo học kỳ</h1>
                 </div>
                 <div class="col-md-3 text-right">
                     <button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
                         <i class="glyphicon glyphicon-open"></i>
-                        <%--<i class="fa fa-upload"></i>--%>
                         <div>XUẤT DỮ LIỆU</div>
                     </button>
                 </div>
@@ -142,7 +147,7 @@
                     aoData.push({"name": "course", "value": $('#class').val()})
             },
             "oLanguage": {
-                "sSearchPlaceholder": "",
+                "sSearchPlaceholder": "Tìm theo Môn, Lớp",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
