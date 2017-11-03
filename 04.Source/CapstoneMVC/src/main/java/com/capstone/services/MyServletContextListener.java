@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 @WebListener
 public class MyServletContextListener implements ServletContextListener {
-    IDynamicMenuService dynamicMenuService = new DynamicMenuServiceImpl();
+//    IDynamicMenuService dynamicMenuService = new DynamicMenuServiceImpl();
 
 //    private CustomUser getPrincipal() {
 //        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -33,23 +33,23 @@ public class MyServletContextListener implements ServletContextListener {
 //        ICredentialsService credentialsService = new CredentialsServiceImpl();
 //        CredentialsEntity role = credentialsService.findCredential(principal.getUser().getRole());
 
-        List<DynamicMenuEntity> menuNoFunctionGroup = dynamicMenuService.getAllMenu().stream().filter(s -> s.getFunctionGroup() == null
-                ).collect(Collectors.toList());
-        List<DynamicMenuEntity> menuImport = dynamicMenuService.getAllMenu().stream().filter(s -> s.getFunctionGroup() != null
-                && s.getFunctionGroup().contains("Import") ).collect(Collectors.toList());
-        List<DynamicMenuEntity> menuStatistic = dynamicMenuService.getAllMenu().stream().filter(s -> s.getFunctionGroup() != null
-                && s.getFunctionGroup().contains("Statistic") ).collect(Collectors.toList());
-        List<DynamicMenuEntity> menuManage = dynamicMenuService.getAllMenu().stream().filter(s -> s.getFunctionGroup() != null
-                && s.getFunctionGroup().contains("Manage") ).collect(Collectors.toList());
-        List<DynamicMenuEntity> menuChecking = dynamicMenuService.getAllMenu().stream().filter(s -> s.getFunctionGroup() != null
-                && s.getFunctionGroup().contains("Checking") ).collect(Collectors.toList());
-
-        ServletContext servletContext = servletContextEvent.getServletContext();
-        servletContext.setAttribute("menuNoFunctionGroup", menuNoFunctionGroup);
-        servletContext.setAttribute("menuImport", menuImport);
-        servletContext.setAttribute("menuStatistic", menuStatistic);
-        servletContext.setAttribute("menuManage", menuManage);
-        servletContext.setAttribute("menuChecking", menuChecking);
+//        List<DynamicMenuEntity> menuNoFunctionGroup = dynamicMenuService.getAllMenu().stream().filter(s -> s.getFunctionGroup() == null
+//                ).collect(Collectors.toList());
+//        List<DynamicMenuEntity> menuImport = dynamicMenuService.getAllMenu().stream().filter(s -> s.getFunctionGroup() != null
+//                && s.getFunctionGroup().contains("Import") ).collect(Collectors.toList());
+//        List<DynamicMenuEntity> menuStatistic = dynamicMenuService.getAllMenu().stream().filter(s -> s.getFunctionGroup() != null
+//                && s.getFunctionGroup().contains("Statistic") ).collect(Collectors.toList());
+//        List<DynamicMenuEntity> menuManage = dynamicMenuService.getAllMenu().stream().filter(s -> s.getFunctionGroup() != null
+//                && s.getFunctionGroup().contains("Manage") ).collect(Collectors.toList());
+//        List<DynamicMenuEntity> menuChecking = dynamicMenuService.getAllMenu().stream().filter(s -> s.getFunctionGroup() != null
+//                && s.getFunctionGroup().contains("Checking") ).collect(Collectors.toList());
+//
+//        ServletContext servletContext = servletContextEvent.getServletContext();
+//        servletContext.setAttribute("menuNoFunctionGroup", menuNoFunctionGroup);
+//        servletContext.setAttribute("menuImport", menuImport);
+//        servletContext.setAttribute("menuStatistic", menuStatistic);
+//        servletContext.setAttribute("menuManage", menuManage);
+//        servletContext.setAttribute("menuChecking", menuChecking);
 
 
     }

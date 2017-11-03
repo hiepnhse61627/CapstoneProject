@@ -22,19 +22,6 @@ public class HomeController {
         ModelAndView view = new ModelAndView("Dashboard");
         view.addObject("title", "Dashboard");
 
-        IDynamicMenuService dynamicMenuService = new DynamicMenuServiceImpl();
-
-        List<DynamicMenuEntity> menuName = dynamicMenuService.getAllMenu();
-        List<DynamicMenuEntity> menuGroup = dynamicMenuService.getAllMenu().stream().filter(s -> !s.getFunctionGroup().contains("N/A")).collect(Collectors.toList());
-        List<DynamicMenuEntity> groupName = dynamicMenuService.getAllMenu().stream().filter(s -> !s.getGroupName().contains("N/A")).collect(Collectors.toList());
-        List<DynamicMenuEntity> link = dynamicMenuService.getAllMenu().stream().filter(s -> !s.getLink().contains("N/A")).collect(Collectors.toList());
-
-        view.addObject("menuName", menuName);
-
-        view.addObject("menuGroup", menuGroup);
-        view.addObject("groupName", groupName);
-        view.addObject("link", link);
-
         return "Dashboard";
     }
 }

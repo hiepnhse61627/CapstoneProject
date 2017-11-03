@@ -1,11 +1,14 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.CredentialsEntity;
+import com.capstone.entities.DynamicMenuEntity;
 import com.capstone.models.CustomUser;
 import com.capstone.models.GoogleProfile;
 import com.capstone.models.Logger;
 import com.capstone.services.CredentialsServiceImpl;
+import com.capstone.services.DynamicMenuServiceImpl;
 import com.capstone.services.ICredentialsService;
+import com.capstone.services.IDynamicMenuService;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.apache.commons.codec.binary.Base64;
@@ -23,6 +26,7 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
@@ -33,9 +37,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 public class LoginController {
+
+    @Autowired
+    private ServletContext servletContext;
 
     @Autowired
     @Qualifier("rememberMeAuthenticationProvider")
