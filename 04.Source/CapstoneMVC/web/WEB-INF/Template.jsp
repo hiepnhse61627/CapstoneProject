@@ -42,9 +42,9 @@
     <link rel="stylesheet" href="/Resources/plugins/jQueryUI/jquery-ui.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/iCheck/square/blue.css"/>
     <link rel="stylesheet" href="/Resources/plugins/daterangepicker-2.1.25/daterangepicker.css"/>
-    <link rel="stylesheet" href="/Resources/plugins/dist/css/template.css"/>
     <link rel="stylesheet" href="/Resources/plugins/dist/css/custom-scrollbar.css"/>
     <link rel="stylesheet" href="/Resources/plugins/bootstrap-switch/css/bootstrap3/bootstrap-switch.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dist/css/template.css"/>
 
     <!-- REQUIRED JS SCRIPTS -->
 
@@ -67,7 +67,7 @@
     <script src="/Resources/plugins/bootstrap-switch/js/bootstrap-switch.js"></script>
 
 </head>
-<body class="hold-transition skin-black-light sidebar-mini">
+<body class="hold-transition skin-custom sidebar-mini">
 <div class="wrapper" style="position: relative">
 
     <!-- Main Header -->
@@ -106,7 +106,10 @@
                             <li class="user-header">
                                 <img src="${imageUrl}"
                                      class="img-circle" alt="User Image">
-                                <p>${username} - ${role}</p>
+                                <p>
+                                    ${username}
+                                    <small>${role}</small>
+                                </p>
                             </li>
 
                             <li class="user-footer">
@@ -533,6 +536,11 @@
 
 <script>
     var list;
+
+    $(document).ready(function() {
+        $(".select2-selection span").attr('title', '');
+    });
+
     var input = document.getElementById('menu-filter');
     input.onkeyup = function () {
         var filter = input.value.toLowerCase();
