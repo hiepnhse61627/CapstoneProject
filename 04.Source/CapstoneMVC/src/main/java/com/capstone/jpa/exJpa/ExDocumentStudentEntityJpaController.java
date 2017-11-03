@@ -63,7 +63,7 @@ public class ExDocumentStudentEntityJpaController extends DocumentStudentEntityJ
             em = getEntityManager();
 
             String queryStr = "SELECT ds FROM DocumentStudentEntity ds" +
-                    " WHERE ds.createdDate = (SELECT MAX(tDS.createdDate) FROM DocumentStudentEntity tDS WHERE tDS.id = ds.id)";
+                    " WHERE ds.createdDate = (SELECT MAX(tDS.createdDate) FROM DocumentStudentEntity tDS WHERE tDS.studentId.id = ds.studentId.id)";
             TypedQuery<DocumentStudentEntity> query = em.createQuery(queryStr, DocumentStudentEntity.class);
             result = query.getResultList();
         } finally {
@@ -84,7 +84,7 @@ public class ExDocumentStudentEntityJpaController extends DocumentStudentEntityJ
             em = getEntityManager();
 
             String queryStr = "SELECT ds FROM DocumentStudentEntity ds" +
-                    " WHERE ds.createdDate = (SELECT MAX(tDS.createdDate) FROM DocumentStudentEntity tDS WHERE tDS.id = ds.id)" +
+                    " WHERE ds.createdDate = (SELECT MAX(tDS.createdDate) FROM DocumentStudentEntity tDS WHERE tDS.studentId.id = ds.studentId.id)" +
                     " AND ds.curriculumId.programId.id = :programId";
             TypedQuery<DocumentStudentEntity> query = em.createQuery(queryStr, DocumentStudentEntity.class);
             query.setParameter("programId", programId);
@@ -107,7 +107,7 @@ public class ExDocumentStudentEntityJpaController extends DocumentStudentEntityJ
             em = getEntityManager();
 
             String queryStr = "SELECT ds FROM DocumentStudentEntity ds" +
-                    " WHERE ds.createdDate = (SELECT MAX(tDS.createdDate) FROM DocumentStudentEntity tDS WHERE tDS.id = ds.id)" +
+                    " WHERE ds.createdDate = (SELECT MAX(tDS.createdDate) FROM DocumentStudentEntity tDS WHERE tDS.studentId.id = ds.studentId.id)" +
                     " AND ds.studentId.id IN :idList";
             TypedQuery<DocumentStudentEntity> query = em.createQuery(queryStr, DocumentStudentEntity.class);
             query.setParameter("idList", idList);
