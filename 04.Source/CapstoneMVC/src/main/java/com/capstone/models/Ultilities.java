@@ -8,12 +8,9 @@ import com.google.common.collect.Table;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
-import javax.persistence.TypedQuery;
-import javax.security.auth.Subject;
 import javax.servlet.ServletContext;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.time.Instant;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -525,37 +522,25 @@ public class Ultilities {
 
     public static void GetMenu(ServletContext servletContext, CredentialsEntity user) {
         IDynamicMenuService dynamicMenuService = new DynamicMenuServiceImpl();
-//
-//        List<DynamicMenuEntity> menuName = dynamicMenuService.getAllMenu();
-//        List<DynamicMenuEntity> menuGroup = dynamicMenuService.getAllMenu().stream().filter(s -> s.getFunctionGroup() != null && s.getFunctionGroup().contains("N/A")).collect(Collectors.toList());
-//        List<DynamicMenuEntity> groupName = dynamicMenuService.getAllMenu().stream().filter(s -> s.getGroupName() != null && !s.getGroupName().contains("N/A")).collect(Collectors.toList());
-//        List<DynamicMenuEntity> link = dynamicMenuService.getAllMenu().stream().filter(s -> s.getLink() != null && !s.getLink().contains("N/A")).collect(Collectors.toList());
-//
-//        servletContext.
-//        view.addObject("menuName", menuName);
-//        view.addObject("menuGroup", menuGroup);
-//        view.addObject("groupName", groupName);
-//        view.addObject("link", link);
 
         List<DynamicMenuEntity> list = dynamicMenuService.getAllMenu().stream().filter(s -> s.getRole().contains(user.getRole())).collect(Collectors.toList());
 
         List<DynamicMenuEntity> menuNoFunctionGroup = list.stream().filter(s -> s.getFunctionGroup() == null
         ).collect(Collectors.toList());
-        List<DynamicMenuEntity> menuImport = list.stream().filter(s -> s.getFunctionGroup() != null
-                && s.getFunctionGroup().contains("Import")).collect(Collectors.toList());
-        List<DynamicMenuEntity> menuStatistic = list.stream().filter(s -> s.getFunctionGroup() != null
-                && s.getFunctionGroup().contains("Statistic")).collect(Collectors.toList());
-        List<DynamicMenuEntity> menuManage = list.stream().filter(s -> s.getFunctionGroup() != null
-                && s.getFunctionGroup().contains("Manage")).collect(Collectors.toList());
-        List<DynamicMenuEntity> menuChecking = list.stream().filter(s -> s.getFunctionGroup() != null
-                && s.getFunctionGroup().contains("Checking")).collect(Collectors.toList());
 
+        List<DynamicMenuEntity> functionGroup = list.stream().filter(s -> s.getGroupName() != null).distinct().collect(Collectors.toList());
+        List<String> groups = new ArrayList<>();
+        for (DynamicMenuEntity temp : functionGroup) {
+            if (!groups.contains(temp.getGroupName())) {
+                groups.add(temp.getGroupName());
+            }
+        }
+
+        List<DynamicMenuEntity> menu = list.stream().filter(s -> s.getFunctionGroup() != null).collect(Collectors.toList());
 //        ServletContext servletContext = servletContextEvent.getServletContext();
+        servletContext.setAttribute("menu", menu);
+        servletContext.setAttribute("functionGroup", groups);
         servletContext.setAttribute("menuNoFunctionGroup", menuNoFunctionGroup);
-        servletContext.setAttribute("menuImport", menuImport);
-        servletContext.setAttribute("menuStatistic", menuStatistic);
-        servletContext.setAttribute("menuManage", menuManage);
-        servletContext.setAttribute("menuChecking", menuChecking);
         servletContext.setAttribute("role", user.getRole());
 
     }
