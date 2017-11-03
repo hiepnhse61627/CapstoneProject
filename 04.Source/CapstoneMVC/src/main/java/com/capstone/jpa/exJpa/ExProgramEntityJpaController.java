@@ -3,6 +3,7 @@ package com.capstone.jpa.exJpa;
 import com.capstone.entities.ProgramEntity;
 import com.capstone.jpa.ProgramEntityJpaController;
 import com.capstone.models.Logger;
+import com.sun.deploy.security.ValidationState;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -17,7 +18,23 @@ public class ExProgramEntityJpaController extends ProgramEntityJpaController {
     }
 
     public List<ProgramEntity> getAllPrograms() {
-        return this.findProgramEntityEntities();
+        List<ProgramEntity> result = null;
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+
+            String queryStr = "SELECT p FROM ProgramEntity p ORDER BY p.name";
+            TypedQuery<ProgramEntity> query = em.createQuery(queryStr, ProgramEntity.class);
+            result = query.getResultList();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
+//        return this.findProgramEntityEntities();
     }
 
     public ProgramEntity getProgramById(int id) {

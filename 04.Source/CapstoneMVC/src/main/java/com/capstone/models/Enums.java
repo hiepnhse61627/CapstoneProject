@@ -23,6 +23,26 @@ public class Enums {
         }
     }
 
+    public enum MarkStatus {
+        PASSED("Passed"),
+        FAIL("Fail"),
+        STUDYING("Studying"),
+        NOT_START("NotStart"),
+        IS_EXEMPT("IsExempt"),
+        IS_SUSPENDED("IsSuspended"),
+        IS_ATTENDANCE_FAIL("IsAttendanceFail");
+
+        private final String value;
+
+        private MarkStatus(final String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return this.value;
+        }
+    }
+
     public enum MarkComponent {
         QUIZ("QUIZ"),
         ASSIGNMENT("ASSIGNMENT"),

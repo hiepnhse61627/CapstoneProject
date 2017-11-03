@@ -28,6 +28,11 @@ public class DocumentStudentServiceImpl implements IDocumentStudentService {
     }
 
     @Override
+    public List<DocumentStudentEntity> getAllLatestDocumentStudentByProgramId(int programId) {
+        return controller.getAllLatestDocumentStudentByProgramId(programId);
+    }
+
+    @Override
     public List<DocumentStudentEntity> getDocumentStudentByIdList(List<Integer> idList) {
         return controller.getDocumentStudentByIdList(idList);
     }

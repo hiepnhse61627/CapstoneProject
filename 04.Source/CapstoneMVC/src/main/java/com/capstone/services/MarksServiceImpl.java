@@ -118,4 +118,9 @@ public class MarksServiceImpl implements IMarksService {
     public List<Object[]> getTotalStudentsGroupBySemesterAndSubject(int semesterId) {
         return marksEntityJpaController.getTotalStudentsGroupBySemesterAndSubject(semesterId);
     }
+
+    @Override
+    public void getAverageSubjectLearnedByStudent(int programId) {
+        marksEntityJpaController.getAverageSubjectLearnedByStudent(programId);
+    }
 }
