@@ -134,39 +134,6 @@ public class StudentController {
         List<MarksEntity> markList = marksService.getMarkByConditions(semesterId, subjectId, searchKey);
         // result list
         List<MarksEntity> resultList = new ArrayList<>();
-//        // compared list
-//        List<MarksEntity> comparedList = new ArrayList<>();
-//        // Init students passed and failed
-//        List<MarksEntity> listPassed = markList.stream().filter(p -> p.getStatus().contains("Passed") || p.getStatus().contains("Exempt")).collect(Collectors.toList());
-//        List<MarksEntity> listFailed = markList.stream().filter(f -> !f.getStatus().contains("Passed") || !f.getStatus().contains("Exempt")).collect(Collectors.toList());
-//        // make comparator
-//        Comparator<MarksEntity> comparator = new Comparator<MarksEntity>() {
-//            @Override
-//            public int compare(MarksEntity o1, MarksEntity o2) {
-//                return new CompareToBuilder()
-//                        .append(o1.getSubjectMarkComponentId() == null ? "" : o1.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase(), o2.getSubjectMarkComponentId() == null ? "" : o2.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
-//                        .append(o1.getStudentId().getRollNumber().toUpperCase(), o2.getStudentId().getRollNumber().toUpperCase())
-//                        .toComparison();
-//            }
-//        };
-//        Collections.sort(listPassed, comparator);
-//        // start compare failed list to passed list
-//        for (int i = 0; i < listFailed.size(); i++) {
-//            MarksEntity keySearch = listFailed.get(i);
-//            int index = Collections.binarySearch(listPassed, keySearch, comparator);
-//            if (index < 0) {
-//                comparedList.add(keySearch);
-//            }
-//        }
-//        // remove duplicate
-//
-//        for (MarksEntity marksEntity : comparedList) {
-//            if (marksEntity.getSubjectMarkComponentId() != null && !resultList.stream().anyMatch(r -> r.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase().equals(marksEntity.getSubjectMarkComponentId().getSubjectId().getId().toUpperCase())
-//                                                && r.getStudentId().getRollNumber().toUpperCase().equals(marksEntity.getStudentId().getRollNumber().toUpperCase()))) {
-//                resultList.add(marksEntity);
-//            }
-//        }
-
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
         if (!markList.isEmpty()) {
             for (MarksEntity m : markList) {
@@ -178,15 +145,6 @@ public class StudentController {
                     map.get(m.getStudentId().getRollNumber(), m.getSubjectMarkComponentId().getSubjectId().getId()).add(m);
                 }
             }
-
-//            ISubjectService subjectService = new SubjectServiceImpl();
-//            SubjectEntity aSub = subjectService.findSubjectById(subjectId);
-//            List<SubjectEntity> aReplace;
-//            if (aSub != null) {
-//                aReplace = aSub.getSubjectEntityList();
-//            } else {
-//                aReplace = new ArrayList<>();
-//            }
 
             Set<String> studentIds = map.rowKeySet();
             for (String studentId : studentIds) {
