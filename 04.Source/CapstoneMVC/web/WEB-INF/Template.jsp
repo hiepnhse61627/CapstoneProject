@@ -149,9 +149,18 @@
                     </a>
                 </div>
             </div>
+
+            <div class="sidebar-form">
+                <div class="input-group">
+                    <input id="menu-filter" type="text" class="form-control" placeholder="Search...">
+                    <span class="input-group-btn">
+                    <button type="button" class="btn btn-flat"><i class="fa fa-search"></i></button>
+                    </span>
+                </div>
+            </div>
+
             <!-- Sidebar Menu -->
             <ul class="sidebar-menu">
-                <input type="text" id="menu-filter"/>
                 <%--<li class="header">HEADER</li>--%>
                 <!-- Optionally, you can add icons to the links -->
                 <c:forEach var="items" items="${applicationScope['menuNoFunctionGroup']}">
@@ -481,12 +490,12 @@
                 <%--<span>Chuyển ngành sinh viên</span></a>--%>
                 <%--</li>--%>
                 <%--<li>--%>
-                    <%--<a href="/managerrole/averageStudentInClass"><i class="fa fa-list"></i>--%>
-                        <%--<span>Sĩ số trung bình lớp môn học theo kỳ</span></a>--%>
+                <%--<a href="/managerrole/averageStudentInClass"><i class="fa fa-list"></i>--%>
+                <%--<span>Sĩ số trung bình lớp môn học theo kỳ</span></a>--%>
                 <%--</li>--%>
                 <%--<li>--%>
-                    <%--<a href="/managerrole/averageSubject"><i class="fa fa-list"></i>--%>
-                        <%--<span>Sĩ số trung bình môn đã học trên một sinh viên</span></a>--%>
+                <%--<a href="/managerrole/averageSubject"><i class="fa fa-list"></i>--%>
+                <%--<span>Sĩ số trung bình môn đã học trên một sinh viên</span></a>--%>
                 <%--</li>--%>
                 <%--</security:authorize>--%>
 
@@ -528,7 +537,7 @@
     input.onkeyup = function () {
         var filter = input.value.toLowerCase();
         list = document.querySelectorAll('.sidebar-menu li');
-         for (var i = 0; i < list.length; i++) {
+        for (var i = 0; i < list.length; i++) {
             var name = list[i].getElementsByClassName('name')[0].innerHTML;
             console.log(name);
             if (name.toLowerCase().search(filter) != -1)

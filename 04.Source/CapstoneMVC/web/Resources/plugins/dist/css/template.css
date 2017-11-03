@@ -76,6 +76,10 @@ a {
     background: linear-gradient(to bottom, white, white, white, white, white, orange);
 }
 
+.sidebar-form {
+    margin: 0px 10px !important;
+}
+
 .box {
     border: none;
     padding: 12px 15px 20px 15px;
