@@ -57,12 +57,30 @@ public class SubjectEntity implements Serializable {
     private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
     @OneToMany(mappedBy = "subjectId")
     private List<SubjectMarkComponentEntity> subjectMarkComponentEntityList;
+    @Column(name = "Type")
+    private int type;
 
     public SubjectEntity() {
     }
 
     public SubjectEntity(String id) {
         this.id = id;
+    }
+
+    public Boolean getSpecialized() {
+        return isSpecialized;
+    }
+
+    public void setSpecialized(Boolean specialized) {
+        isSpecialized = specialized;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
     }
 
     public String getId() {
