@@ -479,6 +479,9 @@ public class UploadController {
         if (program == null) {
             program = new ProgramEntity();
             program.setName(programName);
+            program.setOjt(90);
+            program.setCapstone(80);
+            program.setGraduate(70);
             programService.createProgram(program);
             list.add(program);
         }
