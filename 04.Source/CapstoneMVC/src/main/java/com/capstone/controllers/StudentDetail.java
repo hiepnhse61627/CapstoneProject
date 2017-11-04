@@ -52,8 +52,8 @@ public class StudentDetail {
 
             String finalSearchValue = searchValue;
             List<StudentEntity> studentList = students.stream()
-                    .filter(c -> c.getRollNumber().toLowerCase().contains(finalSearchValue.toLowerCase()) ||
-                            c.getFullName().toLowerCase().contains(finalSearchValue.toLowerCase()))
+                    .filter(c -> c.getRollNumber().toLowerCase().contains(finalSearchValue) ||
+                            c.getFullName().toLowerCase().contains(finalSearchValue))
                     .collect(Collectors.toList());
 
             List<SelectItem> itemList = new ArrayList<>();

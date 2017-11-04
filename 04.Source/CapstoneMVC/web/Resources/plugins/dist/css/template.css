@@ -1,3 +1,34 @@
+body {
+    font-family: "Roboto" !important;
+    font-size: 13.5px;
+}
+
+input {
+    font-size: inherit !important;
+}
+
+.btn {
+    font-size: 0.99em;
+}
+
+.btn .fa {
+    font-size: 14px;
+}
+
+th {
+    font-size: 15.5px;
+    font-weight: 500;
+}
+
+td {
+    font-size: 15px !important;
+}
+
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+    font-family: inherit !important;
+    font-weight: 500 !important;
+}
+
 a {
     white-space: normal;
     cursor: pointer;
@@ -48,9 +79,14 @@ a {
    max-width: 40px;
 }
 
+
 .user-panel > .info {
     padding: 5px;
     left: 52px;
+}
+
+.user-panel> .info > p {
+    font-weight: 500;
 }
 
 .user-panel > .info > p {
@@ -73,11 +109,12 @@ a {
 }
 
 .main-sidebar {
-    background: linear-gradient(to bottom, white, white, white, white, white, orange);
+    /*background: linear-gradient(to bottom, white, white, white, white, white, orange);*/
+    background: linear-gradient(to bottom, white, white, #e6e9ec);
 }
 
 .sidebar-form {
-    margin: 0px 10px !important;
+    margin:  0px 10px 5px 10px !important;
 }
 
 .box {
@@ -138,7 +175,8 @@ a {
 .b-header > h1,
 .b-header .title > h1 {
     margin: 5px 0px 0px 0px;
-    font-size: 24px;
+    /*font-size: 24px;*/
+    font-size: 22px;
     font-weight: 600;
     color: darkgreen;
     min-height: 28px;
