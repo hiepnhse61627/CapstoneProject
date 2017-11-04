@@ -232,19 +232,23 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
     public List<MarksEntity> getMarkByProgramAndSemester(int programId, int semesterId) {
         List<MarksEntity> result = null;
+            IMarkComponentService markComponentService = new MarkComponentServiceImpl();
         EntityManager em = null;
-        boolean createWhere = false;
 
         try {
             em = getEntityManager();
-            String queryStr = "SELECT m FROM MarksEntity m WHERE m.active = true";
 
-            ProgramEntity program = null;
+            MarkComponentEntity markComponent = markComponentService
+                    .getMarkComponentByName(Enums.MarkComponent.AVERAGE.getValue());
+
+            String queryStr = "SELECT m FROM MarksEntity m" +
+                    " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id";
+
             if (programId != 0) {
-                IProgramService programService = new ProgramServiceImpl();
-                program = programService.getProgramById(programId);
-                queryStr += " WHERE m.studentId.rollNumber LIKE :rollNumber";
-                createWhere = true;
+                queryStr += " INNER JOIN DocumentStudentEntity ds ON m.studentId.id = ds.studentId.id" +
+                            " AND ds.createdDate = (SELECT MAX(ds1.createdDate) FROM DocumentStudentEntity ds1" +
+                            "    WHERE ds1.studentId.id = ds.studentId.id)" +
+                            " AND ds.curriculumId.programId.id = :programId";
             }
 
             List<Integer> semesterIds = null;
@@ -265,12 +269,14 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                     }
                 }
 
-                queryStr += !createWhere ? " WHERE" : " AND";
-                queryStr += " m.semesterId.id IN :semesterIds";
+                queryStr += " AND m.semesterId.id IN :semesterIds";
             }
 
+            queryStr += " AND smc.markComponentId.id = :markComponentId AND m.active = true";
+
             TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
-            if (programId != 0) query.setParameter("rollNumber", program.getName() + "%");
+            query.setParameter("markComponentId", markComponent.getId());
+            if (programId != 0) query.setParameter("programId", programId);
             if (semesterId != 0) query.setParameter("semesterIds", semesterIds);
 
             result = query.getResultList();

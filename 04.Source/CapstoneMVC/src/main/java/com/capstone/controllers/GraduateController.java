@@ -4,6 +4,7 @@ import com.capstone.entities.MarksEntity;
 import com.capstone.entities.ProgramEntity;
 import com.capstone.entities.RealSemesterEntity;
 import com.capstone.entities.StudentEntity;
+import com.capstone.models.Enums;
 import com.capstone.models.Logger;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
@@ -53,26 +54,29 @@ public class GraduateController {
         int semesterId = Integer.parseInt(params.get("semesterId"));
 
         try {
-            Map<StudentEntity, List<MarksEntity>> map = new HashMap<>();
             List<MarksEntity> marks = markService.getMarkByProgramAndSemester(programId, semesterId);
-            List<MarksEntity> passedList = marks.stream().filter(m -> m.getStatus().contains("pass") || m.getStatus().contains("exempt")).collect(Collectors.toList());
+            List<MarksEntity> passedList = marks.stream().filter(m ->
+                    m.getStatus().contains(Enums.MarkStatus.PASSED.getValue()) ||
+                    m.getStatus().contains(Enums.MarkStatus.IS_EXEMPT.getValue()))
+                    .collect(Collectors.toList());
             // remove duplicate
             List<MarksEntity> noneDuplicatePassedList = new ArrayList<>();
             for (MarksEntity marksEntity : passedList) {
                 if (!noneDuplicatePassedList.stream().
                         anyMatch(n -> n.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(marksEntity.getSubjectMarkComponentId().getSubjectId().getId())
-                                   && n.getStudentId().getRollNumber().equalsIgnoreCase(marksEntity.getStudentId().getRollNumber()))) {
+                                && n.getStudentId().getRollNumber().equalsIgnoreCase(marksEntity.getStudentId().getRollNumber()))) {
                     noneDuplicatePassedList.add(marksEntity);
                 }
             }
             // create map
+            Map<StudentEntity, List<MarksEntity>> map = new HashMap<>();
             for (MarksEntity mark : noneDuplicatePassedList) {
                 if (map.get(mark.getStudentId()) != null) {
                     map.get(mark.getStudentId()).add(mark);
                 } else {
-                    List<MarksEntity> tmp = new ArrayList<>();
-                    tmp.add(mark);
-                    map.put(mark.getStudentId(), tmp);
+                    List<MarksEntity> newList = new ArrayList<>();
+                    newList.add(mark);
+                    map.put(mark.getStudentId(), newList);
                 }
             }
 
@@ -82,12 +86,12 @@ public class GraduateController {
                 int specializedCredits = 0;
 
                 if (credits >= totalCredit && specializedCredits >= sCredit) {
-                    ArrayList<String> tmp = new ArrayList<>();
-                    tmp.add(entry.getKey().getRollNumber());
-                    tmp.add(entry.getKey().getFullName());
-                    tmp.add(String.valueOf(credits));
-                    tmp.add(String.valueOf(specializedCredits));
-                    parent.add(tmp);
+                    ArrayList<String> row = new ArrayList<>();
+                    row.add(entry.getKey().getRollNumber());
+                    row.add(entry.getKey().getFullName());
+                    row.add(String.valueOf(credits));
+                    row.add(String.valueOf(specializedCredits));
+                    parent.add(row);
                 }
             }
 

@@ -14,7 +14,7 @@
         <div class="b-header">
             <div class="row">
                 <div class="col-md-9 title">
-                    <h1>Danh sách sinh viên được xét tốt nghiệp </h1>
+                    <h1>Danh sách sinh viên được xét tốt nghiệp</h1>
                 </div>
                 <div class="col-md-3 text-right">
                     <div class="export-content">
@@ -177,7 +177,7 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/processgraduate", // url getData.php etc
+            "sAjaxSource": "/processgraduate",
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "programId", "value": $("#program").val()}),
                 aoData.push({"name": "semesterId", "value": $("#semester").val()}),

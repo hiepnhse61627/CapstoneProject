@@ -66,7 +66,6 @@
     <script src="/Resources/plugins/daterangepicker-2.1.25/daterangepicker.js"></script>
     <script src="/Resources/plugins/dist/js/template.js"></script>
     <script src="/Resources/plugins/bootstrap-switch/js/bootstrap-switch.js"></script>
-    .
     <script src="/Resources/plugins/Scroller-1.4.3/js/dataTables.scroller.min.js"></script>
 
 </head>
