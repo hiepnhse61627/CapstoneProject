@@ -147,7 +147,7 @@
     function SelectOnlyFail() {
         $.each($("#table").find('tr'), function () {
             var data = $(this).find('td').eq(5).html();
-            if (data == 'N/A') {
+            if (data != 'N/A') {
                 $(this).closest("tr").find("input[name='send']").iCheck('check');
             }
         });
