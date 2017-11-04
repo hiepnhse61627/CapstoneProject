@@ -2,6 +2,7 @@ package com.capstone.exporters;
 
 import com.capstone.controllers.StudentDetail;
 import com.capstone.entities.*;
+import com.capstone.models.Suggestion;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import org.apache.poi.ss.usermodel.*;
@@ -242,6 +243,21 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
 
     public List<List<String>> processSuggestion(int stuId) {
         StudentDetail detail = new StudentDetail();
-        return detail.processSuggestion(stuId).getData();
+        Suggestion suggestion = detail.processSuggestion(stuId);
+        List<List<String>> result = suggestion.getData();
+
+        List<String> brea = new ArrayList<>();
+        brea.add("break");
+        brea.add("");
+
+        int index = result.indexOf(brea);
+        if (index > -1) {
+            if (suggestion.isDuchitieu()) {
+                result = result.subList(0, index);
+            } else {
+                result = result.subList(index + 1, result.size());
+            }
+        }
+        return result;
     }
 }

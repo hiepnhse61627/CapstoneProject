@@ -4,10 +4,7 @@ import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.entities.SubjectCurriculumEntity;
 import com.capstone.entities.SubjectEntity;
-import com.capstone.models.CustomUser;
-import com.capstone.models.Logger;
-import com.capstone.models.SelectItem;
-import com.capstone.models.Ultilities;
+import com.capstone.models.*;
 import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -143,7 +140,21 @@ public class StudentDetailForStudent {
         int stuId = Integer.parseInt(params.get("stuId"));
 
         try {
-            List<List<String>> result = detail.processSuggestion(stuId).getData();
+            Suggestion suggestion = detail.processSuggestion(stuId);
+            List<List<String>> result = suggestion.getData();
+
+            List<String> brea = new ArrayList<>();
+            brea.add("break");
+            brea.add("");
+
+            int index = result.indexOf(brea);
+            if (index > -1) {
+                if (suggestion.isDuchitieu()) {
+                    result = result.subList(0, index);
+                } else {
+                    result = result.subList(index + 1, result.size());
+                }
+            }
 
             List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -195,6 +206,26 @@ public class StudentDetailForStudent {
 
         try {
             List<List<String>> result = detail.processNext(stuId, true, true);
+
+            Suggestion suggestion = detail.processSuggestion(stuId);
+            List<List<String>> result2 = suggestion.getData();
+
+            List<String> brea = new ArrayList<>();
+            brea.add("break");
+            brea.add("");
+
+            int index = result2.indexOf(brea);
+            if (index > -1) {
+                if (suggestion.isDuchitieu()) {
+                    result2 = result2.subList(index + 1, result2.size());
+                } else {
+                    result2 = result2.subList(0, index);
+                }
+            }
+
+            for (List<String> r : result2) {
+                result.add(r);
+            }
 
             List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
