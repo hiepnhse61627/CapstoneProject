@@ -39,13 +39,13 @@
     <link rel="stylesheet" href="/Resources/plugins/sweetalert2/sweetalert2.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/datatables/datatables.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/select2-4.0.4/css/select2.min.css"/>
-    <%--<link rel="stylesheet" href="/Resources/plugins/jQueryUI/jquery-ui.min.css"/>--%>
+    <link rel="stylesheet" href="/Resources/plugins/jQueryUI/jquery-ui.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/iCheck/square/blue.css"/>
     <link rel="stylesheet" href="/Resources/plugins/daterangepicker-2.1.25/daterangepicker.css"/>
-    <link rel="stylesheet" href="/Resources/plugins/dist/css/template.css"/>
     <link rel="stylesheet" href="/Resources/plugins/dist/css/custom-scrollbar.css"/>
     <link rel="stylesheet" href="/Resources/plugins/bootstrap-switch/css/bootstrap3/bootstrap-switch.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/Scroller-1.4.3/css/scroller.dataTables.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dist/css/template.css"/>
 
     <!-- REQUIRED JS SCRIPTS -->
 
@@ -59,7 +59,7 @@
     <script src="/Resources/plugins/sweetalert2/sweetalert2.min.js"></script>
     <script src="/Resources/plugins/datatables/datatables.min.js"></script>
     <script src="/Resources/plugins/select2-4.0.4/js/select2.min.js"></script>
-    <%--<script src="/Resources/plugins/jQueryUI/jquery-ui.min.js"></script>--%>
+    <script src="/Resources/plugins/jQueryUI/jquery-ui.min.js"></script>
     <script src="/Resources/plugins/tablednd/jquery.tablednd.min.js"></script>
     <script src="/Resources/plugins/iCheck/icheck.min.js"></script>
     <script src="/Resources/plugins/daterangepicker-2.1.25/moment.min.js"></script>
@@ -70,7 +70,7 @@
     <script src="/Resources/plugins/Scroller-1.4.3/js/dataTables.scroller.min.js"></script>
 
 </head>
-<body class="hold-transition skin-black-light sidebar-mini">
+<body class="hold-transition skin-custom sidebar-mini">
 <div class="wrapper" style="position: relative">
 
     <!-- Main Header -->
@@ -109,7 +109,10 @@
                             <li class="user-header">
                                 <img src="${imageUrl}"
                                      class="img-circle" alt="User Image">
-                                <p>${username} - ${role}</p>
+                                <p>
+                                    ${username}
+                                    <small>${role}</small>
+                                </p>
                             </li>
 
                             <li class="user-footer">
@@ -213,6 +216,11 @@
 
 <script>
     var list;
+
+    $(document).ready(function() {
+        $(".select2-selection span").attr('title', '');
+    });
+
     var input = document.getElementById('menu-filter');
     input.onkeyup = function () {
         var filter = input.value.toLowerCase();
