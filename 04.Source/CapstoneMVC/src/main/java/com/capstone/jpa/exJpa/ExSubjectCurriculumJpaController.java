@@ -145,7 +145,8 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
 
         try {
             String sqlString = "SELECT s FROM SubjectCurriculumEntity s, DocumentStudentEntity d " +
-                                        "WHERE s.curriculumId = d.curriculumId AND d.studentId.id = :id AND s.termNumber BETWEEN 1 AND :currentTerm";
+                                        "WHERE s.curriculumId = d.curriculumId AND d.studentId.id = :id AND s.termNumber BETWEEN 1 AND :currentTerm AND " +
+                                        "d.createdDate = (SELECT MAX(d1.createdDate) FROM DocumentStudentEntity d1 WHERE d1.studentId.id = d.studentId.id)";
             Query query = em.createQuery(sqlString);
             query.setParameter("id", studentId);
             query.setParameter("currentTerm", currentTerm);

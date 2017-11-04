@@ -89,30 +89,10 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         try {
             em = getEntityManager();
 
+            em.getTransaction().begin();
             for (int i = 0; i < marks.size(); i++) {
-                em.getTransaction().begin();
                 MarksEntity markEntity = marks.get(i);
-                List<MarksEntity> marksInDB = findMarksByProperties(markEntity);
-                if (marksInDB != null && !marksInDB.isEmpty()) {
-                    MarksEntity markDB = new MarksEntity();
-                    for (MarksEntity tmp : marksInDB) {
-                        if (tmp.getStatus().contains("Studying")) {
-                            markDB = tmp;
-                            break;
-                        }
-                    }
-
-                    if (markDB.getId() != null) {
-                        markEntity.setId(markDB.getId());
-                        em.merge(markEntity);
-                    } else {
-                        if (marksInDB.size() < 2) {
-                            em.persist(markEntity);
-                        }
-                    }
-                } else {
-                    em.persist(markEntity);
-                }
+                em.persist(markEntity);
 
                 if (i > 0 && i % batchSize == 0) {
                     em.flush();
@@ -120,10 +100,9 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                 }
 
                 ++this.successSavedStudent;
-                em.getTransaction().commit();
             }
+            em.getTransaction().commit();
         } catch (Exception ex) {
-//            em.getTransaction().rollback();
             ex.printStackTrace();
         } finally {
             if (em != null) {

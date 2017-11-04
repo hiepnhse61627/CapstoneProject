@@ -940,7 +940,8 @@ public class UploadController {
                         importedMarkObject.setSemesterName(semester);
                     } else if (subjectCd.getTermNumber() == termNo && semesters.size() == 0) {
                         importedMarkObject.setStatus("NotStart");
-                        importedMarkObject.setSemesterName(allSemester.get(allSemester.size() - 1).getSemester());
+                        RealSemesterEntity semester = allSemester.get(allSemester.size() - 1);
+                        importedMarkObject.setSemesterName(semester.getSemester());
                     } else if (subjectCd.getTermNumber() < termNo && semesters.size() == 0) {
                         importedMarkObject.setStatus("NotStart");
                         importedMarkObject.setSemesterName("N/A");
