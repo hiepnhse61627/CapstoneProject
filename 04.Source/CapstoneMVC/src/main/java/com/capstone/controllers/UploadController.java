@@ -479,6 +479,9 @@ public class UploadController {
         if (program == null) {
             program = new ProgramEntity();
             program.setName(programName);
+            program.setOjt(90);
+            program.setCapstone(80);
+            program.setGraduate(70);
             programService.createProgram(program);
             list.add(program);
         }
@@ -963,6 +966,8 @@ public class UploadController {
                     marksEntity.setAverageMark(object.getAverageMark());
                     // set status
                     marksEntity.setStatus(object.getStatus());
+                    // set isActivated
+                    marksEntity.setActive(true);
                     // set semester
                     if (object.getSemesterName() != null) {
                         RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(object.getSemesterName());

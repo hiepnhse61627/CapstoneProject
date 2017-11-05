@@ -2,6 +2,7 @@ package com.capstone.exporters;
 
 import com.capstone.controllers.StudentDetail;
 import com.capstone.entities.*;
+import com.capstone.models.Suggestion;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import org.apache.poi.ss.usermodel.*;
@@ -94,13 +95,13 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 Cell tinchi = row.createCell(3);
                 tinchi.setCellStyle(cellStyle);
 
-                List<MarksEntity> marksCredits = student.getMarksEntityList()
-                        .stream()
-                        .filter(c -> c.isActive() && (c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt")))
-                        .collect(Collectors.toList());
+                List<MarksEntity> marksCredits = student.getMarksEntityList();
                 int credits = 0;
                 for (MarksEntity mark : marksCredits) {
-                    credits += mark.getSubjectMarkComponentId().getSubjectId().getCredits() == null ? 0 : mark.getSubjectMarkComponentId().getSubjectId().getCredits();
+                    if (mark.isActive() && (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt"))) {
+                        Integer tmp = mark.getSubjectMarkComponentId().getSubjectId().getCredits();
+                        credits += (tmp == null ? 0 : tmp);
+                    }
                 }
                 tinchi.setCellValue(credits);
 
@@ -242,6 +243,21 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
 
     public List<List<String>> processSuggestion(int stuId) {
         StudentDetail detail = new StudentDetail();
-        return detail.processSuggestion(stuId);
+        Suggestion suggestion = detail.processSuggestion(stuId);
+        List<List<String>> result = suggestion.getData();
+
+        List<String> brea = new ArrayList<>();
+        brea.add("break");
+        brea.add("");
+
+        int index = result.indexOf(brea);
+        if (index > -1) {
+            if (suggestion.isDuchitieu()) {
+                result = result.subList(0, index);
+            } else {
+                result = result.subList(index + 1, result.size());
+            }
+        }
+        return result;
     }
 }

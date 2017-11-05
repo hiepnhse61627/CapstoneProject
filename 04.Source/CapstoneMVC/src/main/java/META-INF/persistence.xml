@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+    <persistence-unit name="CapstonePersistence">
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <class>com.capstone.entities.DocTypeEntity</class>
+        <class>com.capstone.entities.DocumentEntity</class>
+        <class>com.capstone.entities.SubjectEntity</class>
+        <class>com.capstone.entities.ProgramEntity</class>
+        <class>com.capstone.entities.PrequisiteEntity</class>
+        <class>com.capstone.entities.SubjectCurriculumEntity</class>
+        <class>com.capstone.entities.DocumentStudentEntity</class>
+        <class>com.capstone.entities.RealSemesterEntity</class>
+        <class>com.capstone.entities.CurriculumEntity</class>
+        <class>com.capstone.entities.SubjectMarkComponentEntity</class>
+        <class>com.capstone.entities.StudentEntity</class>
+        <class>com.capstone.entities.CourseEntity</class>
+        <class>com.capstone.entities.MarksEntity</class>
+        <class>com.capstone.entities.CredentialsEntity</class>
+        <class>com.capstone.entities.SubjectMarkComponentEntity</class>
+        <class>com.capstone.entities.ProgramEntity</class>
+        <class>com.capstone.entities.DynamicMenuEntity</class>
+        <exclude-unlisted-classes>false</exclude-unlisted-classes>
+        <properties>
+            <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://116.193.67.20:1433;databaseName=CapstoneProject"/>
+            <property name="javax.persistence.jdbc.user" value="sa"/>
+            <property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+            <property name="javax.persistence.jdbc.password" value="Kh@nhKT123456&amp;"/>
+        </properties>
+    </persistence-unit>
+</persistence>

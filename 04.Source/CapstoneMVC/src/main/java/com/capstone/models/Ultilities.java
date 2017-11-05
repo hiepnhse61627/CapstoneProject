@@ -520,6 +520,21 @@ public class Ultilities {
         return subs;
     }
 
+    public static DocumentStudentEntity getStudentLatestDocument(StudentEntity student) {
+        List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+        if (!docs.isEmpty()) {
+            docs.sort(Comparator.comparingLong(c -> {
+                DocumentStudentEntity doc = (DocumentStudentEntity) c;
+                if (doc.getCreatedDate() == null) return 0;
+                else return doc.getCreatedDate().getTime();
+            }));
+
+            return docs.get(docs.size() - 1);
+        }
+
+        return null;
+    }
+
     public static void GetMenu(ServletContext servletContext, CredentialsEntity user) {
         IDynamicMenuService dynamicMenuService = new DynamicMenuServiceImpl();
 
