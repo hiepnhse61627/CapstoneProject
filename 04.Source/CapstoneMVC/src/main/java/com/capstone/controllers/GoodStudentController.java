@@ -81,6 +81,13 @@ public class GoodStudentController {
         int semesterId = Integer.parseInt(params.get("semesterId"));
         String sSearch = params.get("sSearch").trim();
 
+        List<RealSemesterEntity> semesterList = semesterService.getAllSemester();
+        semesterList = Ultilities.SortSemesters(semesterList);
+        Map<Integer, Integer> semesterPositionMap = new HashMap<>();
+        for (int i = 0; i < semesterList.size(); i++) {
+            semesterPositionMap.put(semesterList.get(i).getId(), i);
+        }
+
         Map<Integer, Map<Integer, List<GoodStudentMarkModel>>> studentList = new HashMap<>();
         Map<Integer, DocumentStudentEntity> docStudentMap = new HashMap<>();
 
@@ -177,8 +184,9 @@ public class GoodStudentController {
 
                 for (Integer semesId : semesterMarkList.keySet()) {
                     List<GoodStudentMarkModel> markList = semesterMarkList.get(semesId);
-                    boolean isValidate = validateMarkList(markList, subjectCurriculumMap.get(curriculumId));
-                    if (isValidate) {
+
+                    if (checkSubjectsAreLearnedAgain(semesterPositionMap, semesterMarkList, semesId)
+                            && validateMarkList(markList, subjectCurriculumMap.get(curriculumId))) {
                         if (studentList.get(studentId) == null) {
                             studentList.put(studentId, new HashMap<>());
                         }
@@ -189,7 +197,7 @@ public class GoodStudentController {
             }
         }
 
-        List<RealSemesterEntity> semesterList = semesterService.getAllSemester();
+
         List<List<String>> result = new ArrayList<>();
         for (int studentId : studentList.keySet()) {
             Map<Integer, List<GoodStudentMarkModel>> semesterMarkList = studentList.get(studentId);
@@ -217,7 +225,45 @@ public class GoodStudentController {
             }
         }
 
+
+
+        Collections.sort(result, new Comparator<List<String>>(){
+            public int compare(List<String> o1, List<String> o2){
+                int compareRollNumber = o1.get(0).compareTo(o2.get(0));
+
+                if (compareRollNumber != 0) {
+                    return compareRollNumber;
+                } else {
+                    int compareTerm = o1.get(4).compareTo(o2.get(4));
+                    return compareTerm;
+                }
+            }
+        });
+
         return result;
+    }
+
+    private boolean checkSubjectsAreLearnedAgain(Map<Integer, Integer> semesterPositionMap,
+                            Map<Integer, List<GoodStudentMarkModel>> semesterMarkList, int curSemesterId) {
+        boolean isValidate = true;
+
+        int curSemesterPosition = semesterPositionMap.get(curSemesterId);
+        List<GoodStudentMarkModel> curMarkList = semesterMarkList.get(curSemesterId);
+        for (Integer semesterId : semesterMarkList.keySet()) {
+            if (semesterPositionMap.get(semesterId) < curSemesterPosition && isValidate) {
+                List<GoodStudentMarkModel> markList = semesterMarkList.get(semesterId);
+                for (GoodStudentMarkModel curMark : curMarkList) {
+                    for (GoodStudentMarkModel mark : markList) {
+                        if (curMark.getSubjectId().equalsIgnoreCase(mark.getSubjectId())) {
+                            isValidate = false;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        return isValidate;
     }
 
     private boolean validateMarkList(List<GoodStudentMarkModel> markList, List<SubjectCurriculumEntity> subCurricumlumList) {
