@@ -966,6 +966,8 @@ public class UploadController {
                     marksEntity.setAverageMark(object.getAverageMark());
                     // set status
                     marksEntity.setStatus(object.getStatus());
+                    // set isActivated
+                    marksEntity.setActive(true);
                     // set semester
                     if (object.getSemesterName() != null) {
                         RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(object.getSemesterName());
