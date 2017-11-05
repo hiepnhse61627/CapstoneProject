@@ -49,10 +49,10 @@ public class StudentDetail {
                 students.add(studentService.findStudentByRollNumber(principal.getUser().getStudentRollNumber()));
             }
 
-            String finalSearchValue = searchValue;
+            final String finalSearchValue = searchValue;
             List<StudentEntity> studentList = students.stream()
-                    .filter(c -> c.getRollNumber().toLowerCase().contains(finalSearchValue) ||
-                            c.getFullName().toLowerCase().contains(finalSearchValue))
+                    .filter(c -> Ultilities.containsIgnoreCase(c.getRollNumber(), finalSearchValue)
+                            || Ultilities.containsIgnoreCase(c.getFullName(), finalSearchValue))
                     .collect(Collectors.toList());
 
             List<SelectItem> itemList = new ArrayList<>();
