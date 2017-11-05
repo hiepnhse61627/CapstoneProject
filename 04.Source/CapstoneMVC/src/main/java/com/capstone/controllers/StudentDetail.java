@@ -705,6 +705,21 @@ public class StudentDetail {
                         iterator2.remove();
                         break;
                     }
+                } else {
+                    List<SubjectEntity> replaceOfS = s.getSubjectEntityList();
+                    for (SubjectEntity r : replaceOfS) {
+                        TypedQuery<MarksEntity> queryCheckPass2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%')", MarksEntity.class);
+                        queryCheckPass2.setParameter("id", stuId);
+                        queryCheckPass2.setParameter("sub", r.getId());
+                        List<MarksEntity> result = queryCheckPass2.getResultList();
+                        if (!result.isEmpty()) {
+                            if (!hasRemoved) {
+                                hasRemoved = true;
+                                iterator2.remove();
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -843,6 +858,21 @@ public class StudentDetail {
                         hasRemoved = true;
                         iterator.remove();
                         break;
+                    }
+                } else {
+                    List<SubjectEntity> replaceOfS = s.getSubjectEntityList();
+                    for (SubjectEntity r : replaceOfS) {
+                        TypedQuery<MarksEntity> queryCheckPass2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%')", MarksEntity.class);
+                        queryCheckPass2.setParameter("id", stuId);
+                        queryCheckPass2.setParameter("sub", r.getId());
+                        List<MarksEntity> result = queryCheckPass2.getResultList();
+                        if (!result.isEmpty()) {
+                            if (!hasRemoved) {
+                                hasRemoved = true;
+                                iterator.remove();
+                                break;
+                            }
+                        }
                     }
                 }
             }
