@@ -200,7 +200,7 @@
     var nextCourseTable = null;
     var curCourseTable = null;
     var suggestCourseTable = null;
-    var notStart = null;
+    var notStartTable = null;
     var cantStudyTable = null;
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
@@ -237,11 +237,11 @@
     };
 
     $(document).ready(function () {
+        CreateSelect();
         $('#cb-student').on("change", function () {
             RefreshTable();
+            CreateSelect();
         });
-
-        CreateSelect();
 
         CreateEmptyDataTable('#table');
         CreateEmptyDataTable('#nextCourseTable');
@@ -279,7 +279,6 @@
                 }
             }
         });
-//        $('#cb-student').select2();
     }
 
     function CreateDebtTable() {
@@ -291,7 +290,7 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/getStudentDetail", // url getData.php etc
+            "sAjaxSource": "/getStudentDetail",
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "stuId", "value": $('#cb-student').val()})
             },
@@ -330,7 +329,7 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/getStudentNextCourse", // url getData.php etc
+            "sAjaxSource": "/getStudentNextCourse",
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "stuId", "value": $('#cb-student').val()})
             },
@@ -368,7 +367,7 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/getStudentNotNextCourse", // url getData.php etc
+            "sAjaxSource": "/getStudentNotNextCourse",
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "stuId", "value": $('#cb-student').val()})
             },
@@ -416,7 +415,7 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/getStudentCurrentCourse", // url getData.php etc
+            "sAjaxSource": "/getStudentCurrentCourse",
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "stuId", "value": $('#cb-student').val()})
             },
@@ -464,7 +463,7 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/getStudentNextCourseSuggestion", // url getData.php etc
+            "sAjaxSource": "/getStudentNextCourseSuggestion",
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "stuId", "value": $('#cb-student').val()})
             },
@@ -504,7 +503,7 @@
     }
 
     function CreateNotStartTable() {
-        curCourseTable = $('#notStart').dataTable({
+        notStartTable = $('#notStart').dataTable({
             "bServerSide": true,
             "bFilter": false,
             "bRetrieve": true,
@@ -512,7 +511,7 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/getStudentNotStart", // url getData.php etc
+            "sAjaxSource": "/getStudentNotStart",
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "stuId", "value": $('#cb-student').val()})
             },
@@ -613,20 +612,6 @@
     }
 
     function RefreshTable() {
-//        $('#notStart').dataTable().fnDestroy();
-//        CreateNotStartTable();
-//        $('#table').dataTable().fnDestroy();
-//        CreateDebtTable();
-//        $('#nextCourseTable').dataTable().fnDestroy();
-//        CreateNextCourseTable();
-//        $('#curCourseTable').dataTable().fnDestroy();
-//        CreateCurrentCourseTable();
-//        $('#suggestCourseTable').dataTable().fnDestroy();
-//        CreateSuggestCourseTable();
-//        $('#cantStudy').dataTable().fnDestroy();
-//        CreateCantStudyTable();
-
-
         if (table != null) {
             table._fnPageChange(0);
             table._fnAjaxUpdate();
@@ -664,9 +649,9 @@
             CreateSuggestCourseTable();
         }
 
-        if (notStart != null) {
-            notStart._fnPageChange(0);
-            notStart._fnAjaxUpdate();
+        if (notStartTable != null) {
+            notStartTable._fnPageChange(0);
+            notStartTable._fnAjaxUpdate();
         } else {
             // Delete empty table
             $('#notStart').dataTable().fnDestroy();
@@ -679,10 +664,7 @@
         } else {
             // Delete empty table
             $('#cantStudy').dataTable().fnDestroy();
-
-            CreateNotStartTable();
+            CreateCantStudyTable();
         }
-
-
     }
 </script>
