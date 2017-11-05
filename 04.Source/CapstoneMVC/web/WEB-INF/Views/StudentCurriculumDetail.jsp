@@ -25,6 +25,7 @@
                     <div class="my-content">
                         <div class="col-md-12">
                             <select id="select" class="select form-control">
+                                <option value="-1">-----All-----</option>
                                 <c:forEach var="student" items="${studentsFilter}">
                                     <option value="${student.id}">${student.rollNumber} - ${student.fullName}</option>
                                 </c:forEach>
