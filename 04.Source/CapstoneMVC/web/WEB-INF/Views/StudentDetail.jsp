@@ -44,7 +44,7 @@
                                 <label class="p-t-8">Chọn sinh viên:</label>
                             </div>
                             <div class="right-content width-30 width-m-70">
-                                <select id="select" class="select">
+                                <select id="cb-student" class="select">
                                     <%--<option value="0">-- Select --</option>--%>
                                     <%--<c:forEach var="stu" items="${students}">--%>
                                         <%--<option value="${stu.id}">${stu.rollNumber} - ${stu.fullName}</option>--%>
@@ -237,21 +237,22 @@
     };
 
     $(document).ready(function () {
-        $('#select').on("change", function () {
+        $('#cb-student').on("change", function () {
             RefreshTable();
         });
 
         CreateSelect();
 
-//        CreateEmptyDataTable('#table');
-//        CreateEmptyDataTable('#nextCourseTable');
-//        CreateEmptyDataTable('#curCourseTable');
-//        CreateEmptyDataTable('#suggestCourseTable');
-//        CreateEmptyDataTable('#notStart');
+        CreateEmptyDataTable('#table');
+        CreateEmptyDataTable('#nextCourseTable');
+        CreateEmptyDataTable('#curCourseTable');
+        CreateEmptyDataTable('#suggestCourseTable');
+        CreateEmptyDataTable('#notStart');
+        CreateEmptyDataTable('#cantStudy');
     });
 
     function CreateSelect() {
-        $('#select').select2({
+        $('#cb-student').select2({
             width: 'resolve',
             minimumInputLength: 2,
             ajax: {
@@ -278,7 +279,7 @@
                 }
             }
         });
-//        $('#select').select2();
+//        $('#cb-student').select2();
     }
 
     function CreateDebtTable() {
@@ -292,7 +293,7 @@
             "bSort": false,
             "sAjaxSource": "/getStudentDetail", // url getData.php etc
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#select').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -331,7 +332,7 @@
             "bSort": false,
             "sAjaxSource": "/getStudentNextCourse", // url getData.php etc
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#select').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -369,7 +370,7 @@
             "bSort": false,
             "sAjaxSource": "/getStudentNotNextCourse", // url getData.php etc
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#select').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -417,7 +418,7 @@
             "bSort": false,
             "sAjaxSource": "/getStudentCurrentCourse", // url getData.php etc
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#select').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -465,7 +466,7 @@
             "bSort": false,
             "sAjaxSource": "/getStudentNextCourseSuggestion", // url getData.php etc
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#select').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -513,7 +514,7 @@
             "bSort": false,
             "sAjaxSource": "/getStudentNotStart", // url getData.php etc
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#select').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -560,7 +561,7 @@
 
     function ExportExcelForOneStudent() {
         $("input[name='objectType']").val(2);
-        $("input[name='studentId']").val($('#select').val());
+        $("input[name='studentId']").val($('#cb-student').val());
         $("#export-excel").submit();
 
         Call();
@@ -612,62 +613,76 @@
     }
 
     function RefreshTable() {
-        $('#notStart').dataTable().fnDestroy();
-        CreateNotStartTable();
-        $('#table').dataTable().fnDestroy();
-        CreateDebtTable();
-        $('#nextCourseTable').dataTable().fnDestroy();
-        CreateNextCourseTable();
-        $('#curCourseTable').dataTable().fnDestroy();
-        CreateCurrentCourseTable();
-        $('#suggestCourseTable').dataTable().fnDestroy();
-        CreateSuggestCourseTable();
-        $('#cantStudy').dataTable().fnDestroy();
-        CreateCantStudyTable();
+//        $('#notStart').dataTable().fnDestroy();
+//        CreateNotStartTable();
+//        $('#table').dataTable().fnDestroy();
+//        CreateDebtTable();
+//        $('#nextCourseTable').dataTable().fnDestroy();
+//        CreateNextCourseTable();
+//        $('#curCourseTable').dataTable().fnDestroy();
+//        CreateCurrentCourseTable();
+//        $('#suggestCourseTable').dataTable().fnDestroy();
+//        CreateSuggestCourseTable();
+//        $('#cantStudy').dataTable().fnDestroy();
+//        CreateCantStudyTable();
 
-//        if (table != null) {
-//            table._fnPageChange(0);
-//            table._fnAjaxUpdate();
-//        } else {
-//            // Delete empty table
-//            $('#table').dataTable().fnDestroy();
-//            CreateDebtTable();
-//        }
-//
-//        if (nextCourseTable != null) {
-//            nextCourseTable._fnPageChange(0);
-//            nextCourseTable._fnAjaxUpdate();
-//        } else {
-//            // Delete empty table
-//            $('#nextCourseTable').dataTable().fnDestroy();
-//            CreateNextCourseTable();
-//        }
-//
-//        if (curCourseTable != null) {
-//            curCourseTable._fnPageChange(0);
-//            curCourseTable._fnAjaxUpdate();
-//        } else {
-//            // Delete empty table
-//            $('#curCourseTable').dataTable().fnDestroy();
-//            CreateCurrentCourseTable();
-//        }
-//
-//        if (suggestCourseTable != null) {
-//            suggestCourseTable._fnPageChange(0);
-//            suggestCourseTable._fnAjaxUpdate();
-//        } else {
-//            // Delete empty table
-//            $('#suggestCourseTable').dataTable().fnDestroy();
-//            CreateSuggestCourseTable();
-//        }
-//
-//        if (notStart != null) {
-//            notStart._fnPageChange(0);
-//            notStart._fnAjaxUpdate();
-//        } else {
-//            // Delete empty table
-//            $('#notStart').dataTable().fnDestroy();
-//            CreateNotStartTable();
-//        }
+
+        if (table != null) {
+            table._fnPageChange(0);
+            table._fnAjaxUpdate();
+        } else {
+            // Delete empty table
+            $('#table').dataTable().fnDestroy();
+            CreateDebtTable();
+        }
+
+        if (nextCourseTable != null) {
+            nextCourseTable._fnPageChange(0);
+            nextCourseTable._fnAjaxUpdate();
+        } else {
+            // Delete empty table
+            $('#nextCourseTable').dataTable().fnDestroy();
+            CreateNextCourseTable();
+        }
+
+
+        if (curCourseTable != null) {
+            curCourseTable._fnPageChange(0);
+            curCourseTable._fnAjaxUpdate();
+        } else {
+            // Delete empty table
+            $('#curCourseTable').dataTable().fnDestroy();
+            CreateCurrentCourseTable();
+        }
+
+        if (suggestCourseTable != null) {
+            suggestCourseTable._fnPageChange(0);
+            suggestCourseTable._fnAjaxUpdate();
+        } else {
+            // Delete empty table
+            $('#suggestCourseTable').dataTable().fnDestroy();
+            CreateSuggestCourseTable();
+        }
+
+        if (notStart != null) {
+            notStart._fnPageChange(0);
+            notStart._fnAjaxUpdate();
+        } else {
+            // Delete empty table
+            $('#notStart').dataTable().fnDestroy();
+            CreateNotStartTable();
+        }
+
+        if (cantStudyTable != null) {
+            cantStudyTable._fnPageChange(0);
+            cantStudyTable._fnAjaxUpdate();
+        } else {
+            // Delete empty table
+            $('#cantStudy').dataTable().fnDestroy();
+
+            CreateNotStartTable();
+        }
+
+
     }
 </script>

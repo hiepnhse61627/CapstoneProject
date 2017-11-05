@@ -267,13 +267,14 @@ public class ManagerController {
         int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
 
         try {
-//            marksService.getAverageSubjectLearnedByStudent(programId);
+            List<List<String>> dataList = marksService.getAverageSubjectLearnedByStudent(programId);
+            List<List<String>> result = dataList.stream().skip(iDisplayStart)
+                    .limit(iDisplayLength).collect(Collectors.toList());
 
-            List<List<String>> result = new ArrayList<>();
             JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
 
-            jsonObj.addProperty("iTotalRecords", result.size());
-            jsonObj.addProperty("iTotalDisplayRecords", result.size());
+            jsonObj.addProperty("iTotalRecords", dataList.size());
+            jsonObj.addProperty("iTotalDisplayRecords", dataList.size());
             jsonObj.add("aaData", aaData);
             jsonObj.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {

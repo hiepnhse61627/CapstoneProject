@@ -120,7 +120,7 @@ public class MarksServiceImpl implements IMarksService {
     }
 
     @Override
-    public void getAverageSubjectLearnedByStudent(int programId) {
-        marksEntityJpaController.getAverageSubjectLearnedByStudent(programId);
+    public List<List<String>> getAverageSubjectLearnedByStudent(int programId) {
+         return marksEntityJpaController.getAverageSubjectLearnedByStudent(programId);
     }
 }

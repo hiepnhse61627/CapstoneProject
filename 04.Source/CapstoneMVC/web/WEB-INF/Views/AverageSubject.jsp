@@ -43,8 +43,8 @@
                         <tr>
                             <th>Ngành học</th>
                             <th>Số sinh viên</th>
-                            <th>Số môn học hiện tại</th>
                             <th>Trung bình môn học</th>
+                            <th>Trung bình môn đã học</th>
                         </tr>
                         </thead>
                     </table>
@@ -105,7 +105,7 @@
 
     $(document).ready(function () {
         $('.select').select2();
-        $('#cb-semester').on("change", function () {
+        $('#cb-program').on("change", function () {
             RefreshTable();
         });
 
@@ -113,7 +113,7 @@
     });
 
     function CreateTable() {
-        tblAverageStudent = $('#tbl-average-subject').dataTable({
+        tblAverageSubject = $('#tbl-average-subject').dataTable({
             "bServerSide": true,
             "bFilter": true,
             "bRetrieve": true,
@@ -149,7 +149,7 @@
                 {
                     "aTargets": [3],
                     "mRender": function (data, type, row) {
-                        return row[3] + " sv/lớp";
+                        return row[3] + " môn/sv";
                     }
                 },
             ],
