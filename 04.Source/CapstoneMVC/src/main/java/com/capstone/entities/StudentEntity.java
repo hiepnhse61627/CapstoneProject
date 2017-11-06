@@ -45,7 +45,7 @@ public class StudentEntity implements Serializable {
     private List<DocumentStudentEntity> documentStudentEntityList;
     @OneToMany(mappedBy = "studentId", cascade = CascadeType.ALL)
     private List<OldRollNumberEntity> oldRollNumberEntityList;
-    @OneToMany(mappedBy = "studentId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
     private List<MarksEntity> marksEntityList;
     @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
     @ManyToOne
