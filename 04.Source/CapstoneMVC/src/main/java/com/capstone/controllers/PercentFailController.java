@@ -74,7 +74,7 @@ public class PercentFailController {
         ICourseService service = new CourseServiceImpl();
 
         try {
-            String queryStr = "SELECT a FROM MarksEntity a WHERE a.active = TRUE";
+            String queryStr = "SELECT a FROM MarksEntity a WHERE a.isActivated = TRUE";
             if (!subjectId.equals("0")) {
                 queryStr += " AND a.subjectMarkComponentId.subjectId.id = :subject";
             }
