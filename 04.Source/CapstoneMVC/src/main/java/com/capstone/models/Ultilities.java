@@ -476,18 +476,16 @@ public class Ultilities {
 
         List<SubjectEntity> result = new ArrayList<>();
         if (docs.size() > 0) {
-            Collections.sort(docs, Comparator.comparingLong(c -> {
-                if (c.getCreatedDate() == null) return 0;
-                else return c.getCreatedDate().getTime();
-            }));
-            Collections.reverse(docs);
-            CurriculumEntity curriculumEntity = docs.get(docs.size() - 1).getCurriculumId();
-            List<SubjectCurriculumEntity> listCur = curriculumEntity.getSubjectCurriculumEntityList();
-            listCur.sort(Comparator.comparingInt(SubjectCurriculumEntity::getOrdinalNumber));
+            docs = sortDocumentStudentListByDate(docs);
+            CurriculumEntity curriculumEntity = docs.get(0).getCurriculumId();
+            if (curriculumEntity != null) {
+                List<SubjectCurriculumEntity> listCur = curriculumEntity.getSubjectCurriculumEntityList();
+                listCur.sort(Comparator.comparingInt(SubjectCurriculumEntity::getOrdinalNumber));
 
-            for (SubjectCurriculumEntity c : listCur) {
-                if (listSubjects.stream().anyMatch(a -> a.getId().equals(c.getSubjectId().getId()))) {
-                    result.add(c.getSubjectId());
+                for (SubjectCurriculumEntity c : listCur) {
+                    if (listSubjects.stream().anyMatch(a -> a.getId().equals(c.getSubjectId().getId()))) {
+                        result.add(c.getSubjectId());
+                    }
                 }
             }
         }
@@ -506,15 +504,13 @@ public class Ultilities {
 //                if (doc.getCreatedDate() == null) return 0;
 //                else return doc.getCreatedDate().getTime();
 //            })).collect(Collectors.toList());
-            Collections.sort(docs, Comparator.comparingLong(c -> {
-                if (c.getCreatedDate() == null) return 0;
-                else return c.getCreatedDate().getTime();
-            }));
-            Collections.reverse(docs);
+            docs = sortDocumentStudentListByDate(docs);
             if (!docs.isEmpty()) {
-                List<SubjectCurriculumEntity> cursubs = docs.get(docs.size() - 1).getCurriculumId().getSubjectCurriculumEntityList();
-                for (SubjectCurriculumEntity s : cursubs) {
-                    if (!subs.contains(s.getSubjectId().getId())) subs.add(s.getSubjectId().getId());
+                if (docs.get(0).getCurriculumId() != null) {
+                    List<SubjectCurriculumEntity> cursubs = docs.get(0).getCurriculumId().getSubjectCurriculumEntityList();
+                    for (SubjectCurriculumEntity s : cursubs) {
+                        if (!subs.contains(s.getSubjectId().getId())) subs.add(s.getSubjectId().getId());
+                    }
                 }
             }
         }
@@ -525,13 +521,9 @@ public class Ultilities {
     public static DocumentStudentEntity getStudentLatestDocument(StudentEntity student) {
         List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
         if (!docs.isEmpty()) {
-            Collections.sort(docs, Comparator.comparingLong(c -> {
-                if (c.getCreatedDate() == null) return 0;
-                else return c.getCreatedDate().getTime();
-            }));
-            Collections.reverse(docs);
+            docs = sortDocumentStudentListByDate(docs);
 
-            return docs.get(docs.size() - 1);
+            return docs.get(0);
         }
 
         return null;
@@ -560,5 +552,15 @@ public class Ultilities {
         servletContext.setAttribute("menuNoFunctionGroup", menuNoFunctionGroup);
         servletContext.setAttribute("role", user.getRole());
 
+    }
+
+    public static List<DocumentStudentEntity> sortDocumentStudentListByDate(List<DocumentStudentEntity> list) {
+        Collections.sort(list, new Comparator<DocumentStudentEntity>() {
+            @Override
+            public int compare(DocumentStudentEntity o1, DocumentStudentEntity o2) {
+                return o1.getCreatedDate().compareTo(o2.getCreatedDate());
+            }
+        });
+        return list;
     }
 }
