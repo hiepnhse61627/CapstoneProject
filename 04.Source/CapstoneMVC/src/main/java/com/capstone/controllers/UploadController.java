@@ -378,6 +378,7 @@ public class UploadController {
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
             for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                System.out.println(rowIndex + " - " + spreadsheet.getLastRowNum());
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
 //                    StudentEntity student = new StudentEntity();
@@ -403,6 +404,8 @@ public class UploadController {
                             StudentEntity student = studentService.findStudentByRollNumber(rollNumber);
                             if (student != null) {
                                 student.setRollNumber(rollNumber);
+                                student.setDocumentStudentEntityList(new ArrayList<>());
+                                student.setOldRollNumberEntityList(new ArrayList<>());
 
                                 // update student
                                 if (emailcell != null) {
@@ -487,6 +490,7 @@ public class UploadController {
                                 }
 
                                 studentService.saveStudent(student);
+
                             }
                         }
                     }
