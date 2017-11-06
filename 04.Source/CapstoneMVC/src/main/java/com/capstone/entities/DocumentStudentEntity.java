@@ -28,7 +28,7 @@ public class DocumentStudentEntity implements Serializable {
     @Column(name = "CreatedDate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
-    @JoinColumn(name = "CurriculumId", referencedColumnName = "Id", nullable = false)
+    @JoinColumn(name = "CurriculumId", referencedColumnName = "Id")
     @ManyToOne(optional = false)
     private CurriculumEntity curriculumId;
     @JoinColumn(name = "DocumentId", referencedColumnName = "Id", nullable = false)

@@ -133,7 +133,7 @@ public class UploadController {
             List<DocumentStudentEntity> studentList = new ArrayList<>();
             List<ProgramEntity> programList = programService.getAllPrograms();
             List<CurriculumEntity> curriculumList = curriculumService.getAllCurriculums();
-            Date now = new Date();
+            Date now = Calendar.getInstance().getTime();
 
             // Get template document
             List<DocumentEntity> docList = documentService.getAllDocuments();
@@ -200,6 +200,7 @@ public class UploadController {
                     Cell programNameCell = row.getCell(programNameIndex);
                     Cell curriculumCell = row.getCell(curriculumIndex);
                     Cell emailcell = row.getCell(email);
+                    Cell changeCurCell = row.getCell(changeCurIndex);
 
                     Cell termCell = row.getCell(termIndex);
 
@@ -252,8 +253,7 @@ public class UploadController {
 
                     CurriculumEntity currentCurriculum = null;
                     String curriculumStr;
-                    if (curriculumCell != null &&
-                            !(curriculumStr = curriculumCell.getStringCellValue().trim()).isEmpty()) {
+                    if (curriculumCell != null && !(curriculumStr = curriculumCell.getStringCellValue().trim()).isEmpty()) {
                         int pos = curriculumStr.indexOf("_");
                         if (pos != -1) {
                             String curPogramName = curriculumStr.substring(0, pos);
@@ -276,6 +276,23 @@ public class UploadController {
                         docStd.setCreatedDate(now);
 
                         studentList.add(docStd);
+
+                        if (changeCurCell != null && changeCurCell.getCellType() == Cell.CELL_TYPE_STRING) {
+                            DocumentStudentEntity oldDoc = new DocumentStudentEntity();
+                            oldDoc.setStudentId(student);
+                            oldDoc.setCurriculumId(null);
+                            oldDoc.setDocumentId(documentService.getDocumentById(2));
+                            oldDoc.setCreatedDate(new Date(19, 8, 1996));
+                            studentList.add(oldDoc);
+                        }
+
+//                        if (oldRollNumCell != null && oldRollNumCell.getCellType() == Cell.CELL_TYPE_STRING) {
+//                            OldRollNumberEntity old = new OldRollNumberEntity();
+//                            old.setStudentId(student);
+//                            old.setChangedCurriculumDate(new Date(19, 8, 1996));
+//                            old.setOldRollNumber(oldRollNumCell.getStringCellValue());
+//                            student.getOldRollNumberEntityList().add(old);
+//                        }
                     }
                 }
             }
@@ -347,6 +364,7 @@ public class UploadController {
             int excelDataIndex = 1;
 
             int rollNumberIndex = 0;
+            int oldRollNumberIndex = 1;
             int studentNameIndex = 2;
             int dateOfBirthIndex = 3;
             int genderIndex = 4;
@@ -354,6 +372,7 @@ public class UploadController {
             int curriculumIndex = 13;
             int termIndex = 14;
             int email = 26;
+            int changeCurIndex = 6;
 
             int mainClass = 15;
 
@@ -370,6 +389,8 @@ public class UploadController {
                     Cell programNameCell = row.getCell(programNameIndex);
                     Cell curriculumCell = row.getCell(curriculumIndex);
                     Cell emailcell = row.getCell(email);
+                    Cell changeCurCell = row.getCell(changeCurIndex);
+                    Cell oldRollNumCell = row.getCell(oldRollNumberIndex);
 
                     Cell termCell = row.getCell(termIndex);
 
@@ -446,6 +467,23 @@ public class UploadController {
                                     docStd.setDocumentId(templateDoc);
                                     docStd.setCreatedDate(now);
                                     student.getDocumentStudentEntityList().add(docStd);
+
+                                    if (changeCurCell != null && changeCurCell.getCellType() == Cell.CELL_TYPE_STRING) {
+                                        DocumentStudentEntity oldDoc = new DocumentStudentEntity();
+                                        oldDoc.setStudentId(student);
+                                        oldDoc.setCurriculumId(null);
+                                        oldDoc.setDocumentId(documentService.getDocumentById(2));
+                                        oldDoc.setCreatedDate(new Date(19, 8, 1996));
+                                        student.getDocumentStudentEntityList().add(oldDoc);
+                                    }
+
+                                    if (oldRollNumCell != null && oldRollNumCell.getCellType() == Cell.CELL_TYPE_STRING) {
+                                        OldRollNumberEntity old = new OldRollNumberEntity();
+                                        old.setStudentId(student);
+                                        old.setChangedCurriculumDate(new Date(19, 8, 1996));
+                                        old.setOldRollNumber(oldRollNumCell.getStringCellValue());
+                                        student.getOldRollNumberEntityList().add(old);
+                                    }
                                 }
 
                                 studentService.saveStudent(student);
