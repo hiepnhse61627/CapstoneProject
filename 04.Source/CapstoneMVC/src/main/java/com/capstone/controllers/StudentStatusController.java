@@ -46,6 +46,9 @@ public class StudentStatusController {
 
             List<StudentEntity> list = studentService.getStudentByDocType(docTypeId);
 
+            list = list.stream().filter(c -> Ultilities.containsIgnoreCase(c.getRollNumber(), params.get("sSearch")) ||
+                    Ultilities.containsIgnoreCase(c.getFullName(), params.get("sSearch"))).collect(Collectors.toList());
+
             List<StudentEntity> displayList = new ArrayList<>();
             if (!list.isEmpty()) {
                 displayList = list.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
