@@ -509,7 +509,7 @@ public class ManagerController {
             DocumentStudentEntity doc = new DocumentStudentEntity();
             doc.setStudentId(stu);
             doc.setCurriculumId(newCur);
-            doc.setDocumentId(documentService.getDocumentById(4));
+            doc.setDocumentId(documentService.getDocumentById(2));
             doc.setCreatedDate(Calendar.getInstance().getTime());
             stu.getDocumentStudentEntityList().add(doc);
 
@@ -522,7 +522,7 @@ public class ManagerController {
                 }
             }
 
-//            studentService.saveStudent(stu);
+            studentService.saveStudent(stu);
 
             result.addProperty("success", true);
         } catch (Exception e) {
