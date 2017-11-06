@@ -512,9 +512,9 @@ public class ManagerController {
             List<MarksEntity> marks = stu.getMarksEntityList();
             for (MarksEntity mark : marks) {
                 if (curList.stream().anyMatch(c -> c.equals(mark.getSubjectMarkComponentId().getSubjectId().getId()))) {
-                    mark.setActive(false);
+                    mark.setIsActivated(false);
                 } else {
-                    mark.setActive(true);
+                    mark.setIsActivated(true);
                 }
             }
 

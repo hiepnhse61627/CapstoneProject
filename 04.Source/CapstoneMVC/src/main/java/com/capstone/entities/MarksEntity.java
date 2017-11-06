@@ -15,11 +15,12 @@ import javax.persistence.*;
 @Entity
 @Table(name = "Marks", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "MarksEntity.findAll", query = "SELECT m FROM MarksEntity m WHERE m.active = true")})
+    @NamedQuery(name = "MarksEntity.findAll", query = "SELECT m FROM MarksEntity m")})
 public class MarksEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -28,6 +29,8 @@ public class MarksEntity implements Serializable {
     private Double averageMark;
     @Column(name = "Status", length = 50)
     private String status;
+    @Column(name = "IsActivated")
+    private Boolean isActivated;
     @JoinColumn(name = "CourseId", referencedColumnName = "Id")
     @ManyToOne
     private CourseEntity courseId;
@@ -40,22 +43,12 @@ public class MarksEntity implements Serializable {
     @JoinColumn(name = "SubjectMarkComponentId", referencedColumnName = "Id")
     @ManyToOne
     private SubjectMarkComponentEntity subjectMarkComponentId;
-    @Column(name = "IsActivated")
-    private boolean active;
 
     public MarksEntity() {
     }
 
     public MarksEntity(Integer id) {
         this.id = id;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public void setActive(boolean active) {
-        this.active = active;
     }
 
     public Integer getId() {
@@ -80,6 +73,14 @@ public class MarksEntity implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Boolean getIsActivated() {
+        return isActivated;
+    }
+
+    public void setIsActivated(Boolean isActivated) {
+        this.isActivated = isActivated;
     }
 
     public CourseEntity getCourseId() {
@@ -136,7 +137,7 @@ public class MarksEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entites.MarksEntity[ id=" + id + " ]";
+        return "com.capstone.entities.MarksEntity[ id=" + id + " ]";
     }
     
 }

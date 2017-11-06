@@ -15,12 +15,12 @@ import javax.persistence.*;
 @Entity
 @Table(name = "Credentials", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "CredentialsEntity.findAll", query = "SELECT c FROM CredentialsEntity c"),
-    @NamedQuery(name = "CredentialsEntity.findByUsername", query = "SELECT c FROM CredentialsEntity c WHERE c.username = :username")})
+    @NamedQuery(name = "CredentialsEntity.findAll", query = "SELECT c FROM CredentialsEntity c")})
 public class CredentialsEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -52,14 +52,6 @@ public class CredentialsEntity implements Serializable {
         this.id = id;
         this.username = username;
         this.password = password;
-    }
-
-    public String getStudentRollNumber() {
-        return studentRollNumber;
-    }
-
-    public void setStudentRollNumber(String studentRollNumber) {
-        this.studentRollNumber = studentRollNumber;
     }
 
     public Integer getId() {
@@ -118,6 +110,14 @@ public class CredentialsEntity implements Serializable {
         this.role = role;
     }
 
+    public String getStudentRollNumber() {
+        return studentRollNumber;
+    }
+
+    public void setStudentRollNumber(String studentRollNumber) {
+        this.studentRollNumber = studentRollNumber;
+    }
+
     @Override
     public int hashCode() {
         int hash = 0;
@@ -140,7 +140,7 @@ public class CredentialsEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entites.CredentialsEntity[ id=" + id + " ]";
+        return "com.capstone.entities.CredentialsEntity[ id=" + id + " ]";
     }
     
 }

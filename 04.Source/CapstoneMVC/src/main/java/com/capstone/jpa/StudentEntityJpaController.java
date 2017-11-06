@@ -14,6 +14,7 @@ import com.capstone.entities.ProgramEntity;
 import com.capstone.entities.DocumentStudentEntity;
 import java.util.ArrayList;
 import java.util.List;
+import com.capstone.entities.OldRollNumberEntity;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.jpa.exceptions.IllegalOrphanException;
@@ -41,6 +42,9 @@ public class StudentEntityJpaController implements Serializable {
         if (studentEntity.getDocumentStudentEntityList() == null) {
             studentEntity.setDocumentStudentEntityList(new ArrayList<DocumentStudentEntity>());
         }
+        if (studentEntity.getOldRollNumberEntityList() == null) {
+            studentEntity.setOldRollNumberEntityList(new ArrayList<OldRollNumberEntity>());
+        }
         if (studentEntity.getMarksEntityList() == null) {
             studentEntity.setMarksEntityList(new ArrayList<MarksEntity>());
         }
@@ -59,6 +63,12 @@ public class StudentEntityJpaController implements Serializable {
                 attachedDocumentStudentEntityList.add(documentStudentEntityListDocumentStudentEntityToAttach);
             }
             studentEntity.setDocumentStudentEntityList(attachedDocumentStudentEntityList);
+            List<OldRollNumberEntity> attachedOldRollNumberEntityList = new ArrayList<OldRollNumberEntity>();
+            for (OldRollNumberEntity oldRollNumberEntityListOldRollNumberEntityToAttach : studentEntity.getOldRollNumberEntityList()) {
+                oldRollNumberEntityListOldRollNumberEntityToAttach = em.getReference(oldRollNumberEntityListOldRollNumberEntityToAttach.getClass(), oldRollNumberEntityListOldRollNumberEntityToAttach.getId());
+                attachedOldRollNumberEntityList.add(oldRollNumberEntityListOldRollNumberEntityToAttach);
+            }
+            studentEntity.setOldRollNumberEntityList(attachedOldRollNumberEntityList);
             List<MarksEntity> attachedMarksEntityList = new ArrayList<MarksEntity>();
             for (MarksEntity marksEntityListMarksEntityToAttach : studentEntity.getMarksEntityList()) {
                 marksEntityListMarksEntityToAttach = em.getReference(marksEntityListMarksEntityToAttach.getClass(), marksEntityListMarksEntityToAttach.getId());
@@ -77,6 +87,15 @@ public class StudentEntityJpaController implements Serializable {
                 if (oldStudentIdOfDocumentStudentEntityListDocumentStudentEntity != null) {
                     oldStudentIdOfDocumentStudentEntityListDocumentStudentEntity.getDocumentStudentEntityList().remove(documentStudentEntityListDocumentStudentEntity);
                     oldStudentIdOfDocumentStudentEntityListDocumentStudentEntity = em.merge(oldStudentIdOfDocumentStudentEntityListDocumentStudentEntity);
+                }
+            }
+            for (OldRollNumberEntity oldRollNumberEntityListOldRollNumberEntity : studentEntity.getOldRollNumberEntityList()) {
+                StudentEntity oldStudentIdOfOldRollNumberEntityListOldRollNumberEntity = oldRollNumberEntityListOldRollNumberEntity.getStudentId();
+                oldRollNumberEntityListOldRollNumberEntity.setStudentId(studentEntity);
+                oldRollNumberEntityListOldRollNumberEntity = em.merge(oldRollNumberEntityListOldRollNumberEntity);
+                if (oldStudentIdOfOldRollNumberEntityListOldRollNumberEntity != null) {
+                    oldStudentIdOfOldRollNumberEntityListOldRollNumberEntity.getOldRollNumberEntityList().remove(oldRollNumberEntityListOldRollNumberEntity);
+                    oldStudentIdOfOldRollNumberEntityListOldRollNumberEntity = em.merge(oldStudentIdOfOldRollNumberEntityListOldRollNumberEntity);
                 }
             }
             for (MarksEntity marksEntityListMarksEntity : studentEntity.getMarksEntityList()) {
@@ -111,6 +130,8 @@ public class StudentEntityJpaController implements Serializable {
             ProgramEntity programIdNew = studentEntity.getProgramId();
             List<DocumentStudentEntity> documentStudentEntityListOld = persistentStudentEntity.getDocumentStudentEntityList();
             List<DocumentStudentEntity> documentStudentEntityListNew = studentEntity.getDocumentStudentEntityList();
+            List<OldRollNumberEntity> oldRollNumberEntityListOld = persistentStudentEntity.getOldRollNumberEntityList();
+            List<OldRollNumberEntity> oldRollNumberEntityListNew = studentEntity.getOldRollNumberEntityList();
             List<MarksEntity> marksEntityListOld = persistentStudentEntity.getMarksEntityList();
             List<MarksEntity> marksEntityListNew = studentEntity.getMarksEntityList();
             List<String> illegalOrphanMessages = null;
@@ -136,6 +157,13 @@ public class StudentEntityJpaController implements Serializable {
             }
             documentStudentEntityListNew = attachedDocumentStudentEntityListNew;
             studentEntity.setDocumentStudentEntityList(documentStudentEntityListNew);
+            List<OldRollNumberEntity> attachedOldRollNumberEntityListNew = new ArrayList<OldRollNumberEntity>();
+            for (OldRollNumberEntity oldRollNumberEntityListNewOldRollNumberEntityToAttach : oldRollNumberEntityListNew) {
+                oldRollNumberEntityListNewOldRollNumberEntityToAttach = em.getReference(oldRollNumberEntityListNewOldRollNumberEntityToAttach.getClass(), oldRollNumberEntityListNewOldRollNumberEntityToAttach.getId());
+                attachedOldRollNumberEntityListNew.add(oldRollNumberEntityListNewOldRollNumberEntityToAttach);
+            }
+            oldRollNumberEntityListNew = attachedOldRollNumberEntityListNew;
+            studentEntity.setOldRollNumberEntityList(oldRollNumberEntityListNew);
             List<MarksEntity> attachedMarksEntityListNew = new ArrayList<MarksEntity>();
             for (MarksEntity marksEntityListNewMarksEntityToAttach : marksEntityListNew) {
                 marksEntityListNewMarksEntityToAttach = em.getReference(marksEntityListNewMarksEntityToAttach.getClass(), marksEntityListNewMarksEntityToAttach.getId());
@@ -160,6 +188,23 @@ public class StudentEntityJpaController implements Serializable {
                     if (oldStudentIdOfDocumentStudentEntityListNewDocumentStudentEntity != null && !oldStudentIdOfDocumentStudentEntityListNewDocumentStudentEntity.equals(studentEntity)) {
                         oldStudentIdOfDocumentStudentEntityListNewDocumentStudentEntity.getDocumentStudentEntityList().remove(documentStudentEntityListNewDocumentStudentEntity);
                         oldStudentIdOfDocumentStudentEntityListNewDocumentStudentEntity = em.merge(oldStudentIdOfDocumentStudentEntityListNewDocumentStudentEntity);
+                    }
+                }
+            }
+            for (OldRollNumberEntity oldRollNumberEntityListOldOldRollNumberEntity : oldRollNumberEntityListOld) {
+                if (!oldRollNumberEntityListNew.contains(oldRollNumberEntityListOldOldRollNumberEntity)) {
+                    oldRollNumberEntityListOldOldRollNumberEntity.setStudentId(null);
+                    oldRollNumberEntityListOldOldRollNumberEntity = em.merge(oldRollNumberEntityListOldOldRollNumberEntity);
+                }
+            }
+            for (OldRollNumberEntity oldRollNumberEntityListNewOldRollNumberEntity : oldRollNumberEntityListNew) {
+                if (!oldRollNumberEntityListOld.contains(oldRollNumberEntityListNewOldRollNumberEntity)) {
+                    StudentEntity oldStudentIdOfOldRollNumberEntityListNewOldRollNumberEntity = oldRollNumberEntityListNewOldRollNumberEntity.getStudentId();
+                    oldRollNumberEntityListNewOldRollNumberEntity.setStudentId(studentEntity);
+                    oldRollNumberEntityListNewOldRollNumberEntity = em.merge(oldRollNumberEntityListNewOldRollNumberEntity);
+                    if (oldStudentIdOfOldRollNumberEntityListNewOldRollNumberEntity != null && !oldStudentIdOfOldRollNumberEntityListNewOldRollNumberEntity.equals(studentEntity)) {
+                        oldStudentIdOfOldRollNumberEntityListNewOldRollNumberEntity.getOldRollNumberEntityList().remove(oldRollNumberEntityListNewOldRollNumberEntity);
+                        oldStudentIdOfOldRollNumberEntityListNewOldRollNumberEntity = em.merge(oldStudentIdOfOldRollNumberEntityListNewOldRollNumberEntity);
                     }
                 }
             }
@@ -224,6 +269,11 @@ public class StudentEntityJpaController implements Serializable {
             if (programId != null) {
                 programId.getStudentEntityList().remove(studentEntity);
                 programId = em.merge(programId);
+            }
+            List<OldRollNumberEntity> oldRollNumberEntityList = studentEntity.getOldRollNumberEntityList();
+            for (OldRollNumberEntity oldRollNumberEntityListOldRollNumberEntity : oldRollNumberEntityList) {
+                oldRollNumberEntityListOldRollNumberEntity.setStudentId(null);
+                oldRollNumberEntityListOldRollNumberEntity = em.merge(oldRollNumberEntityListOldRollNumberEntity);
             }
             List<MarksEntity> marksEntityList = studentEntity.getMarksEntityList();
             for (MarksEntity marksEntityListMarksEntity : marksEntityList) {

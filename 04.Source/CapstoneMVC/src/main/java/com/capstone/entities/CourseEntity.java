@@ -16,13 +16,14 @@ import javax.persistence.*;
 @Entity
 @Table(name = "Course", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-        @NamedQuery(name = "CourseEntity.findAll", query = "SELECT c FROM CourseEntity c")})
+    @NamedQuery(name = "CourseEntity.findAll", query = "SELECT c FROM CourseEntity c")})
 public class CourseEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Column(name = "Id", nullable = false)
+    @Basic(optional = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "Id", nullable = false)
     private Integer id;
     @Column(name = "Semester", length = 50)
     private String semester;
@@ -94,5 +95,5 @@ public class CourseEntity implements Serializable {
     public String toString() {
         return "com.capstone.entities.CourseEntity[ id=" + id + " ]";
     }
-
+    
 }

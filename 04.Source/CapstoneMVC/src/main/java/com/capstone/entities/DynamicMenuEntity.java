@@ -10,7 +10,7 @@ import javax.persistence.*;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 @Entity
 @Table(name = "Dynamic_Menu", catalog = "CapstoneProject", schema = "dbo")
@@ -19,6 +19,13 @@ import javax.persistence.*;
 public class DynamicMenuEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    @Id
+    @Basic(optional = false)
+    @Column(name = "Id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    @Column(name = "Role", length = 2147483647)
+    private String role;
     @Column(name = "FunctionGroup", length = 2147483647)
     private String functionGroup;
     @Column(name = "FunctionName", length = 2147483647)
@@ -27,19 +34,28 @@ public class DynamicMenuEntity implements Serializable {
     private String groupName;
     @Column(name = "Link", length = 2147483647)
     private String link;
-    @Id
-    @Basic(optional = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "Id", nullable = false)
-    private Integer id;
-    @Column(name = "Role", length = 2147483647)
-    private String role;
 
     public DynamicMenuEntity() {
     }
 
     public DynamicMenuEntity(Integer id) {
         this.id = id;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public void setId(Integer id) {
+        this.id = id;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public String getFunctionGroup() {
@@ -72,22 +88,6 @@ public class DynamicMenuEntity implements Serializable {
 
     public void setLink(String link) {
         this.link = link;
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role;
     }
 
     @Override

@@ -28,47 +28,28 @@ public class PrequisiteEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "SubjectId", nullable = false, length = 50)
     private String subjectId;
     @Column(name = "PrequisiteSubs", length = 2147483647)
     private String prequisiteSubs;
     @Column(name = "FailMark")
     private Integer failMark;
-    @JoinColumn(name = "SubjectId", referencedColumnName = "Id", nullable = false, insertable = false, updatable = false)
-    @OneToOne(optional = false)
-    private SubjectEntity subjectEntity;
     @Column(name = "EffectionSemester", length = 50)
     private String effectionSemester;
     @Column(name = "NewPrequisiteSubs", length = 2147483647)
     private String newPrequisiteSubs;
     @Column(name = "NewFailMark")
     private Integer newFailMark;
+    @JoinColumn(name = "SubjectId", referencedColumnName = "Id", nullable = false, insertable = false, updatable = false)
+    @OneToOne(optional = false)
+    private SubjectEntity subjectEntity;
 
     public PrequisiteEntity() {
     }
 
-    public String getEffectionSemester() {
-        return effectionSemester;
-    }
-
-    public void setEffectionSemester(String effectionSemester) {
-        this.effectionSemester = effectionSemester;
-    }
-
-    public String getNewPrequisiteSubs() {
-        return newPrequisiteSubs;
-    }
-
-    public void setNewPrequisiteSubs(String newPrequisiteSubs) {
-        this.newPrequisiteSubs = newPrequisiteSubs;
-    }
-
-    public Integer getNewFailMark() {
-        return newFailMark;
-    }
-
-    public void setNewFailMark(Integer newFailMark) {
-        this.newFailMark = newFailMark;
+    public PrequisiteEntity(String subjectId) {
+        this.subjectId = subjectId;
     }
 
     public String getSubjectId() {
@@ -93,6 +74,30 @@ public class PrequisiteEntity implements Serializable {
 
     public void setFailMark(Integer failMark) {
         this.failMark = failMark;
+    }
+
+    public String getEffectionSemester() {
+        return effectionSemester;
+    }
+
+    public void setEffectionSemester(String effectionSemester) {
+        this.effectionSemester = effectionSemester;
+    }
+
+    public String getNewPrequisiteSubs() {
+        return newPrequisiteSubs;
+    }
+
+    public void setNewPrequisiteSubs(String newPrequisiteSubs) {
+        this.newPrequisiteSubs = newPrequisiteSubs;
+    }
+
+    public Integer getNewFailMark() {
+        return newFailMark;
+    }
+
+    public void setNewFailMark(Integer newFailMark) {
+        this.newFailMark = newFailMark;
     }
 
     public SubjectEntity getSubjectEntity() {
@@ -125,7 +130,7 @@ public class PrequisiteEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entites.PrequisiteEntity[ subjectId=" + subjectId + " ]";
+        return "com.capstone.entities.PrequisiteEntity[ subjectId=" + subjectId + " ]";
     }
     
 }
