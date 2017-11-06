@@ -13,41 +13,43 @@
     <div class="box">
         <div class="b-header">
             <div class="row">
-                <div class="col-md-9 title">
+                <div class="col-md-7 title">
                     <h1>Danh sách sinh viên được xét tốt nghiệp</h1>
                 </div>
-                <div class="col-md-3 text-right">
-                    <div class="export-content">
-                        <div class="btn btn-success btn-with-icon btn-excel">
-                            <i class="glyphicon glyphicon-open"></i>
-                            <div>XUẤT DỮ LIỆU</div>
-                        </div>
-                        <div class="excel-modal">
-                            <div class="arrow-up"></div>
-                            <div class="my-content-wrap">
-                                <div class="content">
-                                    <div class="item">
-                                        <i class="fa fa-angle-left"></i>
-                                        <span>In tất cả sinh viên</span>
-                                        <div class="sub-item-wrapper">
-                                            <%--<div class="item"><span>Word</span></div>--%>
-                                            <div class="item" onclick="Test(1)"><span>PDF</span></div>
-                                            <div class="item" onclick="Test(2)"><span>Excel</span></div>
-                                        </div>
-                                    </div>
-                                    <div class="item">
-                                        <i class="fa fa-angle-left"></i>
-                                        <span>In một sinh viên</span>
-                                        <div class="sub-item-wrapper">
-                                            <%--<div class="item"><span>Word</span></div>--%>
-                                            <div class="item" onclick="Test(3)"><span>PDF</span></div>
-                                            <div class="item" onclick="Test(4)"><span>Excel</span></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <div class="col-md-5 text-right">
+                    <button type="button" class="btn btn-success" onclick="ExportExcel()">Xuất dữ liệu</button>
+                    <button type="button" class="btn btn-warning" onclick="ExportExcelPDF()">Xuất dữ liệu (PDF)
+                    <%--<div class="export-content">--%>
+                        <%--<div class="btn btn-success btn-with-icon btn-excel">--%>
+                            <%--<i class="glyphicon glyphicon-open"></i>--%>
+                            <%--<div>XUẤT DỮ LIỆU</div>--%>
+                        <%--</div>--%>
+                        <%--<div class="excel-modal">--%>
+                            <%--<div class="arrow-up"></div>--%>
+                            <%--<div class="my-content-wrap">--%>
+                                <%--<div class="content">--%>
+                                    <%--<div class="item">--%>
+                                        <%--<i class="fa fa-angle-left"></i>--%>
+                                        <%--<span>In tất cả sinh viên</span>--%>
+                                        <%--<div class="sub-item-wrapper">--%>
+                                            <%--&lt;%&ndash;<div class="item"><span>Word</span></div>&ndash;%&gt;--%>
+                                            <%--<div class="item" onclick="Test(1)"><span>PDF</span></div>--%>
+                                            <%--<div class="item" onclick="Test(2)"><span>Excel</span></div>--%>
+                                        <%--</div>--%>
+                                    <%--</div>--%>
+                                    <%--<div class="item">--%>
+                                        <%--<i class="fa fa-angle-left"></i>--%>
+                                        <%--<span>In một sinh viên</span>--%>
+                                        <%--<div class="sub-item-wrapper">--%>
+                                            <%--&lt;%&ndash;<div class="item"><span>Word</span></div>&ndash;%&gt;--%>
+                                            <%--<div class="item" onclick="Test(3)"><span>PDF</span></div>--%>
+                                            <%--<div class="item" onclick="Test(4)"><span>Excel</span></div>--%>
+                                        <%--</div>--%>
+                                    <%--</div>--%>
+                                <%--</div>--%>
+                            <%--</div>--%>
+                        <%--</div>--%>
+                    <%--</div>--%>
                 </div>
             </div>
             <hr>
@@ -65,7 +67,7 @@
                                 <label class="p-t-8">Tín chỉ:</label>
                             </div>
                             <div class="right-content width-30 width-m-70">
-                                <input class="form-control bfh-number" id="credit" type="number" value="145" min="1"/>
+                                <input class="form-control bfh-number" id="credit" type="text" value="145"/>
                             </div>
                         </div>
                         <div class="my-input-group">
@@ -73,7 +75,7 @@
                                 <label class="p-t-8">Tín chỉ CN:</label>
                             </div>
                             <div class="right-content width-30 width-m-70">
-                                <input class="form-control bfh-number" id="sCredit" type="number" value="145" min="1"/>
+                                <input class="form-control bfh-number" id="sCredit" type="text" value="145"/>
                             </div>
                         </div>
                         <div class="my-input-group">
@@ -103,11 +105,12 @@
                             </div>
                         </div>
                     </div>
-                    <div class="col-md-12">
-                        <button class="btn btn-success" onclick="Refresh()">Tìm kiếm</button>
-                        <button type="button" class="btn btn-primary" onclick="ExportExcel()">Xuất dữ liệu</button>
-                        <button type="button" class="btn btn-warning" onclick="ExportExcelPDF()">Xuất dữ liệu (PDF)</button>
-                    </div>
+                    <%--<div class="col-md-12">--%>
+                        <%--&lt;%&ndash;<button class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>&ndash;%&gt;--%>
+                        <%--<button type="button" class="btn btn-primary" onclick="ExportExcel()">Xuất dữ liệu</button>--%>
+                        <%--<button type="button" class="btn btn-warning" onclick="ExportExcelPDF()">Xuất dữ liệu (PDF)--%>
+                        <%--</button>--%>
+                    <%--</div>--%>
                 </div>
             </div>
 
@@ -135,8 +138,8 @@
 <form id="export-excel" action="/exportExcel" hidden>
     <input name="objectType"/>
     <input name="credit"/>
-    <input name="sCredit" />
-    <input name="programId" />
+    <input name="sCredit"/>
+    <input name="programId"/>
     <input name="semesterId"/>
     <input name="sSearch"/>
 </form>
@@ -148,25 +151,36 @@
     $(document).ready(function () {
         $('.select').select2();
 
-//        $('#credit').on("keypress change", function (e) {
-//            if (e.keyCode === 13) {
-//                e.preventDefault();
-//            } else {
-//                clearTimeout(timeOut);
-//                timeOut = setTimeout(Refresh, 250);
-//            }
-//        });
+        $('#credit').on("input", function () {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            clearTimeout(timeOut);
+            timeOut = setTimeout(RefreshTable, 500);
+        });
 
-        $('#credit').keyup(function (e) {
-            if ($(this).val().length == 0) {
-                $(this).val("1");
+        $('#credit').on("blur", function() {
+            if (this.value == '') {
+                this.value = '0';
             }
         });
 
-        $('#sCredit').keyup(function (e) {
-            if ($(this).val().length == 0) {
-                $(this).val("1");
+        $('#sCredit').on("input", function () {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            clearTimeout(timeOut);
+            timeOut = setTimeout(RefreshTable, 500);
+        });
+
+        $('#sCredit').on("blur", function() {
+            if (this.value == '') {
+                this.value = '0';
             }
+        });
+
+        $('#program').on('change', function() {
+            RefreshTable();
+        });
+
+        $('#semester').on('change', function() {
+            RefreshTable();
         });
 
         table = $('#table').dataTable({
@@ -180,12 +194,12 @@
             "sAjaxSource": "/processgraduate",
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "programId", "value": $("#program").val()}),
-                aoData.push({"name": "semesterId", "value": $("#semester").val()}),
-                aoData.push({"name": "credit", "value": $("#credit").val()}),
-                aoData.push({"name": "sCredit", "value": $("#sCredit").val()})
+                    aoData.push({"name": "semesterId", "value": $("#semester").val()}),
+                    aoData.push({"name": "credit", "value": $("#credit").val()}),
+                    aoData.push({"name": "sCredit", "value": $("#sCredit").val()})
             },
             "oLanguage": {
-                "sSearchPlaceholder": "",
+                "sSearchPlaceholder": "Tìm kiếm theo MSSV, Tên",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
@@ -232,7 +246,7 @@
         $("#export-excel").submit();
     }
 
-    function Refresh() {
+    function RefreshTable() {
         table._fnPageChange(0);
         table._fnAjaxUpdate();
     }
