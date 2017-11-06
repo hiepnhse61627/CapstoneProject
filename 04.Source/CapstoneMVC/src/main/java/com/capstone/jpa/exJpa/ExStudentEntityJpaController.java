@@ -75,16 +75,18 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
                     }
 
                     // Create document student
-                    if (docStudent.getCurriculumId() != null && docStudent.getDocumentId() != null) {
+                    if (docStudent.getDocumentId() != null) {
                         TypedQuery<DocumentStudentEntity> queryDocStudent = em.createQuery(
                                 "SELECT d FROM DocumentStudentEntity d" +
                                         " WHERE d.studentId.id = :studentId" +
-                                        " AND d.curriculumId.id = :curriId" +
+                                        " AND d.curriculumId.id" + (docStudent.getCurriculumId() != null ? " = :curriId" : " IS NULL") +
                                         " AND d.documentId.id = :docId"
                                 , DocumentStudentEntity.class);
                         queryDocStudent.setParameter("studentId", docStudent.getStudentId().getId());
-                        queryDocStudent.setParameter("curriId", docStudent.getCurriculumId().getId());
                         queryDocStudent.setParameter("docId", docStudent.getDocumentId().getId());
+                        if (docStudent.getCurriculumId() != null) {
+                            queryDocStudent.setParameter("curriId", docStudent.getCurriculumId().getId());
+                        }
 
                         List<DocumentStudentEntity> docEntity = queryDocStudent.getResultList();
                         if (docEntity.isEmpty()) {
