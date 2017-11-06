@@ -221,10 +221,10 @@ public class StudentDetailForStudent {
                 } else {
                     result2 = result2.subList(0, index);
                 }
-            }
 
-            for (List<String> r : result2) {
-                result.add(r);
+                for (List<String> r : result2) {
+                    result.add(r);
+                }
             }
 
             List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());

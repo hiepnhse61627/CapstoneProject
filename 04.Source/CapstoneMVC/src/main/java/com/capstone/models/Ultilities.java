@@ -476,14 +476,11 @@ public class Ultilities {
 
         List<SubjectEntity> result = new ArrayList<>();
         if (docs.size() > 0) {
-            docs.sort(Comparator.comparingLong(c -> {
-                DocumentStudentEntity d = (DocumentStudentEntity) c;
-                if (d.getCreatedDate() == null) {
-                    return 0;
-                } else {
-                    return d.getCreatedDate().getTime();
-                }
+            Collections.sort(docs, Comparator.comparingLong(c -> {
+                if (c.getCreatedDate() == null) return 0;
+                else return c.getCreatedDate().getTime();
             }));
+            Collections.reverse(docs);
             CurriculumEntity curriculumEntity = docs.get(docs.size() - 1).getCurriculumId();
             List<SubjectCurriculumEntity> listCur = curriculumEntity.getSubjectCurriculumEntityList();
             listCur.sort(Comparator.comparingInt(SubjectCurriculumEntity::getOrdinalNumber));
@@ -504,11 +501,16 @@ public class Ultilities {
 //        StudentEntity student = service.findStudentById(studentId);
         if (student != null) {
             List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
-            docs.sort(Comparator.comparingLong(c -> {
-                DocumentStudentEntity doc = (DocumentStudentEntity) c;
-                if (doc.getCreatedDate() == null) return 0;
-                else return doc.getCreatedDate().getTime();
+//            docs = docs.stream().sorted(Comparator.comparingLong(c -> {
+//                DocumentStudentEntity doc = (DocumentStudentEntity) c;
+//                if (doc.getCreatedDate() == null) return 0;
+//                else return doc.getCreatedDate().getTime();
+//            })).collect(Collectors.toList());
+            Collections.sort(docs, Comparator.comparingLong(c -> {
+                if (c.getCreatedDate() == null) return 0;
+                else return c.getCreatedDate().getTime();
             }));
+            Collections.reverse(docs);
             if (!docs.isEmpty()) {
                 List<SubjectCurriculumEntity> cursubs = docs.get(docs.size() - 1).getCurriculumId().getSubjectCurriculumEntityList();
                 for (SubjectCurriculumEntity s : cursubs) {
