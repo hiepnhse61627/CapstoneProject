@@ -968,7 +968,7 @@ public class UploadController {
                     // set status
                     marksEntity.setStatus(object.getStatus());
                     // set isActivated
-                    marksEntity.setActive(true);
+                    marksEntity.setIsActivated(true);
                     // set semester
                     if (object.getSemesterName() != null) {
                         RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(object.getSemesterName());
@@ -1006,7 +1006,7 @@ public class UploadController {
                         subjectMarkComponentEntity = new SubjectMarkComponentEntity();
                         subjectMarkComponentEntity.setMarkComponentId(markComponentEntity);
                         subjectMarkComponentEntity.setName(subjectMarkComponentName);
-                        subjectMarkComponentEntity.setPercent(0.0);
+                        subjectMarkComponentEntity.setPercentWeight(0.0);
                         subjectMarkComponentEntity.setSubjectId(object.getSubjectCode());
                         subjectMarkComponentEntity = subjectMarkComponentService.createSubjectMarkComponent(subjectMarkComponentEntity);
                         marksEntity.setSubjectMarkComponentId(subjectMarkComponentEntity);

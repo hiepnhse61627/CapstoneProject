@@ -21,12 +21,13 @@ public class SubjectMarkComponentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "PercentWeight", precision = 53)
-    private Double percent;
+    private Double percentWeight;
     @Column(name = "Name", length = 2147483647)
     private String name;
     @JoinColumn(name = "MarkComponentId", referencedColumnName = "Id")
@@ -53,12 +54,12 @@ public class SubjectMarkComponentEntity implements Serializable {
         this.id = id;
     }
 
-    public Double getPercent() {
-        return percent;
+    public Double getPercentWeight() {
+        return percentWeight;
     }
 
-    public void setPercent(Double percent) {
-        this.percent = percent;
+    public void setPercentWeight(Double percentWeight) {
+        this.percentWeight = percentWeight;
     }
 
     public String getName() {
@@ -115,7 +116,7 @@ public class SubjectMarkComponentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entites.SubjectMarkComponentEntity[ id=" + id + " ]";
+        return "com.capstone.entities.SubjectMarkComponentEntity[ id=" + id + " ]";
     }
     
 }

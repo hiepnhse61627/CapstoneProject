@@ -560,7 +560,7 @@ public class StudentDetail {
                     List<MarksEntity> stuSubs = student.getMarksEntityList();
                     int tongtinchi = 0;
                     for (MarksEntity mark : stuSubs) {
-                        if (mark.isActive() && (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt"))) {
+                        if (mark.getIsActivated() && (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt"))) {
                             Integer tmp = mark.getSubjectMarkComponentId().getSubjectId().getCredits();
                             tongtinchi += (tmp == null ? 0 : tmp);
                         }

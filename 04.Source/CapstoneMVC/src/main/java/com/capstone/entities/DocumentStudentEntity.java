@@ -21,11 +21,12 @@ public class DocumentStudentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Column(name = "CreatedDate")
-    @Temporal(TemporalType.DATE)
+    @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
     @JoinColumn(name = "CurriculumId", referencedColumnName = "Id", nullable = false)
     @ManyToOne(optional = false)
@@ -106,7 +107,7 @@ public class DocumentStudentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entites.DocumentStudentEntity[ id=" + id + " ]";
+        return "com.capstone.entities.DocumentStudentEntity[ id=" + id + " ]";
     }
     
 }

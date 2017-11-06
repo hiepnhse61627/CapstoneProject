@@ -33,17 +33,19 @@ public class SubjectEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false, length = 50)
     private String id;
     @Column(name = "Name", length = 255)
     private String name;
-
     @Column(name = "Abbreviation", length = 255)
     private String abbreviation;
     @Column(name = "Credits")
     private Integer credits;
     @Column(name = "IsSpecialized")
     private Boolean isSpecialized;
+    @Column(name = "Type")
+    private Integer type;
     @JoinTable(name = "Replacement_Subject", joinColumns = {
         @JoinColumn(name = "SubjectId", referencedColumnName = "Id", nullable = false)}, inverseJoinColumns = {
         @JoinColumn(name = "ReplacementId", referencedColumnName = "Id", nullable = false)})
@@ -57,30 +59,12 @@ public class SubjectEntity implements Serializable {
     private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
     @OneToMany(mappedBy = "subjectId")
     private List<SubjectMarkComponentEntity> subjectMarkComponentEntityList;
-    @Column(name = "Type")
-    private int type;
 
     public SubjectEntity() {
     }
 
     public SubjectEntity(String id) {
         this.id = id;
-    }
-
-    public Boolean getSpecialized() {
-        return isSpecialized;
-    }
-
-    public void setSpecialized(Boolean specialized) {
-        isSpecialized = specialized;
-    }
-
-    public int getType() {
-        return type;
-    }
-
-    public void setType(int type) {
-        this.type = type;
     }
 
     public String getId() {
@@ -121,6 +105,14 @@ public class SubjectEntity implements Serializable {
 
     public void setIsSpecialized(Boolean isSpecialized) {
         this.isSpecialized = isSpecialized;
+    }
+
+    public Integer getType() {
+        return type;
+    }
+
+    public void setType(Integer type) {
+        this.type = type;
     }
 
     public List<SubjectEntity> getSubjectEntityList() {
@@ -185,7 +177,7 @@ public class SubjectEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entites.SubjectEntity[ id=" + id + " ]";
+        return "com.capstone.entities.SubjectEntity[ id=" + id + " ]";
     }
     
 }

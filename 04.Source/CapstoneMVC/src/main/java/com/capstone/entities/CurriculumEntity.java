@@ -21,13 +21,14 @@ public class CurriculumEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Basic(optional = false)
     @Column(name = "Name", nullable = false, length = 10)
     private String name;
-    @OneToMany(mappedBy = "curriculumId", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "curriculumId")
     private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "curriculumId")
     private List<DocumentStudentEntity> documentStudentEntityList;
@@ -109,7 +110,7 @@ public class CurriculumEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entites.CurriculumEntity[ id=" + id + " ]";
+        return "com.capstone.entities.CurriculumEntity[ id=" + id + " ]";
     }
     
 }

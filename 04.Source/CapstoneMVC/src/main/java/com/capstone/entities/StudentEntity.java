@@ -23,6 +23,7 @@ public class StudentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -42,7 +43,9 @@ public class StudentEntity implements Serializable {
     private Integer term;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
     private List<DocumentStudentEntity> documentStudentEntityList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
+    @OneToMany(mappedBy = "studentId")
+    private List<OldRollNumberEntity> oldRollNumberEntityList;
+    @OneToMany(mappedBy = "studentId")
     private List<MarksEntity> marksEntityList;
     @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
     @ManyToOne
@@ -64,14 +67,6 @@ public class StudentEntity implements Serializable {
         return id;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public void setId(Integer id) {
         this.id = id;
     }
@@ -90,6 +85,14 @@ public class StudentEntity implements Serializable {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public Date getDateOfBirth() {
@@ -122,6 +125,14 @@ public class StudentEntity implements Serializable {
 
     public void setDocumentStudentEntityList(List<DocumentStudentEntity> documentStudentEntityList) {
         this.documentStudentEntityList = documentStudentEntityList;
+    }
+
+    public List<OldRollNumberEntity> getOldRollNumberEntityList() {
+        return oldRollNumberEntityList;
+    }
+
+    public void setOldRollNumberEntityList(List<OldRollNumberEntity> oldRollNumberEntityList) {
+        this.oldRollNumberEntityList = oldRollNumberEntityList;
     }
 
     public List<MarksEntity> getMarksEntityList() {
@@ -162,7 +173,7 @@ public class StudentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entites.StudentEntity[ id=" + id + " ]";
+        return "com.capstone.entities.StudentEntity[ id=" + id + " ]";
     }
     
 }

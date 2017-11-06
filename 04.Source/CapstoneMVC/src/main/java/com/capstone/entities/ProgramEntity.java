@@ -21,6 +21,7 @@ public class ProgramEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -29,16 +30,16 @@ public class ProgramEntity implements Serializable {
     private String name;
     @Column(name = "FullName", length = 50)
     private String fullName;
+    @Column(name = "OJT")
+    private Integer ojt;
+    @Column(name = "Capstone")
+    private Integer capstone;
+    @Column(name = "Graduate")
+    private Integer graduate;
     @OneToMany(mappedBy = "programId")
     private List<StudentEntity> studentEntityList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "programId")
     private List<CurriculumEntity> curriculumEntityList;
-    @Column(name = "OJT")
-    private int ojt;
-    @Column(name = "Capstone", length = 50)
-    private int capstone;
-    @Column(name = "Graduate", length = 50)
-    private int graduate;
 
     public ProgramEntity() {
     }
@@ -50,30 +51,6 @@ public class ProgramEntity implements Serializable {
     public ProgramEntity(Integer id, String name) {
         this.id = id;
         this.name = name;
-    }
-
-    public int getOjt() {
-        return ojt;
-    }
-
-    public void setOjt(int ojt) {
-        this.ojt = ojt;
-    }
-
-    public int getCapstone() {
-        return capstone;
-    }
-
-    public void setCapstone(int capstone) {
-        this.capstone = capstone;
-    }
-
-    public int getGraduate() {
-        return graduate;
-    }
-
-    public void setGraduate(int graduate) {
-        this.graduate = graduate;
     }
 
     public Integer getId() {
@@ -98,6 +75,30 @@ public class ProgramEntity implements Serializable {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    public Integer getOjt() {
+        return ojt;
+    }
+
+    public void setOjt(Integer ojt) {
+        this.ojt = ojt;
+    }
+
+    public Integer getCapstone() {
+        return capstone;
+    }
+
+    public void setCapstone(Integer capstone) {
+        this.capstone = capstone;
+    }
+
+    public Integer getGraduate() {
+        return graduate;
+    }
+
+    public void setGraduate(Integer graduate) {
+        this.graduate = graduate;
     }
 
     public List<StudentEntity> getStudentEntityList() {
@@ -138,7 +139,7 @@ public class ProgramEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entites.ProgramEntity[ id=" + id + " ]";
+        return "com.capstone.entities.ProgramEntity[ id=" + id + " ]";
     }
     
 }

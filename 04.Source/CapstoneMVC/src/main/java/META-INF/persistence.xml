@@ -19,6 +19,7 @@
         <class>com.capstone.entities.SubjectMarkComponentEntity</class>
         <class>com.capstone.entities.ProgramEntity</class>
         <class>com.capstone.entities.DynamicMenuEntity</class>
+        <class>com.capstone.entities.OldRollNumberEntity</class>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://116.193.67.20:1433;databaseName=CapstoneProject"/>

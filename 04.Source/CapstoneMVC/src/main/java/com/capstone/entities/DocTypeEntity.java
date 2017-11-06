@@ -21,6 +21,7 @@ public class DocTypeEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
+    @Basic(optional = false)
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -82,7 +83,7 @@ public class DocTypeEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entites.DocTypeEntity[ id=" + id + " ]";
+        return "com.capstone.entities.DocTypeEntity[ id=" + id + " ]";
     }
     
 }

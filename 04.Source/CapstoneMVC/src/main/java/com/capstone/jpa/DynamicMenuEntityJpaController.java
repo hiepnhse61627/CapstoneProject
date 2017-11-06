@@ -19,7 +19,7 @@ import javax.persistence.criteria.Root;
 
 /**
  *
- * @author Rem
+ * @author hiepnhse61627
  */
 public class DynamicMenuEntityJpaController implements Serializable {
 
