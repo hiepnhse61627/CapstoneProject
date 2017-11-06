@@ -157,13 +157,14 @@ public class UploadController {
                 documentService.createDocument(templateDoc);
             }
 
+            DocumentEntity docChangingCurriculum = documentService.getDocumentById(2);
+
             Workbook workbook = null;
             Sheet spreadsheet = null;
             Row row = null;
             if (extension.equals(xlsExcelExtension)) {
                 workbook = new HSSFWorkbook(is);
                 spreadsheet = workbook.getSheetAt(0);
-
             } else if (extension.equals(xlsxExcelExtension)) {
                 workbook = new XSSFWorkbook(is);
                 spreadsheet = workbook.getSheetAt(0);
@@ -176,15 +177,15 @@ public class UploadController {
             int excelDataIndex = 1;
 
             int rollNumberIndex = 0;
+            int oldRollNumberIndex = 1;
             int studentNameIndex = 2;
             int dateOfBirthIndex = 3;
             int genderIndex = 4;
             int programNameIndex = 5;
+            int oldProgramNameIndex = 6;
             int curriculumIndex = 13;
             int termIndex = 14;
             int email = 26;
-            int changeCurIndex = 6;
-            int oldRollNumberIndex = 1;
 
             int mainClass = 15;
 
@@ -195,14 +196,14 @@ public class UploadController {
                     StudentEntity student = new StudentEntity();
 
                     Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    Cell oldRollNumberCell = row.getCell(oldRollNumberIndex);
                     Cell studentNameCell = row.getCell(studentNameIndex);
                     Cell dateOfBirthCell = row.getCell(dateOfBirthIndex);
                     Cell genderCell = row.getCell(genderIndex);
                     Cell programNameCell = row.getCell(programNameIndex);
+                    Cell oldProgramNameCell = row.getCell(oldProgramNameIndex);
                     Cell curriculumCell = row.getCell(curriculumIndex);
                     Cell emailcell = row.getCell(email);
-                    Cell changeCurCell = row.getCell(changeCurIndex);
-                    Cell oldRollNumberCell = row.getCell(oldRollNumberIndex);
 
                     Cell termCell = row.getCell(termIndex);
 
@@ -292,14 +293,15 @@ public class UploadController {
 
                         studentList.add(docStd);
 
-//                        if (changeCurCell != null) {
-//                            DocumentStudentEntity oldDoc = new DocumentStudentEntity();
-//                            oldDoc.setStudentId(student);
-//                            oldDoc.setCurriculumId(null);
-//                            oldDoc.setDocumentId(documentService.getDocumentById(2));
-//                            oldDoc.setCreatedDate(new Date(19, 8, 1996));
-//                            studentList.add(oldDoc);
-//                        }
+                        if (oldRollNumberCell != null && oldProgramNameCell != null &&
+                                !oldProgramNameCell.getStringCellValue().trim().isEmpty()) {
+                            DocumentStudentEntity oldDoc = new DocumentStudentEntity();
+                            oldDoc.setStudentId(student);
+                            oldDoc.setCurriculumId(null);
+                            oldDoc.setDocumentId(docChangingCurriculum);
+                            oldDoc.setCreatedDate(new Date(19, 8, 1996));
+                            studentList.add(oldDoc);
+                        }
                     }
                 }
             }
