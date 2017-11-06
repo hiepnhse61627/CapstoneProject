@@ -52,57 +52,26 @@ public class GraduateController {
         int sCredit = Integer.parseInt(params.get("sCredit").isEmpty() ? "0" : params.get("sCredit"));
         int programId = Integer.parseInt(params.get("programId"));
         int semesterId = Integer.parseInt(params.get("semesterId"));
+        final String sSearch = params.get("sSearch");
+
+        int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
+        int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
 
         try {
-            List<MarksEntity> marks = markService.getMarkByProgramAndSemester(programId, semesterId);
-            List<MarksEntity> passedList = marks.stream().filter(m ->
-                    m.getStatus().contains(Enums.MarkStatus.PASSED.getValue()) ||
-                    m.getStatus().contains(Enums.MarkStatus.IS_EXEMPT.getValue()))
+            // RollNumber, FullName, TotalCredits, TotalSpecializedCredits
+            List<List<String>> studentList = markService.getMarksForGraduatedStudent(
+                    programId, semesterId, totalCredit, sCredit);
+            List<List<String>> searchList = studentList.stream().filter(s ->
+                    Ultilities.containsIgnoreCase(s.get(0), sSearch)
+                    || Ultilities.containsIgnoreCase(s.get(1), sSearch)).collect(Collectors.toList());
+            List<List<String>> result = searchList.stream()
+                    .skip(iDisplayStart).limit(iDisplayLength)
                     .collect(Collectors.toList());
-            // remove duplicate
-            List<MarksEntity> noneDuplicatePassedList = new ArrayList<>();
-            for (MarksEntity marksEntity : passedList) {
-                if (!noneDuplicatePassedList.stream().
-                        anyMatch(n -> n.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(marksEntity.getSubjectMarkComponentId().getSubjectId().getId())
-                                && n.getStudentId().getRollNumber().equalsIgnoreCase(marksEntity.getStudentId().getRollNumber()))) {
-                    noneDuplicatePassedList.add(marksEntity);
-                }
-            }
-            // create map
-            Map<StudentEntity, List<MarksEntity>> map = new HashMap<>();
-            for (MarksEntity mark : noneDuplicatePassedList) {
-                if (map.get(mark.getStudentId()) != null) {
-                    map.get(mark.getStudentId()).add(mark);
-                } else {
-                    List<MarksEntity> newList = new ArrayList<>();
-                    newList.add(mark);
-                    map.put(mark.getStudentId(), newList);
-                }
-            }
 
-            ArrayList<ArrayList<String>> parent = new ArrayList<>();
-            for (Map.Entry<StudentEntity, List<MarksEntity>> entry : map.entrySet()) {
-                int credits = 0;
-                int specializedCredits = 0;
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
 
-                if (credits >= totalCredit && specializedCredits >= sCredit) {
-                    ArrayList<String> row = new ArrayList<>();
-                    row.add(entry.getKey().getRollNumber());
-                    row.add(entry.getKey().getFullName());
-                    row.add(String.valueOf(credits));
-                    row.add(String.valueOf(specializedCredits));
-                    parent.add(row);
-                }
-            }
-
-            List<ArrayList<String>> result = parent.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
-            int size = parent.size();
-
-            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result, new TypeToken<List<ArrayList<String>>>() {
-            }.getType());
-
-            obj.addProperty("iTotalRecords", size);
-            obj.addProperty("iTotalDisplayRecords", size);
+            obj.addProperty("iTotalRecords", studentList.size());
+            obj.addProperty("iTotalDisplayRecords", searchList.size());
             obj.add("aaData", aaData);
             obj.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {

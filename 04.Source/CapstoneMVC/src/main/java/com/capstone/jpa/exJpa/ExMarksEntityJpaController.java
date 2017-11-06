@@ -230,8 +230,8 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 //        return marks;
 //    }
 
-    public List<MarksEntity> getMarkByProgramAndSemester(int programId, int semesterId) {
-        List<MarksEntity> result = null;
+    public List<List<String>> getMarksForGraduatedStudent(int programId, int semesterId, int limitTotalCredits, int limitTotalSCredits) {
+        List<List<String>> result = new ArrayList<>();
             IMarkComponentService markComponentService = new MarkComponentServiceImpl();
         EntityManager em = null;
 
@@ -241,8 +241,11 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             MarkComponentEntity markComponent = markComponentService
                     .getMarkComponentByName(Enums.MarkComponent.AVERAGE.getValue());
 
-            String queryStr = "SELECT m FROM MarksEntity m" +
-                    " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id";
+            String queryStr = "SELECT s.id, s.rollNumber, s.fullName, sub.id, sub.credits, sub.isSpecialized" +
+                    " FROM MarksEntity m" +
+                    " INNER JOIN StudentEntity s ON m.studentId.id = s.id" +
+                    " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id" +
+                    " INNER JOIN SubjectEntity sub ON smc.subjectId.id = sub.id";
 
             if (programId != 0) {
                 queryStr += " INNER JOIN DocumentStudentEntity ds ON m.studentId.id = ds.studentId.id" +
@@ -252,34 +255,78 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             }
 
             List<Integer> semesterIds = null;
-            if (semesterId != 0) {
+            if (semesterId > 0) {
                 IRealSemesterService semesterService = new RealSemesterServiceImpl();
                 List<RealSemesterEntity> semesterList = semesterService.getAllSemester();
                 semesterList = Ultilities.SortSemesters(semesterList);
 
-                semesterIds = new ArrayList<>();
-                boolean isFound = false;
-                for (RealSemesterEntity s : semesterList) {
-                    if (s.getId().equals(semesterId)) {
-                        isFound = true;
+                int semesterPosition = 0;
+                for (int i = 0; i < semesterList.size(); ++i) {
+                    if (semesterList.get(i).getId() == semesterId) {
+                        semesterPosition = i;
+                        break;
                     }
+                }
 
-                    if (isFound) {
-                        semesterIds.add(s.getId());
-                    }
+                semesterIds = new ArrayList<>();
+                for (int i = 0; i <= semesterPosition; ++i) {
+                    semesterIds.add(semesterList.get(i).getId());
                 }
 
                 queryStr += " AND m.semesterId.id IN :semesterIds";
             }
 
-            queryStr += " AND smc.markComponentId.id = :markComponentId AND m.active = true";
+            queryStr += " AND smc.markComponentId.id = :markComponentId AND m.active = :active" +
+                    " AND (m.status = :passedStatus OR m.status = :isExemptStatus)" +
+                    " GROUP BY s.id, s.rollNumber, s.fullName, sub.id, sub.credits, sub.isSpecialized";
 
-            TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
+            Query query = em.createQuery(queryStr);
             query.setParameter("markComponentId", markComponent.getId());
+            query.setParameter("active", true);
+            query.setParameter("passedStatus", Enums.MarkStatus.PASSED.getValue());
+            query.setParameter("isExemptStatus", Enums.MarkStatus.IS_EXEMPT.getValue());
             if (programId != 0) query.setParameter("programId", programId);
             if (semesterId != 0) query.setParameter("semesterIds", semesterIds);
 
-            result = query.getResultList();
+            // StudentId, RollNumber, FullName, SubjectId, Credits, IsSpecialized
+            List<Object[]> searchList = query.getResultList();
+            Map<Integer, GraduatedStudent_StudentData> studentMap = new HashMap<>();
+            for (Object[] data : searchList) {
+                int studentId = (int) data[0];
+                int credits = (int) data[4];
+                boolean isSpecialized = (boolean) data[5];
+
+                GraduatedStudent_StudentData studentData = studentMap.get(studentId);
+                if (studentData == null) {
+                    studentData = new GraduatedStudent_StudentData();
+                    studentData.rollNumber = data[1].toString();
+                    studentData.fullName = data[2].toString();
+                    studentData.totalCredits = 0;
+                    studentData.totalSpecializedCredits = 0;
+
+                    studentMap.put(studentId, studentData);
+                }
+
+                studentData.totalCredits += credits;
+                if (isSpecialized) {
+                    studentData.totalSpecializedCredits += credits;
+                }
+            }
+
+            for (Integer studentId : studentMap.keySet()) {
+                GraduatedStudent_StudentData studentData = studentMap.get(studentId);
+                if (studentData.totalCredits >= limitTotalCredits
+                        && studentData.totalSpecializedCredits >= limitTotalSCredits) {
+                    List<String> row = new ArrayList<>();
+                    row.add(studentData.rollNumber);
+                    row.add(studentData.fullName);
+                    row.add(studentData.totalCredits + "");
+                    row.add(studentData.totalSpecializedCredits + "");
+
+                    result.add(row);
+                }
+            }
+
         } finally {
             em.close();
         }
@@ -507,20 +554,6 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             MarkComponentEntity markComponent = markComponentService
                     .getMarkComponentByName(Enums.MarkComponent.AVERAGE.getValue());
 
-//            String queryStr = "SELECT p.name, m.studentId.id, smc.subjectId.id, sc.curriculumId.id" +
-//                    " FROM MarksEntity m" +
-//                    " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id" +
-//                    " INNER JOIN DocumentStudentEntity ds ON m.studentId.id = ds.studentId.id" +
-//                    " INNER JOIN CurriculumEntity c ON ds.curriculumId.id = c.id" +
-//                    " INNER JOIN ProgramEntity p ON c.programId.id = p.id" +
-//                    " INNER JOIN SubjectCurriculumEntity sc ON sc.curriculumId.id = c.id" +
-//                    " AND ds.createdDate = (SELECT MAX(ds1.createdDate) " +
-//                    "       FROM DocumentStudentEntity ds1 WHERE ds1.studentId.id = ds.studentId.id)" +
-//                    " AND sc.subjectId.id = smc.subjectId.id" +
-//                    " AND smc.markComponentId.id = :markComponentId" +
-//                    " AND m.status != :status" +
-//                    (programId != 0 ? " AND p.id = :programId" : "") +
-//                    " GROUP BY p.name, m.studentId.id, smc.subjectId.id, sc.curriculumId.id";
             String queryStr = "SELECT p.Name, m.StudentId, smc.SubjectId, sc.CurriculumId" +
                     " FROM Marks m" +
                     " INNER JOIN Subject_MarkComponent smc ON m.SubjectMarkComponentId = smc.Id" +
@@ -536,9 +569,6 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                     " GROUP BY p.Name, m.StudentId, smc.SubjectId, sc.CurriculumId";
 
             Query query = em.createNativeQuery(queryStr);
-//            query.setParameter("markComponentId", markComponent.getId());
-//            query.setParameter("status", Enums.MarkStatus.NOT_START.getValue());
-//            if (programId != 0) query.setParameter("programId", programId);
             query.setParameter(1, markComponent.getId());
             query.setParameter(2, Enums.MarkStatus.NOT_START.getValue());
             if (programId != 0) query.setParameter(3, programId);
@@ -620,5 +650,12 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
     private class AverageSubject_StudentData {
         public int curriculumId;
         public List<String> subjectList;
+    }
+
+    private class GraduatedStudent_StudentData {
+        public String rollNumber;
+        public String fullName;
+        public int totalCredits;
+        public int totalSpecializedCredits;
     }
 }

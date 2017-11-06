@@ -114,17 +114,17 @@ public class ExportGraduatedStudentsImpl implements IExportObject {
         int programId = Integer.parseInt(params.get("programId"));
         int semesterId = Integer.parseInt(params.get("semesterId"));
 
-        Map<StudentEntity, List<MarksEntity>> map = new HashMap<>();
-        List<MarksEntity> marks = marksService.getMarkByProgramAndSemester(programId, semesterId);
-        for (MarksEntity mark : marks) {
-            if (map.get(mark.getStudentId()) != null) {
-                map.get(mark.getStudentId()).add(mark);
-            } else {
-                List<MarksEntity> tmp = new ArrayList<>();
-                tmp.add(mark);
-                map.put(mark.getStudentId(), tmp);
-            }
-        }
+//        Map<StudentEntity, List<MarksEntity>> map = new HashMap<>();
+//        List<MarksEntity> marks = marksService.getMarksForGraduatedStudent(programId, semesterId);
+//        for (MarksEntity mark : marks) {
+//            if (map.get(mark.getStudentId()) != null) {
+//                map.get(mark.getStudentId()).add(mark);
+//            } else {
+//                List<MarksEntity> tmp = new ArrayList<>();
+//                tmp.add(mark);
+//                map.put(mark.getStudentId(), tmp);
+//            }
+//        }
 
         Map<StudentEntity, List<MarksEntity>> resultMap = new HashMap<>();
 
