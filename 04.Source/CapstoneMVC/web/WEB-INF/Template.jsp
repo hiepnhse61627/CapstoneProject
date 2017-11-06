@@ -30,6 +30,7 @@
 
     <title>${title} | Uniap 2.0</title>
 
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <link rel="stylesheet" href="/Resources/plugins/bootstrap/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/font-awesome-4.7.0/css/font-awesome.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/ionicons-2.0.1/css/ionicons.min.css"/>
@@ -37,7 +38,7 @@
     <link rel="stylesheet" href="/Resources/plugins/dist/css/skins/skin-custom.css"/>
     <link rel="stylesheet" href="/Resources/plugins/dist/css/skins/_all-skins.css"/>
     <link rel="stylesheet" href="/Resources/plugins/sweetalert2/sweetalert2.min.css"/>
-    <link rel="stylesheet" href="/Resources/plugins/datatables/datatables.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dratatables/datatables.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/select2-4.0.6/css/select2.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/jQueryUI/jquery-ui.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/iCheck/square/blue.css"/>
