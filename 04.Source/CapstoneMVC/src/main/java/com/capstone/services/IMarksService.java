@@ -14,7 +14,6 @@ public interface IMarksService {
     List<MarksEntity> getAllMarks();
     List<MarksEntity> getAllMarksByStudent(int studentId);
     List<MarksEntity> getMarkByConditions(String semesterId, String subjectId, String searchKey);
-    List<MarksEntity> getMarkByProgramAndSemester(int programId, int semesterId);
     List<MarksEntity> getStudentMarksById(int stuId);
     List<MarksEntity> getStudentMarksByStudentIdAndSortBySubjectName(int studentId);
     List<MarksEntity> getStudyingStudents(String subjectId, String[] statuses);
@@ -23,6 +22,8 @@ public interface IMarksService {
     List<MarksEntity> getAllMarksByStudentAndSubject(int studentId, String subjectId, String semesterId);
     List<MarksEntity> getMarksByStudentIdAndStatus(int studentId, String status);
     List<MarksEntity> getListMarkToCurrentSemester(List<Integer> semesterIds, String[] statuses);
+
+    public List<List<String>> getMarksForGraduatedStudent(int programId, int semesterId, int limitTotalCredits, int limitTotalSCredits);
 
     // ----- Manager function ----
     List<Object[]> getTotalStudentsGroupBySemesterAndSubject(int semesterId);
