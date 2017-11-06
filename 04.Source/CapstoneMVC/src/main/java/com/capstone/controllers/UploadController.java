@@ -6,6 +6,7 @@ import com.capstone.models.ReadAndSaveFileToServer;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import com.google.gson.JsonObject;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -88,36 +89,52 @@ public class UploadController {
 
     @RequestMapping(value = "/uploadStudentExistFile", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject chooseExistFile(@RequestParam("file") String file) {
-        JsonObject obj;
-        try {
-            File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
-            obj = ReadFile(null, f, false);
-        } catch (Exception e) {
-            obj = new JsonObject();
-            obj.addProperty("success", false);
-            obj.addProperty("message", e.getMessage());
-        }
+    public Callable<JsonObject> chooseExistFile(@RequestParam("file") String file) {
+        Callable<JsonObject> callable = new Callable<JsonObject>() {
+            @Override
+            public JsonObject call() throws Exception {
+                JsonObject obj;
 
-        return obj;
+                try {
+                    File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
+                    obj = ReadFile(null, f, false);
+                } catch (Exception e) {
+                    obj = new JsonObject();
+                    obj.addProperty("success", false);
+                    obj.addProperty("message", e.getMessage());
+                }
+
+                return obj;
+
+            }
+        };
+
+        return callable;
     }
 
     @RequestMapping(value = "/uploadStudentList", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject uploadFile(@RequestParam("file") MultipartFile file, @RequestParam boolean update) {
-        JsonObject obj;
-        if (update) {
-            obj = UpdateFile(file, null, true);
-        } else {
-            obj = ReadFile(file, null, true);
-        }
+    public Callable<JsonObject> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam boolean update) {
+        Callable<JsonObject> callable = new Callable<JsonObject>() {
+            @Override
+            public JsonObject call() throws Exception {
+                JsonObject obj;
+                if (update) {
+                    obj = UpdateFile(file, null, true);
+                } else {
+                    obj = ReadFile(file, null, true);
+                }
 
-        if (obj.get("success").getAsBoolean()) {
-            ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
-            read.saveFile(context, file, folder);
-        }
+                if (obj.get("success").getAsBoolean()) {
+                    ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+                    read.saveFile(context, file, folder);
+                }
 
-        return obj;
+                return obj;
+            }
+        };
+
+        return callable;
     }
 
     private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile) {
@@ -157,13 +174,14 @@ public class UploadController {
                 documentService.createDocument(templateDoc);
             }
 
+            DocumentEntity docChangingCurriculum = documentService.getDocumentById(2);
+
             Workbook workbook = null;
             Sheet spreadsheet = null;
             Row row = null;
             if (extension.equals(xlsExcelExtension)) {
                 workbook = new HSSFWorkbook(is);
                 spreadsheet = workbook.getSheetAt(0);
-
             } else if (extension.equals(xlsxExcelExtension)) {
                 workbook = new XSSFWorkbook(is);
                 spreadsheet = workbook.getSheetAt(0);
@@ -176,15 +194,15 @@ public class UploadController {
             int excelDataIndex = 1;
 
             int rollNumberIndex = 0;
+            int oldRollNumberIndex = 1;
             int studentNameIndex = 2;
             int dateOfBirthIndex = 3;
             int genderIndex = 4;
             int programNameIndex = 5;
+            int oldProgramNameIndex = 6;
             int curriculumIndex = 13;
             int termIndex = 14;
             int email = 26;
-            int changeCurIndex = 6;
-            int oldRollNumberIndex = 1;
 
             int mainClass = 15;
 
@@ -195,14 +213,14 @@ public class UploadController {
                     StudentEntity student = new StudentEntity();
 
                     Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    Cell oldRollNumberCell = row.getCell(oldRollNumberIndex);
                     Cell studentNameCell = row.getCell(studentNameIndex);
                     Cell dateOfBirthCell = row.getCell(dateOfBirthIndex);
                     Cell genderCell = row.getCell(genderIndex);
                     Cell programNameCell = row.getCell(programNameIndex);
+                    Cell oldProgramNameCell = row.getCell(oldProgramNameIndex);
                     Cell curriculumCell = row.getCell(curriculumIndex);
                     Cell emailcell = row.getCell(email);
-                    Cell changeCurCell = row.getCell(changeCurIndex);
-                    Cell oldRollNumberCell = row.getCell(oldRollNumberIndex);
 
                     Cell termCell = row.getCell(termIndex);
 
@@ -292,14 +310,15 @@ public class UploadController {
 
                         studentList.add(docStd);
 
-//                        if (changeCurCell != null) {
-//                            DocumentStudentEntity oldDoc = new DocumentStudentEntity();
-//                            oldDoc.setStudentId(student);
-//                            oldDoc.setCurriculumId(null);
-//                            oldDoc.setDocumentId(documentService.getDocumentById(2));
-//                            oldDoc.setCreatedDate(new Date(19, 8, 1996));
-//                            studentList.add(oldDoc);
-//                        }
+                        if (oldRollNumberCell != null && oldProgramNameCell != null &&
+                                !oldProgramNameCell.getStringCellValue().trim().isEmpty()) {
+                            DocumentStudentEntity oldDoc = new DocumentStudentEntity();
+                            oldDoc.setStudentId(student);
+                            oldDoc.setCurriculumId(null);
+                            oldDoc.setDocumentId(docChangingCurriculum);
+                            oldDoc.setCreatedDate(new Date(19, 8, 1996));
+                            studentList.add(oldDoc);
+                        }
                     }
                 }
             }
@@ -332,25 +351,24 @@ public class UploadController {
 
             // Get template document
             List<DocumentEntity> docList = documentService.getAllDocuments();
-            DocumentEntity templateDoc = null;
-            if (!docList.isEmpty()) {
-                templateDoc = docList.get(0);
-            } else {
-                List<DocTypeEntity> docTypeList = docTypeService.getAllDocTypes();
-                DocTypeEntity docType = null;
-                if (!docTypeList.isEmpty()) {
-                    docType = docTypeList.get(0);
-                } else {
-                    docType = new DocTypeEntity();
-                    docType.setName("Đang học");
-                    docTypeService.createDocType(docType);
-                }
-                templateDoc = new DocumentEntity();
-                templateDoc.setDocTypeId(docType);
-                templateDoc.setCode("000000");
-
-                documentService.createDocument(templateDoc);
-            }
+//            if (!docList.isEmpty()) {
+//                templateDoc = docList.get(0);
+//            } else {
+//                List<DocTypeEntity> docTypeList = docTypeService.getAllDocTypes();
+//                DocTypeEntity docType = null;
+//                if (!docTypeList.isEmpty()) {
+//                    docType = docTypeList.get(0);
+//                } else {
+//                    docType = new DocTypeEntity();
+//                    docType.setName("Đang học");
+//                    docTypeService.createDocType(docType);
+//                }
+//                templateDoc = new DocumentEntity();
+//                templateDoc.setDocTypeId(docType);
+//                templateDoc.setCode("000000");
+//
+//                documentService.createDocument(templateDoc);
+//            }
 
             Workbook workbook = null;
             Sheet spreadsheet = null;
@@ -380,6 +398,7 @@ public class UploadController {
             int termIndex = 14;
             int email = 26;
             int changeCurIndex = 6;
+            int statusIndex = 17;
 
             int mainClass = 15;
 
@@ -399,6 +418,7 @@ public class UploadController {
                     Cell emailcell = row.getCell(email);
                     Cell changeCurCell = row.getCell(changeCurIndex);
                     Cell oldRollNumCell = row.getCell(oldRollNumberIndex);
+                    Cell statusCell = row.getCell(statusIndex);
 
                     Cell termCell = row.getCell(termIndex);
 
@@ -470,6 +490,22 @@ public class UploadController {
                                 }
 
                                 if (student.getRollNumber() != null) {
+//                                    List<DocTypeEntity> docTypeList = docTypeService.getAllDocTypes();
+
+                                    DocTypeEntity docType = docTypeService.findDocType(statusCell.getStringCellValue());
+                                    if (docType == null) {
+                                        docType = new DocTypeEntity();
+                                        docType.setName(statusCell.getStringCellValue());
+                                        docTypeService.createDocType(docType);
+                                    }
+                                    DocumentEntity templateDoc = documentService.getDocumentByDocTypeId(docType.getId());
+                                    if (templateDoc == null) {
+                                        templateDoc = new DocumentEntity();
+                                        templateDoc.setDocTypeId(docType);
+                                        templateDoc.setCode(RandomStringUtils.randomAlphanumeric(10).toUpperCase());
+                                        documentService.createDocument(templateDoc);
+                                    }
+
                                     DocumentStudentEntity docStd = new DocumentStudentEntity();
                                     docStd.setStudentId(student);
                                     docStd.setCurriculumId(currentCurriculum);

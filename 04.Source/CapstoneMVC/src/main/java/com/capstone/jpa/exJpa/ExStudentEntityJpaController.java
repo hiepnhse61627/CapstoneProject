@@ -75,16 +75,18 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
                     }
 
                     // Create document student
-                    if (docStudent.getCurriculumId() != null && docStudent.getDocumentId() != null) {
+                    if (docStudent.getDocumentId() != null) {
                         TypedQuery<DocumentStudentEntity> queryDocStudent = em.createQuery(
                                 "SELECT d FROM DocumentStudentEntity d" +
                                         " WHERE d.studentId.id = :studentId" +
-                                        " AND d.curriculumId.id = :curriId" +
+                                        " AND d.curriculumId.id" + (docStudent.getCurriculumId() != null ? " = :curriId" : " IS NULL") +
                                         " AND d.documentId.id = :docId"
                                 , DocumentStudentEntity.class);
                         queryDocStudent.setParameter("studentId", docStudent.getStudentId().getId());
-                        queryDocStudent.setParameter("curriId", docStudent.getCurriculumId().getId());
                         queryDocStudent.setParameter("docId", docStudent.getDocumentId().getId());
+                        if (docStudent.getCurriculumId() != null) {
+                            queryDocStudent.setParameter("curriId", docStudent.getCurriculumId().getId());
+                        }
 
                         List<DocumentStudentEntity> docEntity = queryDocStudent.getResultList();
                         if (docEntity.isEmpty()) {
@@ -214,5 +216,27 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
         }
 
         return stu;
+    }
+
+    public List<StudentEntity> getStudentByDocType(int type) {
+        EntityManager em = getEntityManager();
+        List<StudentEntity> result = null;
+
+        try {
+            if (type < 0) {
+                String queryStr = "SELECT s FROM StudentEntity s";
+                TypedQuery<StudentEntity> query = em.createQuery(queryStr, StudentEntity.class);
+                result = query.getResultList();
+            } else {
+                String queryStr = "SELECT s FROM StudentEntity s JOIN s.documentStudentEntityList d WHERE d.documentId.docTypeId.id = :type";
+                TypedQuery<StudentEntity> query = em.createQuery(queryStr, StudentEntity.class);
+                query.setParameter("type", type);
+                result = query.getResultList();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 }

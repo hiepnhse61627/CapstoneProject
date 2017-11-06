@@ -5,6 +5,8 @@ import com.capstone.jpa.DocumentEntityJpaController;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
+import javax.persistence.TypedQuery;
 import java.util.List;
 
 public class ExDocumentEntityJpaController extends DocumentEntityJpaController {
@@ -31,4 +33,20 @@ public class ExDocumentEntityJpaController extends DocumentEntityJpaController {
         return entity;
     }
 
+    public DocumentEntity getDocByDocType(int docType) {
+        EntityManager em = null;
+        try {
+            em = getEntityManager();
+            TypedQuery<DocumentEntity> query = em.createQuery("SELECT a FROM DocumentEntity a WHERE a.docTypeId.id = :doc", DocumentEntity.class);
+            query.setParameter("doc", docType);
+            return query.getSingleResult();
+        } catch (NoResultException e) {
+            System.out.println("not found " + docType);
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
 }

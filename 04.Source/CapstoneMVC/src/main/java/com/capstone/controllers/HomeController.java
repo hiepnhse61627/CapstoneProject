@@ -20,7 +20,7 @@ public class HomeController {
     @RequestMapping("/")
     public String Index() {
         ModelAndView view = new ModelAndView("Dashboard");
-        view.addObject("title", "Dashboard");
+        view.addObject("tittle", "Dashboard");
 
         return "Dashboard";
     }

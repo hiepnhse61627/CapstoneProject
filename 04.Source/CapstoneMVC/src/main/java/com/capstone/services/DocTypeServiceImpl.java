@@ -20,4 +20,14 @@ public class DocTypeServiceImpl implements IDocTypeService {
     public DocTypeEntity createDocType(DocTypeEntity entity) {
         return controller.createDocType(entity);
     }
+
+    @Override
+    public DocTypeEntity findDocType(int id) {
+        return controller.findDocType(id);
+    }
+
+    @Override
+    public DocTypeEntity findDocType(String name) {
+        return controller.findDocType(name);
+    }
 }

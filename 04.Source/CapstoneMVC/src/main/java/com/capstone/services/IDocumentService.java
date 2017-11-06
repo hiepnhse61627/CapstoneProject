@@ -8,4 +8,5 @@ public interface IDocumentService {
     List<DocumentEntity> getAllDocuments();
     DocumentEntity createDocument(DocumentEntity entity);
     DocumentEntity getDocumentById(int id);
+    DocumentEntity getDocumentByDocTypeId(int id);
 }
