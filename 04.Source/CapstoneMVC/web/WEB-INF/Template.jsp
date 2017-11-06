@@ -38,7 +38,7 @@
     <link rel="stylesheet" href="/Resources/plugins/dist/css/skins/skin-custom.css"/>
     <link rel="stylesheet" href="/Resources/plugins/dist/css/skins/_all-skins.css"/>
     <link rel="stylesheet" href="/Resources/plugins/sweetalert2/sweetalert2.min.css"/>
-    <link rel="stylesheet" href="/Resources/plugins/dratatables/datatables.min.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/datatables/datatables.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/select2-4.0.6/css/select2.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/jQueryUI/jquery-ui.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/iCheck/square/blue.css"/>
