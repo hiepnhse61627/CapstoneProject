@@ -215,4 +215,26 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
 
         return stu;
     }
+
+    public List<StudentEntity> getStudentByDocType(int type) {
+        EntityManager em = getEntityManager();
+        List<StudentEntity> result = null;
+
+        try {
+            if (type < 0) {
+                String queryStr = "SELECT s FROM StudentEntity s";
+                TypedQuery<StudentEntity> query = em.createQuery(queryStr, StudentEntity.class);
+                result = query.getResultList();
+            } else {
+                String queryStr = "SELECT s FROM StudentEntity s JOIN s.documentStudentEntityList d WHERE d.documentId.docTypeId.id = :type";
+                TypedQuery<StudentEntity> query = em.createQuery(queryStr, StudentEntity.class);
+                query.setParameter("type", type);
+                result = query.getResultList();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
 }

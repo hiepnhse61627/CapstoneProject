@@ -58,6 +58,11 @@ public class StudentServiceImpl implements IStudentService {
     }
 
     @Override
+    public List<StudentEntity> getStudentByDocType(int type) {
+        return studentEntityJpaController.getStudentByDocType(type);
+    }
+
+    @Override
     public int getCurrentLine() {
         return studentEntityJpaController.getCurrentLine();
     }
