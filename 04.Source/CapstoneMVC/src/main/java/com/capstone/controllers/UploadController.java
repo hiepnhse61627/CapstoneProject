@@ -270,11 +270,15 @@ public class UploadController {
                         student.setTerm(((Number) term).intValue());
                     }
 
-                    if (oldRollNumberCell != null && oldRollNumberCell.getCellType() == Cell.CELL_TYPE_STRING) {
+                    if (oldRollNumberCell != null) {
                         OldRollNumberEntity old = new OldRollNumberEntity();
                         old.setStudentId(student);
                         old.setChangedCurriculumDate(new Date(19, 8, 1996));
-                        old.setOldRollNumber(oldRollNumberCell.getStringCellValue());
+                        if (oldRollNumberCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+                            old.setOldRollNumber(String.valueOf(oldRollNumberCell.getNumericCellValue()));
+                        } else {
+                            old.setOldRollNumber(oldRollNumberCell.getStringCellValue());
+                        }
                         student.setOldRollNumberEntityList(new ArrayList<>());
                         student.getOldRollNumberEntityList().add(old);
                     }
@@ -288,14 +292,14 @@ public class UploadController {
 
                         studentList.add(docStd);
 
-                        if (changeCurCell != null && changeCurCell.getCellType() == Cell.CELL_TYPE_STRING) {
-                            DocumentStudentEntity oldDoc = new DocumentStudentEntity();
-                            oldDoc.setStudentId(student);
-                            oldDoc.setCurriculumId(null);
-                            oldDoc.setDocumentId(documentService.getDocumentById(2));
-                            oldDoc.setCreatedDate(new Date(19, 8, 1996));
-                            studentList.add(oldDoc);
-                        }
+//                        if (changeCurCell != null) {
+//                            DocumentStudentEntity oldDoc = new DocumentStudentEntity();
+//                            oldDoc.setStudentId(student);
+//                            oldDoc.setCurriculumId(null);
+//                            oldDoc.setDocumentId(documentService.getDocumentById(2));
+//                            oldDoc.setCreatedDate(new Date(19, 8, 1996));
+//                            studentList.add(oldDoc);
+//                        }
                     }
                 }
             }
@@ -407,8 +411,7 @@ public class UploadController {
                             StudentEntity student = studentService.findStudentByRollNumber(rollNumber);
                             if (student != null) {
                                 student.setRollNumber(rollNumber);
-                                student.setDocumentStudentEntityList(new ArrayList<>());
-                                student.setOldRollNumberEntityList(new ArrayList<>());
+                                student = studentService.cleanDocumentAndOldRollNumber(student);
 
                                 // update student
                                 if (emailcell != null) {
@@ -474,7 +477,7 @@ public class UploadController {
                                     docStd.setCreatedDate(now);
                                     student.getDocumentStudentEntityList().add(docStd);
 
-                                    if (changeCurCell != null && changeCurCell.getCellType() == Cell.CELL_TYPE_STRING) {
+                                    if (changeCurCell != null) {
                                         DocumentStudentEntity oldDoc = new DocumentStudentEntity();
                                         oldDoc.setStudentId(student);
                                         oldDoc.setCurriculumId(null);
@@ -483,17 +486,20 @@ public class UploadController {
                                         student.getDocumentStudentEntityList().add(oldDoc);
                                     }
 
-                                    if (oldRollNumCell != null && oldRollNumCell.getCellType() == Cell.CELL_TYPE_STRING) {
+                                    if (oldRollNumCell != null) {
                                         OldRollNumberEntity old = new OldRollNumberEntity();
                                         old.setStudentId(student);
                                         old.setChangedCurriculumDate(new Date(19, 8, 1996));
-                                        old.setOldRollNumber(oldRollNumCell.getStringCellValue());
+                                        if (oldRollNumCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+                                            old.setOldRollNumber(String.valueOf(oldRollNumCell.getNumericCellValue()));
+                                        } else {
+                                            old.setOldRollNumber(oldRollNumCell.getStringCellValue());
+                                        }
                                         student.getOldRollNumberEntityList().add(old);
                                     }
                                 }
 
                                 studentService.saveStudent(student);
-
                             }
                         }
                     }

@@ -5,9 +5,11 @@ import com.capstone.jpa.StudentEntityJpaController;
 import com.capstone.models.Logger;
 import com.capstone.services.DocumentStudentServiceImpl;
 import com.capstone.services.IDocumentStudentService;
+import org.springframework.security.access.method.P;
 
 import javax.persistence.*;
 import javax.persistence.criteria.*;
+import javax.swing.text.Document;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -183,5 +185,34 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
         }
 
         return result;
+    }
+
+    public StudentEntity cleanDocumentAndOldRollNumber(StudentEntity stu) {
+        EntityManager em = getEntityManager();
+        try {
+            em.getTransaction().begin();
+
+            stu = em.merge(stu);
+            List<DocumentStudentEntity> docs = stu.getDocumentStudentEntityList();
+            for (DocumentStudentEntity d : docs) {
+                DocumentStudentEntity stuDoc = em.merge(d);
+                em.remove(stuDoc);
+                em.flush();
+            }
+            List<OldRollNumberEntity> olds = stu.getOldRollNumberEntityList();
+            for (OldRollNumberEntity o : olds) {
+                OldRollNumberEntity oldStu = em.merge(o);
+                em.remove(oldStu);
+                em.flush();
+            }
+            em.refresh(stu);
+
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+
+        return stu;
     }
 }

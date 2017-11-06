@@ -53,6 +53,11 @@ public class StudentServiceImpl implements IStudentService {
     }
 
     @Override
+    public StudentEntity cleanDocumentAndOldRollNumber(StudentEntity stu) {
+        return studentEntityJpaController.cleanDocumentAndOldRollNumber(stu);
+    }
+
+    @Override
     public int getCurrentLine() {
         return studentEntityJpaController.getCurrentLine();
     }

@@ -16,5 +16,5 @@ public interface IStudentService {
     List<StudentEntity> findAllStudentsWithoutCurChange();
     List<StudentEntity> findStudentsByProgramName(String programName);
     void saveStudent(StudentEntity stu) throws Exception;
-
+    StudentEntity cleanDocumentAndOldRollNumber(StudentEntity stu);
 }
