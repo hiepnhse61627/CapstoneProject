@@ -183,6 +183,7 @@ public class UploadController {
             int curriculumIndex = 13;
             int termIndex = 14;
             int email = 26;
+            int changeCurIndex = 6;
 
             int mainClass = 15;
 
