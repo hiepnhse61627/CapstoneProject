@@ -159,11 +159,11 @@ public class ManagerController {
             List<Integer> list = new ArrayList<>();
             list.add(stuId);
             List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentByIdList(list);
-            docs.sort(Comparator.comparingLong(c -> {
-                DocumentStudentEntity doc = (DocumentStudentEntity) c;
-                if (doc.getCreatedDate() == null) return 0;
-                else return doc.getCreatedDate().getTime();
+            Collections.sort(docs, Comparator.comparingLong(c -> {
+                if (c.getCreatedDate() == null) return 0;
+                else return c.getCreatedDate().getTime();
             }));
+            Collections.reverse(docs);
 
             String data = "";
             DocumentStudentEntity d = null;

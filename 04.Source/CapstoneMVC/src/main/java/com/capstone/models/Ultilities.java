@@ -525,11 +525,11 @@ public class Ultilities {
     public static DocumentStudentEntity getStudentLatestDocument(StudentEntity student) {
         List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
         if (!docs.isEmpty()) {
-            docs.sort(Comparator.comparingLong(c -> {
-                DocumentStudentEntity doc = (DocumentStudentEntity) c;
-                if (doc.getCreatedDate() == null) return 0;
-                else return doc.getCreatedDate().getTime();
+            Collections.sort(docs, Comparator.comparingLong(c -> {
+                if (c.getCreatedDate() == null) return 0;
+                else return c.getCreatedDate().getTime();
             }));
+            Collections.reverse(docs);
 
             return docs.get(docs.size() - 1);
         }
