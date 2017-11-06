@@ -69,7 +69,7 @@ public class StudentCurriculumMarksController {
                     EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
                     EntityManager man = fac.createEntityManager();
 
-                    TypedQuery<MarksEntity> query = man.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+                    TypedQuery<MarksEntity> query = man.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
                     query.setParameter("id", student.getId());
                     query.setParameter("list", subjects);
                     List<MarksEntity> marks = query.getResultList();

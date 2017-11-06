@@ -125,7 +125,7 @@ public class StudentStudyingOrFailController {
                         }
                     }
 
-                    String queryStr = "SELECT a FROM MarksEntity a WHERE a.subjectMarkComponentId.subjectId.id IN :list AND a.active = TRUE";
+                    String queryStr = "SELECT a FROM MarksEntity a WHERE a.subjectMarkComponentId.subjectId.id IN :list AND a.isActivated = TRUE";
                     if (!students.isEmpty()) {
                         queryStr += " AND a.studentId.rollNumber IN :stus";
                     } else {
@@ -257,7 +257,7 @@ public class StudentStudyingOrFailController {
                         }
                     }
 
-                    String queryStr = "SELECT a FROM MarksEntity a WHERE a.active = TRUE AND a.subjectMarkComponentId.subjectId.id IN :list AND a.status LIKE :stat";
+                    String queryStr = "SELECT a FROM MarksEntity a WHERE a.isActivated = TRUE AND a.subjectMarkComponentId.subjectId.id IN :list AND a.status LIKE :stat";
                     if (!students.isEmpty()) {
                         queryStr += " AND a.studentId.rollNumber IN :stus";
                     } else {

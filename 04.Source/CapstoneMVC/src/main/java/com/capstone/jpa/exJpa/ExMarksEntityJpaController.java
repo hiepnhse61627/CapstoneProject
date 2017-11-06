@@ -142,7 +142,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
         EntityManager em = getEntityManager();
 
-        String queryStr = "select a from MarksEntity a where a.active = true and a.semesterId.id IN :listSemester";
+        String queryStr = "select a from MarksEntity a where a.isActivated = true and a.semesterId.id IN :listSemester";
         if (!subjectId.equals("0")) {
             queryStr += " and a.subjectMarkComponentId.subjectId.id IN :sub";
         }
@@ -313,7 +313,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
     public List<MarksEntity> getMarksByStudentIdAndStatus(int studentId, String status) {
         EntityManager manager = getEntityManager();
-        TypedQuery<MarksEntity> query = manager.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true and a.studentId.id = :id AND LOWER(a.status) LIKE :stat", MarksEntity.class);
+        TypedQuery<MarksEntity> query = manager.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND LOWER(a.status) LIKE :stat", MarksEntity.class);
         query.setParameter("id", studentId);
         query.setParameter("stat", "%" + status + "%");
         return query.getResultList();

@@ -131,7 +131,7 @@ public class StudentDetail {
                 } else {
                     List<SubjectEntity> replacers = su.getSubjectEntityList();
                     for (SubjectEntity s : replacers) {
-                        TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.active = TRUE AND a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
+                        TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = TRUE AND a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
                         queryCheckPass.setParameter("id", studentId);
                         queryCheckPass.setParameter("sub", s.getId());
                         List<MarksEntity> rep = queryCheckPass.getResultList();
@@ -338,7 +338,7 @@ public class StudentDetail {
                 }
             });
             if (!curriculumSubjects.isEmpty()) {
-                TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+                TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
                 query2.setParameter("id", stuId);
                 query2.setParameter("list", curriculumSubjects);
                 List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
@@ -387,7 +387,7 @@ public class StudentDetail {
                         } else {
                             List<SubjectEntity> replacers = cur.getSubjectId().getSubjectEntityList();
                             for (SubjectEntity s : replacers) {
-                                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true AND a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
+                                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true AND a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
                                 queryCheckPass.setParameter("id", stuId);
                                 queryCheckPass.setParameter("sub", s.getId());
                                 List<MarksEntity> rep = queryCheckPass.getResultList();
@@ -498,7 +498,7 @@ public class StudentDetail {
                 } else {
                     List<SubjectEntity> replacers = su.getSubjectEntityList();
                     for (SubjectEntity s : replacers) {
-                        TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
+                        TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
                         queryCheckPass.setParameter("id", stuId);
                         queryCheckPass.setParameter("sub", s.getId());
                         List<MarksEntity> rep = queryCheckPass.getResultList();
@@ -613,7 +613,7 @@ public class StudentDetail {
             if (!curriculumSubjects.contains(next.getId())) curriculumSubjects.add(next.getId());
         }
         if (!curriculumSubjects.isEmpty()) {
-            TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+            TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
             query2.setParameter("id", stuId);
             query2.setParameter("list", curriculumSubjects);
             List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
@@ -658,7 +658,7 @@ public class StudentDetail {
                     } else {
                         List<SubjectEntity> replacers = entity.getSubjectEntityList();
                         for (SubjectEntity s : replacers) {
-                            TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
+                            TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
                             queryCheckPass.setParameter("id", stuId);
                             queryCheckPass.setParameter("sub", s.getId());
                             List<MarksEntity> rep = queryCheckPass.getResultList();
@@ -682,7 +682,7 @@ public class StudentDetail {
             List<SubjectEntity> replacers = mark.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList();
             List<SubjectEntity> subs = mark.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList1();
             for (SubjectEntity s : replacers) {
-                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
+                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
                 queryCheckPass.setParameter("id", stuId);
                 queryCheckPass.setParameter("sub", s.getId());
                 List<MarksEntity> rep = queryCheckPass.getResultList();
@@ -695,7 +695,7 @@ public class StudentDetail {
                 }
             }
             for (SubjectEntity s : subs) {
-                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%')", MarksEntity.class);
+                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%')", MarksEntity.class);
                 queryCheckPass.setParameter("id", stuId);
                 queryCheckPass.setParameter("sub", s.getId());
                 List<MarksEntity> rep = queryCheckPass.getResultList();
@@ -708,7 +708,7 @@ public class StudentDetail {
                 } else {
                     List<SubjectEntity> replaceOfS = s.getSubjectEntityList();
                     for (SubjectEntity r : replaceOfS) {
-                        TypedQuery<MarksEntity> queryCheckPass2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%')", MarksEntity.class);
+                        TypedQuery<MarksEntity> queryCheckPass2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%')", MarksEntity.class);
                         queryCheckPass2.setParameter("id", stuId);
                         queryCheckPass2.setParameter("sub", r.getId());
                         List<MarksEntity> result = queryCheckPass2.getResultList();
@@ -836,7 +836,7 @@ public class StudentDetail {
             List<SubjectEntity> replacers = mark.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList();
             List<SubjectEntity> subs = mark.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList1();
             for (SubjectEntity s : replacers) {
-                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
+                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
                 queryCheckPass.setParameter("id", stuId);
                 queryCheckPass.setParameter("sub", s.getId());
                 List<MarksEntity> rep = queryCheckPass.getResultList();
@@ -849,7 +849,7 @@ public class StudentDetail {
                 }
             }
             for (SubjectEntity s : subs) {
-                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%')", MarksEntity.class);
+                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%')", MarksEntity.class);
                 queryCheckPass.setParameter("id", stuId);
                 queryCheckPass.setParameter("sub", s.getId());
                 List<MarksEntity> rep = queryCheckPass.getResultList();
@@ -862,7 +862,7 @@ public class StudentDetail {
                 } else {
                     List<SubjectEntity> replaceOfS = s.getSubjectEntityList();
                     for (SubjectEntity r : replaceOfS) {
-                        TypedQuery<MarksEntity> queryCheckPass2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.active = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%')", MarksEntity.class);
+                        TypedQuery<MarksEntity> queryCheckPass2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%')", MarksEntity.class);
                         queryCheckPass2.setParameter("id", stuId);
                         queryCheckPass2.setParameter("sub", r.getId());
                         List<MarksEntity> result = queryCheckPass2.getResultList();
