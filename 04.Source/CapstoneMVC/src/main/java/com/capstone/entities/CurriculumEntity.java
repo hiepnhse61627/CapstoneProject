@@ -28,7 +28,7 @@ public class CurriculumEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "Name", nullable = false, length = 10)
     private String name;
-    @OneToMany(mappedBy = "curriculumId")
+    @OneToMany(mappedBy = "curriculumId", cascade = CascadeType.ALL)
     private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "curriculumId")
     private List<DocumentStudentEntity> documentStudentEntityList;
