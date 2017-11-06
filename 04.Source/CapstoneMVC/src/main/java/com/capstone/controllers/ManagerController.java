@@ -93,7 +93,7 @@ public class ManagerController {
 
             String queryStr;
             if (stuId == -1){
-                queryStr = "select distinct sm.SubjectId,sb.Name, m.IsActivated " +
+                queryStr = "select distinct s.RollNumber,s.FullName,sm.SubjectId,sb.Name, m.IsActivated " +
                         "from Marks m, Student s, Subject_MarkComponent sm, Subject sb " +
                         "where m.StudentId = s.Id and m.Status = 'Passed' and m.IsActivated = 0 " +
                         "and sm.Id = m.SubjectMarkComponentId AND sb.Id = sm.SubjectId";
@@ -106,6 +106,8 @@ public class ManagerController {
                     row.add(data[0].toString());
                     row.add(data[1].toString());
                     row.add(data[2].toString());
+                    row.add(data[3].toString());
+                    row.add(data[4].toString());
                     result.add(row);
                 }
 
@@ -116,7 +118,7 @@ public class ManagerController {
                 json.add("aaData", aaData);
                 json.addProperty("sEcho", params.get("sEcho"));
             }else{
-                queryStr = "select distinct sm.SubjectId,sb.Name, m.IsActivated " +
+                queryStr = "select distinct s.RollNumber, s.FullName,sm.SubjectId,sb.Name, m.IsActivated " +
                         "from Marks m, Student s, Subject_MarkComponent sm, Subject sb " +
                         "where m.StudentId = s.Id and m.Status = 'Passed' and m.IsActivated = 0 " +
                         "and sm.Id = m.SubjectMarkComponentId AND sb.Id = sm.SubjectId and s.Id = ?";
@@ -130,6 +132,8 @@ public class ManagerController {
                     row.add(data[0].toString());
                     row.add(data[1].toString());
                     row.add(data[2].toString());
+                    row.add(data[3].toString());
+                    row.add(data[4].toString());
                     result.add(row);
                 }
                 JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
