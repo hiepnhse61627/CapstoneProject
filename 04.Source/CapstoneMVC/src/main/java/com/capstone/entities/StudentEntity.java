@@ -43,7 +43,7 @@ public class StudentEntity implements Serializable {
     private Integer term;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
     private List<DocumentStudentEntity> documentStudentEntityList;
-    @OneToMany(mappedBy = "studentId")
+    @OneToMany(mappedBy = "studentId", cascade = CascadeType.ALL)
     private List<OldRollNumberEntity> oldRollNumberEntityList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
     private List<MarksEntity> marksEntityList;

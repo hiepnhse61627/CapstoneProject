@@ -62,9 +62,13 @@
                     <div class="col-md-12">
                         <table id="table-detail">
                             <thead>
-                            <th>Mã Môn</th>
-                            <th>Tên Môn</th>
-                            <th>IsActivated</th>
+                            <tr>
+                                <th>RollNumber</th>
+                                <th>FullName</th>
+                                <th>Mã Môn</th>
+                                <th>Tên Môn</th>
+                                <th>IsActivated</th>
+                            </tr>
                             </thead>
                             <tbody></tbody>
                         </table>
@@ -179,16 +183,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2],
-                    "bSortable": false,
-                },
-                {
-                    "aTargets": [0, 2],
-                    "bSortable": false,
-                    "sClass": "text-center",
-                },
-                {
-                    "aTargets": [2],
+                    "aTargets": [0, 1, 2, 3, 4],
                     "bSortable": false,
                 },
             ],
