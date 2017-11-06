@@ -370,7 +370,7 @@ public class StudentDetail {
                                 }
                             }
                             if (!processedData.isEmpty()) {
-                                String str = "SELECT p FROM MarksEntity p WHERE p.active = true and p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList";
+                                String str = "SELECT p FROM MarksEntity p WHERE p.isActivated = true and p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList";
                                 TypedQuery<MarksEntity> prequisiteQuery;
                                 prequisiteQuery = em.createQuery(str, MarksEntity.class);
                                 prequisiteQuery.setParameter("sList", processedData);
@@ -643,7 +643,7 @@ public class StudentDetail {
                     }
                     boolean failed = false;
                     if (!processedData.isEmpty()) {
-                        String str = "SELECT p FROM MarksEntity p WHERE p.active = true and p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList";
+                        String str = "SELECT p FROM MarksEntity p WHERE p.isActivated = true and p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList";
                         TypedQuery<MarksEntity> prequisiteQuery;
                         prequisiteQuery = em.createQuery(str, MarksEntity.class);
                         prequisiteQuery.setParameter("sList", processedData);

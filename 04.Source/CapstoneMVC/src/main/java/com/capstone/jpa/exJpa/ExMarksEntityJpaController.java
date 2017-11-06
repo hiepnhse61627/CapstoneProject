@@ -40,7 +40,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                     "WHERE m.studentId.id = :studentId " +
                     "AND m.subjectMarkComponentId.id = :subjectMarkComponentId " +
                     "AND m.semesterId.id = :semesterId " +
-                    "AND m.active = TRUE";
+                    "AND m.isActivated = TRUE";
             Query query = em.createQuery(sqlString);
             query.setParameter("studentId", marksEntity.getStudentId().getId());
             query.setParameter("subjectMarkComponentId", marksEntity.getSubjectMarkComponentId().getId());
@@ -272,7 +272,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                 queryStr += " AND m.semesterId.id IN :semesterIds";
             }
 
-            queryStr += " AND smc.markComponentId.id = :markComponentId AND m.active = true";
+            queryStr += " AND smc.markComponentId.id = :markComponentId AND m.isActivated = true";
 
             TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
             query.setParameter("markComponentId", markComponent.getId());
@@ -423,7 +423,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         EntityManager em = null;
         try {
             em = getEntityManager();
-            String sqlString = "SELECT m FROM MarksEntity m WHERE m.active = true and m.status IN :statuses AND m.semesterId.id IN :semesterIds";
+            String sqlString = "SELECT m FROM MarksEntity m WHERE m.isActivated = true and m.status IN :statuses AND m.semesterId.id IN :semesterIds";
             Query query = em.createQuery(sqlString);
             query.setParameter("statuses", Arrays.asList(statuses));
             query.setParameter("semesterIds", semesterIds);
@@ -446,7 +446,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
         try {
             em = getEntityManager();
-            String queryStr = "SELECT m FROM MarksEntity m WHERE m.active = true and m.studentId.id = :studentId" +
+            String queryStr = "SELECT m FROM MarksEntity m WHERE m.isActivated = true and m.studentId.id = :studentId" +
                     " ORDER BY m.subjectMarkComponentId.subjectId.name";
             TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
             query.setParameter("studentId", studentId);
