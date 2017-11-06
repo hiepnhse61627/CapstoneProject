@@ -92,28 +92,53 @@ public class ManagerController {
             int studentId = stuId;
 
             String queryStr;
-            queryStr = "select distinct sm.SubjectId,sb.Name, m.IsActivated " +
-                    "from Marks m, Student s, Subject_MarkComponent sm, Subject sb " +
-                    "where m.StudentId = s.Id and m.Status = 'Passed' and m.IsActivated = 0 " +
-                    "and sm.Id = m.SubjectMarkComponentId AND sb.Id = sm.SubjectId and s.Id = ?";
-            Query query = em.createNativeQuery(queryStr);
-            query.setParameter(1, studentId);
-            List<Object[]> searchList = query.getResultList();
+            if (stuId == -1){
+                queryStr = "select distinct sm.SubjectId,sb.Name, m.IsActivated " +
+                        "from Marks m, Student s, Subject_MarkComponent sm, Subject sb " +
+                        "where m.StudentId = s.Id and m.Status = 'Passed' and m.IsActivated = 0 " +
+                        "and sm.Id = m.SubjectMarkComponentId AND sb.Id = sm.SubjectId";
 
-            List<List<String>> result = new ArrayList<>();
-            for (Object[] data : searchList) {
-                List<String> row = new ArrayList<String>();
-                row.add(data[0].toString());
-                row.add(data[1].toString());
-                row.add(data[2].toString());
-                result.add(row);
+                Query query = em.createNativeQuery(queryStr);
+                List<Object[]> searchList = query.getResultList();
+                List<List<String>> result = new ArrayList<>();
+                for (Object[] data : searchList) {
+                    List<String> row = new ArrayList<String>();
+                    row.add(data[0].toString());
+                    row.add(data[1].toString());
+                    row.add(data[2].toString());
+                    result.add(row);
+                }
+
+                JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
+
+                json.addProperty("iTotalRecords", searchList.size());
+                json.addProperty("iTotalDisplayRecords", searchList.size());
+                json.add("aaData", aaData);
+                json.addProperty("sEcho", params.get("sEcho"));
+            }else{
+                queryStr = "select distinct sm.SubjectId,sb.Name, m.IsActivated " +
+                        "from Marks m, Student s, Subject_MarkComponent sm, Subject sb " +
+                        "where m.StudentId = s.Id and m.Status = 'Passed' and m.IsActivated = 0 " +
+                        "and sm.Id = m.SubjectMarkComponentId AND sb.Id = sm.SubjectId and s.Id = ?";
+                Query query = em.createNativeQuery(queryStr);
+                query.setParameter(1, studentId);
+
+                List<Object[]> searchList = query.getResultList();
+                List<List<String>> result = new ArrayList<>();
+                for (Object[] data : searchList) {
+                    List<String> row = new ArrayList<String>();
+                    row.add(data[0].toString());
+                    row.add(data[1].toString());
+                    row.add(data[2].toString());
+                    result.add(row);
+                }
+                JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
+
+                json.addProperty("iTotalRecords", searchList.size());
+                json.addProperty("iTotalDisplayRecords", searchList.size());
+                json.add("aaData", aaData);
+                json.addProperty("sEcho", params.get("sEcho"));
             }
-            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
-
-            json.addProperty("iTotalRecords", searchList.size());
-            json.addProperty("iTotalDisplayRecords", searchList.size());
-            json.add("aaData", aaData);
-            json.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {
             e.printStackTrace();
         }
