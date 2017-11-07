@@ -2,6 +2,7 @@ package com.capstone.jpa.exJpa;
 
 import com.capstone.entities.CurriculumEntity;
 import com.capstone.entities.SubjectCurriculumEntity;
+import com.capstone.entities.SubjectEntity;
 import com.capstone.jpa.SubjectCurriculumEntityJpaController;
 import org.apache.commons.lang3.reflect.Typed;
 
@@ -156,5 +157,28 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
         } catch (NoResultException nrEx) {
             return null;
         }
+    }
+
+    public CurriculumEntity cleanCurriculum(CurriculumEntity cur) {
+        EntityManager em = getEntityManager();
+        try {
+            em.getTransaction().begin();
+
+            cur = em.merge(cur);
+            for (SubjectCurriculumEntity c : cur.getSubjectCurriculumEntityList()) {
+                SubjectCurriculumEntity tmp = em.merge(c);
+                em.remove(tmp);
+                em.flush();
+            }
+            em.refresh(cur);
+
+            em.getTransaction().commit();
+
+            return cur;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
     }
 }

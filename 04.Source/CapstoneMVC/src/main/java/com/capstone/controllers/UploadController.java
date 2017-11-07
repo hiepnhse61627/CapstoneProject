@@ -419,6 +419,7 @@ public class UploadController {
             int email = 26;
             int changeCurIndex = 6;
             int statusIndex = 17;
+            int beforeCurIndex = 5;
 
             int mainClass = 15;
 
@@ -439,8 +440,9 @@ public class UploadController {
                     Cell changeCurCell = row.getCell(changeCurIndex);
                     Cell oldRollNumCell = row.getCell(oldRollNumberIndex);
                     Cell statusCell = row.getCell(statusIndex);
+                    Cell beforeCurCell = row.getCell(beforeCurIndex);
 
-                    Cell termCell = row.getCell(termIndex);
+                            Cell termCell = row.getCell(termIndex);
 
                     // Get Student Info
                     if (rollNumberCell != null) {
@@ -491,19 +493,6 @@ public class UploadController {
                                     student.setProgramId(studentProgram);
                                 }
 
-                                CurriculumEntity currentCurriculum = null;
-                                String curriculumStr;
-                                if (curriculumCell != null &&
-                                        !(curriculumStr = curriculumCell.getStringCellValue().trim()).isEmpty()) {
-                                    int pos = curriculumStr.indexOf("_");
-                                    if (pos != -1) {
-                                        String curPogramName = curriculumStr.substring(0, pos);
-                                        String curCurriName = curriculumStr.substring(pos + 1);
-
-                                        currentCurriculum = findOrCreateCurriculum(programList, curriculumList, curPogramName, curCurriName);
-                                    }
-                                }
-
                                 if (termCell != null) {
                                     double term = termCell.getNumericCellValue();
                                     student.setTerm(((Number) term).intValue());
@@ -524,6 +513,39 @@ public class UploadController {
                                         templateDoc.setDocTypeId(docType);
                                         templateDoc.setCode(RandomStringUtils.randomAlphanumeric(10).toUpperCase());
                                         documentService.createDocument(templateDoc);
+                                    }
+
+                                    CurriculumEntity currentCurriculum = null;
+                                    CurriculumEntity beforeCurriculum = null;
+                                    String curriculumStr;
+                                    if (curriculumCell != null && !(curriculumStr = curriculumCell.getStringCellValue().trim()).isEmpty()) {
+                                        int pos = curriculumStr.indexOf("_");
+                                        if (pos != -1) {
+                                            String beforeCur;
+                                            String curPogramName = curriculumStr.substring(0, pos);
+
+                                            if (beforeCurCell != null) {
+                                                beforeCur = beforeCurCell.getStringCellValue();
+                                            } else {
+                                                beforeCur = curPogramName;
+                                            }
+
+                                            String curCurriName = curriculumStr.substring(pos + 1);
+
+                                            currentCurriculum = findOrCreateCurriculum(programList, curriculumList, curPogramName, curCurriName);
+                                            if (!curPogramName.equals(beforeCur)) {
+                                                beforeCurriculum = findOrCreateCurriculum(programList, curriculumList, beforeCur, curCurriName);
+                                            }
+                                        }
+                                    }
+
+                                    if (beforeCurriculum != null) {
+                                        DocumentStudentEntity docStd = new DocumentStudentEntity();
+                                        docStd.setStudentId(student);
+                                        docStd.setCurriculumId(beforeCurriculum);
+                                        docStd.setDocumentId(templateDoc);
+                                        docStd.setCreatedDate(new Date(2010, 1, 1));
+                                        student.getDocumentStudentEntityList().add(docStd);
                                     }
 
                                     DocumentStudentEntity docStd = new DocumentStudentEntity();

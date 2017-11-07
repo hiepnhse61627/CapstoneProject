@@ -370,6 +370,9 @@ public class SubjectCurriculumController {
 
             Map<String, List<SubjectCurriculumEntity>> map = new LinkedHashMap<>();
             for (rowIndex = rowIndex + 1; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+
+                System.out.println(rowIndex + " - " + spreadsheet.getLastRowNum());
+
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
                     String curriculumCode = row.getCell(curriculumIndex).getStringCellValue();
@@ -383,6 +386,8 @@ public class SubjectCurriculumController {
                             if (parts.length == 2) {
                                 CurriculumEntity entity = subjectCurriculumService.findCurriculum(parts[0].trim(), parts[1].trim());
                                 if (entity != null) {
+                                    entity = subjectCurriculumService.cleanCurriculum(entity);
+
                                     SubjectCurriculumEntity cur = new SubjectCurriculumEntity();
                                     cur.setSubjectId(subject);
                                     cur.setCurriculumId(entity);
@@ -418,6 +423,8 @@ public class SubjectCurriculumController {
                             if (parts.length == 2) {
                                 CurriculumEntity entity = subjectCurriculumService.findCurriculum(parts[0], parts[1]);
                                 if (entity != null) {
+                                    entity = subjectCurriculumService.cleanCurriculum(entity);
+
                                     SubjectCurriculumEntity cur = new SubjectCurriculumEntity();
                                     cur.setSubjectId(subject);
                                     cur.setCurriculumId(entity);
