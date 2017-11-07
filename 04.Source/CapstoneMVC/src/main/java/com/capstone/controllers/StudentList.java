@@ -223,7 +223,10 @@ public class StudentList {
             studentList = studentList.stream().skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
 
             List<Integer> studentIdList = studentList.stream().map(s -> s.getId()).collect(Collectors.toList());
-            List<DocumentStudentEntity> docStudentList = documentStudentService.getDocumentStudentByIdList(studentIdList);
+            List<DocumentStudentEntity> docStudentList = new ArrayList<>();
+            if (studentIdList.size() != 0) {
+                docStudentList = documentStudentService.getDocumentStudentByIdList(studentIdList);
+            }
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             DocumentStudentEntity ds = null;

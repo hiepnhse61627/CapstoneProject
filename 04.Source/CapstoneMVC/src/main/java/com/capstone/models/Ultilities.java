@@ -73,11 +73,13 @@ public class Ultilities {
         return newSet;
     }
 
-    public static List<MarksEntity> FilterStudentsOnlyPassAndFailAndStudying(List<MarksEntity> set) {
-        List<MarksEntity> newSet = set.stream()
-                .filter(c -> !c.getStatus().trim().toLowerCase().contains("start") &&
-                        !c.getStatus().trim().toLowerCase().contains(("diem")))
-                .collect(Collectors.toList());
+    public static List<MarksEntity> FilterStudentsOnlyPassAndFailAndStudyiAndNotStartg(List<MarksEntity> set) {
+        List<MarksEntity> newSet = set;
+// .stream()
+//                .filter(c -> !c.getStatus().trim().toLowerCase().contains("start") &&
+//                        !c.getStatus().trim().toLowerCase().contains(("diem")) &&
+//                        !c.getStatus().trim().toLowerCase().contains(("start")))
+//                .collect(Collectors.toList());
         newSet = SortSemestersByMarks(newSet);
         return newSet;
     }
@@ -106,7 +108,7 @@ public class Ultilities {
                 .map(c -> c.getSemester().trim())
                 .collect(Collectors.toList());
 
-        List<MarksEntity> newList = FilterStudentsOnlyPassAndFailAndStudying(list);
+        List<MarksEntity> newList = FilterStudentsOnlyPassAndFailAndStudyiAndNotStartg(list);
 
         List<FailPrequisiteModel> result = new ArrayList<>();
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
@@ -228,7 +230,7 @@ public class Ultilities {
                 .map(c -> c.getSemester().trim())
                 .collect(Collectors.toList());
 
-        List<MarksEntity> newList = FilterStudentsOnlyPassAndFailAndStudying(list);
+        List<MarksEntity> newList = FilterStudentsOnlyPassAndFailAndStudyiAndNotStartg(list);
 
         Map<String, List<MarksEntity>> map = new LinkedHashMap<>();
         if (!list.isEmpty()) {
