@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 @Controller
@@ -293,30 +294,44 @@ public class SubjectCurriculumController {
 
     @RequestMapping(value = "/subcurriculum/choose", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject choose(@RequestParam("file") String file) {
-        JsonObject obj;
-        try {
-            File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
-            obj = ReadFile(null, f, false);
-        } catch (Exception e) {
-            obj = new JsonObject();
-            obj.addProperty("success", false);
-            obj.addProperty("message", e.getMessage());
-        }
+    public Callable<JsonObject> choose(@RequestParam("file") String file) {
+        Callable<JsonObject> callable = new Callable<JsonObject>() {
+            @Override
+            public JsonObject call() throws Exception {
+                JsonObject obj;
+                try {
+                    File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
+                    obj = ReadFile(null, f, false);
+                } catch (Exception e) {
+                    obj = new JsonObject();
+                    obj.addProperty("success", false);
+                    obj.addProperty("message", e.getMessage());
+                }
 
-        return obj;
+                return obj;
+            }
+        };
+
+        return callable;
     }
 
     @RequestMapping(value = "/subcurriculum/upload", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject upload(@RequestParam("file") MultipartFile file) {
-        JsonObject obj = ReadFile(file, null, true);
-        if (obj.get("success").getAsBoolean()) {
-            ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
-            read.saveFile(context, file, folder);
-        }
+    public Callable<JsonObject> upload(@RequestParam("file") MultipartFile file) {
+        Callable<JsonObject> callable = new Callable<JsonObject>() {
+            @Override
+            public JsonObject call() throws Exception {
+                JsonObject obj = ReadFile(file, null, true);
+                if (obj.get("success").getAsBoolean()) {
+                    ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+                    read.saveFile(context, file, folder);
+                }
 
-        return obj;
+                return obj;
+            }
+        };
+
+        return callable;
     }
 
     private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile) {
