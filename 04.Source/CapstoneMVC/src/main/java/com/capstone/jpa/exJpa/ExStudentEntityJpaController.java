@@ -3,7 +3,9 @@ package com.capstone.jpa.exJpa;
 import com.capstone.entities.*;
 import com.capstone.jpa.StudentEntityJpaController;
 import com.capstone.models.Logger;
+import com.capstone.services.CurriculumServiceImpl;
 import com.capstone.services.DocumentStudentServiceImpl;
+import com.capstone.services.ICurriculumService;
 import com.capstone.services.IDocumentStudentService;
 import org.springframework.security.access.method.P;
 
@@ -52,6 +54,7 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
     }
 
     public void createStudentList(List<DocumentStudentEntity> students) {
+        ICurriculumService curriculumService = new CurriculumServiceImpl();
         totalLine = students.size();
         currentLine = 0;
 
@@ -70,6 +73,7 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
                     List<StudentEntity> std = queryStudent.getResultList();
                     if (std.isEmpty()) {
                         em.persist(docStudent.getStudentId());
+                        em.flush();
                     } else {
                         docStudent.setStudentId(std.get(0));
                     }
@@ -90,6 +94,12 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
 
                         List<DocumentStudentEntity> docEntity = queryDocStudent.getResultList();
                         if (docEntity.isEmpty()) {
+                            if (docStudent.getCurriculumId() != null) {
+                                CurriculumEntity curriculumTemp = curriculumService.getCurriculumById(
+                                        docStudent.getCurriculumId().getId());
+                                docStudent.setCurriculumId(curriculumTemp);
+                            }
+
                             em.persist(docStudent);
                         }
                     }
