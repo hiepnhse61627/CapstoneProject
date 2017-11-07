@@ -150,7 +150,12 @@ public class UploadController {
             List<DocumentStudentEntity> studentList = new ArrayList<>();
             List<ProgramEntity> programList = programService.getAllPrograms();
             List<CurriculumEntity> curriculumList = curriculumService.getAllCurriculums();
+
             Date now = Calendar.getInstance().getTime();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(now);
+            cal.add(Calendar.DATE, -30);
+            Date dateBefore30Days = cal.getTime();
 
             // Get template document
             List<DocumentEntity> docList = documentService.getAllDocuments();
@@ -307,7 +312,6 @@ public class UploadController {
                         docStd.setCurriculumId(currentCurriculum);
                         docStd.setDocumentId(templateDoc);
                         docStd.setCreatedDate(now);
-
                         studentList.add(docStd);
 
                         if (oldRollNumberCell != null && oldProgramNameCell != null &&
@@ -318,6 +322,22 @@ public class UploadController {
                             oldDoc.setDocumentId(docChangingCurriculum);
                             oldDoc.setCreatedDate(new Date(19, 8, 1996));
                             studentList.add(oldDoc);
+                        }
+
+                        if (currentCurriculum != null && student.getProgramId() != null) {
+                            if (!currentCurriculum.getProgramId().getName().equals("PC")
+                                    && !currentCurriculum.getProgramId().getName().equals(student.getProgramId().getName())) {
+                                CurriculumEntity parentCurriculum = findOrCreateCurriculum(
+                                        programList, curriculumList, student.getProgramId().getName(), currentCurriculum.getName());
+
+                                DocumentStudentEntity parentDocStudent = new DocumentStudentEntity();
+                                parentDocStudent.setStudentId(student);
+                                parentDocStudent.setCurriculumId(parentCurriculum);
+                                parentDocStudent.setDocumentId(templateDoc);
+                                parentDocStudent.setCreatedDate(dateBefore30Days);
+
+                                studentList.add(parentDocStudent);
+                            }
                         }
                     }
                 }
@@ -1464,6 +1484,7 @@ public class UploadController {
 //        obj.addProperty("success", true);
 //        return obj;
 //    }
+
 
 }
 

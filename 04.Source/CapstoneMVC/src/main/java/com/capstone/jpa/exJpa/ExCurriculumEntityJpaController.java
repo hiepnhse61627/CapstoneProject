@@ -193,8 +193,8 @@ public class ExCurriculumEntityJpaController extends CurriculumEntityJpaControll
             em.getTransaction().begin();
             em.persist(entity);
             em.flush();
-            entity = em.merge(entity);
-            em.refresh(entity);
+//            entity = em.merge(entity);
+//            em.refresh(entity);
             em.getTransaction().commit();
         } finally {
             em.close();
