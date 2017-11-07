@@ -36,4 +36,9 @@ public class DocumentStudentServiceImpl implements IDocumentStudentService {
     public List<DocumentStudentEntity> getDocumentStudentByIdList(List<Integer> idList) {
         return controller.getDocumentStudentByIdList(idList);
     }
+
+    @Override
+    public List<DocumentStudentEntity> getDocumentStudentByByStudentId(List<Integer> idList) {
+        return controller.getDocumentStudentByByStudentId(idList);
+    }
 }

@@ -158,17 +158,11 @@ public class ManagerController {
             IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
             List<Integer> list = new ArrayList<>();
             list.add(stuId);
-            List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentByIdList(list);
-            Collections.sort(docs, Comparator.comparingLong(c -> {
-                if (c.getCreatedDate() == null) return 0;
-                else return c.getCreatedDate().getTime();
-            }));
-            Collections.reverse(docs);
-
+            List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentByByStudentId(list);
             String data = "";
             DocumentStudentEntity d = null;
             if (!docs.isEmpty()) {
-                d = docs.get(docs.size() - 1);
+                d = docs.get(0);
                 data = d.getCurriculumId().getProgramId().getName() + "_" + d.getCurriculumId().getName();
             }
 
@@ -192,7 +186,7 @@ public class ManagerController {
             IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
             List<Integer> list = new ArrayList<>();
             list.add(stuId);
-            List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentByIdList(list);
+            List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentByByStudentId(list);
             SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
 
             List<List<String>> parent = new ArrayList<>();

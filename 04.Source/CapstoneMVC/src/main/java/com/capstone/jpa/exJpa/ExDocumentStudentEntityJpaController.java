@@ -120,4 +120,24 @@ public class ExDocumentStudentEntityJpaController extends DocumentStudentEntityJ
 
         return result;
     }
+
+    public List<DocumentStudentEntity> getDocumentStudentByByStudentId(List<Integer> idList) {
+        List<DocumentStudentEntity> result = null;
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+
+            String queryStr = "SELECT d FROM DocumentStudentEntity d WHERE d.studentId.id IN :idList ORDER BY d.createdDate ASC";
+            TypedQuery<DocumentStudentEntity> query = em.createQuery(queryStr, DocumentStudentEntity.class);
+            query.setParameter("idList", idList);
+            result = query.getResultList();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
+    }
 }

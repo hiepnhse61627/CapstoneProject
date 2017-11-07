@@ -51,15 +51,11 @@ public class StudentCurriculumMarksController {
             StudentEntity student = studentService.findStudentByRollNumber(getPrincipal().getUser().getStudentRollNumber());
             if (student != null) {
                 List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
-                Collections.sort(docs, Comparator.comparingLong(c -> {
-                    if (c.getCreatedDate() == null) return 0;
-                    else return c.getCreatedDate().getTime();
-                }));
-                Collections.reverse(docs);
+                docs = Ultilities.sortDocumentStudentListByDate(docs);
 
                 Map<String, List<List<String>>> ma = new TreeMap<>();
                 if (!docs.isEmpty()) {
-                    CurriculumEntity cur = docs.get(docs.size() - 1).getCurriculumId();
+                    CurriculumEntity cur = docs.get(0).getCurriculumId();
                     List<SubjectCurriculumEntity> curSubjects = cur.getSubjectCurriculumEntityList();
                     List<String> subjects = new ArrayList<>();
                     for (SubjectCurriculumEntity s : curSubjects) {
