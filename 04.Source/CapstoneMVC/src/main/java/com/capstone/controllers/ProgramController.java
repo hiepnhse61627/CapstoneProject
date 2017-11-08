@@ -147,7 +147,7 @@ public class ProgramController {
             ProgramModel model = new ProgramModel();
             model.setId(Integer.parseInt(id));
             model.setName(name);
-            model.setFullName(name);
+            model.setFullName(fullName);
             if (ojt.isEmpty()){
                 model.setOjt(0);
             }else{
