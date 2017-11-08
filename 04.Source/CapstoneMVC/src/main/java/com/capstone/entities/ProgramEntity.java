@@ -36,6 +36,8 @@ public class ProgramEntity implements Serializable {
     private Integer capstone;
     @Column(name = "Graduate")
     private Integer graduate;
+    @ManyToMany
+    private List<ProgramEntity> programEntityList;
     @OneToMany(mappedBy = "programId")
     private List<StudentEntity> studentEntityList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "programId")
@@ -44,6 +46,7 @@ public class ProgramEntity implements Serializable {
     public ProgramEntity() {
     }
 
+
     public ProgramEntity(Integer id) {
         this.id = id;
     }
@@ -51,6 +54,14 @@ public class ProgramEntity implements Serializable {
     public ProgramEntity(Integer id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public List<ProgramEntity> getProgramEntityList() {
+        return programEntityList;
+    }
+
+    public void setProgramEntityList(List<ProgramEntity> programEntityList) {
+        this.programEntityList = programEntityList;
     }
 
     public Integer getId() {

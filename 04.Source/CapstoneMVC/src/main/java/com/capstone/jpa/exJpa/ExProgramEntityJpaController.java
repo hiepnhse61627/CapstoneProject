@@ -3,12 +3,16 @@ package com.capstone.jpa.exJpa;
 import com.capstone.entities.ProgramEntity;
 import com.capstone.jpa.ProgramEntityJpaController;
 import com.capstone.models.Logger;
+import com.capstone.models.ProgramModel;
+import com.capstone.services.IProgramService;
+import com.capstone.services.ProgramServiceImpl;
 import com.sun.deploy.security.ValidationState;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExProgramEntityJpaController extends ProgramEntityJpaController {
@@ -77,6 +81,33 @@ public class ExProgramEntityJpaController extends ProgramEntityJpaController {
         }
 
         return entity;
+    }
+
+    public ProgramModel updateProgram(ProgramModel program) {
+        EntityManager manager = getEntityManager();
+        IProgramService programService = new ProgramServiceImpl();
+        manager.getTransaction().begin();
+        try {
+            //update SubjectEntity match SubjectID
+            ProgramEntity uProgram = manager.find(ProgramEntity.class, program.getId());
+            uProgram.setName(program.getName());
+            uProgram.setFullName(program.getFullName());
+            uProgram.setOjt(program.getOjt());
+            uProgram.setCapstone(program.getCapstone());
+            uProgram.setGraduate(program.getGraduate());
+//            uProgram.setProgramEntityList(new ArrayList<ProgramEntity>());
+
+            manager.merge(uProgram);
+            manager.flush();
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            program.setResult(false);
+            program.setErrorMessage(e.getMessage());
+            return program;
+        }
+        manager.getTransaction().commit();
+        program.setResult(true);
+        return program;
     }
 
 }
