@@ -11,6 +11,7 @@ import javax.persistence.Persistence;
 import javax.servlet.ServletContext;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -481,7 +482,10 @@ public class Ultilities {
 
         List<SubjectEntity> result = new ArrayList<>();
         if (docs.size() > 0) {
-            docs = sortDocumentStudentListByDate(docs);
+            IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
+            List<Integer> tmp = new ArrayList<>();
+            tmp.add(student.getId());
+            docs = documentStudentService.getDocumentStudentByByStudentId(tmp);
             CurriculumEntity curriculumEntity = docs.get(0).getCurriculumId();
             if (curriculumEntity != null) {
                 List<SubjectCurriculumEntity> listCur = curriculumEntity.getSubjectCurriculumEntityList();
@@ -503,13 +507,10 @@ public class Ultilities {
 //        IStudentService service = new StudentServiceImpl();
 //        StudentEntity student = service.findStudentById(studentId);
         if (student != null) {
-            List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
-//            docs = docs.stream().sorted(Comparator.comparingLong(c -> {
-//                DocumentStudentEntity doc = (DocumentStudentEntity) c;
-//                if (doc.getCreatedDate() == null) return 0;
-//                else return doc.getCreatedDate().getTime();
-//            })).collect(Collectors.toList());
-            docs = sortDocumentStudentListByDate(docs);
+            IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
+            List<Integer> tmp = new ArrayList<>();
+            tmp.add(student.getId());
+            List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentByByStudentId(tmp);
             if (!docs.isEmpty()) {
                 if (docs.get(0).getCurriculumId() != null) {
                     List<SubjectCurriculumEntity> cursubs = docs.get(0).getCurriculumId().getSubjectCurriculumEntityList();
@@ -524,10 +525,11 @@ public class Ultilities {
     }
 
     public static DocumentStudentEntity getStudentLatestDocument(StudentEntity student) {
-        List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+        List<Integer> tmp = new ArrayList<>();
+        IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
+        tmp.add(student.getId());
+        List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentByByStudentId(tmp);
         if (!docs.isEmpty()) {
-            docs = sortDocumentStudentListByDate(docs);
-
             return docs.get(0);
         }
 
@@ -539,8 +541,7 @@ public class Ultilities {
 
         List<DynamicMenuEntity> list = dynamicMenuService.getAllMenu().stream().filter(s -> s.getRole().contains(user.getRole())).collect(Collectors.toList());
 
-        List<DynamicMenuEntity> menuNoFunctionGroup = list.stream().filter(s -> s.getFunctionGroup() == null
-        ).collect(Collectors.toList());
+        List<DynamicMenuEntity> menuNoFunctionGroup = list.stream().filter(s -> s.getFunctionGroup() == null).collect(Collectors.toList());
 
         List<DynamicMenuEntity> functionGroup = list.stream().filter(s -> s.getGroupName() != null).distinct().collect(Collectors.toList());
         List<String> groups = new ArrayList<>();
@@ -563,7 +564,14 @@ public class Ultilities {
         Collections.sort(list, new Comparator<DocumentStudentEntity>() {
             @Override
             public int compare(DocumentStudentEntity o1, DocumentStudentEntity o2) {
-                return o2.getCreatedDate().compareTo(o1.getCreatedDate());
+                Date d1 = o1.getCreatedDate();
+                Date d2 = o2.getCreatedDate();
+                if (d2.before(d1))
+                    return -1;
+                else if (d2.after(d1))
+                    return 1;
+                else
+                    return 0;
             }
         });
         return list;
