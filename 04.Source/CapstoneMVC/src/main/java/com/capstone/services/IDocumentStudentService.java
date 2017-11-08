@@ -11,4 +11,5 @@ public interface IDocumentStudentService {
     List<DocumentStudentEntity> getAllLatestDocumentStudentByProgramId(int programId);
     List<DocumentStudentEntity> getDocumentStudentByIdList(List<Integer> idList);
     List<DocumentStudentEntity> getDocumentStudentByByStudentId(List<Integer> idList);
+    List<DocumentStudentEntity> getDocumentStudentListByStudentId(Integer studentId);
 }

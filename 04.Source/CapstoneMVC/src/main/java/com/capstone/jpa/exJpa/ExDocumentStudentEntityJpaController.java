@@ -6,6 +6,7 @@ import com.capstone.models.Ultilities;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.util.List;
 
@@ -134,6 +135,27 @@ public class ExDocumentStudentEntityJpaController extends DocumentStudentEntityJ
             query.setParameter("idList", idList);
             result = query.getResultList();
             result = Ultilities.sortDocumentStudentListByDate(result);
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
+    }
+
+    public List<DocumentStudentEntity> getDocumentStudentListByStudentId(Integer studentId) {
+        List<DocumentStudentEntity> result = null;
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+
+            String sqlString = "SELECT d FROM DocumentStudentEntity d WHERE d.studentId.id = :id";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("id", studentId);
+
+            result = query.getResultList();
         } finally {
             if (em != null) {
                 em.close();

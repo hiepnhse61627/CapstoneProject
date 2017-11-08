@@ -60,8 +60,8 @@ public class SubjectCurriculumServiceImpl implements ISubjectCurriculumService {
     }
 
     @Override
-    public List<SubjectCurriculumEntity> getSubjectIds(Integer studentId, Integer currentTerm) {
-        return controller.getSubjectIds(studentId, currentTerm);
+    public List<SubjectCurriculumEntity> getSubjectIds(List<Integer> curriculumIds, Integer currentTerm) {
+        return controller.getSubjectIds(curriculumIds, currentTerm);
     }
 
     @Override
