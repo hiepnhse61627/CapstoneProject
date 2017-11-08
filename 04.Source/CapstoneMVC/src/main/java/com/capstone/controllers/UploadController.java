@@ -414,12 +414,15 @@ public class UploadController {
             int dateOfBirthIndex = 3;
             int genderIndex = 4;
             int programNameIndex = 5;
-            int curriculumIndex = 13;
-            int termIndex = 14;
-            int email = 26;
+//            int curriculumIndex = 13;
+            int termIndex = 16;
+            int email = 28;
+            int statusIndex = 19;
+
             int changeCurIndex = 6;
-            int statusIndex = 17;
-            int beforeCurIndex = 5;
+            int cur1 = 13;
+            int cur2 = 14;
+            int cur3 = 15;
 
             int mainClass = 15;
 
@@ -435,12 +438,15 @@ public class UploadController {
                     Cell dateOfBirthCell = row.getCell(dateOfBirthIndex);
                     Cell genderCell = row.getCell(genderIndex);
                     Cell programNameCell = row.getCell(programNameIndex);
-                    Cell curriculumCell = row.getCell(curriculumIndex);
+//                    Cell curriculumCell = row.getCell(curriculumIndex);
                     Cell emailcell = row.getCell(email);
                     Cell changeCurCell = row.getCell(changeCurIndex);
                     Cell oldRollNumCell = row.getCell(oldRollNumberIndex);
                     Cell statusCell = row.getCell(statusIndex);
-                    Cell beforeCurCell = row.getCell(beforeCurIndex);
+
+                    Cell cur1Cell = row.getCell(cur1);
+                    Cell cur2Cell = row.getCell(cur2);
+                    Cell cur3Cell = row.getCell(cur3);
 
                             Cell termCell = row.getCell(termIndex);
 
@@ -515,59 +521,80 @@ public class UploadController {
                                         documentService.createDocument(templateDoc);
                                     }
 
-                                    CurriculumEntity currentCurriculum = null;
-                                    CurriculumEntity beforeCurriculum = null;
+                                    CurriculumEntity cur = null;
                                     String curriculumStr;
-                                    if (curriculumCell != null && !(curriculumStr = curriculumCell.getStringCellValue().trim()).isEmpty()) {
-                                        int pos = curriculumStr.indexOf("_");
-                                        if (pos != -1) {
-                                            String beforeCur;
-                                            String curPogramName = curriculumStr.substring(0, pos);
+                                    Calendar cal = Calendar.getInstance();
+                                    int j = 0;
+                                    for (int i = cur1; i < cur3 + 1; i++) {
+                                        cal.add(Calendar.YEAR, j++);
+                                        if (row.getCell(i) != null && !(curriculumStr = row.getCell(i).getStringCellValue().trim()).isEmpty()) {
+                                            int pos = curriculumStr.indexOf("_");
+                                            if (pos != -1) {
+                                                String curPogramName = curriculumStr.substring(0, pos);
+                                                String curCurriName = curriculumStr.substring(pos + 1);
 
-                                            if (beforeCurCell != null) {
-                                                beforeCur = beforeCurCell.getStringCellValue();
-                                            } else {
-                                                beforeCur = curPogramName;
-                                            }
+                                                cur = findOrCreateCurriculum(programList, curriculumList, curPogramName, curCurriName);
 
-                                            String curCurriName = curriculumStr.substring(pos + 1);
-
-                                            currentCurriculum = findOrCreateCurriculum(programList, curriculumList, curPogramName, curCurriName);
-                                            if (!curPogramName.equals(beforeCur)) {
-                                                beforeCurriculum = findOrCreateCurriculum(programList, curriculumList, beforeCur, curCurriName);
+                                                DocumentStudentEntity docStd = new DocumentStudentEntity();
+                                                docStd.setStudentId(student);
+                                                docStd.setCurriculumId(cur);
+                                                docStd.setDocumentId(templateDoc);
+                                                docStd.setCreatedDate(cal.getTime());
+                                                student.getDocumentStudentEntityList().add(docStd);
                                             }
                                         }
                                     }
+//                                    if (curriculumCell != null && !(curriculumStr = curriculumCell.getStringCellValue().trim()).isEmpty()) {
+//                                        int pos = curriculumStr.indexOf("_");
+//                                        if (pos != -1) {
+//                                            String beforeCur;
+//                                            String curPogramName = curriculumStr.substring(0, pos);
+//
+//                                            if (beforeCurCell != null) {
+//                                                beforeCur = beforeCurCell.getStringCellValue();
+//                                            } else {
+//                                                beforeCur = curPogramName;
+//                                            }
+//
+//                                            String curCurriName = curriculumStr.substring(pos + 1);
+//
+//                                            currentCurriculum = findOrCreateCurriculum(programList, curriculumList, curPogramName, curCurriName);
+//                                            if (!curPogramName.equals(beforeCur)) {
+//                                                beforeCurriculum = findOrCreateCurriculum(programList, curriculumList, beforeCur, curCurriName);
+//                                            }
+//                                        }
+//                                    }
 
-                                    if (beforeCurriculum != null) {
-                                        DocumentStudentEntity docStd = new DocumentStudentEntity();
-                                        docStd.setStudentId(student);
-                                        docStd.setCurriculumId(beforeCurriculum);
-                                        docStd.setDocumentId(templateDoc);
-                                        docStd.setCreatedDate(new Date(2010, 1, 1));
-                                        student.getDocumentStudentEntityList().add(docStd);
-                                    }
+//                                    if (beforeCurriculum != null) {
+//                                        DocumentStudentEntity docStd = new DocumentStudentEntity();
+//                                        docStd.setStudentId(student);
+//                                        docStd.setCurriculumId(beforeCurriculum);
+//                                        docStd.setDocumentId(templateDoc);
+//                                        docStd.setCreatedDate(new Date(2010, 1, 1));
+//                                        student.getDocumentStudentEntityList().add(docStd);
+//                                    }
+//
+//                                    DocumentStudentEntity docStd = new DocumentStudentEntity();
+//                                    docStd.setStudentId(student);
+//                                    docStd.setCurriculumId(currentCurriculum);
+//                                    docStd.setDocumentId(templateDoc);
+//                                    docStd.setCreatedDate(now);
+//                                    student.getDocumentStudentEntityList().add(docStd);
 
-                                    DocumentStudentEntity docStd = new DocumentStudentEntity();
-                                    docStd.setStudentId(student);
-                                    docStd.setCurriculumId(currentCurriculum);
-                                    docStd.setDocumentId(templateDoc);
-                                    docStd.setCreatedDate(now);
-                                    student.getDocumentStudentEntityList().add(docStd);
-
+                                    cal.add(Calendar.YEAR, -10);
                                     if (changeCurCell != null) {
                                         DocumentStudentEntity oldDoc = new DocumentStudentEntity();
                                         oldDoc.setStudentId(student);
                                         oldDoc.setCurriculumId(null);
                                         oldDoc.setDocumentId(documentService.getDocumentById(2));
-                                        oldDoc.setCreatedDate(new Date(19, 8, 1996));
+                                        oldDoc.setCreatedDate(cal.getTime());
                                         student.getDocumentStudentEntityList().add(oldDoc);
                                     }
 
                                     if (oldRollNumCell != null) {
                                         OldRollNumberEntity old = new OldRollNumberEntity();
                                         old.setStudentId(student);
-                                        old.setChangedCurriculumDate(new Date(19, 8, 1996));
+                                        old.setChangedCurriculumDate(cal.getTime());
                                         if (oldRollNumCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
                                             old.setOldRollNumber(String.valueOf(oldRollNumCell.getNumericCellValue()));
                                         } else {

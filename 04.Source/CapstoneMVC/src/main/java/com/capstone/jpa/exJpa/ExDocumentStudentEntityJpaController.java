@@ -2,6 +2,7 @@ package com.capstone.jpa.exJpa;
 
 import com.capstone.entities.DocumentStudentEntity;
 import com.capstone.jpa.DocumentStudentEntityJpaController;
+import com.capstone.models.Ultilities;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -128,10 +129,11 @@ public class ExDocumentStudentEntityJpaController extends DocumentStudentEntityJ
         try {
             em = getEntityManager();
 
-            String queryStr = "SELECT d FROM DocumentStudentEntity d WHERE d.studentId.id IN :idList ORDER BY d.createdDate ASC";
+            String queryStr = "SELECT d FROM DocumentStudentEntity d WHERE d.studentId.id IN :idList";
             TypedQuery<DocumentStudentEntity> query = em.createQuery(queryStr, DocumentStudentEntity.class);
             query.setParameter("idList", idList);
             result = query.getResultList();
+            result = Ultilities.sortDocumentStudentListByDate(result);
         } finally {
             if (em != null) {
                 em.close();
