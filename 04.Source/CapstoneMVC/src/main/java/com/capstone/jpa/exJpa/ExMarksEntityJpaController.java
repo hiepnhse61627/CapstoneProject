@@ -353,7 +353,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
     public List<MarksEntity> getAllMarksByStudent(int studentId) {
         EntityManager manager = getEntityManager();
-        TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.active = true and c.studentId.id = :id", MarksEntity.class);
+        TypedQuery<MarksEntity> query = manager.createQuery("SELECT c FROM MarksEntity c WHERE c.isActivated = true and c.studentId.id = :id", MarksEntity.class);
         query.setParameter("id", studentId);
         return query.getResultList();
     }
@@ -368,7 +368,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
     public List<MarksEntity> getStudyingStudents(String subjectId, String[] statuses) {
         EntityManager manager = getEntityManager();
-        String queryStr = "SELECT c FROM MarksEntity c WHERE c.active = true and c.status IN :list ";
+        String queryStr = "SELECT c FROM MarksEntity c WHERE c.isActivated = true and c.status IN :list ";
         if (subjectId != null) {
             queryStr += "AND c.subjectMarkComponentId.subjectId.id = :sub";
         }

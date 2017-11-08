@@ -111,6 +111,8 @@ public class Ultilities {
 
         List<MarksEntity> newList = FilterStudentsOnlyPassAndFailAndStudyiAndNotStartg(list);
 
+        IMarksService service = new MarksServiceImpl();
+
         List<FailPrequisiteModel> result = new ArrayList<>();
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
 
@@ -127,6 +129,10 @@ public class Ultilities {
 
             Set<String> studentIds = map.rowKeySet();
             for (String studentId : studentIds) {
+                if (studentId.equals("SE61453")) {
+                    System.out.println("test");
+                }
+
                 Map<String, List<MarksEntity>> subjects = map.row(studentId);
 
                 for (Map.Entry<String, PrequisiteEntity> subject : prequisites.entrySet()) {
@@ -181,7 +187,7 @@ public class Ultilities {
                                                     failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId(), m.getSemesterId().getSemester());
 
                                                     for (SubjectEntity replace : tmp.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList()) {
-                                                        List<MarksEntity> replaced = subjects.get(replace.getId());
+                                                        List<MarksEntity> replaced = service.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), "0");
                                                         if (replaced != null) {
                                                             replaced = SortSemestersByMarks(replaced);
                                                             for (MarksEntity marks : replaced) {
@@ -194,6 +200,25 @@ public class Ultilities {
 
                                                             if (!isPass) {
                                                                 failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId(), m.getSemesterId().getSemester());
+                                                            }
+                                                        }
+                                                    }
+                                                    for (SubjectEntity replace : tmp.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList1()) {
+                                                        for (SubjectEntity r : replace.getSubjectEntityList()) {
+                                                            List<MarksEntity> replaced = service.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), r.getId(), "0");
+                                                            if (replaced != null) {
+                                                                replaced = SortSemestersByMarks(replaced);
+                                                                for (MarksEntity marks : replaced) {
+                                                                    tmp = marks;
+                                                                    if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                                                        isPass = true;
+                                                                        break;
+                                                                    }
+                                                                }
+
+                                                                if (!isPass) {
+                                                                    failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId(), m.getSemesterId().getSemester());
+                                                                }
                                                             }
                                                         }
                                                     }
