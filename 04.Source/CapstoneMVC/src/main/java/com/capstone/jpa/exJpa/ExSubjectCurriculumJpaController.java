@@ -141,15 +141,13 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
         }
     }
 
-    public List<SubjectCurriculumEntity> getSubjectIds(Integer studentId, Integer currentTerm) {
+    public List<SubjectCurriculumEntity> getSubjectIds(List<Integer> curriculumIds, Integer currentTerm) {
         EntityManager em = getEntityManager();
 
         try {
-            String sqlString = "SELECT s FROM SubjectCurriculumEntity s, DocumentStudentEntity d " +
-                                        "WHERE s.curriculumId = d.curriculumId AND d.studentId.id = :id AND s.termNumber BETWEEN 1 AND :currentTerm AND " +
-                                        "d.createdDate = (SELECT MAX(d1.createdDate) FROM DocumentStudentEntity d1 WHERE d1.studentId.id = d.studentId.id)";
+            String sqlString = "SELECT s FROM SubjectCurriculumEntity s WHERE s.curriculumId.id IN :curriculumIds AND s.termNumber BETWEEN 1 AND :currentTerm";
             Query query = em.createQuery(sqlString);
-            query.setParameter("id", studentId);
+            query.setParameter("curriculumIds", curriculumIds);
             query.setParameter("currentTerm", currentTerm);
 
             List<SubjectCurriculumEntity> list = query.getResultList();

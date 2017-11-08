@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.servlet.ServletContext;
 import javax.swing.text.Document;
 import java.io.*;
@@ -63,6 +64,7 @@ public class UploadController {
     IDocumentService documentService = new DocumentServiceImpl();
     IDocTypeService docTypeService = new DocTypeServiceImpl();
     IMarkComponentService markComponentService = new MarkComponentServiceImpl();
+    IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
 
     /**
      * --------------STUDENTS------------
@@ -1217,7 +1219,9 @@ public class UploadController {
                 Integer studentId = entry.getKey().getId();
                 Integer termNo = entry.getKey().getTerm();
                 List<ImportedMarkObject> importMarks = entry.getValue().stream().filter(f -> f.getSubjectCode() != null).collect(Collectors.toList());
-                List<SubjectCurriculumEntity> subjectsInCurriculum = subjectCurriculumService.getSubjectIds(studentId, termNo);
+                List<DocumentStudentEntity> documentStudentEntityList = documentStudentService.getDocumentStudentListByStudentId(studentId);
+                List<Integer> curriculumIds = documentStudentEntityList.stream().filter(d -> d.getCurriculumId() != null).map(d -> d.getCurriculumId().getId()).collect(Collectors.toList());
+                List<SubjectCurriculumEntity> subjectsInCurriculum = subjectCurriculumService.getSubjectIds(curriculumIds, termNo);
                 Set<String> importedSubjectIdsSet = importMarks.stream().map(f -> f.getSubjectCode().getId()).collect(Collectors.toSet());
                 List<SubjectCurriculumEntity> subjectNotInMarkList = subjectsInCurriculum.stream().filter(s -> !importedSubjectIdsSet.contains(s.getSubjectId().getId())).collect(Collectors.toList());
                 List<ImportedMarkObject> processedList = new ArrayList<>();
