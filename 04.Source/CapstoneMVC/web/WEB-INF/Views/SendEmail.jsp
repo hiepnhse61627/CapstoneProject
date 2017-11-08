@@ -67,6 +67,8 @@
 </section>
 
 <script>
+    var table = null;
+
     $(document).ready(function () {
         $('#table').DataTable();
     });
@@ -93,16 +95,16 @@
                         if (result.success) {
                             array = result.data;
                             $('#table').DataTable().destroy();
-                            $('#table').DataTable({
+                            table = $('#table').DataTable({
                                 "data": array,
-                                "deferRender": true,
+                                "deferRender": false,
                                 "scrollY": 600,
                                 "scrollX": true,
                                 "scrollCollapse": true,
                                 "scroller": true,
                                 "columnDefs": [
                                     {
-                                        "targets": [1, 2, 3, 4, 5, 6, 7, 8],
+                                        "targets": [1, 2, 3, 4, 6, 7, 8],
                                         "sortable": false,
                                         "class": "text-center",
                                     },
@@ -112,17 +114,19 @@
                                             return "<input name='send' type='checkbox'/>";
                                         },
                                         "sortable": false,
+                                    },
+                                    {
+                                        "targets": [5],
+                                        "render": function (data, type, row) {
+                                            return data + "<input type='hidden' name='data' value='" + data + "'/>";
+                                        },
+                                        "sortable": false,
                                     }
                                 ],
-                                "search": false,
-                                "filter": false
+//                                "search": true,
+//                                "filter": false,
                             });
                             swal.close();
-                            $('input').iCheck({
-                                checkboxClass: 'icheckbox_square-blue',
-                                radioClass: 'iradio_square-blue',
-                                increaseArea: '20%' // optional
-                            });
                         } else {
                             swal('Đã xảy ra lỗi!', result.message, 'error');
                         }
@@ -136,34 +140,36 @@
     var select = true;
     function SelectAll() {
         if (select) {
-            $("input[name='send']").iCheck('check');
+            $("input[name='send']", table.rows({search:'applied'}).nodes()).prop('checked', true);
             select = false;
         } else {
-            $("input[name='send']").iCheck('uncheck');
+            $("input[name='send']", table.rows({search:'applied'}).nodes()).prop('checked', false);
             select = true;
         }
     }
 
     function SelectOnlyFail() {
-        $.each($("#table").find('tr'), function () {
-            var data = $(this).find('td').eq(5).html();
+        $.each($("input[name='data']", table.rows({search:'applied'}).nodes()), function () {
+            var data = $(this).val();
+//            console.log(data);
             if (data != 'N/A') {
-                $(this).closest("tr").find("input[name='send']").iCheck('check');
+                $(this).closest("tr").find("input[name='send']").prop('checked', true);
             }
         });
     }
 
     function Send() {
         var array = [];
-        $.each($("input[name='send']:checked").closest("tr"), function () {
+        $.each($("input[name='send']:checked", table.rows({search:'applied'}).nodes()), function () {
             var values = [];
-            $(this).find("td").each(function (i) {
+            $.each($(this).closest("tr").find("td"), function (i) {
                 if (i > 0) {
                     values.push($(this).html());
                 }
             });
             array.push(values);
         });
+//        console.log(array);
 
         swal({
             title: 'Đang xử lý',
