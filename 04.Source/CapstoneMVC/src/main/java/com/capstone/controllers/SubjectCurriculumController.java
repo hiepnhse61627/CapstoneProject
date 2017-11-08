@@ -26,6 +26,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.security.auth.Subject;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.io.FileInputStream;
@@ -391,81 +392,83 @@ public class SubjectCurriculumController {
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
                     String curriculumCode = row.getCell(curriculumIndex).getStringCellValue();
-                    String subjectCode = row.getCell(subjectIndex).getStringCellValue();
-                    double termNo = row.getCell(termIndex).getNumericCellValue();
+                    String subjectCode = row.getCell(subjectIndex).getStringCellValue().trim();
+                    Double termNo = row.getCell(termIndex).getNumericCellValue();
 
+                    int pos = curriculumCode.indexOf("_");
                     if (map.get(curriculumCode) == null) {
-                        SubjectEntity subject = subjectService.findSubjectById(subjectCode);
-                        if (subject != null) {
-                            String[] parts = curriculumCode.split("_");
-                            if (parts.length == 2) {
-                                CurriculumEntity entity = subjectCurriculumService.findCurriculum(parts[0].trim(), parts[1].trim());
-                                if (entity != null) {
-                                    entity = subjectCurriculumService.cleanCurriculum(entity);
+                        SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
+                        if (subjectEntity != null) {
+                            String propramName = curriculumCode.substring(0, pos);
+                            String curriculumName = curriculumCode.substring(pos + 1);
+                            ProgramEntity programEntity = programService.getProgramByName(propramName);
+                            if (programEntity != null) {
+                                // create curriculum
+                                CurriculumEntity curriculumEntity = curriculumService.getCurriculumByNameAndProgramId(curriculumName, programEntity.getId());
+                                if (curriculumEntity != null) {
+                                    // create Subject Curriculumn
+                                    List<SubjectCurriculumEntity> subjectCurriculumEntityList = new ArrayList<>();
+                                    SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
+                                    subjectCurriculumEntity.setCurriculumId(curriculumEntity);
+                                    subjectCurriculumEntity.setSubjectId(subjectEntity);
+                                    subjectCurriculumEntity.setOrdinalNumber(1);
+                                    subjectCurriculumEntity.setTermNumber(termNo.intValue());
+                                    subjectCurriculumEntityList.add(subjectCurriculumEntity);
 
-                                    SubjectCurriculumEntity cur = new SubjectCurriculumEntity();
-                                    cur.setSubjectId(subject);
-                                    cur.setCurriculumId(entity);
-                                    cur.setOrdinalNumber(1);
-                                    cur.setTermNumber((int) termNo);
-                                    List<SubjectCurriculumEntity> list = new ArrayList<>();
-                                    list.add(cur);
-                                    map.put(curriculumCode, list);
-                                } else {
-                                    CurriculumEntity en = new CurriculumEntity();
-                                    en.setName(parts[1].trim());
-                                    ProgramEntity en2 = new ProgramEntity();
-                                    en2.setName(parts[0].trim());
-                                    en2 = programService.createProgram(en2);
-                                    en.setProgramId(en2);
-                                    en = curriculumService.createCurriculum(en);
+                                    map.put(curriculumCode, subjectCurriculumEntityList);
+                                } else { // curriculum null
+                                    curriculumEntity = new CurriculumEntity();
+                                    curriculumEntity.setProgramId(programEntity);
+                                    curriculumEntity.setName(curriculumName);
+                                    curriculumEntity = curriculumService.createCurriculum(curriculumEntity);
+                                    // create Subject Curriculumn
+                                    List<SubjectCurriculumEntity> subjectCurriculumEntityList = new ArrayList<>();
+                                    SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
+                                    subjectCurriculumEntity.setCurriculumId(curriculumEntity);
+                                    subjectCurriculumEntity.setSubjectId(subjectEntity);
+                                    subjectCurriculumEntity.setOrdinalNumber(1);
+                                    subjectCurriculumEntity.setTermNumber(termNo.intValue());
+                                    subjectCurriculumEntityList.add(subjectCurriculumEntity);
 
-                                    SubjectCurriculumEntity cur = new SubjectCurriculumEntity();
-                                    cur.setSubjectId(subject);
-                                    cur.setCurriculumId(en);
-                                    cur.setOrdinalNumber(1);
-                                    cur.setTermNumber((int) termNo);
-                                    List<SubjectCurriculumEntity> list = new ArrayList<>();
-                                    list.add(cur);
-                                    map.put(curriculumCode, list);
+                                    map.put(curriculumCode, subjectCurriculumEntityList);
                                 }
                             }
                         }
                     } else {
-                        SubjectEntity subject = subjectService.findSubjectById(subjectCode);
-                        if (subject != null) {
-                            String[] parts = curriculumCode.split("_");
-                            if (parts.length == 2) {
-                                CurriculumEntity entity = subjectCurriculumService.findCurriculum(parts[0], parts[1]);
-                                if (entity != null) {
-                                    entity = subjectCurriculumService.cleanCurriculum(entity);
+                        SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
+                        if (subjectEntity != null) {
+                            String propramName = curriculumCode.substring(0, pos);
+                            String curriculumName = curriculumCode.substring(pos + 1);
+                            ProgramEntity programEntity = programService.getProgramByName(propramName);
+                            if (programEntity != null) {
+                                // create curriculum
+                                CurriculumEntity curriculumEntity = curriculumService.getCurriculumByNameAndProgramId(curriculumName, programEntity.getId());
+                                if (curriculumEntity != null) {
+                                    // create Subject Curriculumn
+                                    SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
+                                    subjectCurriculumEntity.setCurriculumId(curriculumEntity);
+                                    subjectCurriculumEntity.setSubjectId(subjectEntity);
+                                    subjectCurriculumEntity.setOrdinalNumber(map.get(curriculumCode).size() + 1);
+                                    subjectCurriculumEntity.setTermNumber(termNo.intValue());
 
-                                    SubjectCurriculumEntity cur = new SubjectCurriculumEntity();
-                                    cur.setSubjectId(subject);
-                                    cur.setCurriculumId(entity);
-                                    cur.setOrdinalNumber(map.get(curriculumCode).size() + 1);
-                                    cur.setTermNumber((int) termNo);
-                                    map.get(curriculumCode).add(cur);
-                                } else {
-                                    CurriculumEntity en = new CurriculumEntity();
-                                    en.setName(parts[1].trim());
-                                    ProgramEntity en2 = new ProgramEntity();
-                                    en2.setName(parts[0].trim());
-                                    en2 = programService.createProgram(en2);
-                                    en.setProgramId(en2);
-                                    en = curriculumService.createCurriculum(en);
+                                    map.get(curriculumCode).add(subjectCurriculumEntity);
+                                } else { // curriculum null
+                                    curriculumEntity = new CurriculumEntity();
+                                    curriculumEntity.setProgramId(programEntity);
+                                    curriculumEntity.setName(curriculumName);
+                                    curriculumEntity = curriculumService.createCurriculum(curriculumEntity);
+                                    // create Subject Curriculumn
+                                    SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
+                                    subjectCurriculumEntity.setCurriculumId(curriculumEntity);
+                                    subjectCurriculumEntity.setSubjectId(subjectEntity);
+                                    subjectCurriculumEntity.setOrdinalNumber(map.get(curriculumCode).size() + 1);
+                                    subjectCurriculumEntity.setTermNumber(termNo.intValue());
 
-                                    SubjectCurriculumEntity cur = new SubjectCurriculumEntity();
-                                    cur.setSubjectId(subject);
-                                    cur.setCurriculumId(en);
-                                    cur.setOrdinalNumber(map.get(curriculumCode).size() + 1);
-                                    cur.setTermNumber((int) termNo);
-                                    map.get(curriculumCode).add(cur);
+                                    map.get(curriculumCode).add(subjectCurriculumEntity);
                                 }
                             }
                         }
                     }
-
                 }
             }
 //

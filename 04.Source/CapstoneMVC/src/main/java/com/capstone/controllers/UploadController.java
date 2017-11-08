@@ -419,7 +419,7 @@ public class UploadController {
             int email = 26;
             int changeCurIndex = 6;
             int statusIndex = 17;
-            int beforeCurIndex = 5;
+            int beforeCurIndex = 6;
 
             int mainClass = 15;
 
@@ -442,7 +442,7 @@ public class UploadController {
                     Cell statusCell = row.getCell(statusIndex);
                     Cell beforeCurCell = row.getCell(beforeCurIndex);
 
-                            Cell termCell = row.getCell(termIndex);
+                    Cell termCell = row.getCell(termIndex);
 
                     // Get Student Info
                     if (rollNumberCell != null) {
@@ -560,14 +560,14 @@ public class UploadController {
                                         oldDoc.setStudentId(student);
                                         oldDoc.setCurriculumId(null);
                                         oldDoc.setDocumentId(documentService.getDocumentById(2));
-                                        oldDoc.setCreatedDate(new Date(19, 8, 1996));
+                                        oldDoc.setCreatedDate(new Date(1996, 8, 19));
                                         student.getDocumentStudentEntityList().add(oldDoc);
                                     }
 
                                     if (oldRollNumCell != null) {
                                         OldRollNumberEntity old = new OldRollNumberEntity();
                                         old.setStudentId(student);
-                                        old.setChangedCurriculumDate(new Date(19, 8, 1996));
+                                        old.setChangedCurriculumDate(new Date(1996, 8, 19));
                                         if (oldRollNumCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
                                             old.setOldRollNumber(String.valueOf(oldRollNumCell.getNumericCellValue()));
                                         } else {
