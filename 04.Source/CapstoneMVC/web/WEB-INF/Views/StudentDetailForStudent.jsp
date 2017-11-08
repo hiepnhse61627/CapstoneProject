@@ -346,9 +346,9 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/getStudentNotNextCourse", // url getData.php etc
+            "sAjaxSource": "/student/getStudentNotNextCourse", // url getData.php etc
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#select').val()})
+                aoData.push({"name": "stuId", "value": stuId})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",

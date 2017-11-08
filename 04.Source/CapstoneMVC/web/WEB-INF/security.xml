@@ -36,6 +36,9 @@
         <intercept-url pattern="/manager/**" access="hasAnyRole('ROLE_MANAGER')"/>
         <intercept-url pattern="/manager**" access="hasAnyRole('ROLE_MANAGER')"/>
         <intercept-url pattern="/email/**" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>
+        <intercept-url pattern="/stuydingstatus**" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>
+        <intercept-url pattern="/stuydingstatus/**" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>
+
 
         <!-- Admin -->
         <intercept-url pattern="/admin/**" access="hasAnyRole('ROLE_ADMIN')"/>
