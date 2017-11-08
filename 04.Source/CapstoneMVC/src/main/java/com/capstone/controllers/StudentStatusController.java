@@ -56,6 +56,7 @@ public class StudentStatusController {
 
             List<List<String>> result = new ArrayList<>();
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
             if (!displayList.isEmpty()) {
                 displayList.forEach(m -> {
                     List<String> dataList = new ArrayList<>();
@@ -63,15 +64,17 @@ public class StudentStatusController {
                     dataList.add(m.getFullName());
                     dataList.add(sdf.format(m.getDateOfBirth()));
                     dataList.add(m.getGender() == Enums.Gender.MALE.getValue() ? Enums.Gender.MALE.getName() : Enums.Gender.FEMALE.getName());
-//                    dataList.add(m.getProgramId() != null ? m.getProgramId().getName() : "N/A");
 
-                    List<DocumentStudentEntity> l = Ultilities.sortDocumentStudentListByDate(m.getDocumentStudentEntityList());
-                    dataList.add(l.get(0) != null
+                    List<Integer> tmp = new ArrayList<>();
+                    tmp.add(m.getId());
+                    List<DocumentStudentEntity> l = documentStudentService.getDocumentStudentByByStudentId(tmp);
+
+                    dataList.add(l.get(0).getCurriculumId() != null
                             ? l.get(0).getCurriculumId().getProgramId().getName() + "_" + l.get(0).getCurriculumId().getName()
                             : "N/A");
 //                    dataList.add(m.getId() + "");
 
-                    dataList.add(l.get(0) != null
+                    dataList.add(l.get(0).getDocumentId() != null
                             ? l.get(0).getDocumentId().getDocTypeId().getName()
                             : "N/A");
 

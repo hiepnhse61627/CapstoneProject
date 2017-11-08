@@ -3,6 +3,8 @@ package com.capstone.controllers;
 import com.capstone.entities.*;
 import com.capstone.models.CustomUser;
 import com.capstone.models.Ultilities;
+import com.capstone.services.DocumentStudentServiceImpl;
+import com.capstone.services.IDocumentStudentService;
 import com.capstone.services.IStudentService;
 import com.capstone.services.StudentServiceImpl;
 import com.google.common.collect.Table;
@@ -50,8 +52,10 @@ public class StudentCurriculumMarksController {
         try {
             StudentEntity student = studentService.findStudentByRollNumber(getPrincipal().getUser().getStudentRollNumber());
             if (student != null) {
-                List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
-                docs = Ultilities.sortDocumentStudentListByDate(docs);
+                IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
+                List<Integer> tmp = new ArrayList<>();
+                tmp.add(student.getId());
+                List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentByByStudentId(tmp);
 
                 Map<String, List<List<String>>> ma = new TreeMap<>();
                 if (!docs.isEmpty()) {
