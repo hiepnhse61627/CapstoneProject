@@ -6,7 +6,6 @@ import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -14,9 +13,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.*;
-import javax.persistence.criteria.CriteriaBuilder;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -48,10 +44,11 @@ public class GoodStudentController {
         try {
             String searchKey = params.get("sSearch").toLowerCase();
             List<List<String>> studentList = this.getGoodStudentList(params);
-            studentList = studentList.stream().filter(c -> c.get(0).toLowerCase().contains(searchKey) ||
-                    c.get(2).toLowerCase().contains(searchKey) ||
-                    c.get(3).toLowerCase().contains(searchKey) ||
-                    c.get(4).toLowerCase().contains(searchKey)).collect(Collectors.toList());
+            studentList = studentList.stream().filter(c ->
+                    c.get(0).toLowerCase().contains(searchKey) ||
+                    c.get(1).toLowerCase().contains(searchKey) ||
+                            c.get(3).toLowerCase().contains(searchKey) ||
+                            c.get(4).toLowerCase().contains(searchKey)).collect(Collectors.toList());
 
             List<List<String>> result = studentList.stream().skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
             JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
@@ -89,30 +86,29 @@ public class GoodStudentController {
         }
 
         Map<Integer, Map<Integer, List<GoodStudentMarkModel>>> studentList = new HashMap<>();
-        Map<Integer, DocumentStudentEntity> docStudentMap = new HashMap<>();
+        Map<Integer, List<DocumentStudentEntity>> docStudentMap = new HashMap<>();
 
         String queryStr = "SELECT m.StudentId, m.SemesterId, smc.SubjectId, sub.Credits," +
-                " m.AverageMark, m.Status, sc.TermNumber" +
+                " m.AverageMark, m.Status, sc.TermNumber, ds.CurriculumId" +
                 " FROM Marks m" +
                 " INNER JOIN Student s ON m.StudentId = s.Id" +
                 " INNER JOIN Subject_MarkComponent smc ON m.SubjectMarkComponentId = smc.Id" +
                 " INNER JOIN Subject sub ON smc.SubjectId = sub.Id" +
                 " INNER JOIN MarkComponent mc ON smc.MarkComponentId = mc.Id" +
                 " INNER JOIN Document_Student ds ON m.StudentId = ds.StudentId" +
-                " INNER JOIN Subject_Curriculum sc ON ds.CurriculumId = sc.CurriculumId" +
+                " INNER JOIN Curriculum c ON ds.CurriculumId = c.Id" +
+                " INNER JOIN Program p ON c.ProgramId = p.Id" +
+                " INNER JOIN Subject_Curriculum sc ON c.Id = sc.CurriculumId" +
                 " AND mc.Name LIKE '%average%' AND smc.SubjectId = sc.SubjectId" +
-                " AND ds.CreatedDate = (SELECT MAX(CreatedDate) FROM Document_Student WHERE StudentId = m.StudentId)" +
+                " AND (ds.CreatedDate = (SELECT MAX(CreatedDate) FROM Document_Student WHERE StudentId = m.StudentId) OR s.ProgramId = p.Id)" +
+                " AND ds.CurriculumId IS NOT NULL" +
+                " AND p.Name != 'PC'" +
                 ((semesterId != 0) ? " AND m.SemesterId = ?" : "") +
-                (!sSearch.isEmpty() ? " AND m.StudentId IN (SELECT Id FROM Student WHERE RollNumber LIKE ? OR FullName LIKE ?)" : "") +
                 " ORDER BY m.StudentId, sc.TermNumber";
         Query query = em.createNativeQuery(queryStr);
         int count = 1;
         if (semesterId != 0) {
             query.setParameter(count++, semesterId);
-        }
-        if (!sSearch.isEmpty()) {
-            query.setParameter(count++, "%" + sSearch + "%");
-            query.setParameter(count, "%" + sSearch + "%");
         }
 
         List<Object[]> searchList = query.getResultList();
@@ -138,21 +134,33 @@ public class GoodStudentController {
                 markModel.setMark((double) m[4]);
                 markModel.setStatus(m[5].toString());
                 markModel.setTerm((int) m[6]);
+                markModel.setCurriculumId((int) m[7]);
 
                 semesterMarkList.get(semesId).add(markModel);
             }
 
             // Get DocumentStudent List
             String idStr = "(" + Ultilities.parseIntegerListToString(studentMarkList.keySet()) + ")";
-            queryStr = "SELECT ds.* FROM Document_Student ds WHERE ds.StudentId IN " + idStr +
-                    " AND ds.createdDate = (SELECT MAX(CreatedDate) FROM Document_Student WHERE Id = ds.Id)";
+            queryStr = "SELECT ds.* FROM Document_Student ds" +
+                    " INNER JOIN Student s ON ds.StudentId = s.Id" +
+                    " INNER JOIN Curriculum c ON ds.CurriculumId = c.Id" +
+                    " INNER JOIN Program p ON c.ProgramId = p.Id" +
+                    " AND ds.StudentId IN " + idStr +
+                    " AND (ds.createdDate = (SELECT MAX(CreatedDate) FROM Document_Student WHERE Id = ds.Id) OR s.ProgramId = p.Id)" +
+                    " AND ds.CurriculumId IS NOT NULL" +
+                    " AND p.Name != 'PC'";
             Query queryDocStudent = em.createNativeQuery(queryStr, DocumentStudentEntity.class);
             List<DocumentStudentEntity> docStudentList = queryDocStudent.getResultList();
 
             List<Integer> curriculumList = new ArrayList<>();
             docStudentMap = new HashMap<>();
             for (DocumentStudentEntity docStudent : docStudentList) {
-                docStudentMap.put(docStudent.getStudentId().getId(), docStudent);
+                List<DocumentStudentEntity> curDocList = docStudentMap.get(docStudent.getStudentId().getId());
+                if (curDocList == null) {
+                    curDocList = new ArrayList<>();
+                    docStudentMap.put(docStudent.getStudentId().getId(), curDocList);
+                }
+                curDocList.add(docStudent);
                 curriculumList.add(docStudent.getCurriculumId().getId());
             }
 
@@ -164,7 +172,7 @@ public class GoodStudentController {
 
             // Change SubjectCurriculum List to HashMap
             Map<Integer, List<SubjectCurriculumEntity>> subjectCurriculumMap = new HashMap<>();
-            for (SubjectCurriculumEntity sc: subjectCurriculumList) {
+            for (SubjectCurriculumEntity sc : subjectCurriculumList) {
                 int currentCurriId = sc.getCurriculumId().getId();
                 if (subjectCurriculumMap.get(currentCurriId) != null) {
                     subjectCurriculumMap.get(currentCurriId).add(sc);
@@ -177,7 +185,14 @@ public class GoodStudentController {
 
             // Validate student mark list
             for (Integer studentId : studentMarkList.keySet()) {
-                int curriculumId = docStudentMap.get(studentId).getCurriculumId().getId();
+                List<SubjectCurriculumEntity> allStudentSubjects = new ArrayList<>();
+                for (DocumentStudentEntity docStudent : docStudentMap.get(studentId)) {
+                    List<SubjectCurriculumEntity> subjectCurriList = subjectCurriculumMap
+                            .get(docStudent.getCurriculumId().getId());
+                    if (subjectCurriList != null && !subjectCurriList.isEmpty()) {
+                        allStudentSubjects.addAll(subjectCurriList);
+                    }
+                }
 
                 Map<Integer, List<GoodStudentMarkModel>>
                         semesterMarkList = studentMarkList.get(studentId);
@@ -186,7 +201,7 @@ public class GoodStudentController {
                     List<GoodStudentMarkModel> markList = semesterMarkList.get(semesId);
 
                     if (checkSubjectsAreLearnedAgain(semesterPositionMap, semesterMarkList, semesId)
-                            && validateMarkList(markList, subjectCurriculumMap.get(curriculumId))) {
+                            && validateMarkList(markList, allStudentSubjects)) {
                         if (studentList.get(studentId) == null) {
                             studentList.put(studentId, new HashMap<>());
                         }
@@ -202,10 +217,11 @@ public class GoodStudentController {
         for (int studentId : studentList.keySet()) {
             Map<Integer, List<GoodStudentMarkModel>> semesterMarkList = studentList.get(studentId);
             StudentEntity studentEntity = studentService.findStudentById(studentId);
-            DocumentStudentEntity documentStudentEntity = docStudentMap.get(studentId);
+            List<DocumentStudentEntity> documentStudentList = docStudentMap.get(studentId);
 
             for (int semesId : semesterMarkList.keySet()) {
                 List<GoodStudentMarkModel> markList = semesterMarkList.get(semesId);
+                int curriculumId = markList.get(0).getCurriculumId();
 
                 List<String> row = new ArrayList<>();
                 row.add(studentEntity.getRollNumber()); // RollNumber
@@ -216,8 +232,13 @@ public class GoodStudentController {
                         break;
                     }
                 }
-                row.add(documentStudentEntity.getCurriculumId().getProgramId().getName() + "_"
-                        + documentStudentEntity.getCurriculumId().getName()); // Curriculum
+                for (DocumentStudentEntity docStudent :documentStudentList) {
+                    if (docStudent.getCurriculumId().getId() == curriculumId) {
+                        row.add(docStudent.getCurriculumId().getProgramId().getName() + "_"
+                                + docStudent.getCurriculumId().getName()); // Curriculum
+                        break;
+                    }
+                }
                 row.add("Học kỳ " + markList.get(0).getTerm()); // Term
                 row.add(this.calculateAverageMark(markList) + ""); // AverageMark
 
@@ -226,9 +247,8 @@ public class GoodStudentController {
         }
 
 
-
-        Collections.sort(result, new Comparator<List<String>>(){
-            public int compare(List<String> o1, List<String> o2){
+        Collections.sort(result, new Comparator<List<String>>() {
+            public int compare(List<String> o1, List<String> o2) {
                 int compareRollNumber = o1.get(0).compareTo(o2.get(0));
 
                 if (compareRollNumber != 0) {
@@ -244,7 +264,7 @@ public class GoodStudentController {
     }
 
     private boolean checkSubjectsAreLearnedAgain(Map<Integer, Integer> semesterPositionMap,
-                            Map<Integer, List<GoodStudentMarkModel>> semesterMarkList, int curSemesterId) {
+                                                 Map<Integer, List<GoodStudentMarkModel>> semesterMarkList, int curSemesterId) {
         boolean isValidate = true;
 
         int curSemesterPosition = semesterPositionMap.get(curSemesterId);
@@ -337,6 +357,75 @@ public class GoodStudentController {
         }
 
         return Math.round(sum / totalCredits * 10.0) / 10.0;
+    }
+
+    private class GoodStudentMarkModel {
+        private int markId;
+        private String subjectId;
+        private double mark;
+        private int term;
+        private int credits;
+        private String status;
+        private int curriculumId;
+
+        public GoodStudentMarkModel() {
+        }
+
+        public int getMarkId() {
+            return markId;
+        }
+
+        public void setMarkId(int markId) {
+            this.markId = markId;
+        }
+
+        public String getSubjectId() {
+            return subjectId;
+        }
+
+        public void setSubjectId(String subjectId) {
+            this.subjectId = subjectId;
+        }
+
+        public double getMark() {
+            return mark;
+        }
+
+        public void setMark(double mark) {
+            this.mark = mark;
+        }
+
+        public int getTerm() {
+            return term;
+        }
+
+        public void setTerm(int term) {
+            this.term = term;
+        }
+
+        public int getCredits() {
+            return credits;
+        }
+
+        public void setCredits(int credits) {
+            this.credits = credits;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public int getCurriculumId() {
+            return curriculumId;
+        }
+
+        public void setCurriculumId(int curriculumId) {
+            this.curriculumId = curriculumId;
+        }
     }
 
 }

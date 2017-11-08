@@ -137,7 +137,7 @@
                 })
             },
             "oLanguage": {
-                "sSearchPlaceholder": "Tìm theo MSSV, Học kỳ, Khóa, Kỳ",
+                "sSearchPlaceholder": "Tìm theo MSSV, TênSV, Khóa, Kỳ",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
