@@ -14,7 +14,7 @@ public class StudentServiceImpl implements IStudentService {
     ExStudentEntityJpaController studentEntityJpaController = new ExStudentEntityJpaController(emf);
 
     @Override
-    public void createStudentList(List<DocumentStudentEntity> studentEntityList) {
+    public void createStudentList(List<StudentEntity> studentEntityList) {
         studentEntityJpaController.createStudentList(studentEntityList);
     }
 

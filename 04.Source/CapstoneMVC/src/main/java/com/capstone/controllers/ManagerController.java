@@ -193,7 +193,7 @@ public class ManagerController {
             if (!docs.isEmpty()) {
                 docs.forEach(c -> {
                     List<String> tmp = new ArrayList<>();
-                    tmp.add(c.getCurriculumId().getProgramId().getName() + "_" + c.getCurriculumId().getName());
+                    tmp.add(c.getCurriculumId() == null ? "N/A" : c.getCurriculumId().getProgramId().getName() + "_" + c.getCurriculumId().getName());
                     tmp.add(c.getDocumentId().getCode() + " - " + c.getDocumentId().getDocTypeId().getName());
                     tmp.add(df.format(c.getCreatedDate()));
                     parent.add(tmp);

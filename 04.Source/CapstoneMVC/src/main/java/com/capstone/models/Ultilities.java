@@ -563,7 +563,7 @@ public class Ultilities {
         Collections.sort(list, new Comparator<DocumentStudentEntity>() {
             @Override
             public int compare(DocumentStudentEntity o1, DocumentStudentEntity o2) {
-                return o1.getCreatedDate().compareTo(o2.getCreatedDate());
+                return o2.getCreatedDate().compareTo(o1.getCreatedDate());
             }
         });
         return list;

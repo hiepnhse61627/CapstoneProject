@@ -53,7 +53,7 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
         }
     }
 
-    public void createStudentList(List<DocumentStudentEntity> students) {
+    public void createStudentList(List<StudentEntity> students) {
         ICurriculumService curriculumService = new CurriculumServiceImpl();
         totalLine = students.size();
         currentLine = 0;
@@ -61,52 +61,50 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
         EntityManager em = null;
         try {
             em = getEntityManager();
-            for (DocumentStudentEntity docStudent : students) {
+            for (StudentEntity student : students) {
                 try {
                     em.getTransaction().begin();
 
                     // Create student
                     TypedQuery<StudentEntity> queryStudent = em.createQuery(
                             "SELECT c FROM StudentEntity c WHERE c.rollNumber = :rollNumber", StudentEntity.class);
-                    queryStudent.setParameter("rollNumber", docStudent.getStudentId().getRollNumber());
+                    queryStudent.setParameter("rollNumber", student.getRollNumber());
 
                     List<StudentEntity> std = queryStudent.getResultList();
                     if (std.isEmpty()) {
-                        em.persist(docStudent.getStudentId());
+                        em.persist(student);
                         em.flush();
-                    } else {
-                        docStudent.setStudentId(std.get(0));
                     }
 
                     // Create document student
-                    if (docStudent.getDocumentId() != null) {
-                        TypedQuery<DocumentStudentEntity> queryDocStudent = em.createQuery(
-                                "SELECT d FROM DocumentStudentEntity d" +
-                                        " WHERE d.studentId.id = :studentId" +
-                                        " AND d.curriculumId.id" + (docStudent.getCurriculumId() != null ? " = :curriId" : " IS NULL") +
-                                        " AND d.documentId.id = :docId"
-                                , DocumentStudentEntity.class);
-                        queryDocStudent.setParameter("studentId", docStudent.getStudentId().getId());
-                        queryDocStudent.setParameter("docId", docStudent.getDocumentId().getId());
-                        if (docStudent.getCurriculumId() != null) {
-                            queryDocStudent.setParameter("curriId", docStudent.getCurriculumId().getId());
-                        }
-
-                        List<DocumentStudentEntity> docEntity = queryDocStudent.getResultList();
-                        if (docEntity.isEmpty()) {
-                            if (docStudent.getCurriculumId() != null) {
-                                CurriculumEntity curriculumTemp = curriculumService.getCurriculumById(
-                                        docStudent.getCurriculumId().getId());
-                                docStudent.setCurriculumId(curriculumTemp);
-                            }
-
-                            em.persist(docStudent);
-                        }
-                    }
+//                    if (student != null) {
+//                        TypedQuery<DocumentStudentEntity> queryDocStudent = em.createQuery(
+//                                "SELECT d FROM DocumentStudentEntity d" +
+//                                        " WHERE d.studentId.id = :studentId" +
+//                                        " AND d.curriculumId.id" + (student.getCurriculumId() != null ? " = :curriId" : " IS NULL") +
+//                                        " AND d.documentId.id = :docId"
+//                                , DocumentStudentEntity.class);
+//                        queryDocStudent.setParameter("studentId", student.getStudentId().getId());
+//                        queryDocStudent.setParameter("docId", student.getDocumentId().getId());
+//                        if (student.getCurriculumId() != null) {
+//                            queryDocStudent.setParameter("curriId", student.getCurriculumId().getId());
+//                        }
+//
+//                        List<DocumentStudentEntity> docEntity = queryDocStudent.getResultList();
+//                        if (docEntity.isEmpty()) {
+//                            if (student.getCurriculumId() != null) {
+//                                CurriculumEntity curriculumTemp = curriculumService.getCurriculumById(
+//                                        student.getCurriculumId().getId());
+//                                student.setCurriculumId(curriculumTemp);
+//                            }
+//
+//                            em.persist(student);
+//                        }
+//                    }
 
                     em.getTransaction().commit();
                 } catch (Exception e) {
-                    System.out.println("Student " + docStudent.getStudentId().getRollNumber() + "caused " + e.getMessage());
+                    System.out.println("Student " + student.getRollNumber() + "caused " + e.getMessage());
                     e.printStackTrace();
                 }
 
