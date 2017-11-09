@@ -505,23 +505,30 @@ public class Ultilities {
         StudentEntity student = studentService.findStudentById(studentId);
         List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
 
-        List<SubjectEntity> result = new ArrayList<>();
+        List<SubjectCurriculumEntity> data = new ArrayList<>();
         if (docs.size() > 0) {
-            IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
-            List<Integer> tmp = new ArrayList<>();
-            tmp.add(student.getId());
-            docs = documentStudentService.getDocumentStudentByByStudentId(tmp);
-            CurriculumEntity curriculumEntity = docs.get(0).getCurriculumId();
-            if (curriculumEntity != null) {
-                List<SubjectCurriculumEntity> listCur = curriculumEntity.getSubjectCurriculumEntityList();
-                listCur.sort(Comparator.comparingInt(SubjectCurriculumEntity::getOrdinalNumber));
-
-                for (SubjectCurriculumEntity c : listCur) {
-                    if (listSubjects.stream().anyMatch(a -> a.getId().equals(c.getSubjectId().getId()))) {
-                        result.add(c.getSubjectId());
+//            IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
+//            List<Integer> tmp = new ArrayList<>();
+//            tmp.add(student.getId());
+//            docs = documentStudentService.getDocumentStudentByByStudentId(tmp);
+//            CurriculumEntity curriculumEntity = docs.get(0).getCurriculumId();
+            for (DocumentStudentEntity doc : docs) {
+                if (doc.getCurriculumId() != null) {
+                    List<SubjectCurriculumEntity> listCur = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                    for (SubjectCurriculumEntity c : listCur) {
+                        if (listSubjects.stream().anyMatch(a -> a.getId().equals(c.getSubjectId().getId()))) {
+                            data.add(c);
+                        }
                     }
                 }
             }
+        }
+
+        data.sort(Comparator.comparingInt(SubjectCurriculumEntity::getOrdinalNumber));
+
+        List<SubjectEntity> result = new ArrayList<>();
+        for (SubjectCurriculumEntity c : data) {
+            if (!result.contains(c.getSubjectId())) result.add(c.getSubjectId());
         }
 
         return result;
@@ -532,15 +539,14 @@ public class Ultilities {
 //        IStudentService service = new StudentServiceImpl();
 //        StudentEntity student = service.findStudentById(studentId);
         if (student != null) {
-            IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
-            List<Integer> tmp = new ArrayList<>();
-            tmp.add(student.getId());
-            List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentByByStudentId(tmp);
+            List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
             if (!docs.isEmpty()) {
-                if (docs.get(0).getCurriculumId() != null) {
-                    List<SubjectCurriculumEntity> cursubs = docs.get(0).getCurriculumId().getSubjectCurriculumEntityList();
-                    for (SubjectCurriculumEntity s : cursubs) {
-                        if (!subs.contains(s.getSubjectId().getId())) subs.add(s.getSubjectId().getId());
+                for (DocumentStudentEntity doc : docs) {
+                    if (doc.getCurriculumId() != null) {
+                        List<SubjectCurriculumEntity> cursubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                        for (SubjectCurriculumEntity s : cursubs) {
+                            if (!subs.contains(s.getSubjectId().getId())) subs.add(s.getSubjectId().getId());
+                        }
                     }
                 }
             }
