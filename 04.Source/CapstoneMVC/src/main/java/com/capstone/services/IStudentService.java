@@ -19,4 +19,5 @@ public interface IStudentService {
     StudentEntity cleanDocumentAndOldRollNumber(StudentEntity stu);
     List<StudentEntity> getStudentByDocType(int type);
     StudentEntity createStudent(StudentEntity studentEntity);
+    List<StudentEntity> findStudentByProgramId(Integer programId);
 }

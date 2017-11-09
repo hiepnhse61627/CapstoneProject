@@ -264,4 +264,24 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
 
         return studentEntity;
     }
+
+    public List<StudentEntity> findStudentByProgramId(Integer programId) {
+        EntityManager em = getEntityManager();
+        List<StudentEntity> studentEntityList = new ArrayList<>();
+        try {
+            String sqlString = "SELECT s FROM StudentEntity s WHERE s.programId.id = :programId";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("programId", programId);
+
+            studentEntityList = query.getResultList();
+
+            return studentEntityList;
+        } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
 }

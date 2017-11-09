@@ -1,9 +1,6 @@
 package com.capstone.controllers;
 
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.ProgramEntity;
-import com.capstone.entities.RealSemesterEntity;
-import com.capstone.entities.StudentEntity;
+import com.capstone.entities.*;
 import com.capstone.models.Enums;
 import com.capstone.models.Logger;
 import com.capstone.models.Ultilities;
@@ -27,6 +24,8 @@ public class GraduateController {
     IProgramService programService = new ProgramServiceImpl();
     IRealSemesterService semesterService = new RealSemesterServiceImpl();
     IMarksService markService = new MarksServiceImpl();
+    IStudentService studentService = new StudentServiceImpl();
+    ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
 
     @RequestMapping("/graduate")
     public ModelAndView Index() {
@@ -88,7 +87,43 @@ public class GraduateController {
     }
 
     private List<List<String>> processGraduate(Map<String, String> params) {
+        int programId = Integer.parseInt(params.get("programId"));
+        List<StudentEntity> studentEntityList = new ArrayList<>();
+        if (programId != 0) {
+            studentEntityList = studentService.findStudentByProgramId(programId);
+        }
+
+        for (StudentEntity student : studentEntityList) {
+            List<SubjectEntity> subjectEntityList = getSubjectsInCurriculumns(student.getDocumentStudentEntityList());
+            int creditsInCurriculum = countCreditsInCurriculumn(subjectEntityList);
+            System.out.println(creditsInCurriculum);
+        }
+
         return null;
+    }
+
+    private List<SubjectEntity> getSubjectsInCurriculumns(List<DocumentStudentEntity> documentStudentEntityList) {
+        List<SubjectEntity> subjectEntityList = new ArrayList<>();
+        if (documentStudentEntityList != null && !documentStudentEntityList.isEmpty()) {
+            for (DocumentStudentEntity documentStudentEntity : documentStudentEntityList) {
+                CurriculumEntity curriculumEntity = documentStudentEntity.getCurriculumId();
+                List<SubjectCurriculumEntity> subjectCurriculumEntityList = subjectCurriculumService.getSubjectCurriculums(curriculumEntity.getId());
+                List<SubjectEntity> subjects = subjectCurriculumEntityList.stream().filter(s -> s.getTermNumber() != 0).map(s -> s.getSubjectId()).collect(Collectors.toList());
+
+                subjectEntityList.addAll(subjects);
+            }
+        }
+        return subjectEntityList;
+    }
+
+    private Integer countCreditsInCurriculumn(List<SubjectEntity> subjectEntityList) {
+        int credits = 0;
+        if (subjectEntityList != null && !subjectEntityList.isEmpty()) {
+            for (SubjectEntity subjectEntity : subjectEntityList) {
+                credits += subjectEntity.getCredits();
+            }
+        }
+        return credits;
     }
 }
 

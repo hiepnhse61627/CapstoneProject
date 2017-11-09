@@ -68,6 +68,11 @@ public class StudentServiceImpl implements IStudentService {
     }
 
     @Override
+    public List<StudentEntity> findStudentByProgramId(Integer programId) {
+        return studentEntityJpaController.findStudentByProgramId(programId);
+    }
+
+    @Override
     public int getCurrentLine() {
         return studentEntityJpaController.getCurrentLine();
     }
