@@ -118,8 +118,8 @@
                             <tr>
                                 <th>MSSV</th>
                                 <th>Tên</th>
-                                <th>Tín chỉ</th>
-                                <th>Tín chỉ du</th>
+                                <th>Tín chỉ tích lũy</th>
+                                <th>Tín chỉ dư</th>
                             </tr>
                             </thead>
                             <tbody></tbody>
@@ -144,38 +144,75 @@
     var table = null;
     var timeOut = 0;
 
+    jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
+        var _that = this;
+
+        if (iDelay === undefined) {
+            iDelay = 250;
+        }
+
+        this.each(function (i) {
+            $.fn.dataTableExt.iApiIndex = i;
+            var
+                $this = this,
+                oTimerId = null,
+                sPreviousSearch = null,
+                anControl = $('input', _that.fnSettings().aanFeatures.f);
+
+            anControl.off('keyup search input').on('keyup search input', function () {
+                var $$this = $this;
+
+                if ((anControl.val().length == 0 || anControl.val().length >= 3) && (sPreviousSearch === null || sPreviousSearch != anControl.val())) {
+                    window.clearTimeout(oTimerId);
+                    sPreviousSearch = anControl.val();
+                    oTimerId = window.setTimeout(function () {
+                        $.fn.dataTableExt.iApiIndex = i;
+                        _that.fnFilter(anControl.val());
+                    }, iDelay);
+                }
+            });
+
+            return this;
+        });
+        return this;
+    };
+
     $(document).ready(function () {
         $('.select').select2();
 
-        $('#credit').on("input", function () {
-            this.value = this.value.replace(/[^0-9]/g, '');
-            clearTimeout(timeOut);
-            timeOut = setTimeout(RefreshTable, 500);
-        });
-
-        $('#credit').on("blur", function() {
-            if (this.value == '') {
-                this.value = '0';
-            }
-        });
-
-        $('#sCredit').on("input", function () {
-            this.value = this.value.replace(/[^0-9]/g, '');
-            clearTimeout(timeOut);
-            timeOut = setTimeout(RefreshTable, 500);
-        });
-
-        $('#sCredit').on("blur", function() {
-            if (this.value == '') {
-                this.value = '0';
-            }
-        });
+//        $('#credit').on("input", function () {
+//            this.value = this.value.replace(/[^0-9]/g, '');
+//            clearTimeout(timeOut);
+//            timeOut = setTimeout(RefreshTable, 500);
+//        });
+//
+//        $('#credit').on("blur", function() {
+//            if (this.value == '') {
+//                this.value = '0';
+//            }
+//        });
+//
+//        $('#sCredit').on("input", function () {
+//            this.value = this.value.replace(/[^0-9]/g, '');
+//            clearTimeout(timeOut);
+//            timeOut = setTimeout(RefreshTable, 500);
+//        });
+//
+//        $('#sCredit').on("blur", function() {
+//            if (this.value == '') {
+//                this.value = '0';
+//            }
+//        });
 
         $('#program').on('change', function() {
             RefreshTable();
         });
 
         $('#semester').on('change', function() {
+            RefreshTable();
+        });
+
+        $('#type').on('change', function() {
             RefreshTable();
         });
 
@@ -216,7 +253,7 @@
                 },
             ],
             "bAutoWidth": false,
-        });
+        }).fnSetFilteringDelay(1000);
     });
 
     function ExportExcel() {
