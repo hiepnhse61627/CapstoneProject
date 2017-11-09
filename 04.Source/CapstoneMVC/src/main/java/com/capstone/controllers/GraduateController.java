@@ -138,9 +138,13 @@ public class GraduateController {
                 }
                 int percent = student.getProgramId().getOjt();
                 int tongtinchi = 0;
+                List<String> datontai = new ArrayList<>();
                 for (MarksEntity mark : marks) {
                     if (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt")) {
-                        tongtinchi += mark.getSubjectMarkComponentId().getSubjectId().getCredits();
+                        if (!datontai.contains(mark.getSubjectMarkComponentId().getSubjectId().getId())) {
+                            tongtinchi += mark.getSubjectMarkComponentId().getSubjectId().getCredits();
+                            datontai.add(mark.getSubjectMarkComponentId().getSubjectId().getId());
+                        }
                     }
                 }
 
