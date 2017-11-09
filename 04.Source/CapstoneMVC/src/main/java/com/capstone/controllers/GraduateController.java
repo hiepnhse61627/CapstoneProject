@@ -50,8 +50,8 @@ public class GraduateController {
         String type = params.get("type");
         if (type.equals("Graduate")) {
             studentList = processGraduate(params);
-        } else {
-            type.equals("OJT");
+        } else if(type.equals("OJT")) {
+            studentList = proccessOJT(params);
         }
 //        int totalCredit = Integer.parseInt(params.get("credit").isEmpty() ? "0" : params.get("credit"));
 //        int sCredit = Integer.parseInt(params.get("sCredit").isEmpty() ? "0" : params.get("sCredit"));
@@ -102,13 +102,19 @@ public class GraduateController {
             IMarksService marksService = new MarksServiceImpl();
 
             List<StudentEntity> students = studentService.getStudentByProgram(programId);
+            int i = 1;
             for (StudentEntity student : students) {
+                System.out.println((i++) + " - " + students.size());
+
                 List<SubjectCurriculumEntity> subjects = new ArrayList<>();
 
                 List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
                 for (DocumentStudentEntity doc : docs) {
-                    if (doc.getCurriculumId() != null) {
-                        doc.getCurriculumId().getSubjectCurriculumEntityList().forEach(c -> subjects.add(c));
+                    if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
+                        List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                        for (SubjectCurriculumEntity s : list ) {
+                            if (!subjects.contains(s)) subjects.add(s);
+                        }
                     }
                 }
 
@@ -143,7 +149,7 @@ public class GraduateController {
                     t.add(student.getRollNumber());
                     t.add(student.getFullName());
                     t.add(String.valueOf(tongtinchi));
-                    t.add(String.valueOf(tongtinchi > required ? (tongtinchi - required) : 0));
+                    t.add(String.valueOf((tongtinchi > required) ? (tongtinchi - required) : 0));
                     data.add(t);
                 }
             }
