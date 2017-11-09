@@ -64,18 +64,14 @@
                     <div class="my-content p-l-10">
                         <div class="my-input-group">
                             <div class="left-content m-r-5">
-                                <label class="p-t-8">Tín chỉ:</label>
+                                <label class="p-t-8">Loại xét</label>
                             </div>
                             <div class="right-content width-30 width-m-70">
-                                <input class="form-control bfh-number" id="credit" type="text" value="145"/>
-                            </div>
-                        </div>
-                        <div class="my-input-group">
-                            <div class="left-content m-r-5">
-                                <label class="p-t-8">Tín chỉ CN:</label>
-                            </div>
-                            <div class="right-content width-30 width-m-70">
-                                <input class="form-control bfh-number" id="sCredit" type="text" value="145"/>
+                                <select id="type" class="select form-control">
+                                    <option value="OJT">OJT</option>
+                                    <option value="SWP">Đồ Án</option>
+                                    <option value="Graduate">Tốt Nghiệp</option>
+                                </select>
                             </div>
                         </div>
                         <div class="my-input-group">
@@ -195,8 +191,7 @@
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "programId", "value": $("#program").val()}),
                     aoData.push({"name": "semesterId", "value": $("#semester").val()}),
-                    aoData.push({"name": "credit", "value": $("#credit").val()}),
-                    aoData.push({"name": "sCredit", "value": $("#sCredit").val()})
+                    aoData.push({"name": "type", "value": $("#type").val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "Tìm kiếm theo MSSV, Tên",

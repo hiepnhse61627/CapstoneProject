@@ -349,8 +349,9 @@ public class SubjectCurriculumController {
             int termIndex = -1;
             int subjectIndex = -1;
             int curriculumIndex = -1;
+            int programIndex = -1;
 
-            int rowIndex = 0;
+            int rowIndex;
             boolean flag = false;
 
             for (rowIndex = 0; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
@@ -365,9 +366,11 @@ public class SubjectCurriculumController {
                             subjectIndex = cellIndex;
                         } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("termno")) {
                             termIndex = cellIndex;
+                        } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("program")) {
+                            programIndex = cellIndex;
                         }
 
-                        if (termIndex != -1 && subjectIndex != -1 && curriculumIndex != -1) {
+                        if (termIndex != -1 && subjectIndex != -1 && curriculumIndex != -1 && programIndex != -1) {
                             flag = true;
                             break;
                         }
@@ -391,17 +394,15 @@ public class SubjectCurriculumController {
 
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
-                    String curriculumCode = row.getCell(curriculumIndex).getStringCellValue();
+                    String curriculumName = row.getCell(curriculumIndex).getStringCellValue().trim();
                     String subjectCode = row.getCell(subjectIndex).getStringCellValue().trim();
+                    String programName = row.getCell(programIndex).getStringCellValue().trim();
                     Double termNo = row.getCell(termIndex).getNumericCellValue();
 
-                    int pos = curriculumCode.indexOf("_");
-                    if (map.get(curriculumCode) == null) {
+                    if (map.get(curriculumName) == null) {
                         SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
                         if (subjectEntity != null) {
-                            String propramName = curriculumCode.substring(0, pos);
-                            String curriculumName = curriculumCode.substring(pos + 1);
-                            ProgramEntity programEntity = programService.getProgramByName(propramName);
+                            ProgramEntity programEntity = programService.getProgramByName(programName);
                             if (programEntity != null) {
                                 // create curriculum
                                 CurriculumEntity curriculumEntity = curriculumService.getCurriculumByNameAndProgramId(curriculumName, programEntity.getId());
@@ -415,7 +416,7 @@ public class SubjectCurriculumController {
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
                                     subjectCurriculumEntityList.add(subjectCurriculumEntity);
 
-                                    map.put(curriculumCode, subjectCurriculumEntityList);
+                                    map.put(curriculumName, subjectCurriculumEntityList);
                                 } else { // curriculum null
                                     curriculumEntity = new CurriculumEntity();
                                     curriculumEntity.setProgramId(programEntity);
@@ -430,16 +431,14 @@ public class SubjectCurriculumController {
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
                                     subjectCurriculumEntityList.add(subjectCurriculumEntity);
 
-                                    map.put(curriculumCode, subjectCurriculumEntityList);
+                                    map.put(curriculumName, subjectCurriculumEntityList);
                                 }
                             }
                         }
                     } else {
                         SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
                         if (subjectEntity != null) {
-                            String propramName = curriculumCode.substring(0, pos);
-                            String curriculumName = curriculumCode.substring(pos + 1);
-                            ProgramEntity programEntity = programService.getProgramByName(propramName);
+                            ProgramEntity programEntity = programService.getProgramByName(programName);
                             if (programEntity != null) {
                                 // create curriculum
                                 CurriculumEntity curriculumEntity = curriculumService.getCurriculumByNameAndProgramId(curriculumName, programEntity.getId());
@@ -448,10 +447,10 @@ public class SubjectCurriculumController {
                                     SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
                                     subjectCurriculumEntity.setCurriculumId(curriculumEntity);
                                     subjectCurriculumEntity.setSubjectId(subjectEntity);
-                                    subjectCurriculumEntity.setOrdinalNumber(map.get(curriculumCode).size() + 1);
+                                    subjectCurriculumEntity.setOrdinalNumber(map.get(curriculumName).size() + 1);
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
 
-                                    map.get(curriculumCode).add(subjectCurriculumEntity);
+                                    map.get(curriculumName).add(subjectCurriculumEntity);
                                 } else { // curriculum null
                                     curriculumEntity = new CurriculumEntity();
                                     curriculumEntity.setProgramId(programEntity);
@@ -461,10 +460,10 @@ public class SubjectCurriculumController {
                                     SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
                                     subjectCurriculumEntity.setCurriculumId(curriculumEntity);
                                     subjectCurriculumEntity.setSubjectId(subjectEntity);
-                                    subjectCurriculumEntity.setOrdinalNumber(map.get(curriculumCode).size() + 1);
+                                    subjectCurriculumEntity.setOrdinalNumber(map.get(curriculumName).size() + 1);
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
 
-                                    map.get(curriculumCode).add(subjectCurriculumEntity);
+                                    map.get(curriculumName).add(subjectCurriculumEntity);
                                 }
                             }
                         }

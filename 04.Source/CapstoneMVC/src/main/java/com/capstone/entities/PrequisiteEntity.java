@@ -9,6 +9,8 @@ import java.io.Serializable;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.NamedQueries;
@@ -30,6 +32,7 @@ public class PrequisiteEntity implements Serializable {
     @Id
     @Basic(optional = false)
     @Column(name = "SubjectId", nullable = false, length = 50)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String subjectId;
     @Column(name = "PrequisiteSubs", length = 2147483647)
     private String prequisiteSubs;

@@ -8,7 +8,22 @@ package com.capstone.entities;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+import javax.persistence.UniqueConstraint;
 
 /**
  *
@@ -41,11 +56,13 @@ public class StudentEntity implements Serializable {
     private Boolean gender;
     @Column(name = "Term")
     private Integer term;
+    @Column(name = "Status", length = 50)
+    private String status;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
     private List<DocumentStudentEntity> documentStudentEntityList;
-    @OneToMany(mappedBy = "studentId", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "studentId")
     private List<OldRollNumberEntity> oldRollNumberEntityList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
+    @OneToMany(mappedBy = "studentId")
     private List<MarksEntity> marksEntityList;
     @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
     @ManyToOne
@@ -117,6 +134,14 @@ public class StudentEntity implements Serializable {
 
     public void setTerm(Integer term) {
         this.term = term;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public List<DocumentStudentEntity> getDocumentStudentEntityList() {

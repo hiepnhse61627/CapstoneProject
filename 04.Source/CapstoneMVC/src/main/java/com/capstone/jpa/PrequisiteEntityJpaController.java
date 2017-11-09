@@ -14,7 +14,6 @@ import javax.persistence.criteria.Root;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.jpa.exceptions.IllegalOrphanException;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
-import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -35,7 +34,7 @@ public class PrequisiteEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(PrequisiteEntity prequisiteEntity) throws IllegalOrphanException, PreexistingEntityException, Exception {
+    public void create(PrequisiteEntity prequisiteEntity) throws IllegalOrphanException {
         List<String> illegalOrphanMessages = null;
         SubjectEntity subjectEntityOrphanCheck = prequisiteEntity.getSubjectEntity();
         if (subjectEntityOrphanCheck != null) {
@@ -65,11 +64,6 @@ public class PrequisiteEntityJpaController implements Serializable {
                 subjectEntity = em.merge(subjectEntity);
             }
             em.getTransaction().commit();
-        } catch (Exception ex) {
-            if (findPrequisiteEntity(prequisiteEntity.getSubjectId()) != null) {
-                throw new PreexistingEntityException("PrequisiteEntity " + prequisiteEntity + " already exists.", ex);
-            }
-            throw ex;
         } finally {
             if (em != null) {
                 em.close();
