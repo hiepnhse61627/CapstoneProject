@@ -80,7 +80,6 @@
                             </div>
                             <div class="right-content width-30 width-m-70">
                                 <select id="program" class="select form-control">
-                                    <option value="0" selected>Tất cả</option>
                                     <c:forEach var="program" items="${programList}">
                                         <option value="${program.id}">${program.name}</option>
                                     </c:forEach>
@@ -93,7 +92,6 @@
                             </div>
                             <div class="right-content width-30 width-m-70">
                                 <select id="semester" class="select form-control">
-                                    <option value="0" selected>Tất cả</option>
                                     <c:forEach var="semester" items="${semesterList}">
                                         <option value="${semester.id}">${semester.semester}</option>
                                     </c:forEach>

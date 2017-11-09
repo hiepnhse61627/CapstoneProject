@@ -58,6 +58,10 @@ public class StudentEntity implements Serializable {
     private Integer term;
     @Column(name = "Status", length = 50)
     private String status;
+    @Column(name = "Shift", length = 5)
+    private String shift;
+    @Column(name = "PayRollClass", length = 50)
+    private String payRollClass;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
     private List<DocumentStudentEntity> documentStudentEntityList;
     @OneToMany(mappedBy = "studentId")
@@ -142,6 +146,22 @@ public class StudentEntity implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getShift() {
+        return shift;
+    }
+
+    public void setShift(String shift) {
+        this.shift = shift;
+    }
+
+    public String getPayRollClass() {
+        return payRollClass;
+    }
+
+    public void setPayRollClass(String payRollClass) {
+        this.payRollClass = payRollClass;
     }
 
     public List<DocumentStudentEntity> getDocumentStudentEntityList() {

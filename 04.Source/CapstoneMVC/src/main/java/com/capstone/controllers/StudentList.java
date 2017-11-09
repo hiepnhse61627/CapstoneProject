@@ -246,9 +246,7 @@ public class StudentList {
                         ds = docStudent;
                     }
                 }
-                dataList.add(ds != null
-                        ? ds.getCurriculumId().getProgramId().getName() + "_" + ds.getCurriculumId().getName()
-                        : "N/A");
+                dataList.add(std.getProgramId().getName());
                 dataList.add(std.getId() + "");
 
                 result.add(dataList);

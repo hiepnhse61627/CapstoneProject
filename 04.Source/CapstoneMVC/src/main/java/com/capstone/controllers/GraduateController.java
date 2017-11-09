@@ -96,11 +96,15 @@ public class GraduateController {
         List<List<String>> data = new ArrayList<>();
 
         int programId = Integer.parseInt(params.get("programId"));
+        int semesterId = Integer.parseInt(params.get("semesterId"));
+
+        // get list semester to current semesterId
+        List<RealSemesterEntity> semesters = getToCurrentSemester(semesterId);
+        Set<Integer> semesterIds = semesters.stream().map(s -> s.getId()).collect(Collectors.toSet());
+
         List<StudentEntity> studentEntityList = new ArrayList<>();
-        if (programId != 0) {
-            studentEntityList = studentService.findStudentByProgramId(programId);
-            studentEntityList = studentEntityList.stream().filter(s -> s.getTerm() > 0).collect(Collectors.toList());
-        }
+        studentEntityList = studentService.findStudentByProgramId(programId);
+        studentEntityList = studentEntityList.stream().filter(s -> s.getTerm() == 9).collect(Collectors.toList());
 
         for (StudentEntity student : studentEntityList) {
             List<SubjectEntity> subjectEntityList = getSubjectsInCurriculumns(student.getDocumentStudentEntityList());
@@ -124,7 +128,8 @@ public class GraduateController {
             // filter passed marks
             List<MarksEntity> passedMarks = new ArrayList<>();
             for (MarksEntity marksEntity : marksEntityList) {
-                if (marksEntity.getStatus().toLowerCase().contains("pass") || marksEntity.getStatus().toLowerCase().contains("exempt")) {
+                if ((marksEntity.getStatus().toLowerCase().contains("pass") || marksEntity.getStatus().toLowerCase().contains("exempt"))
+                        && (semesterIds.contains(marksEntity.getSemesterId().getId()))) {
                     passedMarks.add(marksEntity);
                 }
             }
@@ -140,9 +145,6 @@ public class GraduateController {
             int studentCredits = 0;
             for (MarksEntity marksEntity : distinctMarks) {
                 if (subjectCdsInCurriculum.contains(marksEntity.getSubjectMarkComponentId().getSubjectId().getId())) {
-                    if (student.getId() == 31180) {
-                        System.out.println(marksEntity.getSubjectMarkComponentId().getSubjectId().getId() + "_" + marksEntity.getSubjectMarkComponentId().getSubjectId().getCredits());
-                    }
                     studentCredits += marksEntity.getSubjectMarkComponentId().getSubjectId().getCredits();
                 }
             }
@@ -185,6 +187,27 @@ public class GraduateController {
         }
         return credits;
 	}
+
+    /**
+     * [This method processes (sort all semesters then iterate over the list, add semester to result list until reaching the current semester)
+     *              and returns list semesters from the beginning to current semester]
+     * @param currentSemesterId
+     * @return listResult
+     * @author HiepNH
+     * @DateCreated 28/10/2017
+     **/
+    private List<RealSemesterEntity> getToCurrentSemester (Integer currentSemesterId) {
+        List<RealSemesterEntity> semesters = semesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+        List<RealSemesterEntity> listResult = new ArrayList<>();
+        for (RealSemesterEntity semester : semesters) {
+            listResult.add(semester);
+            if (semester.getId() == currentSemesterId) {
+                break;
+            }
+        }
+        return listResult;
+    }
 	
     private List<List<String>> proccessOJT(Map<String, String> params) {
         List<List<String>> data = new ArrayList<>();
@@ -197,6 +220,7 @@ public class GraduateController {
             IMarksService marksService = new MarksServiceImpl();
 
             List<StudentEntity> students = studentService.getStudentByProgram(programId);
+            students = students.stream().filter(c -> c.getTerm() == 5).collect(Collectors.toList());
             int i = 1;
             for (StudentEntity student : students) {
                 System.out.println((i++) + " - " + students.size());
