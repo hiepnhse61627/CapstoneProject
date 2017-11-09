@@ -156,7 +156,7 @@
                 {
                     "aTargets": [3],
                     "mRender": function (data, type, row) {
-                        return row[3] + " sv/lớp";
+                        return row[3] + " lớp";
                     }
                 },
             ],
