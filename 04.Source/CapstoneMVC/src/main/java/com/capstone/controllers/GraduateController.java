@@ -160,10 +160,25 @@ public class GraduateController {
     private List<List<String>> processCapstone(Map<String, String> params) {
         List<List<String>> result = new ArrayList<>();
         IMarkComponentService markComponentService = new MarkComponentServiceImpl();
+        IRealSemesterService semesterService = new RealSemesterServiceImpl();
         MarkComponentEntity markComponent = markComponentService.getMarkComponentByName(Enums.MarkComponent.AVERAGE.getValue());
 
         int programId = Integer.parseInt(params.get("programId"));
         int semesterId = Integer.parseInt(params.get("semesterId"));
+
+        String strSemesterIds = "";
+        if (semesterId > 0) {
+            List<Integer> semesterIds = new ArrayList<>();
+            List<RealSemesterEntity> semesterList = Ultilities.SortSemesters(semesterService.getAllSemester());
+            for (RealSemesterEntity semester : semesterList) {
+                semesterIds.add(semester.getId());
+                if (semester.getId() == semesterId) {
+                    break;
+                }
+            }
+            strSemesterIds = Ultilities.parseIntegerListToString(semesterIds);
+        }
+
 
         try {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
@@ -176,9 +191,11 @@ public class GraduateController {
                     " INNER JOIN Program p ON c.ProgramId = p.Id" +
                     " AND CurriculumId IS NOT NULL" +
                     " AND p.Name != 'PC'" +
+                    ((programId > 0) ? " AND p.Id = ?" : "") +
                     " GROUP BY ds.StudentId" +
                     " HAVING COUNT(ds.CurriculumId) > 1";
             Query queryStudentIds = em.createNativeQuery(queryStr);
+            if (programId > 0) queryStudentIds.setParameter(1, programId);
             List<Object> studentIds = queryStudentIds.getResultList();
             String strStudentIds = "";
             int count = 0;
@@ -198,9 +215,10 @@ public class GraduateController {
                     " INNER JOIN Program p ON c.ProgramId = p.Id" +
                     " INNER JOIN Subject_Curriculum sc ON c.Id = sc.CurriculumId" +
                     " AND sub.Id = sc.SubjectId" +
-                    " AND m.IsActivated = 1 AND m.Status = 'Passed'" +
+                    " AND m.IsActivated = 1 AND (m.Status = 'Passed' OR m.Status = 'IsExempt')" +
                     " AND smc.MarkComponentId = ?" +
                     " AND ds.StudentId IN (" + strStudentIds + ")" +
+                    (semesterId > 0 ? " AND m.SemesterId IN (" + strSemesterIds + ")" : "") +
                     " GROUP BY m.StudentId, s.RollNumber, s.FullName, sub.Id, sub.Credits, sc.CurriculumId, p.Name, p.Capstone" +
                     " ORDER BY m.StudentId";
             Query query = em.createNativeQuery(queryStr);
