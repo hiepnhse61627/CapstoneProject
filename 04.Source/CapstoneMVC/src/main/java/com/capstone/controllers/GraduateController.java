@@ -52,8 +52,8 @@ public class GraduateController {
         String type = params.get("type");
         if (type.equals("Graduate")) {
             studentList = processGraduate(params);
-        } else {
-            type.equals("OJT");
+        } else if (type.equals("OJT")) {
+            studentList = proccessOJT(params);
         }
 //        int totalCredit = Integer.parseInt(params.get("credit").isEmpty() ? "0" : params.get("credit"));
 //        int sCredit = Integer.parseInt(params.get("sCredit").isEmpty() ? "0" : params.get("sCredit"));
@@ -90,19 +90,73 @@ public class GraduateController {
     }
 
     private List<List<String>> processGraduate(Map<String, String> params) {
+        List<List<String>> data = new ArrayList<>();
+
         int programId = Integer.parseInt(params.get("programId"));
         List<StudentEntity> studentEntityList = new ArrayList<>();
         if (programId != 0) {
             studentEntityList = studentService.findStudentByProgramId(programId);
+            studentEntityList = studentEntityList.stream().filter(s -> s.getTerm() > 0).collect(Collectors.toList());
         }
 
         for (StudentEntity student : studentEntityList) {
             List<SubjectEntity> subjectEntityList = getSubjectsInCurriculumns(student.getDocumentStudentEntityList());
+            List<SubjectEntity> comparedList = new ArrayList<>();
+            comparedList.addAll(subjectEntityList);
+            for (SubjectEntity subjectEntity : subjectEntityList) {
+                List<SubjectEntity> replaces = subjectEntity.getSubjectEntityList();
+                if (replaces != null && !replaces.isEmpty()) {
+                    comparedList.addAll(replaces);
+                }
+                List<SubjectEntity> replaces2 = subjectEntity.getSubjectEntityList1();
+                if (replaces2 != null && !replaces2.isEmpty()) {
+                    comparedList.addAll(replaces2);
+                }
+            }
+            Set<String> subjectCdsInCurriculum = comparedList.stream().map(s -> s.getId()).collect(Collectors.toSet());
+            // calculate credits in curriculum
             int creditsInCurriculum = countCreditsInCurriculumn(subjectEntityList);
-            System.out.println(creditsInCurriculum);
+            // get mark list from student
+            List<MarksEntity> marksEntityList = student.getMarksEntityList();
+            // filter passed marks
+            List<MarksEntity> passedMarks = new ArrayList<>();
+            for (MarksEntity marksEntity : marksEntityList) {
+                if (marksEntity.getStatus().toLowerCase().contains("pass") || marksEntity.getStatus().toLowerCase().contains("exempt")) {
+                    passedMarks.add(marksEntity);
+                }
+            }
+            // distinct passed Marks
+            List<MarksEntity> distinctMarks = new ArrayList<>();
+            for (MarksEntity mark : passedMarks) {
+                if (!distinctMarks.stream().anyMatch(d -> d.getStudentId().getRollNumber().equalsIgnoreCase(mark.getStudentId().getRollNumber())
+                        && d.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(mark.getSubjectMarkComponentId().getSubjectId().getId()))) {
+                    distinctMarks.add(mark);
+                }
+            }
+            // calculate student credits
+            int studentCredits = 0;
+            for (MarksEntity marksEntity : distinctMarks) {
+                if (subjectCdsInCurriculum.contains(marksEntity.getSubjectMarkComponentId().getSubjectId().getId())) {
+                    if (student.getId() == 31180) {
+                        System.out.println(marksEntity.getSubjectMarkComponentId().getSubjectId().getId() + "_" + marksEntity.getSubjectMarkComponentId().getSubjectId().getCredits());
+                    }
+                    studentCredits += marksEntity.getSubjectMarkComponentId().getSubjectId().getCredits();
+                }
+            }
+
+            int percent = student.getProgramId().getGraduate();
+            if (studentCredits >= ((creditsInCurriculum * percent * 1.0) / 100)) {
+                System.out.println(studentCredits + "_____" + creditsInCurriculum);
+                List<String> t = new ArrayList<>();
+                t.add(student.getRollNumber());
+                t.add(student.getFullName());
+                t.add(String.valueOf(studentCredits));
+                t.add(String.valueOf(studentCredits > creditsInCurriculum ? (studentCredits - creditsInCurriculum) : 0));
+                data.add(t);
+            }
         }
 
-        return null;
+        return data;
     }
 
     private List<SubjectEntity> getSubjectsInCurriculumns(List<DocumentStudentEntity> documentStudentEntityList) {
