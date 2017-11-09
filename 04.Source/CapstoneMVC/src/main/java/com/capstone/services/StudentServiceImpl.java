@@ -63,6 +63,11 @@ public class StudentServiceImpl implements IStudentService {
     }
 
     @Override
+    public List<StudentEntity> getStudentByProgram(int programId) {
+        return studentEntityJpaController.getStudentByProgram(programId);
+    }
+
+    @Override
     public StudentEntity createStudent(StudentEntity studentEntity) {
         return studentEntityJpaController.createStudent(studentEntity);
     }

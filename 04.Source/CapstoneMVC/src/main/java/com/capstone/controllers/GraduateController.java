@@ -1,9 +1,6 @@
 package com.capstone.controllers;
 
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.ProgramEntity;
-import com.capstone.entities.RealSemesterEntity;
-import com.capstone.entities.StudentEntity;
+import com.capstone.entities.*;
 import com.capstone.models.Enums;
 import com.capstone.models.Logger;
 import com.capstone.models.Ultilities;
@@ -19,6 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.*;
+import javax.security.auth.Subject;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -52,6 +50,8 @@ public class GraduateController {
         String type = params.get("type");
         if (type.equals("Graduate")) {
             studentList = processGraduate(params);
+        } else {
+            type.equals("OJT");
         }
 //        int totalCredit = Integer.parseInt(params.get("credit").isEmpty() ? "0" : params.get("credit"));
 //        int sCredit = Integer.parseInt(params.get("sCredit").isEmpty() ? "0" : params.get("sCredit"));
@@ -89,6 +89,69 @@ public class GraduateController {
 
     private List<List<String>> processGraduate(Map<String, String> params) {
         return null;
+    }
+
+    private List<List<String>> proccessOJT(Map<String, String> params) {
+        List<List<String>> data = new ArrayList<>();
+
+        try {
+            int programId = Integer.parseInt(params.get("programId"));
+            int semesterId = Integer.parseInt(params.get("semesterId"));
+
+            IStudentService studentService = new StudentServiceImpl();
+            IMarksService marksService = new MarksServiceImpl();
+
+            List<StudentEntity> students = studentService.getStudentByProgram(programId);
+            for (StudentEntity student : students) {
+                List<SubjectCurriculumEntity> subjects = new ArrayList<>();
+
+                List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+                for (DocumentStudentEntity doc : docs) {
+                    if (doc.getCurriculumId() != null) {
+                        doc.getCurriculumId().getSubjectCurriculumEntityList().forEach(c -> subjects.add(c));
+                    }
+                }
+
+                List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
+                for (SubjectCurriculumEntity c : subjects) {
+                    if (c.getTermNumber() >= 1 && c.getTermNumber() <= 5) {
+                        processedSub.add(c);
+                    }
+                }
+
+                List<String> tmp = new ArrayList<>();
+                for (SubjectCurriculumEntity s : processedSub) {
+                    if (!tmp.contains(s.getSubjectId().getId())) tmp.add(s.getSubjectId().getId());
+                }
+
+                List<MarksEntity> marks = marksService.getMarkByConditions(semesterId, tmp, student.getId());
+
+                int required = 0;
+                for (SubjectCurriculumEntity s : processedSub) {
+                    required += s.getSubjectId().getCredits();
+                }
+                int percent = student.getProgramId().getOjt();
+                int tongtinchi = 0;
+                for (MarksEntity mark : marks) {
+                    if (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt")) {
+                        tongtinchi += mark.getSubjectMarkComponentId().getSubjectId().getCredits();
+                    }
+                }
+
+                if (tongtinchi >= ((required * percent * 1.0) / 100)) {
+                    List<String> t = new ArrayList<>();
+                    t.add(student.getRollNumber());
+                    t.add(student.getFullName());
+                    t.add(String.valueOf(tongtinchi));
+                    t.add(String.valueOf(tongtinchi > required ? (tongtinchi - required) : 0));
+                    data.add(t);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return data;
     }
 }
 

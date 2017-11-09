@@ -658,4 +658,37 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         public int totalCredits;
         public int totalSpecializedCredits;
     }
+
+    public List<MarksEntity> getMarksByConditions(int semesterId, List<String> subjects, int studentId) {
+        if (realSemesters == null) {
+            realSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester());
+        }
+
+        List<MarksEntity> marks = new ArrayList<>();
+
+        List<Integer> allSemesters = new ArrayList<>();
+        for (RealSemesterEntity r : realSemesters) {
+            allSemesters.add(r.getId());
+            if (r.getId() == semesterId) {
+                break;
+            }
+        }
+
+        EntityManager em = getEntityManager();
+
+        String queryStr = "select a from MarksEntity a where a.isActivated = true and a.studentId.id = :id and a.semesterId.id IN :listSemester";
+        if (subjects != null && !subjects.isEmpty()) {
+            queryStr += " and a.subjectMarkComponentId.subjectId.id IN :sub";
+        }
+
+        TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
+        query.setParameter("listSemester", allSemesters);
+        query.setParameter("id", studentId);
+        if (subjects != null && !subjects.isEmpty()) {
+            query.setParameter("sub", subjects);
+        }
+        marks = query.getResultList();
+
+        return marks;
+    }
 }
