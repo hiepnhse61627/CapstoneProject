@@ -321,16 +321,31 @@ public class StudentDetail {
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = emf.createEntityManager();
 
-        String queryStr = "SELECT sc FROM DocumentStudentEntity ds, SubjectCurriculumEntity sc" +
-                " WHERE ds.studentId.id = :studentId AND ds.createdDate =" +
-                " (SELECT MAX(ds1.createdDate) FROM DocumentStudentEntity ds1 WHERE ds1.studentId.id = :studentId) " +
-                " AND ds.curriculumId.id = sc.curriculumId.id" +
-                " AND sc.termNumber = :term";
-        TypedQuery<SubjectCurriculumEntity> query = em.createQuery(queryStr, SubjectCurriculumEntity.class);
-        query.setParameter("studentId", stuId);
-        query.setParameter("term", student.getTerm() + 1);
+//        String queryStr = "SELECT sc FROM DocumentStudentEntity ds, SubjectCurriculumEntity sc" +
+//                " WHERE ds.studentId.id = :studentId AND ds.createdDate =" +
+//                " (SELECT MAX(ds1.createdDate) FROM DocumentStudentEntity ds1 WHERE ds1.studentId.id = :studentId) " +
+//                " AND ds.curriculumId.id = sc.curriculumId.id" +
+//                " AND sc.termNumber = :term";
+//        TypedQuery<SubjectCurriculumEntity> query = em.createQuery(queryStr, SubjectCurriculumEntity.class);
+//        query.setParameter("studentId", stuId);
+//        query.setParameter("term", student.getTerm() + 1);
 
-        List<SubjectCurriculumEntity> list = query.getResultList();
+        List<SubjectCurriculumEntity> list = new ArrayList<>();
+        List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+        if (!docs.isEmpty()) {
+            for (DocumentStudentEntity doc : docs) {
+                if (doc.getCurriculumId() != null) {
+                    List<SubjectCurriculumEntity> cursubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                    for (SubjectCurriculumEntity s : cursubs) {
+                        if (s.getTermNumber() == (student.getTerm() + 1)) {
+                            if (!list.contains(s)) list.add(s);
+                        }
+                    }
+                }
+            }
+        }
+
+//        List<SubjectCurriculumEntity> list = query.getResultList();
 
         List<SubjectEntity> failedPrequisiteList = new ArrayList<>();
 
@@ -523,16 +538,20 @@ public class StudentDetail {
         });
 
             /*-------------------------------Get Next Course------------------------------------------------*/
-        String queryStr = "SELECT sc FROM DocumentStudentEntity ds, SubjectCurriculumEntity sc" +
-                " WHERE ds.studentId.id = :studentId AND ds.createdDate =" +
-                " (SELECT MAX(ds1.createdDate) FROM DocumentStudentEntity ds1 WHERE ds1.studentId.id = :studentId) " +
-                " AND ds.curriculumId.id = sc.curriculumId.id" +
-                " AND sc.termNumber = :term";
-        TypedQuery<SubjectCurriculumEntity> query = em.createQuery(queryStr, SubjectCurriculumEntity.class);
-        query.setParameter("studentId", stuId);
-        query.setParameter("term", student.getTerm() + 1);
-
-        List<SubjectCurriculumEntity> listNextCurri = query.getResultList();
+        List<SubjectCurriculumEntity> listNextCurri = new ArrayList<>();
+        List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+        if (!docs.isEmpty()) {
+            for (DocumentStudentEntity doc : docs) {
+                if (doc.getCurriculumId() != null) {
+                    List<SubjectCurriculumEntity> cursubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                    for (SubjectCurriculumEntity s : cursubs) {
+                        if (s.getTermNumber() == (student.getTerm() + 1)) {
+                            if (!listNextCurri.contains(s)) listNextCurri.add(s);
+                        }
+                    }
+                }
+            }
+        }
         List<SubjectEntity> nextSubjects = new ArrayList<>();
         listNextCurri.forEach(c -> {
             if (!nextSubjects.contains(c.getSubjectId())) {
@@ -541,75 +560,77 @@ public class StudentDetail {
         });
 
         // check ojt and syb pass or not
-        DocumentStudentEntity doc = Ultilities.getStudentLatestDocument(student);
-        if (doc != null) {
-            if (doc.getCurriculumId() != null) {
-                ProgramEntity program = doc.getCurriculumId().getProgramId();
-                for (SubjectEntity subject : nextSubjects) {
-                    boolean exist = false;
-                    int percent = 0;
-                    if (subject.getType() == SubjectTypeEnum.OJT.getId()) {
-                        percent = program.getOjt(); // phan tram
-                        exist = true;
-                    } else if (subject.getType() == SubjectTypeEnum.Capstone.getId()) {
-                        percent = program.getCapstone();
-                        exist = true;
-                    }
-
-                    if (exist) {
-                        List<SubjectCurriculumEntity> curSubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
-                        int total = 0; // total total tin chi
-                        for (SubjectCurriculumEntity m : curSubs) {
-                            Integer num = m.getSubjectId().getCredits();
-                            total += (num == null ? 0 : num);
-                        }
-                        List<MarksEntity> stuSubs = student.getMarksEntityList();
-                        int tongtinchi = 0;
-                        for (MarksEntity mark : stuSubs) {
-                            if (mark.getIsActivated() && (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt"))) {
-                                Integer tmp = mark.getSubjectMarkComponentId().getSubjectId().getCredits();
-                                tongtinchi += (tmp == null ? 0 : tmp);
-                            }
-                        }
-                        // tính tổng tín chỉ
-                        List<List<String>> parent = new ArrayList<>();
-                        float required = (float) ((total * 1.0) * (percent * 1.0) / 100);
-                        if (tongtinchi > required) {
-                            suggestion.setDuchitieu(true);
-                        } else {
-                            suggestion.setDuchitieu(false);
-                        }
-
+        docs = student.getDocumentStudentEntityList();
+        if (!docs.isEmpty()) {
+            for (DocumentStudentEntity doc : docs) {
+                if (doc.getCurriculumId() != null) {
+                    ProgramEntity program = doc.getCurriculumId().getProgramId();
+                    for (SubjectEntity subject : nextSubjects) {
+                        boolean exist = false;
+                        int percent = 0;
                         if (subject.getType() == SubjectTypeEnum.OJT.getId()) {
-                            for (SubjectEntity s : nextSubjects) {
-                                List<String> tmp = new ArrayList<>();
-                                if (s.getType() == SubjectTypeEnum.OJT.getId() || s.getId().toLowerCase().contains("syb")) {
-                                    tmp.add(s.getId());
-                                    tmp.add(s.getName());
-                                    parent.add(tmp);
-                                }
-                            }
+                            percent = program.getOjt(); // phan tram
+                            exist = true;
                         } else if (subject.getType() == SubjectTypeEnum.Capstone.getId()) {
-                            for (SubjectEntity s : nextSubjects) {
-                                List<String> tmp = new ArrayList<>();
-                                if (s.getType() == SubjectTypeEnum.Capstone.getId()) {
-                                    tmp.add(s.getId());
-                                    tmp.add(s.getName());
-                                    parent.add(tmp);
-                                }
-                            }
+                            percent = program.getCapstone();
+                            exist = true;
                         }
 
-                        List<String> tmp = new ArrayList<>();
-                        tmp.add("break");
-                        tmp.add("");
-                        parent.add(tmp);
+                        if (exist) {
+                            List<SubjectCurriculumEntity> curSubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                            int total = 0; // total total tin chi
+                            for (SubjectCurriculumEntity m : curSubs) {
+                                Integer num = m.getSubjectId().getCredits();
+                                total += (num == null ? 0 : num);
+                            }
+                            List<MarksEntity> stuSubs = student.getMarksEntityList();
+                            int tongtinchi = 0;
+                            for (MarksEntity mark : stuSubs) {
+                                if (mark.getIsActivated() && (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt"))) {
+                                    Integer tmp = mark.getSubjectMarkComponentId().getSubjectId().getCredits();
+                                    tongtinchi += (tmp == null ? 0 : tmp);
+                                }
+                            }
+                            // tính tổng tín chỉ
+                            List<List<String>> parent = new ArrayList<>();
+                            float required = (float) ((total * 1.0) * (percent * 1.0) / 100);
+                            if (tongtinchi > required) {
+                                suggestion.setDuchitieu(true);
+                            } else {
+                                suggestion.setDuchitieu(false);
+                            }
 
-                        suggestion.setData(parent);
+                            if (subject.getType() == SubjectTypeEnum.OJT.getId()) {
+                                for (SubjectEntity s : nextSubjects) {
+                                    List<String> tmp = new ArrayList<>();
+                                    if (s.getType() == SubjectTypeEnum.OJT.getId() || s.getId().toLowerCase().contains("syb")) {
+                                        tmp.add(s.getId());
+                                        tmp.add(s.getName());
+                                        parent.add(tmp);
+                                    }
+                                }
+                            } else if (subject.getType() == SubjectTypeEnum.Capstone.getId()) {
+                                for (SubjectEntity s : nextSubjects) {
+                                    List<String> tmp = new ArrayList<>();
+                                    if (s.getType() == SubjectTypeEnum.Capstone.getId()) {
+                                        tmp.add(s.getId());
+                                        tmp.add(s.getName());
+                                        parent.add(tmp);
+                                    }
+                                }
+                            }
+
+                            List<String> tmp = new ArrayList<>();
+                            tmp.add("break");
+                            tmp.add("");
+                            parent.add(tmp);
+
+                            suggestion.setData(parent);
+                        }
                     }
+                } else {
+                    System.out.println("MSSV: " + student.getRollNumber() + "  ID  " + student.getId());
                 }
-            } else {
-                System.out.println("MSSV: " + student.getRollNumber() + "  ID  " + student.getId());
             }
         } else {
             System.out.println("Sinh viên " + student.getRollNumber() + " không có document!");

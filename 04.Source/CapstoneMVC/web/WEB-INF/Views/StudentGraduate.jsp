@@ -119,7 +119,7 @@
                                 <th>MSSV</th>
                                 <th>Tên</th>
                                 <th>Tín chỉ</th>
-                                <th>Tín chỉ du</th>
+                                <th>Tín chỉ dư</th>
                             </tr>
                             </thead>
                             <tbody></tbody>
