@@ -168,11 +168,19 @@ public class StudentFailPrequisite {
                 }
             }
 
-            if (!entity.getSubjectEntityList().isEmpty()) {
-                for (SubjectEntity replaces : entity.getSubjectEntityList()) {
-                    processedData.add(replaces.getId());
-                }
-            }
+//            for (SubjectEntity replaces : entity.getSubjectEntityList()) {
+//                processedData.add(replaces.getId());
+//            }
+//            for (SubjectEntity replaces : entity.getSubjectEntityList1()) {
+//                for (SubjectEntity r : replaces.getSubjectEntityList()) {
+//                    processedData.add(r.getId());
+//                }
+//            }
+//            if (!entity.getSubjectEntityList().isEmpty()) {
+//                for (SubjectEntity replaces : entity.getSubjectEntityList()) {
+//                    processedData.add(replaces.getId());
+//                }
+//            }
         } else {
             List<SubjectEntity> subs = subjectService.getAllSubjects();
             for (SubjectEntity sub : subs) {

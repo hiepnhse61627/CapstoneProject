@@ -59,61 +59,65 @@ public class StudentCurriculumMarksController {
 
                 Map<String, List<List<String>>> ma = new TreeMap<>();
                 if (!docs.isEmpty()) {
-                    CurriculumEntity cur = docs.get(0).getCurriculumId();
-                    List<SubjectCurriculumEntity> curSubjects = cur.getSubjectCurriculumEntityList();
-                    List<String> subjects = new ArrayList<>();
-                    for (SubjectCurriculumEntity s : curSubjects) {
-                        if (!subjects.contains(s.getSubjectId().getId())) subjects.add(s.getSubjectId().getId());
-                    }
+                    for (DocumentStudentEntity doc : docs) {
+                        CurriculumEntity cur = doc.getCurriculumId();
+                        if (cur != null) {
+                            List<SubjectCurriculumEntity> curSubjects = cur.getSubjectCurriculumEntityList();
+                            List<String> subjects = new ArrayList<>();
+                            for (SubjectCurriculumEntity s : curSubjects) {
+                                if (!subjects.contains(s.getSubjectId().getId())) subjects.add(s.getSubjectId().getId());
+                            }
 
-                    EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
-                    EntityManager man = fac.createEntityManager();
+                            EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
+                            EntityManager man = fac.createEntityManager();
 
-                    TypedQuery<MarksEntity> query = man.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
-                    query.setParameter("id", student.getId());
-                    query.setParameter("list", subjects);
-                    List<MarksEntity> marks = query.getResultList();
+                            TypedQuery<MarksEntity> query = man.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+                            query.setParameter("id", student.getId());
+                            query.setParameter("list", subjects);
+                            List<MarksEntity> marks = query.getResultList();
 
-                    if (!marks.isEmpty()) {
-                        Table<String, String, List<MarksEntity>> map = Ultilities.StudentSubjectHashmap(marks);
-                        Set<String> students = map.rowKeySet();
-                        for (String stu : students) {
-                            Map<String, List<MarksEntity>> subs = map.row(stu);
-                            for (Map.Entry<String, List<MarksEntity>> mark : subs.entrySet()) {
+                            if (!marks.isEmpty()) {
+                                Table<String, String, List<MarksEntity>> map = Ultilities.StudentSubjectHashmap(marks);
+                                Set<String> students = map.rowKeySet();
+                                for (String stu : students) {
+                                    Map<String, List<MarksEntity>> subs = map.row(stu);
+                                    for (Map.Entry<String, List<MarksEntity>> mark : subs.entrySet()) {
 
-                                List<String> result = new ArrayList<>();
-                                MarksEntity r = null;
-                                for (MarksEntity m : mark.getValue()) {
-                                    r = m;
-                                    if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt")) {
-                                        break;
+                                        List<String> result = new ArrayList<>();
+                                        MarksEntity r = null;
+                                        for (MarksEntity m : mark.getValue()) {
+                                            r = m;
+                                            if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt")) {
+                                                break;
+                                            }
+                                        }
+                                        if (r != null) {
+                                            result.add(mark.getKey());
+                                            result.add(r.getSubjectMarkComponentId().getSubjectId().getName());
+                                            result.add(r.getAverageMark().toString());
+                                            result.add(r.getStatus());
+                                        }
+
+                                        SubjectCurriculumEntity c = null;
+                                        for (SubjectCurriculumEntity s : curSubjects) {
+                                            if (s.getSubjectId().getId().equals(mark.getKey())) c = s;
+                                        }
+
+                                        String term;
+                                        if (c != null) {
+                                            term = "Học kỳ " + c.getTermNumber();
+                                        } else {
+                                            term = "Khác";
+                                        }
+
+                                        if (ma.get(term) == null) {
+                                            List<List<String>> o = new ArrayList<>();
+                                            o.add(result);
+                                            ma.put(term, o);
+                                        } else {
+                                            ma.get(term).add(result);
+                                        }
                                     }
-                                }
-                                if (r != null) {
-                                    result.add(mark.getKey());
-                                    result.add(r.getSubjectMarkComponentId().getSubjectId().getName());
-                                    result.add(r.getAverageMark().toString());
-                                    result.add(r.getStatus());
-                                }
-
-                                SubjectCurriculumEntity c = null;
-                                for (SubjectCurriculumEntity s : curSubjects) {
-                                    if (s.getSubjectId().getId().equals(mark.getKey())) c = s;
-                                }
-
-                                String term;
-                                if (c != null) {
-                                    term = "Học kỳ " + c.getTermNumber();
-                                } else {
-                                    term = "Khác";
-                                }
-
-                                if (ma.get(term) == null) {
-                                    List<List<String>> o = new ArrayList<>();
-                                    o.add(result);
-                                    ma.put(term, o);
-                                } else {
-                                    ma.get(term).add(result);
                                 }
                             }
                         }

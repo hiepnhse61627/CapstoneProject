@@ -7,17 +7,7 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  *
@@ -46,6 +36,8 @@ public class ProgramEntity implements Serializable {
     private Integer capstone;
     @Column(name = "Graduate")
     private Integer graduate;
+    @ManyToMany
+    private List<ProgramEntity> programEntityList;
     @OneToMany(mappedBy = "programId")
     private List<OldRollNumberEntity> oldRollNumberEntityList;
     @OneToMany(mappedBy = "programId")
@@ -56,6 +48,7 @@ public class ProgramEntity implements Serializable {
     public ProgramEntity() {
     }
 
+
     public ProgramEntity(Integer id) {
         this.id = id;
     }
@@ -63,6 +56,14 @@ public class ProgramEntity implements Serializable {
     public ProgramEntity(Integer id, String name) {
         this.id = id;
         this.name = name;
+    }
+
+    public List<ProgramEntity> getProgramEntityList() {
+        return programEntityList;
+    }
+
+    public void setProgramEntityList(List<ProgramEntity> programEntityList) {
+        this.programEntityList = programEntityList;
     }
 
     public Integer getId() {

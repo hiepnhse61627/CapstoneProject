@@ -2,6 +2,7 @@ package com.capstone.services;
 
 import com.capstone.entities.ProgramEntity;
 import com.capstone.jpa.exJpa.ExProgramEntityJpaController;
+import com.capstone.models.ProgramModel;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -30,5 +31,10 @@ public class ProgramServiceImpl implements IProgramService {
     @Override
     public ProgramEntity createProgram(ProgramEntity entity) {
         return controller.createProgram(entity);
+    }
+
+    @Override
+    public ProgramModel updateProgram(ProgramModel program) {
+        return controller.updateProgram(program);
     }
 }

@@ -283,5 +283,21 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
                 em.close();
             }
         }
+	}
+	
+    public List<StudentEntity> getStudentByProgram(int programId) {
+        EntityManager em = getEntityManager();
+        List<StudentEntity> result = null;
+
+        try {
+            String queryStr = "SELECT s FROM StudentEntity s WHERE s.programId.id = :program";
+            TypedQuery<StudentEntity> query = em.createQuery(queryStr, StudentEntity.class);
+            query.setParameter("program", programId);
+            result = query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 }
