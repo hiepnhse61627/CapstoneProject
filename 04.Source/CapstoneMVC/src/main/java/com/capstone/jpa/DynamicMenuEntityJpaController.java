@@ -7,7 +7,6 @@ package com.capstone.jpa;
 
 import com.capstone.entities.DynamicMenuEntity;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
-import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -32,18 +31,13 @@ public class DynamicMenuEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(DynamicMenuEntity dynamicMenuEntity) throws PreexistingEntityException, Exception {
+    public void create(DynamicMenuEntity dynamicMenuEntity) {
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
             em.persist(dynamicMenuEntity);
             em.getTransaction().commit();
-        } catch (Exception ex) {
-            if (findDynamicMenuEntity(dynamicMenuEntity.getId()) != null) {
-                throw new PreexistingEntityException("DynamicMenuEntity " + dynamicMenuEntity + " already exists.", ex);
-            }
-            throw ex;
         } finally {
             if (em != null) {
                 em.close();

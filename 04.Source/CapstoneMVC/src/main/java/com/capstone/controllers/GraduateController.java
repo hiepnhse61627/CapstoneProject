@@ -47,11 +47,16 @@ public class GraduateController {
     @ResponseBody
     public JsonObject GetGraduateStudents(@RequestParam Map<String, String> params) {
         JsonObject obj = new JsonObject();
+        List<List<String>> studentList = new ArrayList<>();
 
-        int totalCredit = Integer.parseInt(params.get("credit").isEmpty() ? "0" : params.get("credit"));
-        int sCredit = Integer.parseInt(params.get("sCredit").isEmpty() ? "0" : params.get("sCredit"));
-        int programId = Integer.parseInt(params.get("programId"));
-        int semesterId = Integer.parseInt(params.get("semesterId"));
+        String type = params.get("type");
+        if (type.equals("Graduate")) {
+            studentList = processGraduate(params);
+        }
+//        int totalCredit = Integer.parseInt(params.get("credit").isEmpty() ? "0" : params.get("credit"));
+//        int sCredit = Integer.parseInt(params.get("sCredit").isEmpty() ? "0" : params.get("sCredit"));
+//        int programId = Integer.parseInt(params.get("programId"));
+//        int semesterId = Integer.parseInt(params.get("semesterId"));
         final String sSearch = params.get("sSearch");
 
         int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
@@ -59,8 +64,8 @@ public class GraduateController {
 
         try {
             // RollNumber, FullName, TotalCredits, TotalSpecializedCredits
-            List<List<String>> studentList = markService.getMarksForGraduatedStudent(
-                    programId, semesterId, totalCredit, sCredit);
+//            List<List<String>> studentList = markService.getMarksForGraduatedStudent(
+//                    programId, semesterId, totalCredit, sCredit);
             List<List<String>> searchList = studentList.stream().filter(s ->
                     Ultilities.containsIgnoreCase(s.get(0), sSearch)
                     || Ultilities.containsIgnoreCase(s.get(1), sSearch)).collect(Collectors.toList());
@@ -80,6 +85,10 @@ public class GraduateController {
         }
 
         return obj;
+    }
+
+    private List<List<String>> processGraduate(Map<String, String> params) {
+        return null;
     }
 }
 

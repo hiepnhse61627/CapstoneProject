@@ -247,4 +247,21 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
 
         return result;
     }
+
+    public StudentEntity createStudent(StudentEntity studentEntity) {
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+
+            em.getTransaction().begin();
+            em.persist(studentEntity);
+            em.flush();
+            em.getTransaction().commit();
+        } finally {
+            em.close();
+        }
+
+        return studentEntity;
+    }
 }

@@ -7,7 +7,18 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 /**
  *
@@ -28,9 +39,9 @@ public class CurriculumEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "Name", nullable = false, length = 10)
     private String name;
-    @OneToMany(mappedBy = "curriculumId", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "curriculumId")
     private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "curriculumId")
+    @OneToMany(mappedBy = "curriculumId")
     private List<DocumentStudentEntity> documentStudentEntityList;
     @JoinColumn(name = "ProgramId", referencedColumnName = "Id", nullable = false)
     @ManyToOne(optional = false)

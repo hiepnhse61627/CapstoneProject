@@ -7,7 +7,19 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.Date;
-import javax.persistence.*;
+import javax.persistence.Basic;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -29,12 +41,15 @@ public class DocumentStudentEntity implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
     @JoinColumn(name = "CurriculumId", referencedColumnName = "Id")
-    @ManyToOne(optional = false)
+    @ManyToOne
     private CurriculumEntity curriculumId;
     @JoinColumn(name = "DocumentId", referencedColumnName = "Id", nullable = false)
     @ManyToOne(optional = false)
     private DocumentEntity documentId;
-    @JoinColumn(name = "StudentId", referencedColumnName = "Id", nullable = false)
+    @JoinColumn(name = "OldStudentId", referencedColumnName = "Id")
+    @ManyToOne
+    private OldRollNumberEntity oldStudentId;
+    @JoinColumn(name = "StudentId", referencedColumnName = "Id")
     @ManyToOne(optional = false)
     private StudentEntity studentId;
 
@@ -75,6 +90,14 @@ public class DocumentStudentEntity implements Serializable {
 
     public void setDocumentId(DocumentEntity documentId) {
         this.documentId = documentId;
+    }
+
+    public OldRollNumberEntity getOldStudentId() {
+        return oldStudentId;
+    }
+
+    public void setOldStudentId(OldRollNumberEntity oldStudentId) {
+        this.oldStudentId = oldStudentId;
     }
 
     public StudentEntity getStudentId() {

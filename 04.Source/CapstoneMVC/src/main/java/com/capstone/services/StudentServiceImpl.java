@@ -63,6 +63,11 @@ public class StudentServiceImpl implements IStudentService {
     }
 
     @Override
+    public StudentEntity createStudent(StudentEntity studentEntity) {
+        return studentEntityJpaController.createStudent(studentEntity);
+    }
+
+    @Override
     public int getCurrentLine() {
         return studentEntityJpaController.getCurrentLine();
     }

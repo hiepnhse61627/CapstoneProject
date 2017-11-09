@@ -174,7 +174,7 @@ public class ExCurriculumEntityJpaController extends CurriculumEntityJpaControll
         try {
             em = getEntityManager();
             TypedQuery<CurriculumEntity> query = em.createQuery(
-                    "SELECT c FROM CurriculumEntity c WHERE c.name LIKE :name", CurriculumEntity.class);
+                    "SELECT c FROM CurriculumEntity c WHERE c.name = :name", CurriculumEntity.class);
             query.setParameter("name", name);
 
             entity = query.getSingleResult();

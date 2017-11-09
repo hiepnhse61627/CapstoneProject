@@ -14,7 +14,6 @@ import com.capstone.entities.CurriculumEntity;
 import com.capstone.entities.SubjectCurriculumEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
-import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -34,7 +33,7 @@ public class SubjectCurriculumEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(SubjectCurriculumEntity subjectCurriculumEntity) throws PreexistingEntityException, Exception {
+    public void create(SubjectCurriculumEntity subjectCurriculumEntity) {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -59,11 +58,6 @@ public class SubjectCurriculumEntityJpaController implements Serializable {
                 subjectId = em.merge(subjectId);
             }
             em.getTransaction().commit();
-        } catch (Exception ex) {
-            if (findSubjectCurriculumEntity(subjectCurriculumEntity.getId()) != null) {
-                throw new PreexistingEntityException("SubjectCurriculumEntity " + subjectCurriculumEntity + " already exists.", ex);
-            }
-            throw ex;
         } finally {
             if (em != null) {
                 em.close();

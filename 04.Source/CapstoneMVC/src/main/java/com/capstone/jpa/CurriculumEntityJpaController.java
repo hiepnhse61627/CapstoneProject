@@ -16,9 +16,7 @@ import com.capstone.entities.SubjectCurriculumEntity;
 import java.util.ArrayList;
 import java.util.List;
 import com.capstone.entities.DocumentStudentEntity;
-import com.capstone.jpa.exceptions.IllegalOrphanException;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
-import com.capstone.jpa.exceptions.PreexistingEntityException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
@@ -37,7 +35,7 @@ public class CurriculumEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(CurriculumEntity curriculumEntity) throws PreexistingEntityException, Exception {
+    public void create(CurriculumEntity curriculumEntity) {
         if (curriculumEntity.getSubjectCurriculumEntityList() == null) {
             curriculumEntity.setSubjectCurriculumEntityList(new ArrayList<SubjectCurriculumEntity>());
         }
@@ -89,11 +87,6 @@ public class CurriculumEntityJpaController implements Serializable {
                 }
             }
             em.getTransaction().commit();
-        } catch (Exception ex) {
-            if (findCurriculumEntity(curriculumEntity.getId()) != null) {
-                throw new PreexistingEntityException("CurriculumEntity " + curriculumEntity + " already exists.", ex);
-            }
-            throw ex;
         } finally {
             if (em != null) {
                 em.close();
@@ -101,7 +94,7 @@ public class CurriculumEntityJpaController implements Serializable {
         }
     }
 
-    public void edit(CurriculumEntity curriculumEntity) throws IllegalOrphanException, NonexistentEntityException, Exception {
+    public void edit(CurriculumEntity curriculumEntity) throws NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -113,18 +106,6 @@ public class CurriculumEntityJpaController implements Serializable {
             List<SubjectCurriculumEntity> subjectCurriculumEntityListNew = curriculumEntity.getSubjectCurriculumEntityList();
             List<DocumentStudentEntity> documentStudentEntityListOld = persistentCurriculumEntity.getDocumentStudentEntityList();
             List<DocumentStudentEntity> documentStudentEntityListNew = curriculumEntity.getDocumentStudentEntityList();
-            List<String> illegalOrphanMessages = null;
-            for (DocumentStudentEntity documentStudentEntityListOldDocumentStudentEntity : documentStudentEntityListOld) {
-                if (!documentStudentEntityListNew.contains(documentStudentEntityListOldDocumentStudentEntity)) {
-                    if (illegalOrphanMessages == null) {
-                        illegalOrphanMessages = new ArrayList<String>();
-                    }
-                    illegalOrphanMessages.add("You must retain DocumentStudentEntity " + documentStudentEntityListOldDocumentStudentEntity + " since its curriculumId field is not nullable.");
-                }
-            }
-            if (illegalOrphanMessages != null) {
-                throw new IllegalOrphanException(illegalOrphanMessages);
-            }
             if (programIdNew != null) {
                 programIdNew = em.getReference(programIdNew.getClass(), programIdNew.getId());
                 curriculumEntity.setProgramId(programIdNew);
@@ -169,6 +150,12 @@ public class CurriculumEntityJpaController implements Serializable {
                     }
                 }
             }
+            for (DocumentStudentEntity documentStudentEntityListOldDocumentStudentEntity : documentStudentEntityListOld) {
+                if (!documentStudentEntityListNew.contains(documentStudentEntityListOldDocumentStudentEntity)) {
+                    documentStudentEntityListOldDocumentStudentEntity.setCurriculumId(null);
+                    documentStudentEntityListOldDocumentStudentEntity = em.merge(documentStudentEntityListOldDocumentStudentEntity);
+                }
+            }
             for (DocumentStudentEntity documentStudentEntityListNewDocumentStudentEntity : documentStudentEntityListNew) {
                 if (!documentStudentEntityListOld.contains(documentStudentEntityListNewDocumentStudentEntity)) {
                     CurriculumEntity oldCurriculumIdOfDocumentStudentEntityListNewDocumentStudentEntity = documentStudentEntityListNewDocumentStudentEntity.getCurriculumId();
@@ -197,7 +184,7 @@ public class CurriculumEntityJpaController implements Serializable {
         }
     }
 
-    public void destroy(Integer id) throws IllegalOrphanException, NonexistentEntityException {
+    public void destroy(Integer id) throws NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -209,17 +196,6 @@ public class CurriculumEntityJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The curriculumEntity with id " + id + " no longer exists.", enfe);
             }
-            List<String> illegalOrphanMessages = null;
-            List<DocumentStudentEntity> documentStudentEntityListOrphanCheck = curriculumEntity.getDocumentStudentEntityList();
-            for (DocumentStudentEntity documentStudentEntityListOrphanCheckDocumentStudentEntity : documentStudentEntityListOrphanCheck) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("This CurriculumEntity (" + curriculumEntity + ") cannot be destroyed since the DocumentStudentEntity " + documentStudentEntityListOrphanCheckDocumentStudentEntity + " in its documentStudentEntityList field has a non-nullable curriculumId field.");
-            }
-            if (illegalOrphanMessages != null) {
-                throw new IllegalOrphanException(illegalOrphanMessages);
-            }
             ProgramEntity programId = curriculumEntity.getProgramId();
             if (programId != null) {
                 programId.getCurriculumEntityList().remove(curriculumEntity);
@@ -229,6 +205,11 @@ public class CurriculumEntityJpaController implements Serializable {
             for (SubjectCurriculumEntity subjectCurriculumEntityListSubjectCurriculumEntity : subjectCurriculumEntityList) {
                 subjectCurriculumEntityListSubjectCurriculumEntity.setCurriculumId(null);
                 subjectCurriculumEntityListSubjectCurriculumEntity = em.merge(subjectCurriculumEntityListSubjectCurriculumEntity);
+            }
+            List<DocumentStudentEntity> documentStudentEntityList = curriculumEntity.getDocumentStudentEntityList();
+            for (DocumentStudentEntity documentStudentEntityListDocumentStudentEntity : documentStudentEntityList) {
+                documentStudentEntityListDocumentStudentEntity.setCurriculumId(null);
+                documentStudentEntityListDocumentStudentEntity = em.merge(documentStudentEntityListDocumentStudentEntity);
             }
             em.remove(curriculumEntity);
             em.getTransaction().commit();

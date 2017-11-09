@@ -18,4 +18,5 @@ public interface IStudentService {
     void saveStudent(StudentEntity stu) throws Exception;
     StudentEntity cleanDocumentAndOldRollNumber(StudentEntity stu);
     List<StudentEntity> getStudentByDocType(int type);
+    StudentEntity createStudent(StudentEntity studentEntity);
 }

@@ -19,7 +19,6 @@ import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.jpa.exceptions.IllegalOrphanException;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
-import com.capstone.jpa.exceptions.PreexistingEntityException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 
@@ -38,7 +37,7 @@ public class StudentEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(StudentEntity studentEntity) throws PreexistingEntityException, Exception {
+    public void create(StudentEntity studentEntity) {
         if (studentEntity.getDocumentStudentEntityList() == null) {
             studentEntity.setDocumentStudentEntityList(new ArrayList<DocumentStudentEntity>());
         }
@@ -108,11 +107,6 @@ public class StudentEntityJpaController implements Serializable {
                 }
             }
             em.getTransaction().commit();
-        } catch (Exception ex) {
-            if (findStudentEntity(studentEntity.getId()) != null) {
-                throw new PreexistingEntityException("StudentEntity " + studentEntity + " already exists.", ex);
-            }
-            throw ex;
         } finally {
             if (em != null) {
                 em.close();

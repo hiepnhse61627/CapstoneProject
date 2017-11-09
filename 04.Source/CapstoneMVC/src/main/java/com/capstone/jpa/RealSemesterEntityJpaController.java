@@ -13,7 +13,6 @@ import javax.persistence.criteria.Root;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.RealSemesterEntity;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
-import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -34,7 +33,7 @@ public class RealSemesterEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(RealSemesterEntity realSemesterEntity) throws PreexistingEntityException, Exception {
+    public void create(RealSemesterEntity realSemesterEntity) {
         if (realSemesterEntity.getMarksEntityList() == null) {
             realSemesterEntity.setMarksEntityList(new ArrayList<MarksEntity>());
         }
@@ -59,11 +58,6 @@ public class RealSemesterEntityJpaController implements Serializable {
                 }
             }
             em.getTransaction().commit();
-        } catch (Exception ex) {
-            if (findRealSemesterEntity(realSemesterEntity.getId()) != null) {
-                throw new PreexistingEntityException("RealSemesterEntity " + realSemesterEntity + " already exists.", ex);
-            }
-            throw ex;
         } finally {
             if (em != null) {
                 em.close();

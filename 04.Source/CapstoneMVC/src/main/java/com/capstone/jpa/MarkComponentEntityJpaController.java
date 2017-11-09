@@ -13,7 +13,6 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import com.capstone.entities.SubjectMarkComponentEntity;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
-import com.capstone.jpa.exceptions.PreexistingEntityException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -34,7 +33,7 @@ public class MarkComponentEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(MarkComponentEntity markComponentEntity) throws PreexistingEntityException, Exception {
+    public void create(MarkComponentEntity markComponentEntity) {
         if (markComponentEntity.getSubjectMarkComponentEntityList() == null) {
             markComponentEntity.setSubjectMarkComponentEntityList(new ArrayList<SubjectMarkComponentEntity>());
         }
@@ -59,11 +58,6 @@ public class MarkComponentEntityJpaController implements Serializable {
                 }
             }
             em.getTransaction().commit();
-        } catch (Exception ex) {
-            if (findMarkComponentEntity(markComponentEntity.getId()) != null) {
-                throw new PreexistingEntityException("MarkComponentEntity " + markComponentEntity + " already exists.", ex);
-            }
-            throw ex;
         } finally {
             if (em != null) {
                 em.close();
