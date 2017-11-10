@@ -1,13 +1,12 @@
 package com.capstone.controllers;
 
+import com.capstone.entities.RealSemesterEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.models.ReadAndSaveFileToServer;
 import com.capstone.models.Suggestion;
-import com.capstone.services.IStudentService;
-import com.capstone.services.ISubjectService;
-import com.capstone.services.StudentServiceImpl;
-import com.capstone.services.SubjectServiceImpl;
+import com.capstone.models.Ultilities;
+import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -27,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Controller
 public class StudentArrangementController {
@@ -45,7 +46,10 @@ public class StudentArrangementController {
 
     private final String xlsExcelExtension = "xls";
     private final String xlsxExcelExtension = "xlsx";
-    private final String folder = "DSSV-StudentsList";
+    private final String folder = "DSSV-XepLop";
+
+    private int totalStudents;
+    private int countStudents;
 
     @RequestMapping("/studentArrangement")
     public ModelAndView StudentArrangementIndex() {
@@ -57,15 +61,22 @@ public class StudentArrangementController {
 
     @RequestMapping("/studentArrangement/loadTable")
     @ResponseBody
-    public JsonObject LoadStudentArrangementTable(@RequestParam Map<String, String> params) {
+    public JsonObject LoadStudentArrangementTable(@RequestParam Map<String, String> params, HttpServletRequest request) {
         JsonObject jsonObj = new JsonObject();
 
+        int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
+        int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
+
         try {
-            List<List<String>> result = new ArrayList<>();
+            List<List<String>> studentList = (List<List<String>>) request.getSession().getAttribute("studentArrangementList");
+            if (studentList == null) {
+                studentList = new ArrayList<>();
+            }
+            List<List<String>> result = studentList.stream().skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
             JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
 
-            jsonObj.addProperty("iTotalRecords", result.size());
-            jsonObj.addProperty("iTotalDisplayRecords", result.size());
+            jsonObj.addProperty("iTotalRecords", studentList.size());
+            jsonObj.addProperty("iTotalDisplayRecords", studentList.size());
             jsonObj.add("aaData", aaData);
             jsonObj.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {
@@ -77,11 +88,11 @@ public class StudentArrangementController {
 
     @RequestMapping(value = "/studentArrangement/import", method = RequestMethod.POST)
     @ResponseBody
-    public Callable<JsonObject> upload(@RequestParam("file") MultipartFile file) {
+    public Callable<JsonObject> upload(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
         Callable<JsonObject> callable = new Callable<JsonObject>() {
             @Override
             public JsonObject call() throws Exception {
-                JsonObject obj = ReadFile(file, null, true);
+                JsonObject obj = ReadFile(file, null, true, request);
                 if (obj.get("success").getAsBoolean()) {
                     ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
                     read.saveFile(context, file, folder);
@@ -94,11 +105,18 @@ public class StudentArrangementController {
         return callable;
     }
 
-    private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile) {
+    private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile, HttpServletRequest request) {
         JsonObject jsonObj = new JsonObject();
         IStudentService studentService = new StudentServiceImpl();
         ISubjectService subjectService = new SubjectServiceImpl();
+        IRealSemesterService semesterService = new RealSemesterServiceImpl();
         StudentDetail studentDetailController = new StudentDetail();
+
+        this.totalStudents = 0;
+        this.countStudents = 0;
+
+        List<RealSemesterEntity> sortedSemester = Ultilities.SortSemesters(semesterService.getAllSemester());
+        String lastestSemester = sortedSemester.get(sortedSemester.size() - 1).getSemester();
 
         try {
             InputStream is = isNewFile ? file.getInputStream() : new FileInputStream(file2);
@@ -128,10 +146,7 @@ public class StudentArrangementController {
             int classIndex = 17;
             int statusIndex = 19;
 
-            Pattern pattern = Pattern.compile("\\d+");
-
-            // Map<Shift, Map<SubjectCode, StudentList>>
-            Map<String, Map<String, StudentList>> shiftMap = new HashMap<>();
+            List<StudentModel> studentList = new ArrayList<>();
             for (int rowIndex = excelDataIndexRow; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
@@ -159,67 +174,84 @@ public class StudentArrangementController {
                     if (!rollNumber.isEmpty()
                             && (status.equals("HD") || status.equals("HL"))
                             && !clazz.isEmpty() && clazz.matches("^[a-zA-Z]+\\d+$")) {
-                        StudentEntity student = studentService.findStudentByRollNumber(rollNumber);
-                        if (student != null) {
-                            List<List<String>> subjectList = null;
-                            if (status.equals("HD")) {
-                                subjectList = studentDetailController.processNext(student.getId(), "", false, false);
-                            } else if (status.equals("HL")) {
-                                Suggestion suggestion = studentDetailController.processSuggestion(student.getId(), "");
-                                subjectList = suggestion.getData();
-                                List<String> brea = new ArrayList<>();
-                                brea.add("break");
-                                brea.add("");
+                        StudentModel student = new StudentModel();
+                        student.rollNumber = rollNumber;
+                        student.clazz = clazz;
+                        student.status = status;
 
-                                int index = subjectList.indexOf(brea);
-                                if (index > -1) {
-                                    if (suggestion.isDuchitieu()) {
-                                        subjectList = subjectList.subList(0, index);
-                                    } else {
-                                        subjectList = subjectList.subList(index + 1, subjectList.size());
-                                    }
-                                }
-                            }
+                        studentList.add(student);
+                    }
+                }
+            }
 
-                            Matcher matcher = pattern.matcher(clazz);
-                            matcher.find();
-                            int classNumber = Integer.parseInt(clazz.substring(matcher.start(1), clazz.length()));
-                            String shift = classNumber % 2 == 0 ? "PM" : "AM";
+            this.totalStudents = studentList.size();
 
-                            Map<String, StudentList> subjectMap = shiftMap.get(shift);
-                            if (subjectMap == null) {
-                                shiftMap.put(shift, new HashMap<>());
-                            }
+            Pattern pattern = Pattern.compile("\\d+");
+            // Map<Shift, Map<SubjectCode, StudentList>>
+            Map<String, Map<String, StudentList>> shiftMap = new HashMap<>();
+            for (StudentModel std : studentList) {
+                StudentEntity student = studentService.findStudentByRollNumber(std.rollNumber);
+                if (student != null) {
+                    List<List<String>> subjectList = null;
+                    Suggestion suggestion = studentDetailController.processSuggestion(student.getId(),
+                            lastestSemester);
+                    subjectList = suggestion.getData();
+                    List<String> brea = new ArrayList<>();
+                    brea.add("break");
+                    brea.add("");
 
-                            for (List<String> subject : subjectList) {
-                                String subjectCode = subject.get(0);
-                                StudentList studentList = subjectMap.get(subjectCode);
-                                if (studentList == null) {
-                                    subjectMap.put(subjectCode, new StudentList());
-                                }
+                    int index = subjectList.indexOf(brea);
+                    if (index > -1) {
+                        if (suggestion.isDuchitieu()) {
+                            subjectList = subjectList.subList(0, index);
+                        } else {
+                            subjectList = subjectList.subList(index + 1, subjectList.size());
+                        }
+                    }
 
-                                if (status.equals("HD")) {
-                                    studentList.goingList.add(student);
-                                } else if (status.equals("HL")) {
-                                    studentList.relearnList.add(student);
-                                }
-                            }
+                    Matcher matcher = pattern.matcher(std.clazz);
+                    matcher.find();
+                    int classNumber = Integer.parseInt(std.clazz.substring(matcher.start(), std.clazz.length()));
+                    String shift = classNumber % 2 == 0 ? "PM" : "AM";
+
+                    Map<String, StudentList> subjectMap = shiftMap.get(shift);
+                    if (subjectMap == null) {
+                        subjectMap = new HashMap<>();
+                        shiftMap.put(shift, subjectMap);
+                    }
+
+                    for (List<String> subject : subjectList) {
+                        String subjectCode = subject.get(0);
+                        StudentList list = subjectMap.get(subjectCode);
+                        if (list == null) {
+                            list = new StudentList();
+                            subjectMap.put(subjectCode, list);
+                        }
+
+                        if (std.status.equals("HD")) {
+                            list.goingList.add(student);
+                        } else if (std.status.equals("HL")) {
+                            list.relearnList.add(student);
                         }
                     }
                 }
+                ++this.countStudents;
+                System.out.println(countStudents);
             }
 
             List<List<String>> result = new ArrayList<>();
-            int classNumber = 1;
-            int count = 0;
+            int classNumber = 0;
+            int count;
             for (String shift : shiftMap.keySet()) {
                 Map<String, StudentList> subjectMap = shiftMap.get(shift);
                 for (String subjectCode : subjectMap.keySet()) {
-                    StudentList studentList = subjectMap.get(subjectCode);
+                    count = 0;
+                    classNumber++;
+                    StudentList list = subjectMap.get(subjectCode);
                     SubjectEntity subject = subjectService.findSubjectById(subjectCode);
 
                     List<String> dataRow;
-                    for (StudentEntity student : studentList.goingList) {
+                    for (StudentEntity student : list.goingList) {
                         if (count == 25) {
                             classNumber++;
                             count = 0;
@@ -237,7 +269,7 @@ public class StudentArrangementController {
                         count++;
                     }
 
-                    for (StudentEntity student : studentList.relearnList) {
+                    for (StudentEntity student : list.relearnList) {
                         if (count == 25) {
                             classNumber++;
                             count = 0;
@@ -256,6 +288,8 @@ public class StudentArrangementController {
                     }
                 }
             }
+
+            request.getSession().setAttribute("studentArrangementList", result);
 
             jsonObj.addProperty("success", true);
         } catch (Exception e) {
@@ -263,6 +297,24 @@ public class StudentArrangementController {
         }
 
         return jsonObj;
+    }
+
+    @RequestMapping(value = "/studentArrangement/updateProgress")
+    @ResponseBody
+    public JsonObject UpdateProgress() {
+        JsonObject jsonObj = new JsonObject();
+
+        jsonObj.addProperty("total", this.totalStudents);
+        jsonObj.addProperty("count", this.countStudents);
+
+        return jsonObj;
+    }
+
+    private class StudentModel {
+        public String rollNumber;
+        public String clazz;
+        public String status;
+
     }
 
     private class StudentList {

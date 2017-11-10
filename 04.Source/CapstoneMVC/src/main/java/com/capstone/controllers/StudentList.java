@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.*;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -57,6 +60,47 @@ public class StudentList {
         view.addObject("curriculum", cur != null ? cur.getName() : "N/A");
 
         return view;
+    }
+
+    @RequestMapping(value = "/student/edit")
+    @ResponseBody
+    public JsonObject EditSubject(@RequestParam("sRollNumber") String rollNumber, @RequestParam("sFullName") String fullName,
+                                  @RequestParam("sGender") String gender, @RequestParam("sDOB") String dob) {
+        JsonObject jsonObj = new JsonObject();
+        IStudentService studentService = new StudentServiceImpl();
+        try {
+
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+            em.getTransaction().begin();
+            StudentEntity student = studentService.findStudentByRollNumber(rollNumber);
+
+            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+            Date date = dateFormat.parse(dob);
+            long time = date.getTime();
+            Timestamp dateOfBirth = new Timestamp(time);
+            student.setDateOfBirth(dateOfBirth);
+            student.setDateOfBirth(date);
+            student.setFullName(fullName);
+            if (gender.equals("Nam")){
+                student.setGender(true);
+            }else{
+                student.setGender(false);
+            }
+            em.merge(student);
+            em.flush();
+            em.getTransaction().commit();
+
+                jsonObj.addProperty("success", true);
+                jsonObj.addProperty("message", "update Fail");
+
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            jsonObj.addProperty("false", false);
+            jsonObj.addProperty("message", e.getMessage());
+        }
+
+        return jsonObj;
     }
 
     @RequestMapping(value = "/studentList/marks")
