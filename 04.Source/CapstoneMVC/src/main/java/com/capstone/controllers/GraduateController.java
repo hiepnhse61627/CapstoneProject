@@ -4,6 +4,7 @@ import com.capstone.entities.*;
 import com.capstone.enums.SubjectTypeEnum;
 import com.capstone.models.Enums;
 import com.capstone.models.Logger;
+import com.capstone.models.Suggestion;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import com.google.gson.Gson;
@@ -62,6 +63,8 @@ public class GraduateController {
             int programId = Integer.parseInt(params.get("programId"));
             int semesterId = Integer.parseInt(params.get("semesterId"));
 
+            RealSemesterEntity semester = semesterService.findSemesterById(semesterId);
+
             IStudentService studentService = new StudentServiceImpl();
             IMarksService marksService = new MarksServiceImpl();
 
@@ -76,7 +79,35 @@ public class GraduateController {
             }
 
             int i = 1;
+            StudentDetail detail = new StudentDetail();
             for (StudentEntity student : students) {
+
+                if (type.equals("OJT")) {
+                    // CHECK OJT DIEU KIEN DU THU KHAC NHAU
+                    Suggestion suggestion = detail.processSuggestion(student.getId(), semester.getSemester());
+                    List<List<String>> result2 = suggestion.getData();
+                    List<String> brea = new ArrayList<>();
+                    brea.add("break");
+                    brea.add("");
+                    int index = result2.indexOf(brea);
+                    if (index > -1) {
+                        if (suggestion.isDuchitieu()) {
+                            result2 = result2.subList(index + 1, result2.size());
+                        } else {
+                            result2 = result2.subList(0, index);
+                        }
+                    }
+                    boolean aye = true;
+                    for (List<String> r : result2) {
+                        if (r.get(0).toLowerCase().contains("oj") || r.get(1).toLowerCase().contains("oj")) {
+                            System.out.println("sinh viên " + student.getRollNumber() + " ko đủ đk");
+                            aye = false;
+                            break;
+                        }
+                    }
+                    if (!aye) break;
+                }
+
                 System.out.println((i++) + " - " + students.size());
 
                 List<SubjectCurriculumEntity> subjects = new ArrayList<>();
