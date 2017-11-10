@@ -21,6 +21,7 @@ public interface IMarksService {
     int countAllMarks();
     List<MarksEntity> getAllMarksByStudentAndSubject(int studentId, String subjectId, String semesterId);
     List<MarksEntity> getMarksByStudentIdAndStatus(int studentId, String status);
+    List<MarksEntity> getMarksByStudentIdAndStatusAndSemester(int studentId, String status, List<String> semesters);
     List<MarksEntity> getListMarkToCurrentSemester(List<Integer> semesterIds, String[] statuses);
     List<MarksEntity> getMarkByConditions(int semesterId, List<String> subjects, int studentId);
 

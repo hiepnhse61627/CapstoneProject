@@ -1,9 +1,6 @@
 package com.capstone.controllers;
 
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.StudentEntity;
-import com.capstone.entities.SubjectCurriculumEntity;
-import com.capstone.entities.SubjectEntity;
+import com.capstone.entities.*;
 import com.capstone.models.*;
 import com.capstone.services.*;
 import com.google.gson.Gson;
@@ -44,8 +41,16 @@ public class StudentDetailForStudent {
         return user;
     }
 
+    private String getSemester() {
+        IRealSemesterService service = new RealSemesterServiceImpl();
+        List<RealSemesterEntity> list = service.getAllSemester();;
+        String semester = Ultilities.SortSemesters(list).get(list.size() - 1).getSemester();
+        return semester;
+    }
+
     @RequestMapping("/studentDetail")
     public ModelAndView Index() {
+
         ModelAndView view = new ModelAndView("StudentDetailForStudent");
         view.addObject("title", "Thông tin chi tiết");
         CustomUser user = getPrincipal();
@@ -63,7 +68,7 @@ public class StudentDetailForStudent {
         int studentId = Integer.parseInt(params.get("stuId"));
 
         try {
-            List<List<String>> set2 = detail.processFailed(studentId);
+            List<List<String>> set2 = detail.processFailed(studentId, getSemester());
 
             List<List<String>> resultList = set2.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -89,7 +94,7 @@ public class StudentDetailForStudent {
         int stuId = Integer.parseInt(params.get("stuId"));
 
         try {
-            List<List<String>> result = detail.processCurrent(stuId);
+            List<List<String>> result = detail.processCurrent(stuId, getSemester());
 
             List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -115,7 +120,7 @@ public class StudentDetailForStudent {
         int stuId = Integer.parseInt(params.get("stuId"));
 
         try {
-            List<List<String>> result = detail.processNext(stuId, false, false);
+            List<List<String>> result = detail.processNext(stuId, getSemester(), false, false);
 
             List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -140,7 +145,7 @@ public class StudentDetailForStudent {
         int stuId = Integer.parseInt(params.get("stuId"));
 
         try {
-            Suggestion suggestion = detail.processSuggestion(stuId);
+            Suggestion suggestion = detail.processSuggestion(stuId, getSemester());
             List<List<String>> result = suggestion.getData();
 
             List<String> brea = new ArrayList<>();
@@ -179,7 +184,7 @@ public class StudentDetailForStudent {
         int stuId = Integer.parseInt(params.get("stuId"));
 
         try {
-            List<List<String>> result = detail.processNotStart(stuId);
+            List<List<String>> result = detail.processNotStart(stuId, getSemester());
 
             List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -205,9 +210,9 @@ public class StudentDetailForStudent {
         int stuId = Integer.parseInt(params.get("stuId"));
 
         try {
-            List<List<String>> result = detail.processNext(stuId, true, true);
+            List<List<String>> result = detail.processNext(stuId, getSemester(), true, true);
 
-            Suggestion suggestion = detail.processSuggestion(stuId);
+            Suggestion suggestion = detail.processSuggestion(stuId, getSemester());
             List<List<String>> result2 = suggestion.getData();
 
             List<String> brea = new ArrayList<>();
