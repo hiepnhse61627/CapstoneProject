@@ -3,6 +3,7 @@ package com.capstone.services;
 import com.capstone.entities.RealSemesterEntity;
 import com.capstone.jpa.exJpa.ExRealSemesterEntityJpaController;
 import com.capstone.jpa.exJpa.ExStudentEntityJpaController;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -31,5 +32,10 @@ public class RealSemesterServiceImpl implements IRealSemesterService {
     @Override
     public RealSemesterEntity findSemesterById(Integer id) {
         return realSemesterEntityJpaController.findRealSemesterEntity(id);
+    }
+
+    @Override
+    public void update(RealSemesterEntity semesterEntity) throws Exception {
+        realSemesterEntityJpaController.edit(semesterEntity);
     }
 }

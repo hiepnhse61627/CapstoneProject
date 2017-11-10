@@ -9,4 +9,5 @@ public interface IRealSemesterService {
     RealSemesterEntity createRealSemester(RealSemesterEntity entity);
     List<RealSemesterEntity> getAllSemester();
     RealSemesterEntity findSemesterById(Integer id);
+    void update(RealSemesterEntity semesterEntity) throws Exception;
 }
