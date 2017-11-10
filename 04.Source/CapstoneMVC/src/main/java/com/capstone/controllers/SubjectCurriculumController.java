@@ -341,15 +341,16 @@ public class SubjectCurriculumController {
         try {
             InputStream is = isNewFile ? file.getInputStream() : new FileInputStream(file2);
 
-            HSSFWorkbook workbook = new HSSFWorkbook(is);
-            HSSFSheet spreadsheet = workbook.getSheetAt(0);
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
 
-            HSSFRow row;
+            XSSFRow row;
 
             int termIndex = -1;
             int subjectIndex = -1;
             int curriculumIndex = -1;
             int programIndex = -1;
+            int creditsIndex = -1;
 
             int rowIndex;
             boolean flag = false;
@@ -368,9 +369,11 @@ public class SubjectCurriculumController {
                             termIndex = cellIndex;
                         } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("program")) {
                             programIndex = cellIndex;
+                        } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("credits")) {
+                            creditsIndex = cellIndex;
                         }
 
-                        if (termIndex != -1 && subjectIndex != -1 && curriculumIndex != -1 && programIndex != -1) {
+                        if (termIndex != -1 && subjectIndex != -1 && curriculumIndex != -1 && programIndex != -1 && creditsIndex != -1) {
                             flag = true;
                             break;
                         }
@@ -398,6 +401,7 @@ public class SubjectCurriculumController {
                     String subjectCode = row.getCell(subjectIndex).getStringCellValue().trim();
                     String programName = row.getCell(programIndex).getStringCellValue().trim();
                     Double termNo = row.getCell(termIndex).getNumericCellValue();
+                    Double subjectCredits = row.getCell(creditsIndex).getNumericCellValue();
 
                     if (map.get(curriculumName) == null) {
                         SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
@@ -414,6 +418,7 @@ public class SubjectCurriculumController {
                                     subjectCurriculumEntity.setSubjectId(subjectEntity);
                                     subjectCurriculumEntity.setOrdinalNumber(1);
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
+                                    subjectCurriculumEntity.setSubjectCredits(subjectCredits.intValue());
                                     subjectCurriculumEntityList.add(subjectCurriculumEntity);
 
                                     map.put(curriculumName, subjectCurriculumEntityList);
@@ -429,6 +434,7 @@ public class SubjectCurriculumController {
                                     subjectCurriculumEntity.setSubjectId(subjectEntity);
                                     subjectCurriculumEntity.setOrdinalNumber(1);
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
+                                    subjectCurriculumEntity.setSubjectCredits(subjectCredits.intValue());
                                     subjectCurriculumEntityList.add(subjectCurriculumEntity);
 
                                     map.put(curriculumName, subjectCurriculumEntityList);
@@ -449,6 +455,7 @@ public class SubjectCurriculumController {
                                     subjectCurriculumEntity.setSubjectId(subjectEntity);
                                     subjectCurriculumEntity.setOrdinalNumber(map.get(curriculumName).size() + 1);
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
+                                    subjectCurriculumEntity.setSubjectCredits(subjectCredits.intValue());
 
                                     map.get(curriculumName).add(subjectCurriculumEntity);
                                 } else { // curriculum null
@@ -462,6 +469,7 @@ public class SubjectCurriculumController {
                                     subjectCurriculumEntity.setSubjectId(subjectEntity);
                                     subjectCurriculumEntity.setOrdinalNumber(map.get(curriculumName).size() + 1);
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
+                                    subjectCurriculumEntity.setSubjectCredits(subjectCredits.intValue());
 
                                     map.get(curriculumName).add(subjectCurriculumEntity);
                                 }

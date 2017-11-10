@@ -32,7 +32,6 @@ public class PrequisiteEntity implements Serializable {
     @Id
     @Basic(optional = false)
     @Column(name = "SubjectId", nullable = false, length = 50)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String subjectId;
     @Column(name = "PrequisiteSubs", length = 2147483647)
     private String prequisiteSubs;
