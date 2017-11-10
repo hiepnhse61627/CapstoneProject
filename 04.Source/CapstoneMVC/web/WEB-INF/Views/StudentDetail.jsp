@@ -252,6 +252,8 @@
 </div>
 
 <script>
+    var tableMarkDetail = null;
+
     var table = null;
     var nextCourseTable = null;
     var curCourseTable = null;
@@ -699,6 +701,52 @@
                 }
             }
         });
+    }
+
+    function CreateMarkDetailTable(dataSet) {
+        if (tableMarkDetail != null) {
+            tableMarkDetail.fnDestroy();
+        }
+
+        tableMarkDetail = $('#table-mark-detail').dataTable({
+            "bFilter": true,
+            "bRetrieve": true,
+            "bScrollCollapse": true,
+            "bProcessing": true,
+            "bSort": false,
+            "data": dataSet,
+            "aoColumns": [
+                {"mData": "subject"},
+                {"mData": "semester"},
+                {"mData": "repeatingNumber"},
+                {"mData": "averageMark"},
+                {"mData": "status"},
+            ],
+            "oLanguage": {
+                "sSearchPlaceholder": "",
+                "sSearch": "Tìm kiếm:",
+                "sZeroRecords": "Không có dữ liệu phù hợp",
+                "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
+                "sEmptyTable": "Không có dữ liệu",
+                "sInfoFiltered": " - lọc ra từ _MAX_ dòng",
+                "sLengthMenu": "Hiển thị _MENU_ dòng",
+                "sProcessing": "Đang xử lý...",
+                "oPaginate": {
+                    "sNext": "<i class='fa fa-chevron-right'></i>",
+                    "sPrevious": "<i class='fa fa-chevron-left'></i>"
+                }
+
+            },
+            "aoColumnDefs": [
+                {
+                    "aTargets": [0, 1, 2, 3, 4],
+                    "bSortable": false,
+                    "sClass": "text-center",
+                },
+            ],
+            "bAutoWidth": false,
+        });
+        $("#markDetail").modal();
     }
 
     function RefreshTable() {
