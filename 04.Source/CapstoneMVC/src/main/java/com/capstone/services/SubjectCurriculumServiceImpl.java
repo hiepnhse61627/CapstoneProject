@@ -5,6 +5,7 @@ import com.capstone.entities.MarksEntity;
 import com.capstone.entities.SubjectCurriculumEntity;
 import com.capstone.jpa.exJpa.ExMarksEntityJpaController;
 import com.capstone.jpa.exJpa.ExSubjectCurriculumJpaController;
+import com.capstone.models.SubjectModel;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -14,6 +15,11 @@ public class SubjectCurriculumServiceImpl implements ISubjectCurriculumService {
 
     private EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
     ExSubjectCurriculumJpaController controller = new ExSubjectCurriculumJpaController(emf);
+
+    @Override
+    public SubjectModel updateSubject(SubjectModel subject, int curriculumId) {
+        return controller.updateSubject(subject, curriculumId);
+    }
 
     @Override
     public List<SubjectCurriculumEntity> getAllSubjectCurriculums() {

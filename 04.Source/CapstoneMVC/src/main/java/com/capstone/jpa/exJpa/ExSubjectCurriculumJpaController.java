@@ -4,6 +4,10 @@ import com.capstone.entities.CurriculumEntity;
 import com.capstone.entities.SubjectCurriculumEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.jpa.SubjectCurriculumEntityJpaController;
+import com.capstone.models.Logger;
+import com.capstone.models.SubjectModel;
+import com.capstone.services.ISubjectCurriculumService;
+import com.capstone.services.SubjectCurriculumServiceImpl;
 import org.apache.commons.lang3.reflect.Typed;
 
 import javax.persistence.*;
@@ -60,6 +64,27 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
 //            em.close();
 //        }
         return null;
+    }
+
+    public SubjectModel updateSubject(SubjectModel subject, int curriculumId) {
+        EntityManager manager = getEntityManager();
+        ISubjectCurriculumService subjectService = new SubjectCurriculumServiceImpl();
+        manager.getTransaction().begin();
+        try {
+            SubjectCurriculumEntity uSubject = manager.find(SubjectCurriculumEntity.class, curriculumId);
+            uSubject.setSubjectCredits(subject.getCredits());
+
+            manager.merge(uSubject);
+            manager.flush();
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            subject.setResult(false);
+            subject.setErrorMessage(e.getMessage());
+            return subject;
+        }
+        manager.getTransaction().commit();
+        subject.setResult(true);
+        return subject;
     }
 
     public SubjectCurriculumEntity createCurriculum(SubjectCurriculumEntity entity) {

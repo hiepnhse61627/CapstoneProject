@@ -3,6 +3,7 @@ package com.capstone.controllers;
 import com.capstone.entities.*;
 import com.capstone.models.Logger;
 import com.capstone.models.ReadAndSaveFileToServer;
+import com.capstone.models.SubjectModel;
 import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -37,6 +38,9 @@ import java.util.stream.Collectors;
 
 @Controller
 public class SubjectCurriculumController {
+
+    ISubjectService subjectService = new SubjectServiceImpl();
+    ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
 
     @Autowired
     ServletContext context;
@@ -80,6 +84,10 @@ public class SubjectCurriculumController {
         ICurriculumService curriculumService = new CurriculumServiceImpl();
 
         ModelAndView view = new ModelAndView("EditSubjectCurriculum");
+
+        IRealSemesterService realSemesterService = new RealSemesterServiceImpl();
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester().stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+        view.addObject("effectionSemester", semesters);
 
         CurriculumEntity curriculum = curriculumService.getCurriculumById(curId);
         view.addObject("data", curriculum);
@@ -253,6 +261,59 @@ public class SubjectCurriculumController {
         return jsonObj;
     }
 
+    @RequestMapping(value = "/subcurriculum/getSubject", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject GetSubject(@RequestParam String subjectCurId) {
+        JsonObject jsonObj = new JsonObject();
+        ISubjectService subjectService = new SubjectServiceImpl();
+        ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
+
+
+        try {
+
+            int curId = Integer.parseInt(subjectCurId);
+            SubjectCurriculumEntity subjectCurriculumEntity = subjectCurriculumService.getCurriculumById(curId);
+            String subjectId = subjectCurriculumEntity.getSubjectId().getId();
+            SubjectEntity entity = subjectService.findSubjectById(subjectId);
+            String replacementSubject = "";
+            for (SubjectEntity list : entity.getSubjectEntityList()) {
+                replacementSubject = replacementSubject + "," + list.getId();
+            }
+            SubjectModel subjectModel = new SubjectModel();
+            subjectModel.setSubjectID(entity.getId());
+            subjectModel.setSubjectName(entity.getName());
+            if (entity.getPrequisiteEntity().getEffectionSemester() != null
+                    && !entity.getPrequisiteEntity().getEffectionSemester().isEmpty()) {
+                subjectModel.setEffectionSemester(entity.getPrequisiteEntity().getEffectionSemester());
+                subjectModel.setPrerequisiteSubject(entity.getPrequisiteEntity().getNewPrequisiteSubs());
+                subjectModel.setFailMark(entity.getPrequisiteEntity().getNewFailMark());
+            } else {
+                subjectModel.setEffectionSemester(null);
+                subjectModel.setPrerequisiteSubject(entity.getPrequisiteEntity().getPrequisiteSubs());
+                subjectModel.setFailMark(entity.getPrequisiteEntity().getFailMark());
+            }
+
+            subjectModel.setCredits(subjectCurriculumEntity.getSubjectCredits());
+            if (!replacementSubject.equals("")) {
+                subjectModel.setReplacementSubject(replacementSubject.substring(1));
+            } else {
+                subjectModel.setReplacementSubject(replacementSubject);
+            }
+
+
+            String json = new Gson().toJson(subjectModel);
+
+            jsonObj.addProperty("success", true);
+            jsonObj.addProperty("subject", json);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.writeLog(e);
+            jsonObj.addProperty("success", false);
+        }
+
+        return jsonObj;
+    }
+
     @RequestMapping("/getsubcurriculum")
     @ResponseBody
     public JsonObject GetSubCurriculum(@RequestParam Map<String, String> params) {
@@ -288,6 +349,52 @@ public class SubjectCurriculumController {
         } catch (Exception e) {
             e.printStackTrace();
             Logger.writeLog(e);
+        }
+
+        return jsonObj;
+    }
+
+    @RequestMapping(value = "/subjectcur/edit")
+    @ResponseBody
+    public JsonObject EditSubject(@RequestParam("sSubjectId") String subjectId, @RequestParam("sSubjectName") String subjectName,
+                                  @RequestParam("sCredits") String credits, @RequestParam("sReplacement") String replacement,
+                                  @RequestParam("sPrerequisite") String prerequisite, @RequestParam("sEffectionSemester") String effectionSemester,
+                                  @RequestParam("sFailMark") String failMark,@RequestParam("sCurId") String curId) {
+        JsonObject jsonObj = new JsonObject();
+
+        try {
+
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            int curriculumId = Integer.parseInt(curId);
+            SubjectModel model = new SubjectModel();
+            model.setSubjectID(subjectId);
+            model.setSubjectName(subjectName);
+            model.setCredits(Integer.parseInt(credits));
+            model.setPrerequisiteSubject(prerequisite);
+            model.setReplacementSubject(replacement);
+            model.setEffectionSemester(effectionSemester);
+            if (failMark.isEmpty()) {
+                model.setFailMark(0);
+            } else {
+                model.setFailMark(Integer.parseInt(failMark));
+            }
+
+
+            SubjectModel result = subjectService.updateSubject(model);
+            SubjectModel result2 = subjectCurriculumService.updateSubject(model, curriculumId);
+            if (!result.isResult() && !result2.isResult()) {
+                jsonObj.addProperty("success", false);
+                jsonObj.addProperty("message", result.getErrorMessage());
+            } else {
+                jsonObj.addProperty("success", true);
+            }
+
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            jsonObj.addProperty("false", false);
+            jsonObj.addProperty("message", e.getMessage());
         }
 
         return jsonObj;

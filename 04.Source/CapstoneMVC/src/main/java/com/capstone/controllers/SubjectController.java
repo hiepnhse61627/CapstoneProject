@@ -368,49 +368,7 @@ public class SubjectController {
         return obj;
     }
 
-    @RequestMapping(value = "/subject/edit")
-    @ResponseBody
-    public JsonObject EditSubject(@RequestParam("sSubjectId") String subjectId, @RequestParam("sSubjectName") String subjectName,
-                                  @RequestParam("sCredits") String credits, @RequestParam("sReplacement") String replacement,
-                                  @RequestParam("sPrerequisite") String prerequisite, @RequestParam("sEffectionSemester") String effectionSemester,
-                                  @RequestParam("sFailMark") String failMark) {
-        JsonObject jsonObj = new JsonObject();
 
-        try {
-
-            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-            EntityManager em = emf.createEntityManager();
-
-            SubjectModel model = new SubjectModel();
-            model.setSubjectID(subjectId);
-            model.setSubjectName(subjectName);
-            model.setCredits(Integer.parseInt(credits));
-            model.setPrerequisiteSubject(prerequisite);
-            model.setReplacementSubject(replacement);
-            model.setEffectionSemester(effectionSemester);
-            if (failMark.isEmpty()) {
-                model.setFailMark(0);
-            } else {
-                model.setFailMark(Integer.parseInt(failMark));
-            }
-
-
-            SubjectModel result = subjectService.updateSubject(model);
-            if (!result.isResult()) {
-                jsonObj.addProperty("success", false);
-                jsonObj.addProperty("message", result.getErrorMessage());
-            } else {
-                jsonObj.addProperty("success", true);
-            }
-
-        } catch (Exception e) {
-            Logger.writeLog(e);
-            jsonObj.addProperty("false", false);
-            jsonObj.addProperty("message", e.getMessage());
-        }
-
-        return jsonObj;
-    }
 
     @RequestMapping(value = "/subject/create")
     @ResponseBody
