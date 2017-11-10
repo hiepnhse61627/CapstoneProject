@@ -119,6 +119,57 @@
 
 </style>
 
+<div id="studentDetailModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Thông tin sinh viên</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="subjectId">MSSV:</label>
+                            <input disabled id="subjectId" type="text" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="subjectName">Full Name:</label>
+                            <input id="subjectName" type="text" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="prerequisiteSubs">Giới Tính:</label>
+                            <input id="prerequisiteSubs" type="text" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="credits">Ngành học:</label>
+                            <input id="credits" type="text" maxlength="2" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="replacementSubject">Ngày sinh:</label>
+                            <input id="replacementSubject" type="text" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="failMark">Khóa ngành</label>
+                            <input id="failMark" type="text" class="form-control"/>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button id="btnSubmit" type="button" class="btn btn-primary" onclick="return confirmChange($('#subjectId').val(),$('#subjectName').val()
+                ,$('#prerequisiteSubs').val(),$('#credits').val(),$('#replacementSubject').val(),
+                $('#effectionSemester').val(),$('#failMark').val())">Thay đổi thông tin
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 <section class="content">
     <div class="box">
         <div class="b-header">
@@ -127,6 +178,7 @@
                     <h1>Thông tin sinh viên</h1>
                 </div>
                 <div class="col-md-3 text-right">
+
                     <a href="/studentList" class="btn btn-danger btn-with-icon">
                         <i class="fa fa-arrow-left"></i>
                         <div class="m-l-3">QUAY LẠI</div>
@@ -141,6 +193,7 @@
                 <div class="row">
                     <div class="title">
                         <h4>Thông tin chi tiết</h4>
+                        <i><button id="onOff"onclick="return onEdit()">Edit</button></i>
                     </div>
                     <div class="my-content">
                         <div class="row m-0">
@@ -208,6 +261,12 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row m-0">
+                            <button style="display: none" id="change" type="button" class="btn btn-primary" onclick="return EditStudent($('#rollNumber').val(),$('#studentName').val()
+                                    ,$('#gender').val(),$('#dateOfBirth').val(),$('#program').val(),$('#curriculum').val())">Thay đổi thông tin
+                            </button>
+
+                        </div>
                     </div>
                 </div>
             </div>
@@ -267,6 +326,14 @@
 
 
 <script>
+
+    function confirmChange(rollNumber, fullName, gender, dob, program, curriculum) {
+
+        if (confirm("Xác nhận thay đổi thông tin cho sinh viên " + fullName + "?")) {
+            EditStudent(rollNumber, fullName, gender, dob, program, curriculum);
+        }
+    }
+
     $(document).ready(function () {
         LoadMarkList();
     });
@@ -329,7 +396,50 @@
         $('.mark-detail-content').html(html);
     }
 
+    function EditStudent(rollNumber, fullName, gender, dob, program, curriculum){
 
+        $.ajax({
+            type: "POST",
+            url: "/student/edit",
+            data: {
+                "sRollNumber": rollNumber,
+                "sFullName": fullName,
+                "sGender": gender,
+                "sDOB": dob,
+                "sProgram": program,
+                "sCurriculum": curriculum,
+            },
+            success: function (result) {
+                if (result.success) {
+                    swal({
+                        title: 'Thành công',
+                        text: "Đã cập nhật môn học!",
+                        type: 'success'
+                    }).then(function () {
+                        LoadMarkList();
+                        document.getElementById('studentName').disabled = true;
+                        document.getElementById('onOff').style.display = 'block';
+                        document.getElementById('dateOfBirth').disabled = true;
+                        document.getElementById('gender').disabled = true;
+                        document.getElementById('change').style.display = 'none';
+                    });
+                    $("#subjectDetailModal").modal('toggle');
+                } else {
+                    swal('', result.message, 'error');
+                }
+            }
+        });
+
+
+    }
+
+    function onEdit(){
+        document.getElementById('studentName').disabled = false;
+        document.getElementById('onOff').style.display = 'none';
+        document.getElementById('dateOfBirth').disabled = false;
+        document.getElementById('gender').disabled = false;
+        document.getElementById('change').style.display = 'block';
+    }
 
 </script>
 
