@@ -40,12 +40,22 @@ public class RealSemesterEntity implements Serializable {
     private List<MarksEntity> marksEntityList;
     @OneToMany(mappedBy = "semesterId")
     private List<StudentStatusEntity> studentStatusEntityList;
+    @Column(name = "IsActivated")
+    private boolean active;
 
     public RealSemesterEntity() {
     }
 
     public RealSemesterEntity(Integer id) {
         this.id = id;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public Integer getId() {

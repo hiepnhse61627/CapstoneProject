@@ -19,6 +19,70 @@
     }
 </style>
 
+<div id="subjectDetailModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Chi Tiết Môn học</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group" style="display: none">
+                            <label for="curId"></label>
+                            <input disabled id="curId" type="text" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="subjectId">Mã Môn:</label>
+                            <input disabled id="subjectId" type="text" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="subjectName">Tên Môn:</label>
+                            <input id="subjectName" type="text" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="prerequisiteSubs">Tiên quyết:</label>
+                            <input id="prerequisiteSubs" type="text" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="credits">Tín chỉ:</label>
+                            <input id="credits" type="text" maxlength="2" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="replacementSubject">Môn thay thế:</label>
+                            <input id="replacementSubject" type="text" class="form-control"/>
+                        </div>
+                        <div class="form-group">
+                            <label for="effectionSemester">Học kì bắt đầu áp dụng tiên quyết:</label>
+                            <select id="effectionSemester" class="select form-control">
+                                <option value="0">-------------------</option>
+                                <c:forEach var="effectionSemester" items="${effectionSemester}">
+                                    <option value="${effectionSemester.semester}">${effectionSemester.semester}</option>
+                                </c:forEach>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="failMark">Điểm tiên quyết môn</label>
+                            <input id="failMark" type="text" class="form-control"/>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button id="btnSubmit" type="button" class="btn btn-primary" onclick="return confirmChange($('#curId').val(),$('#subjectId').val(),$('#subjectName').val()
+                ,$('#prerequisiteSubs').val(),$('#credits').val(),$('#replacementSubject').val(),
+                $('#effectionSemester').val(),$('#failMark').val())">Thay đổi thông tin
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 <section class="content">
     <div class="box">
         <div class="b-header">
@@ -48,32 +112,32 @@
                     </div>
                     <div class="my-content">
                         <%--<div class="my-input-group p-l-30">--%>
-                            <%--<div class="left-content" style="width: 90px">--%>
-                                <%--<label class="p-t-8">Khóa:</label>--%>
-                            <%--</div>--%>
-                            <%--<div class="right-content width-30">--%>
-                                <%--<input id="curriculumName" type="text" class="form-control" value="${data.name}"/>--%>
-                            <%--</div>--%>
+                        <%--<div class="left-content" style="width: 90px">--%>
+                        <%--<label class="p-t-8">Khóa:</label>--%>
+                        <%--</div>--%>
+                        <%--<div class="right-content width-30">--%>
+                        <%--<input id="curriculumName" type="text" class="form-control" value="${data.name}"/>--%>
+                        <%--</div>--%>
                         <%--</div>--%>
 
                         <%--<div class="my-input-group p-l-30">--%>
-                            <%--<div class="left-content" style="width: 90px">--%>
-                                <%--<label class="p-t-8">Ngành học:</label>--%>
-                            <%--</div>--%>
-                            <%--<div class="right-content width-30">--%>
-                                    <%--<select id="program" class="form-control">--%>
-                                        <%--<c:forEach var="p" items="${programs}">--%>
-                                            <%--<c:choose>--%>
-                                                <%--<c:when test="${data.programId.id == p.id}">--%>
-                                                    <%--<option selected value="${p.id}">${p.name}</option>--%>
-                                                <%--</c:when>--%>
-                                                <%--<c:otherwise>--%>
-                                                    <%--<option value="${p.id}">${p.name}</option>--%>
-                                                <%--</c:otherwise>--%>
-                                            <%--</c:choose>--%>
-                                        <%--</c:forEach>--%>
-                                    <%--</select>--%>
-                            <%--</div>--%>
+                        <%--<div class="left-content" style="width: 90px">--%>
+                        <%--<label class="p-t-8">Ngành học:</label>--%>
+                        <%--</div>--%>
+                        <%--<div class="right-content width-30">--%>
+                        <%--<select id="program" class="form-control">--%>
+                        <%--<c:forEach var="p" items="${programs}">--%>
+                        <%--<c:choose>--%>
+                        <%--<c:when test="${data.programId.id == p.id}">--%>
+                        <%--<option selected value="${p.id}">${p.name}</option>--%>
+                        <%--</c:when>--%>
+                        <%--<c:otherwise>--%>
+                        <%--<option value="${p.id}">${p.name}</option>--%>
+                        <%--</c:otherwise>--%>
+                        <%--</c:choose>--%>
+                        <%--</c:forEach>--%>
+                        <%--</select>--%>
+                        <%--</div>--%>
                         <%--</div>--%>
 
                     </div>
@@ -131,6 +195,9 @@
                                                     <button class="remove btn btn-link" type="button"
                                                             style="visibility: hidden"><i
                                                             class="fa fa-times"></i></button>
+                                                    <button type="button"
+                                                            style="visibility: hidden" onclick="ShowModal(${list.id})">
+                                                        <i>edit</i></button>
                                                 </td>
                                             </tr>
                                         </c:forEach>
@@ -176,6 +243,13 @@
         IntializeRows();
         GetRowsData();
     });
+
+    function confirmChange(curId, subjectId, subjectName, prerequisiteSubs, credits, replacementSubject, effectionSemester, failMark) {
+
+        if (confirm("Xác nhận thay đổi thông tin cho môn " + subjectId + "?")) {
+            EditSubject(curId, subjectId, subjectName, prerequisiteSubs, credits, replacementSubject, effectionSemester, failMark);
+        }
+    }
 
     function ExportExcel() {
         $("input[name='objectType']").val(6);
@@ -233,6 +307,69 @@
 
             GetRowsData();
         });
+    }
+
+    function ShowModal(subjectCurId) {
+        var form = new FormData();
+        form.append("subjectCurId", subjectCurId)
+
+        $.ajax({
+            type: "POST",
+            url: "/subcurriculum/getSubject",
+            processData: false,
+            contentType: false,
+            data: form,
+            success: function (result) {
+                if (result.success) {
+                    var subject = JSON.parse(result.subject);
+
+                    $("#curId").val(subjectCurId);
+                    $("#subjectId").val(subject.subjectID);
+                    $("#subjectName").val(subject.subjectName);
+                    $("#prerequisiteSubs").val(subject.prerequisiteSubject);
+                    $("#credits").val(subject.credits);
+                    $("#replacementSubject").val(subject.replacementSubject);
+
+                    $("#subjectDetailModal").modal('toggle');
+                } else {
+                    swal('Đã xảy ra lỗi!', result.message, 'error');
+                }
+            }
+        });
+    }
+
+    function EditSubject(curId, subjectId, subjectName, prerequisiteSubs, credits, replacementSubject, effectionSemester, failMark) {
+
+        $.ajax({
+            type: "POST",
+            url: "/subjectcur/edit",
+            data: {
+                "sCurId": curId,
+                "sSubjectId": subjectId,
+                "sSubjectName": subjectName,
+                "sCredits": credits,
+                "sReplacement": replacementSubject,
+                "sPrerequisite": prerequisiteSubs,
+                "sEffectionSemester": effectionSemester,
+                "sFailMark": failMark,
+            },
+            success: function (result) {
+                if (result.success) {
+                    swal({
+                        title: 'Thành công',
+                        text: "Đã cập nhật môn học!",
+                        type: 'success'
+                    }).then(function () {
+                        RefreshTable();
+                    });
+                    $("#subjectDetailModal").modal('toggle');
+                } else {
+                    swal('', result.message, 'error');
+                }
+            }
+        });
+
+
     }
 
     function Add() {
@@ -296,5 +433,9 @@
                 }
             }
         });
+    }
+
+    function edit() {
+
     }
 </script>

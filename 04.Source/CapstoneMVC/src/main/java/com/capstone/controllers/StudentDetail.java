@@ -25,10 +25,22 @@ public class StudentDetail {
 
     IStudentService studentService = new StudentServiceImpl();
 
+    private List<RealSemesterEntity> sortedSemester;
+
+    public StudentDetail() {
+        IRealSemesterService service = new RealSemesterServiceImpl();
+        List<RealSemesterEntity> list = service.getAllSemester();
+        sortedSemester = Ultilities.SortSemesters(list);
+    }
+
     @RequestMapping("/studentDetail")
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("StudentDetail");
         view.addObject("title", "Danh sách sinh viên nợ môn");
+        IRealSemesterService service = new RealSemesterServiceImpl();
+        List<RealSemesterEntity> list = service.getAllSemester();
+        sortedSemester = Ultilities.SortSemesters(list);
+        view.addObject("semesters", sortedSemester);
         return view;
     }
 
@@ -88,9 +100,10 @@ public class StudentDetail {
         JsonObject data = new JsonObject();
 
         int studentId = Integer.parseInt(params.get("stuId"));
+        String semester = params.get("semesterId");
 
         try {
-            List<List<String>> set2 = processFailed(studentId);
+            List<List<String>> set2 = processFailed(studentId, semester);
 
             List<List<String>> resultList = set2.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -107,10 +120,20 @@ public class StudentDetail {
         return data;
     }
 
-    public List<List<String>> processFailed(int studentId) {
+    public List<List<String>> processFailed(int studentId, String semester) {
+        int ss = 0;
+        List<String> t = new ArrayList<>();
+        for (RealSemesterEntity s : sortedSemester) {
+            t.add(s.getSemester());
+            if (s.getSemester().equals(semester)) {
+                ss = s.getId();
+                break;
+            }
+        }
+
         IMarksService marksService = new MarksServiceImpl();
 
-        List<MarksEntity> list = marksService.getAllMarksByStudentAndSubject(studentId, "0", "0");
+        List<MarksEntity> list = marksService.getAllMarksByStudentAndSubject(studentId, "0", String.valueOf(ss));
 
         List<MarksEntity> newlist = Ultilities.FilterStudentsOnlyPassAndFail(list);
         List<MarksEntity> resultList = Ultilities.FilterListFailStudent(newlist);
@@ -123,7 +146,7 @@ public class StudentDetail {
         EntityManager em = emf.createEntityManager();
 
         //remove studying marks from fail list
-        List<MarksEntity> studyingList = marksService.getMarksByStudentIdAndStatus(studentId, "studying");
+        List<MarksEntity> studyingList = marksService.getMarksByStudentIdAndStatusAndSemester(studentId, "studying", t);
         Iterator<MarksEntity> iterator = resultList.iterator();
         while (iterator.hasNext()) {
             MarksEntity current = iterator.next();
@@ -136,9 +159,11 @@ public class StudentDetail {
                 } else {
                     List<SubjectEntity> replacers = su.getSubjectEntityList();
                     for (SubjectEntity s : replacers) {
-                        TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = TRUE AND a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
+                        TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = TRUE AND a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt') and a.semesterId.semester IN :sme", MarksEntity.class);
                         queryCheckPass.setParameter("id", studentId);
                         queryCheckPass.setParameter("sub", s.getId());
+                        queryCheckPass.setParameter("sme", t);
+
                         List<MarksEntity> rep = queryCheckPass.getResultList();
                         if (!rep.isEmpty()) {
                             iterator.remove();
@@ -171,9 +196,10 @@ public class StudentDetail {
         JsonObject jsonObject = new JsonObject();
 
         int stuId = Integer.parseInt(params.get("stuId"));
+        String semester = params.get("semesterId");
 
         try {
-            List<List<String>> result = processCurrent(stuId);
+            List<List<String>> result = processCurrent(stuId, semester);
 
             List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -190,13 +216,19 @@ public class StudentDetail {
         return jsonObject;
     }
 
-    public List<List<String>> processCurrent(int stuId) {
+    public List<List<String>> processCurrent(int stuId, String semester) {
+        List<String> t = new ArrayList<>();
+        for (RealSemesterEntity s : sortedSemester) {
+            t.add(s.getSemester());
+            if (s.getSemester().equals(semester)) break;
+        }
+
         IMarksService marksService = new MarksServiceImpl();
 
 //        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
 //        EntityManager em = emf.createEntityManager();
 
-        List<MarksEntity> list = marksService.getMarksByStudentIdAndStatus(stuId, "studying");
+        List<MarksEntity> list = marksService.getMarksByStudentIdAndStatusAndSemester(stuId, "studying", t);
 
         // Check students score if exist remove
 //        if (!list.isEmpty()) {
@@ -247,9 +279,10 @@ public class StudentDetail {
         JsonObject jsonObject = new JsonObject();
 
         int stuId = Integer.parseInt(params.get("stuId"));
+        String semester = params.get("semesterId");
 
         try {
-            List<List<String>> result = processNext(stuId, false, false);
+            List<List<String>> result = processNext(stuId, semester, false, false);
 
             List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -273,11 +306,12 @@ public class StudentDetail {
         JsonObject jsonObject = new JsonObject();
 
         int stuId = Integer.parseInt(params.get("stuId"));
+        String semester = params.get("semesterId");
 
         try {
-            List<List<String>> result = processNext(stuId, true, true);
+            List<List<String>> result = processNext(stuId, semester, true, true);
 
-            Suggestion suggestion = processSuggestion(stuId);
+            Suggestion suggestion = processSuggestion(stuId, semester);
             List<List<String>> result2 = suggestion.getData();
 
             List<String> brea = new ArrayList<>();
@@ -312,7 +346,13 @@ public class StudentDetail {
         return jsonObject;
     }
 
-    public List<List<String>> processNext(int stuId, boolean checkPrequisite, boolean getFailPrequisiteList) {
+    public List<List<String>> processNext(int stuId, String semester, boolean checkPrequisite, boolean getFailPrequisiteList) {
+        List<String> t = new ArrayList<>();
+        for (RealSemesterEntity s : sortedSemester) {
+            t.add(s.getSemester());
+            if (s.getSemester().equals(semester)) break;
+        }
+
         IStudentService studentService = new StudentServiceImpl();
         ISubjectService subjectService = new SubjectServiceImpl();
 
@@ -320,15 +360,6 @@ public class StudentDetail {
 
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = emf.createEntityManager();
-
-//        String queryStr = "SELECT sc FROM DocumentStudentEntity ds, SubjectCurriculumEntity sc" +
-//                " WHERE ds.studentId.id = :studentId AND ds.createdDate =" +
-//                " (SELECT MAX(ds1.createdDate) FROM DocumentStudentEntity ds1 WHERE ds1.studentId.id = :studentId) " +
-//                " AND ds.curriculumId.id = sc.curriculumId.id" +
-//                " AND sc.termNumber = :term";
-//        TypedQuery<SubjectCurriculumEntity> query = em.createQuery(queryStr, SubjectCurriculumEntity.class);
-//        query.setParameter("studentId", stuId);
-//        query.setParameter("term", student.getTerm() + 1);
 
         List<SubjectCurriculumEntity> list = new ArrayList<>();
         List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
@@ -345,8 +376,6 @@ public class StudentDetail {
             }
         }
 
-//        List<SubjectCurriculumEntity> list = query.getResultList();
-
         List<SubjectEntity> failedPrequisiteList = new ArrayList<>();
 
         // Check students score if exist remove
@@ -358,9 +387,10 @@ public class StudentDetail {
                 }
             });
             if (!curriculumSubjects.isEmpty()) {
-                TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+                TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list AND a.semesterId.semester IN :slist", MarksEntity.class);
                 query2.setParameter("id", stuId);
                 query2.setParameter("list", curriculumSubjects);
+                query2.setParameter("slist", t);
                 List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
                 Iterator<SubjectCurriculumEntity> iterator = list.iterator();
                 while (iterator.hasNext()) {
@@ -390,11 +420,12 @@ public class StudentDetail {
                                 }
                             }
                             if (!processedData.isEmpty()) {
-                                String str = "SELECT p FROM MarksEntity p WHERE p.isActivated = true and p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList";
+                                String str = "SELECT p FROM MarksEntity p WHERE p.isActivated = true and p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList AND p.semesterId.semester IN :sem";
                                 TypedQuery<MarksEntity> prequisiteQuery;
                                 prequisiteQuery = em.createQuery(str, MarksEntity.class);
                                 prequisiteQuery.setParameter("sList", processedData);
                                 prequisiteQuery.setParameter("id", stuId);
+                                prequisiteQuery.setParameter("sem", t);
 
                                 List<MarksEntity> list2 = prequisiteQuery.getResultList();
                                 failed = Ultilities.HasFailedPrequisitesOfOneStudent(list2, cur.getSubjectId().getPrequisiteEntity());
@@ -407,9 +438,11 @@ public class StudentDetail {
                         } else {
                             List<SubjectEntity> replacers = cur.getSubjectId().getSubjectEntityList();
                             for (SubjectEntity s : replacers) {
-                                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true AND a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
+                                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true AND a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt') AND a.semesterId.semester IN :sem", MarksEntity.class);
                                 queryCheckPass.setParameter("id", stuId);
                                 queryCheckPass.setParameter("sub", s.getId());
+                                queryCheckPass.setParameter("sem", t);
+
                                 List<MarksEntity> rep = queryCheckPass.getResultList();
                                 if (!rep.isEmpty()) {
                                     iterator.remove();
@@ -445,15 +478,34 @@ public class StudentDetail {
         return result;
     }
 
+    private int findSubjectCredit(StudentEntity student, String subjectId) {
+        List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+        if (!docs.isEmpty()) {
+            for (DocumentStudentEntity doc : docs) {
+                if (doc.getCurriculumId() != null) {
+                    List<SubjectCurriculumEntity> cursubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                    for (SubjectCurriculumEntity s : cursubs) {
+                        if (s.getSubjectId().getId().equals(subjectId)) {
+                            return s.getSubjectCredits();
+                        }
+                    }
+                }
+            }
+        }
+
+        return 0;
+    }
+
     @RequestMapping("/getStudentNextCourseSuggestion")
     @ResponseBody
     public JsonObject GetStudentNextCourseSuggestion(@RequestParam Map<String, String> params) {
         JsonObject data = new JsonObject();
 
         int stuId = Integer.parseInt(params.get("stuId"));
+        String semester = params.get("semesterId");
 
         try {
-            Suggestion suggestion = processSuggestion(stuId);
+            Suggestion suggestion = processSuggestion(stuId, semester);
             List<List<String>> result = suggestion.getData();
 
             List<String> brea = new ArrayList<>();
@@ -484,7 +536,17 @@ public class StudentDetail {
         return data;
     }
 
-    public Suggestion processSuggestion(int stuId) {
+    public Suggestion processSuggestion(int stuId, String semester) {
+        int ss = 0;
+        List<String> t = new ArrayList<>();
+        for (RealSemesterEntity s : sortedSemester) {
+            t.add(s.getSemester());
+            if (s.getSemester().equals(semester)) {
+                ss = s.getId();
+                break;
+            }
+        }
+
         Suggestion suggestion = new Suggestion();
 
         IMarksService marksService = new MarksServiceImpl();
@@ -494,18 +556,31 @@ public class StudentDetail {
 
         StudentEntity student = studentService.findStudentById(stuId);
 
+        List<SubjectCurriculumEntity> studentSubs = new ArrayList<>();
+        List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+        if (!docs.isEmpty()) {
+            for (DocumentStudentEntity doc : docs) {
+                if (doc.getCurriculumId() != null) {
+                    List<SubjectCurriculumEntity> cursubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                    for (SubjectCurriculumEntity s : cursubs) {
+                        studentSubs.add(s);
+                    }
+                }
+            }
+        }
+
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = emf.createEntityManager();
 
         /*-----------------------------------Fail Course--------------------------------------------------*/
         List<String> l2 = Ultilities.getStudentCurriculumSubjects(student);
 
-        List<MarksEntity> list = marksService.getAllMarksByStudentAndSubject(stuId, "0", "0");
+        List<MarksEntity> list = marksService.getAllMarksByStudentAndSubject(stuId, "0", String.valueOf(ss));
         List<MarksEntity> newlist = Ultilities.FilterStudentsOnlyPassAndFail(list);
         List<MarksEntity> resultList = Ultilities.FilterListFailStudent(newlist);
         List<SubjectEntity> failSubjects = new ArrayList<>();
 
-        List<MarksEntity> list2 = marksService.getMarksByStudentIdAndStatus(stuId, "studying");
+        List<MarksEntity> list2 = marksService.getMarksByStudentIdAndStatusAndSemester(stuId, "studying", t);
         Iterator<MarksEntity> iterator = resultList.iterator();
         while (iterator.hasNext()) {
             MarksEntity cur = iterator.next();
@@ -518,9 +593,11 @@ public class StudentDetail {
                 } else {
                     List<SubjectEntity> replacers = su.getSubjectEntityList();
                     for (SubjectEntity s : replacers) {
-                        TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
+                        TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt') AND a.semesterId.semester IN :sem", MarksEntity.class);
                         queryCheckPass.setParameter("id", stuId);
                         queryCheckPass.setParameter("sub", s.getId());
+                        queryCheckPass.setParameter("sem", t);
+
                         List<MarksEntity> rep = queryCheckPass.getResultList();
                         if (!rep.isEmpty()) {
                             iterator.remove();
@@ -539,14 +616,72 @@ public class StudentDetail {
 
             /*-------------------------------Get Next Course------------------------------------------------*/
         List<SubjectCurriculumEntity> listNextCurri = new ArrayList<>();
-        List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
-        if (!docs.isEmpty()) {
-            for (DocumentStudentEntity doc : docs) {
-                if (doc.getCurriculumId() != null) {
-                    List<SubjectCurriculumEntity> cursubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
-                    for (SubjectCurriculumEntity s : cursubs) {
-                        if (s.getTermNumber() == (student.getTerm() + 1)) {
-                            if (!listNextCurri.contains(s)) listNextCurri.add(s);
+        for (SubjectCurriculumEntity s : studentSubs) {
+            if (s.getTermNumber() == (student.getTerm() + 1)) {
+                if (!listNextCurri.contains(s)) listNextCurri.add(s);
+            }
+        }
+        List<String> tt = listNextCurri.stream().map(c -> c.getSubjectId().getId()).distinct().collect(Collectors.toList());
+        if (!listNextCurri.isEmpty()) {
+            TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list AND a.semesterId.semester IN :slist", MarksEntity.class);
+            query2.setParameter("id", stuId);
+            query2.setParameter("list", tt);
+            query2.setParameter("slist", t);
+            List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
+            Iterator<SubjectCurriculumEntity> iteratorPre1quisite = listNextCurri.iterator();
+            while (iteratorPre1quisite.hasNext()) {
+                SubjectCurriculumEntity cur = iteratorPre1quisite.next();
+                if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectId().getId()))) {
+                    iteratorPre1quisite.remove();
+                } else {
+                    boolean failed = false;
+//                                     check prequisite
+                    List<String> processedData = new ArrayList<>();
+                    SubjectEntity entity = cur.getSubjectId();
+                    String preSubs = entity.getPrequisiteEntity().getPrequisiteSubs();
+                    String[] rows = preSubs == null ? (entity.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : entity.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
+                    for (String row : rows) {
+                        row = row.replaceAll("\\(", "").replaceAll("\\)", "");
+                        String[] cells = row.split(",");
+                        for (String cell : cells) {
+                            cell = cell.trim();
+                            SubjectEntity c = subjectService.findSubjectById(cell);
+                            if (c != null) processedData.add(cell);
+                        }
+                    }
+                    if (!entity.getSubjectEntityList().isEmpty()) {
+                        for (SubjectEntity replaces : entity.getSubjectEntityList()) {
+                            processedData.add(replaces.getId());
+                        }
+                    }
+                    if (!processedData.isEmpty()) {
+                        String str = "SELECT p FROM MarksEntity p WHERE p.isActivated = true and p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList AND p.semesterId.semester IN :sem";
+                        TypedQuery<MarksEntity> prequisiteQuery;
+                        prequisiteQuery = em.createQuery(str, MarksEntity.class);
+                        prequisiteQuery.setParameter("sList", processedData);
+                        prequisiteQuery.setParameter("id", stuId);
+                        prequisiteQuery.setParameter("sem", t);
+
+                        List<MarksEntity> list29 = prequisiteQuery.getResultList();
+                        failed = Ultilities.HasFailedPrequisitesOfOneStudent(list29, cur.getSubjectId().getPrequisiteEntity());
+                    }
+
+                    if (failed) {
+//                        failedPrequisiteList.add(cur.getSubjectId());
+                        iteratorPre1quisite.remove();
+                    } else {
+                        List<SubjectEntity> replacers = cur.getSubjectId().getSubjectEntityList();
+                        for (SubjectEntity s : replacers) {
+                            TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true AND a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt') AND a.semesterId.semester IN :sem", MarksEntity.class);
+                            queryCheckPass.setParameter("id", stuId);
+                            queryCheckPass.setParameter("sub", s.getId());
+                            queryCheckPass.setParameter("sem", t);
+
+                            List<MarksEntity> rep = queryCheckPass.getResultList();
+                            if (!rep.isEmpty()) {
+                                iteratorPre1quisite.remove();
+                                break;
+                            }
                         }
                     }
                 }
@@ -559,83 +694,6 @@ public class StudentDetail {
             }
         });
 
-        // check ojt and syb pass or not
-        docs = student.getDocumentStudentEntityList();
-        if (!docs.isEmpty()) {
-            for (DocumentStudentEntity doc : docs) {
-                if (doc.getCurriculumId() != null) {
-                    ProgramEntity program = doc.getCurriculumId().getProgramId();
-                    for (SubjectEntity subject : nextSubjects) {
-                        boolean exist = false;
-                        int percent = 0;
-                        if (subject.getType() == SubjectTypeEnum.OJT.getId()) {
-                            percent = program.getOjt(); // phan tram
-                            exist = true;
-                        } else if (subject.getType() == SubjectTypeEnum.Capstone.getId()) {
-                            percent = program.getCapstone();
-                            exist = true;
-                        }
-
-                        if (exist) {
-                            List<SubjectCurriculumEntity> curSubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
-                            int total = 0; // total total tin chi
-                            for (SubjectCurriculumEntity m : curSubs) {
-//                                Integer num = m.getSubjectId().getCredits();
-//                                total += (num == null ? 0 : num);
-                            }
-                            List<MarksEntity> stuSubs = student.getMarksEntityList();
-                            int tongtinchi = 0;
-                            for (MarksEntity mark : stuSubs) {
-                                if (mark.getIsActivated() && (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt"))) {
-//                                    Integer tmp = mark.getSubjectMarkComponentId().getSubjectId().getCredits();
-//                                    tongtinchi += (tmp == null ? 0 : tmp);
-                                }
-                            }
-                            // tính tổng tín chỉ
-                            List<List<String>> parent = new ArrayList<>();
-                            float required = (float) ((total * 1.0) * (percent * 1.0) / 100);
-                            if (tongtinchi > required) {
-                                suggestion.setDuchitieu(true);
-                            } else {
-                                suggestion.setDuchitieu(false);
-                            }
-
-                            if (subject.getType() == SubjectTypeEnum.OJT.getId()) {
-                                for (SubjectEntity s : nextSubjects) {
-                                    List<String> tmp = new ArrayList<>();
-                                    if (s.getType() == SubjectTypeEnum.OJT.getId() || s.getId().toLowerCase().contains("syb")) {
-                                        tmp.add(s.getId());
-                                        tmp.add(s.getName());
-                                        parent.add(tmp);
-                                    }
-                                }
-                            } else if (subject.getType() == SubjectTypeEnum.Capstone.getId()) {
-                                for (SubjectEntity s : nextSubjects) {
-                                    List<String> tmp = new ArrayList<>();
-                                    if (s.getType() == SubjectTypeEnum.Capstone.getId()) {
-                                        tmp.add(s.getId());
-                                        tmp.add(s.getName());
-                                        parent.add(tmp);
-                                    }
-                                }
-                            }
-
-                            List<String> tmp = new ArrayList<>();
-                            tmp.add("break");
-                            tmp.add("");
-                            parent.add(tmp);
-
-                            suggestion.setData(parent);
-                        }
-                    }
-                } else {
-                    System.out.println("MSSV: " + student.getRollNumber() + "  ID  " + student.getId());
-                }
-            }
-        } else {
-            System.out.println("Sinh viên " + student.getRollNumber() + " không có document!");
-        }
-
         // ------------------------------------------------------------------------------------------
 
         List<String> curriculumSubjects = new ArrayList<>();
@@ -643,9 +701,11 @@ public class StudentDetail {
             if (!curriculumSubjects.contains(next.getId())) curriculumSubjects.add(next.getId());
         }
         if (!curriculumSubjects.isEmpty()) {
-            TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+            TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list AND a.semesterId.semester IN :sList", MarksEntity.class);
             query2.setParameter("id", stuId);
             query2.setParameter("list", curriculumSubjects);
+            query2.setParameter("sList", t);
+
             List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
             Iterator<SubjectEntity> iterator3 = nextSubjects.iterator();
             while (iterator3.hasNext()) {
@@ -673,11 +733,12 @@ public class StudentDetail {
                     }
                     boolean failed = false;
                     if (!processedData.isEmpty()) {
-                        String str = "SELECT p FROM MarksEntity p WHERE p.isActivated = true and p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList";
+                        String str = "SELECT p FROM MarksEntity p WHERE p.isActivated = true and p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList and p.semesterId.semester IN :sem";
                         TypedQuery<MarksEntity> prequisiteQuery;
                         prequisiteQuery = em.createQuery(str, MarksEntity.class);
                         prequisiteQuery.setParameter("sList", processedData);
                         prequisiteQuery.setParameter("id", stuId);
+                        prequisiteQuery.setParameter("sem", t);
 
                         List<MarksEntity> list3 = prequisiteQuery.getResultList();
                         failed = Ultilities.HasFailedPrequisitesOfOneStudent(list3, entity.getPrequisiteEntity());
@@ -688,9 +749,11 @@ public class StudentDetail {
                     } else {
                         List<SubjectEntity> replacers = entity.getSubjectEntityList();
                         for (SubjectEntity s : replacers) {
-                            TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
+                            TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt') and a.semesterId.semester IN :sem", MarksEntity.class);
                             queryCheckPass.setParameter("id", stuId);
                             queryCheckPass.setParameter("sub", s.getId());
+                            queryCheckPass.setParameter("sem", t);
+
                             List<MarksEntity> rep = queryCheckPass.getResultList();
                             if (!rep.isEmpty()) {
                                 iterator3.remove();
@@ -703,7 +766,7 @@ public class StudentDetail {
         }
 
             /*-------------------------------Chậm tiến độ------------------------------------------------*/
-        List<MarksEntity> slowList = marksService.getMarksByStudentIdAndStatus(stuId, "start");
+        List<MarksEntity> slowList = marksService.getMarksByStudentIdAndStatusAndSemester(stuId, "start", t);
         List<SubjectEntity> slowSubjects = new ArrayList<>();
         Iterator<MarksEntity> iterator2 = slowList.iterator();
         while (iterator2.hasNext()) {
@@ -712,9 +775,11 @@ public class StudentDetail {
             List<SubjectEntity> replacers = mark.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList();
             List<SubjectEntity> subs = mark.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList1();
             for (SubjectEntity s : replacers) {
-                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
+                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt') and a.semesterId.semester IN :sem", MarksEntity.class);
                 queryCheckPass.setParameter("id", stuId);
                 queryCheckPass.setParameter("sub", s.getId());
+                queryCheckPass.setParameter("sem", t);
+
                 List<MarksEntity> rep = queryCheckPass.getResultList();
                 if (!rep.isEmpty()) {
                     if (!hasRemoved) {
@@ -725,9 +790,11 @@ public class StudentDetail {
                 }
             }
             for (SubjectEntity s : subs) {
-                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%')", MarksEntity.class);
+                TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%') and a.semesterId.semester IN :sem", MarksEntity.class);
                 queryCheckPass.setParameter("id", stuId);
                 queryCheckPass.setParameter("sub", s.getId());
+                queryCheckPass.setParameter("sem", t);
+
                 List<MarksEntity> rep = queryCheckPass.getResultList();
                 if (!rep.isEmpty()) {
                     if (!hasRemoved) {
@@ -738,9 +805,11 @@ public class StudentDetail {
                 } else {
                     List<SubjectEntity> replaceOfS = s.getSubjectEntityList();
                     for (SubjectEntity r : replaceOfS) {
-                        TypedQuery<MarksEntity> queryCheckPass2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%')", MarksEntity.class);
+                        TypedQuery<MarksEntity> queryCheckPass2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%') and a.semesterId.semester IN :sem", MarksEntity.class);
                         queryCheckPass2.setParameter("id", stuId);
                         queryCheckPass2.setParameter("sub", r.getId());
+                        queryCheckPass2.setParameter("sem", t);
+
                         List<MarksEntity> result = queryCheckPass2.getResultList();
                         if (!result.isEmpty()) {
                             if (!hasRemoved) {
@@ -796,7 +865,7 @@ public class StudentDetail {
                 others.add(tmp);
             }
             if (nextSubjects.size() > (7 - others.size())) {
-                for (int i = 0; i < (7 - others.size()); i++) {
+                for (int i = 0; i < nextSubjects.size(); i++) {
                     ArrayList<String> tmp = new ArrayList<>();
                     tmp.add(nextSubjects.get(i).getId());
                     tmp.add(nextSubjects.get(i).getName());
@@ -819,16 +888,89 @@ public class StudentDetail {
             }
         }
 
-        if (suggestion.getData() == null) {
-            suggestion.setData(new ArrayList<>());
+        // check ojt and syb pass or not
+        docs = student.getDocumentStudentEntityList();
+        if (!docs.isEmpty()) {
+            ProgramEntity program = student.getProgramId();
+            Iterator<List<String>> itr = others.iterator();
+
+            List<List<String>> tmp2 = others.subList(0, others.size());
+            for (List<String> str : tmp2) {
+                SubjectEntity subject = subjectService.findSubjectById(str.get(0));
+
+                boolean exist = false;
+                int percent = 0;
+                if (subject.getType() == SubjectTypeEnum.OJT.getId()) {
+                    percent = program.getOjt(); // phan tram
+                    exist = true;
+                } else if (subject.getType() == SubjectTypeEnum.Capstone.getId()) {
+                    percent = program.getCapstone();
+                    exist = true;
+                }
+
+                if (exist) {
+
+//                    List<SubjectCurriculumEntity> curSubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                    int total = 0; // total total tin chi
+                    for (SubjectCurriculumEntity m : studentSubs) {
+                        Integer num = m.getSubjectCredits();
+                        total += (num == null ? 0 : num);
+                    }
+                    List<MarksEntity> stuSubs = student.getMarksEntityList();
+                    int tongtinchi = 0;
+                    for (MarksEntity mark : stuSubs) {
+                        if (mark.getIsActivated() && (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt"))) {
+                            int cred = findSubjectCredit(student, mark.getSubjectMarkComponentId().getSubjectId().getId());
+                            tongtinchi += cred;
+                        }
+                    }
+                    // tính tổng tín chỉ
+                    List<List<String>> parent = new ArrayList<>();
+                    float required = (float) ((total * 1.0) * (percent * 1.0) / 100);
+                    if (tongtinchi > required) {
+                        suggestion.setDuchitieu(true);
+                    } else {
+                        suggestion.setDuchitieu(false);
+                    }
+
+                    if (subject.getType() == SubjectTypeEnum.OJT.getId()) {
+                        while (itr.hasNext()) {
+                            List<String> sss = itr.next();
+                            SubjectEntity s = subjectService.findSubjectById(sss.get(0));
+                            if (s.getType() == SubjectTypeEnum.OJT.getId() || s.getId().toLowerCase().contains("syb")) {
+                                parent.add(sss);
+                                itr.remove();
+                            }
+                        }
+                    } else if (subject.getType() == SubjectTypeEnum.Capstone.getId()) {
+                        while (itr.hasNext()) {
+                            List<String> sss = itr.next();
+                            SubjectEntity s = subjectService.findSubjectById(sss.get(0));
+                            if (s.getType() == SubjectTypeEnum.Capstone.getId()) {
+                                parent.add(sss);
+                                itr.remove();
+                            }
+                        }
+                    }
+
+                    List<String> tmp = new ArrayList<>();
+                    tmp.add("break");
+                    tmp.add("");
+                    parent.add(tmp);
+
+                    suggestion.setData(parent);
+
+                    break;
+                }
+            }
+        } else {
+            System.out.println("Sinh viên " + student.getRollNumber() + " không có document!");
         }
 
-        for (List<String> d : others) {
-            if (d.contains("OJ") || d.contains("SYB") || d.contains("SWP")) {
-
-            } else {
-                suggestion.getData().add(d);
-            }
+        if (suggestion.getData() == null) suggestion.setData(new ArrayList<>());
+        List<List<String>> trim = others.stream().limit(7).collect(Collectors.toList());
+        for (List<String> o : trim) {
+            suggestion.getData().add(o);
         }
 
         return suggestion;
@@ -840,9 +982,10 @@ public class StudentDetail {
         JsonObject jsonObject = new JsonObject();
 
         int stuId = Integer.parseInt(params.get("stuId"));
+        String semester = params.get("semesterId");
 
         try {
-            List<List<String>> result = processNotStart(stuId);
+            List<List<String>> result = processNotStart(stuId, semester);
 
             List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -859,13 +1002,19 @@ public class StudentDetail {
         return jsonObject;
     }
 
-    public List<List<String>> processNotStart(int stuId) {
+    public List<List<String>> processNotStart(int stuId, String semester) {
+        List<String> t = new ArrayList<>();
+        for (RealSemesterEntity s : sortedSemester) {
+            t.add(s.getSemester());
+            if (s.getSemester().equals(semester)) break;
+        }
+
         IMarksService marksService = new MarksServiceImpl();
 
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = emf.createEntityManager();
 
-        List<MarksEntity> list = marksService.getMarksByStudentIdAndStatus(stuId, "start");
+        List<MarksEntity> list = marksService.getMarksByStudentIdAndStatusAndSemester(stuId, "start", t);
         Iterator<MarksEntity> iterator = list.iterator();
         ISubjectService subjectService = new SubjectServiceImpl();
         while (iterator.hasNext()) {
@@ -891,11 +1040,12 @@ public class StudentDetail {
             }
             boolean failed = false;
             if (!processedData.isEmpty()) {
-                String str = "SELECT p FROM MarksEntity p WHERE p.isActivated = true and p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList";
+                String str = "SELECT p FROM MarksEntity p WHERE p.isActivated = true and p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList AND p.semesterId.semester IN :list";
                 TypedQuery<MarksEntity> prequisiteQuery;
                 prequisiteQuery = em.createQuery(str, MarksEntity.class);
                 prequisiteQuery.setParameter("sList", processedData);
                 prequisiteQuery.setParameter("id", stuId);
+                prequisiteQuery.setParameter("list", t);
 
                 List<MarksEntity> list3 = prequisiteQuery.getResultList();
                 failed = Ultilities.HasFailedPrequisitesOfOneStudent(list3, entity.getPrequisiteEntity());
@@ -908,9 +1058,11 @@ public class StudentDetail {
                 List<SubjectEntity> replacers = mark.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList();
                 List<SubjectEntity> subs = mark.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList1();
                 for (SubjectEntity s : replacers) {
-                    TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt')", MarksEntity.class);
+                    TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt') and a.semesterId.semester IN :list", MarksEntity.class);
                     queryCheckPass.setParameter("id", stuId);
                     queryCheckPass.setParameter("sub", s.getId());
+                    queryCheckPass.setParameter("list", t);
+
                     List<MarksEntity> rep = queryCheckPass.getResultList();
                     if (!rep.isEmpty()) {
                         if (!hasRemoved) {
@@ -921,9 +1073,11 @@ public class StudentDetail {
                     } else {
                         List<SubjectEntity> replaceOfS = s.getSubjectEntityList();
                         for (SubjectEntity r : replaceOfS) {
-                            TypedQuery<MarksEntity> queryCheckPass2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%')", MarksEntity.class);
+                            TypedQuery<MarksEntity> queryCheckPass2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%') and a.semesterId.semester IN :list", MarksEntity.class);
                             queryCheckPass2.setParameter("id", stuId);
                             queryCheckPass2.setParameter("sub", r.getId());
+                            queryCheckPass2.setParameter("list", t);
+
                             List<MarksEntity> result = queryCheckPass2.getResultList();
                             if (!result.isEmpty()) {
                                 if (!hasRemoved) {
@@ -936,9 +1090,11 @@ public class StudentDetail {
                     }
                 }
                 for (SubjectEntity s : subs) {
-                    TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%')", MarksEntity.class);
+                    TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%') and a.semesterId.semester IN :list", MarksEntity.class);
                     queryCheckPass.setParameter("id", stuId);
                     queryCheckPass.setParameter("sub", s.getId());
+                    queryCheckPass.setParameter("list", t);
+
                     List<MarksEntity> rep = queryCheckPass.getResultList();
                     if (!rep.isEmpty()) {
                         if (!hasRemoved) {
@@ -949,9 +1105,11 @@ public class StudentDetail {
                     } else {
                         List<SubjectEntity> replaceOfS = s.getSubjectEntityList();
                         for (SubjectEntity r : replaceOfS) {
-                            TypedQuery<MarksEntity> queryCheckPass2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%')", MarksEntity.class);
+                            TypedQuery<MarksEntity> queryCheckPass2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE '%exempt%' OR LOWER(a.status) LIKE '%fail%' OR LOWER(a.status) LIKE '%suspend%' OR LOWER(a.status) LIKE '%attend%') and a.semesterId.semester IN :list", MarksEntity.class);
                             queryCheckPass2.setParameter("id", stuId);
                             queryCheckPass2.setParameter("sub", r.getId());
+                            queryCheckPass2.setParameter("list", t);
+
                             List<MarksEntity> result = queryCheckPass2.getResultList();
                             if (!result.isEmpty()) {
                                 if (!hasRemoved) {
@@ -975,6 +1133,8 @@ public class StudentDetail {
 
             displayList.add(row);
         }
+
+        displayList = displayList.stream().distinct().collect(Collectors.toList());
 
         return displayList;
     }

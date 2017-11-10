@@ -2,10 +2,12 @@ package com.capstone.services;
 
 import com.capstone.entities.CurriculumEntity;
 import com.capstone.entities.SubjectCurriculumEntity;
+import com.capstone.models.SubjectModel;
 
 import java.util.List;
 
 public interface ISubjectCurriculumService {
+    SubjectModel updateSubject(SubjectModel subject, int curriculumId);
     List<SubjectCurriculumEntity> getAllSubjectCurriculums();
     List<SubjectCurriculumEntity> getSubjectCurriculums(int curriculumId);
     SubjectCurriculumEntity getCurriculumById(int curId);

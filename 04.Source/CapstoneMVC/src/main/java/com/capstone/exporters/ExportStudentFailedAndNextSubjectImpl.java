@@ -44,6 +44,8 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
             List<StudentEntity> students;
 
             int stu = Integer.parseInt(params.get("studentId"));
+            String semester = params.get("semesterId");
+
             if (stu < 0) {
                 students = studentService.findAllStudents();
             } else {
@@ -52,7 +54,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 students.add(student);
             }
 
-            writeDataToTable(streamingWorkbook, streamingSheet, students);
+            writeDataToTable(streamingWorkbook, streamingSheet, students, semester);
 
             streamingWorkbook.write(os);
         } catch (Exception e) {
@@ -60,7 +62,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
         }
     }
 
-    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, List<StudentEntity> students) throws Exception {
+    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, List<StudentEntity> students, String semester) throws Exception {
         if (students != null && !students.isEmpty()) {
             // style
             CellStyle cellStyle = workbook.createCellStyle();
@@ -106,7 +108,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 tinchi.setCellValue(credits);
 
                 // failed subject
-                List<List<String>> marks = processFailedSubject(student);
+                List<List<String>> marks = processFailedSubject(student, semester);
                 if (marks != null && !marks.isEmpty()) {
                     String failedSubject = "";
                     for (int i = 0; i < marks.size(); i++) {
@@ -124,7 +126,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 }
 
                 // next subject
-                List<List<String>> nextSubjects = processNextSubject(student);
+                List<List<String>> nextSubjects = processNextSubject(student, semester);
                 if (nextSubjects != null && !nextSubjects.isEmpty()) {
                     String next = "";
                     for (List<String> subjects : nextSubjects) {
@@ -147,7 +149,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 }
 
                 // current subject
-                List<List<String>> currentSubject = processCurrentSubject(student.getId());
+                List<List<String>> currentSubject = processCurrentSubject(student.getId(), semester);
                 if (currentSubject != null && !currentSubject.isEmpty()) {
                     String next = "";
                     for (List<String> subjects : currentSubject) {
@@ -170,7 +172,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 }
 
                 // current subject
-                List<List<String>> slowSubject = processNotStart(student.getId());
+                List<List<String>> slowSubject = processNotStart(student.getId(), semester);
                 if (slowSubject != null && !slowSubject.isEmpty()) {
                     String next = "";
                     for (List<String> subjects : slowSubject) {
@@ -193,7 +195,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 }
 
                 // current subject
-                List<List<String>> suggestSubjects = processSuggestion(student.getId());
+                List<List<String>> suggestSubjects = processSuggestion(student.getId(), semester);
                 if (suggestSubjects != null && !suggestSubjects.isEmpty()) {
                     String next = "";
                     for (List<String> subjects : suggestSubjects) {
@@ -221,29 +223,29 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
         }
     }
 
-    private List<List<String>> processFailedSubject(StudentEntity student) {
+    private List<List<String>> processFailedSubject(StudentEntity student, String semester) {
         StudentDetail detail = new StudentDetail();
-        return detail.processFailed(student.getId());
+        return detail.processFailed(student.getId(), semester);
     }
 
-    private List<List<String>> processNextSubject(StudentEntity student) {
+    private List<List<String>> processNextSubject(StudentEntity student, String semester) {
         StudentDetail detail = new StudentDetail();
-        return detail.processNext(student.getId(), true, false);
+        return detail.processNext(student.getId(), semester, true, false);
     }
 
-    public List<List<String>> processCurrentSubject(int stuId) {
+    public List<List<String>> processCurrentSubject(int stuId, String semester) {
         StudentDetail detail = new StudentDetail();
-        return detail.processCurrent(stuId);
+        return detail.processCurrent(stuId, semester);
     }
 
-    public List<List<String>> processNotStart(int stuId) {
+    public List<List<String>> processNotStart(int stuId, String semester) {
         StudentDetail detail = new StudentDetail();
-        return detail.processNotStart(stuId);
+        return detail.processNotStart(stuId, semester);
     }
 
-    public List<List<String>> processSuggestion(int stuId) {
+    public List<List<String>> processSuggestion(int stuId, String semester) {
         StudentDetail detail = new StudentDetail();
-        Suggestion suggestion = detail.processSuggestion(stuId);
+        Suggestion suggestion = detail.processSuggestion(stuId, semester);
         List<List<String>> result = suggestion.getData();
 
         List<String> brea = new ArrayList<>();
