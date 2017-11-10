@@ -229,10 +229,6 @@ public class UploadController {
                         studentEntity.setTerm(termNo.intValue());
                     }
 
-                    if (statusCell != null) { // set status
-                        studentEntity.setStatus(statusCell.getStringCellValue());
-                    }
-
                     if (emailCell != null) {
                         studentEntity.setEmail(emailCell.getStringCellValue().trim());
                     }

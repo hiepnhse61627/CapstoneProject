@@ -6,16 +6,16 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
-import java.util.List;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 /**
@@ -23,10 +23,10 @@ import javax.persistence.Table;
  * @author hiepnhse61627
  */
 @Entity
-@Table(name = "RealSemester", catalog = "CapstoneProject", schema = "dbo")
+@Table(name = "Student_Status", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "RealSemesterEntity.findAll", query = "SELECT r FROM RealSemesterEntity r")})
-public class RealSemesterEntity implements Serializable {
+    @NamedQuery(name = "StudentStatusEntity.findAll", query = "SELECT s FROM StudentStatusEntity s")})
+public class StudentStatusEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -34,17 +34,19 @@ public class RealSemesterEntity implements Serializable {
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    @Column(name = "Semester", length = 50)
-    private String semester;
-    @OneToMany(mappedBy = "semesterId")
-    private List<MarksEntity> marksEntityList;
-    @OneToMany(mappedBy = "semesterId")
-    private List<StudentStatusEntity> studentStatusEntityList;
+    @Column(name = "Status", length = 50)
+    private String status;
+    @JoinColumn(name = "SemesterId", referencedColumnName = "Id")
+    @ManyToOne
+    private RealSemesterEntity semesterId;
+    @JoinColumn(name = "StudentId", referencedColumnName = "Id")
+    @ManyToOne
+    private StudentEntity studentId;
 
-    public RealSemesterEntity() {
+    public StudentStatusEntity() {
     }
 
-    public RealSemesterEntity(Integer id) {
+    public StudentStatusEntity(Integer id) {
         this.id = id;
     }
 
@@ -56,28 +58,28 @@ public class RealSemesterEntity implements Serializable {
         this.id = id;
     }
 
-    public String getSemester() {
-        return semester;
+    public String getStatus() {
+        return status;
     }
 
-    public void setSemester(String semester) {
-        this.semester = semester;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
-    public List<MarksEntity> getMarksEntityList() {
-        return marksEntityList;
+    public RealSemesterEntity getSemesterId() {
+        return semesterId;
     }
 
-    public void setMarksEntityList(List<MarksEntity> marksEntityList) {
-        this.marksEntityList = marksEntityList;
+    public void setSemesterId(RealSemesterEntity semesterId) {
+        this.semesterId = semesterId;
     }
 
-    public List<StudentStatusEntity> getStudentStatusEntityList() {
-        return studentStatusEntityList;
+    public StudentEntity getStudentId() {
+        return studentId;
     }
 
-    public void setStudentStatusEntityList(List<StudentStatusEntity> studentStatusEntityList) {
-        this.studentStatusEntityList = studentStatusEntityList;
+    public void setStudentId(StudentEntity studentId) {
+        this.studentId = studentId;
     }
 
     @Override
@@ -90,10 +92,10 @@ public class RealSemesterEntity implements Serializable {
     @Override
     public boolean equals(Object object) {
         // TODO: Warning - this method won't work in the case the id fields are not set
-        if (!(object instanceof RealSemesterEntity)) {
+        if (!(object instanceof StudentStatusEntity)) {
             return false;
         }
-        RealSemesterEntity other = (RealSemesterEntity) object;
+        StudentStatusEntity other = (StudentStatusEntity) object;
         if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
@@ -102,7 +104,7 @@ public class RealSemesterEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "com.capstone.entities.RealSemesterEntity[ id=" + id + " ]";
+        return "com.capstone.entities.StudentStatusEntity[ id=" + id + " ]";
     }
     
 }

@@ -29,7 +29,7 @@
             <property name="eclipselink.jdbc.url" value="jdbc:sqlserver://localhost:1433;database=CapstoneProject;"/>
             <property name="eclipselink.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
             <property name="eclipselink.jdbc.user" value="sa"/>
-            <property name="eclipselink.jdbc.password" value="namlai120"/>
+            <property name="eclipselink.jdbc.password" value="sa"/>
         </properties>
     </persistence-unit>
 </persistence>

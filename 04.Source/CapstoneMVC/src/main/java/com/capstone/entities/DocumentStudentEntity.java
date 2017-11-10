@@ -50,7 +50,7 @@ public class DocumentStudentEntity implements Serializable {
     @ManyToOne
     private OldRollNumberEntity oldStudentId;
     @JoinColumn(name = "StudentId", referencedColumnName = "Id")
-    @ManyToOne(optional = false)
+    @ManyToOne
     private StudentEntity studentId;
 
     public DocumentStudentEntity() {
