@@ -83,24 +83,31 @@ public class GraduateController {
             for (StudentEntity student : students) {
 
                 boolean aye = true;
-                if (type.equals("OJT")) {
-                    // CHECK OJT DIEU KIEN DU THU KHAC NHAU
-                    Suggestion suggestion = detail.processSuggestion(student.getId(), semester.getSemester());
-                    List<List<String>> result2 = suggestion.getData();
-                    List<String> brea = new ArrayList<>();
-                    brea.add("break");
-                    brea.add("");
-                    int index = result2.indexOf(brea);
-                    if (index > -1) {
-                        if (suggestion.isDuchitieu()) {
-                            result2 = result2.subList(index + 1, result2.size());
-                        } else {
-                            result2 = result2.subList(0, index);
-                        }
+
+                // CHECK OJT DIEU KIEN DU THU KHAC NHAU
+                Suggestion suggestion = detail.processSuggestion(student.getId(), semester.getSemester());
+                List<List<String>> result2 = suggestion.getData();
+                List<String> brea = new ArrayList<>();
+                brea.add("break");
+                brea.add("");
+                int index = result2.indexOf(brea);
+                if (index > -1) {
+                    if (suggestion.isDuchitieu()) {
+                        result2 = result2.subList(index + 1, result2.size());
+                    } else {
+                        result2 = result2.subList(0, index);
                     }
-                    for (List<String> r : result2) {
-                        if (r.get(0).toLowerCase().contains("oj") || r.get(1).toLowerCase().contains("oj")) {
-                            System.out.println("sinh viên " + student.getRollNumber() + " ko đủ đk");
+                }
+                for (List<String> r : result2) {
+                    if (type.equals("OJT")) {
+                        if (r.get(0).toLowerCase().contains("oj")) {
+                            System.out.println("sinh viên " + student.getRollNumber() + " ko đủ đk ojt");
+                            aye = false;
+                            break;
+                        }
+                    } else if (type.equals("SWP")) {
+                        if (r.get(0).toLowerCase().contains("swp")) {
+                            System.out.println("sinh viên " + student.getRollNumber() + " ko đủ đk capstone");
                             aye = false;
                             break;
                         }
@@ -120,7 +127,8 @@ public class GraduateController {
                             for (SubjectCurriculumEntity s : list) {
                                 if (!subjects.contains(s)) {
                                     subjects.add(s);
-                                    if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) ojt = s.getTermNumber();
+                                    if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId())
+                                        ojt = s.getTermNumber();
                                 }
                             }
                         }
