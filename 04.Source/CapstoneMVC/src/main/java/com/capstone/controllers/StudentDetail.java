@@ -615,24 +615,76 @@ public class StudentDetail {
         });
 
             /*-------------------------------Get Next Course------------------------------------------------*/
-//        List<SubjectCurriculumEntity> listNextCurri = new ArrayList<>();
-//        docs = student.getDocumentStudentEntityList();
-//        if (!docs.isEmpty()) {
-//            for (DocumentStudentEntity doc : docs) {
-//                if (doc.getCurriculumId() != null) {
-//                    List<SubjectCurriculumEntity> cursubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
-//                    for (SubjectCurriculumEntity s : cursubs) {
-//                        if (s.getTermNumber() == (student.getTerm() + 1)) {
-//                            if (!listNextCurri.contains(s)) listNextCurri.add(s);
-//                        }
-//                    }
-//                }
-//            }
-//        }
         List<SubjectCurriculumEntity> listNextCurri = new ArrayList<>();
         for (SubjectCurriculumEntity s : studentSubs) {
             if (s.getTermNumber() == (student.getTerm() + 1)) {
                 if (!listNextCurri.contains(s)) listNextCurri.add(s);
+            }
+        }
+        List<String> tt = listNextCurri.stream().map(c -> c.getSubjectId().getId()).distinct().collect(Collectors.toList());
+        if (!listNextCurri.isEmpty()) {
+            TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list AND a.semesterId.semester IN :slist", MarksEntity.class);
+            query2.setParameter("id", stuId);
+            query2.setParameter("list", tt);
+            query2.setParameter("slist", t);
+            List<MarksEntity> existList = Ultilities.FilterStudentsOnlyPassAndFail(query2.getResultList());
+            Iterator<SubjectCurriculumEntity> iteratorPre1quisite = listNextCurri.iterator();
+            while (iteratorPre1quisite.hasNext()) {
+                SubjectCurriculumEntity cur = iteratorPre1quisite.next();
+                if (existList.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(cur.getSubjectId().getId()))) {
+                    iteratorPre1quisite.remove();
+                } else {
+                    boolean failed = false;
+//                                     check prequisite
+                    List<String> processedData = new ArrayList<>();
+                    SubjectEntity entity = cur.getSubjectId();
+                    String preSubs = entity.getPrequisiteEntity().getPrequisiteSubs();
+                    String[] rows = preSubs == null ? (entity.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : entity.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
+                    for (String row : rows) {
+                        row = row.replaceAll("\\(", "").replaceAll("\\)", "");
+                        String[] cells = row.split(",");
+                        for (String cell : cells) {
+                            cell = cell.trim();
+                            SubjectEntity c = subjectService.findSubjectById(cell);
+                            if (c != null) processedData.add(cell);
+                        }
+                    }
+                    if (!entity.getSubjectEntityList().isEmpty()) {
+                        for (SubjectEntity replaces : entity.getSubjectEntityList()) {
+                            processedData.add(replaces.getId());
+                        }
+                    }
+                    if (!processedData.isEmpty()) {
+                        String str = "SELECT p FROM MarksEntity p WHERE p.isActivated = true and p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList AND p.semesterId.semester IN :sem";
+                        TypedQuery<MarksEntity> prequisiteQuery;
+                        prequisiteQuery = em.createQuery(str, MarksEntity.class);
+                        prequisiteQuery.setParameter("sList", processedData);
+                        prequisiteQuery.setParameter("id", stuId);
+                        prequisiteQuery.setParameter("sem", t);
+
+                        List<MarksEntity> list29 = prequisiteQuery.getResultList();
+                        failed = Ultilities.HasFailedPrequisitesOfOneStudent(list29, cur.getSubjectId().getPrequisiteEntity());
+                    }
+
+                    if (failed) {
+//                        failedPrequisiteList.add(cur.getSubjectId());
+                        iteratorPre1quisite.remove();
+                    } else {
+                        List<SubjectEntity> replacers = cur.getSubjectId().getSubjectEntityList();
+                        for (SubjectEntity s : replacers) {
+                            TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true AND a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt') AND a.semesterId.semester IN :sem", MarksEntity.class);
+                            queryCheckPass.setParameter("id", stuId);
+                            queryCheckPass.setParameter("sub", s.getId());
+                            queryCheckPass.setParameter("sem", t);
+
+                            List<MarksEntity> rep = queryCheckPass.getResultList();
+                            if (!rep.isEmpty()) {
+                                iteratorPre1quisite.remove();
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         }
         List<SubjectEntity> nextSubjects = new ArrayList<>();
@@ -641,87 +693,6 @@ public class StudentDetail {
                 nextSubjects.add(c.getSubjectId());
             }
         });
-
-        // check ojt and syb pass or not
-        docs = student.getDocumentStudentEntityList();
-        if (!docs.isEmpty()) {
-            ProgramEntity program = student.getProgramId();
-            for (SubjectEntity subject : nextSubjects) {
-                boolean exist = false;
-                int percent = 0;
-                if (subject.getType() == SubjectTypeEnum.OJT.getId()) {
-                    percent = program.getOjt(); // phan tram
-                    exist = true;
-                } else if (subject.getType() == SubjectTypeEnum.Capstone.getId()) {
-                    percent = program.getCapstone();
-                    exist = true;
-                }
-
-                if (exist) {
-//                    List<SubjectCurriculumEntity> curSubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
-                    int total = 0; // total total tin chi
-                    for (SubjectCurriculumEntity m : studentSubs) {
-                        Integer num = m.getSubjectCredits();
-                        total += (num == null ? 0 : num);
-                    }
-                    List<MarksEntity> stuSubs = student.getMarksEntityList();
-                    int tongtinchi = 0;
-                    for (MarksEntity mark : stuSubs) {
-                        if (mark.getIsActivated() && (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt"))) {
-                            int cred = findSubjectCredit(student, mark.getSubjectMarkComponentId().getSubjectId().getId());
-                            tongtinchi += cred;
-                        }
-                    }
-                    // tính tổng tín chỉ
-                    List<List<String>> parent = new ArrayList<>();
-                    float required = (float) ((total * 1.0) * (percent * 1.0) / 100);
-                    if (tongtinchi > required) {
-                        suggestion.setDuchitieu(true);
-                    } else {
-                        suggestion.setDuchitieu(false);
-                    }
-
-                    if (subject.getType() == SubjectTypeEnum.OJT.getId()) {
-                        for (SubjectEntity s : nextSubjects) {
-                            List<String> tmp = new ArrayList<>();
-                            if (s.getType() == SubjectTypeEnum.OJT.getId() || s.getId().toLowerCase().contains("syb")) {
-                                tmp.add(s.getId());
-                                tmp.add(s.getName());
-                                parent.add(tmp);
-                            }
-                        }
-                    } else if (subject.getType() == SubjectTypeEnum.Capstone.getId()) {
-                        for (SubjectEntity s : nextSubjects) {
-                            List<String> tmp = new ArrayList<>();
-                            if (s.getType() == SubjectTypeEnum.Capstone.getId()) {
-                                tmp.add(s.getId());
-                                tmp.add(s.getName());
-                                parent.add(tmp);
-                            }
-                        }
-                    }
-
-                    List<String> tmp = new ArrayList<>();
-                    tmp.add("break");
-                    tmp.add("");
-                    parent.add(tmp);
-
-                    suggestion.setData(parent);
-
-                    break;
-                }
-            }
-//            for (DocumentStudentEntity doc : docs) {
-//                if (doc.getCurriculumId() != null) {
-//                    ProgramEntity program = doc.getCurriculumId().getProgramId();
-//
-//                } else {
-//                    System.out.println("MSSV: " + student.getRollNumber() + "  ID  " + student.getId());
-//                }
-//            }
-        } else {
-            System.out.println("Sinh viên " + student.getRollNumber() + " không có document!");
-        }
 
         // ------------------------------------------------------------------------------------------
 
@@ -894,7 +865,7 @@ public class StudentDetail {
                 others.add(tmp);
             }
             if (nextSubjects.size() > (7 - others.size())) {
-                for (int i = 0; i < (7 - others.size()); i++) {
+                for (int i = 0; i < nextSubjects.size(); i++) {
                     ArrayList<String> tmp = new ArrayList<>();
                     tmp.add(nextSubjects.get(i).getId());
                     tmp.add(nextSubjects.get(i).getName());
@@ -917,16 +888,89 @@ public class StudentDetail {
             }
         }
 
-        if (suggestion.getData() == null) {
-            suggestion.setData(new ArrayList<>());
+        // check ojt and syb pass or not
+        docs = student.getDocumentStudentEntityList();
+        if (!docs.isEmpty()) {
+            ProgramEntity program = student.getProgramId();
+            Iterator<List<String>> itr = others.iterator();
+
+            List<List<String>> tmp2 = others.subList(0, others.size());
+            for (List<String> str : tmp2) {
+                SubjectEntity subject = subjectService.findSubjectById(str.get(0));
+
+                boolean exist = false;
+                int percent = 0;
+                if (subject.getType() == SubjectTypeEnum.OJT.getId()) {
+                    percent = program.getOjt(); // phan tram
+                    exist = true;
+                } else if (subject.getType() == SubjectTypeEnum.Capstone.getId()) {
+                    percent = program.getCapstone();
+                    exist = true;
+                }
+
+                if (exist) {
+
+//                    List<SubjectCurriculumEntity> curSubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                    int total = 0; // total total tin chi
+                    for (SubjectCurriculumEntity m : studentSubs) {
+                        Integer num = m.getSubjectCredits();
+                        total += (num == null ? 0 : num);
+                    }
+                    List<MarksEntity> stuSubs = student.getMarksEntityList();
+                    int tongtinchi = 0;
+                    for (MarksEntity mark : stuSubs) {
+                        if (mark.getIsActivated() && (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt"))) {
+                            int cred = findSubjectCredit(student, mark.getSubjectMarkComponentId().getSubjectId().getId());
+                            tongtinchi += cred;
+                        }
+                    }
+                    // tính tổng tín chỉ
+                    List<List<String>> parent = new ArrayList<>();
+                    float required = (float) ((total * 1.0) * (percent * 1.0) / 100);
+                    if (tongtinchi > required) {
+                        suggestion.setDuchitieu(true);
+                    } else {
+                        suggestion.setDuchitieu(false);
+                    }
+
+                    if (subject.getType() == SubjectTypeEnum.OJT.getId()) {
+                        while (itr.hasNext()) {
+                            List<String> sss = itr.next();
+                            SubjectEntity s = subjectService.findSubjectById(sss.get(0));
+                            if (s.getType() == SubjectTypeEnum.OJT.getId() || s.getId().toLowerCase().contains("syb")) {
+                                parent.add(sss);
+                                itr.remove();
+                            }
+                        }
+                    } else if (subject.getType() == SubjectTypeEnum.Capstone.getId()) {
+                        while (itr.hasNext()) {
+                            List<String> sss = itr.next();
+                            SubjectEntity s = subjectService.findSubjectById(sss.get(0));
+                            if (s.getType() == SubjectTypeEnum.Capstone.getId()) {
+                                parent.add(sss);
+                                itr.remove();
+                            }
+                        }
+                    }
+
+                    List<String> tmp = new ArrayList<>();
+                    tmp.add("break");
+                    tmp.add("");
+                    parent.add(tmp);
+
+                    suggestion.setData(parent);
+
+                    break;
+                }
+            }
+        } else {
+            System.out.println("Sinh viên " + student.getRollNumber() + " không có document!");
         }
 
-        for (List<String> d : others) {
-            if (d.contains("OJ") || d.contains("SYB") || d.contains("SWP")) {
-
-            } else {
-                suggestion.getData().add(d);
-            }
+        if (suggestion.getData() == null) suggestion.setData(new ArrayList<>());
+        List<List<String>> trim = others.stream().limit(7).collect(Collectors.toList());
+        for (List<String> o : trim) {
+            suggestion.getData().add(o);
         }
 
         return suggestion;
