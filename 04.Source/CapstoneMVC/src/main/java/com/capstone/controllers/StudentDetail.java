@@ -1090,6 +1090,8 @@ public class StudentDetail {
             displayList.add(row);
         }
 
+        displayList = displayList.stream().distinct().collect(Collectors.toList());
+
         return displayList;
     }
 }
