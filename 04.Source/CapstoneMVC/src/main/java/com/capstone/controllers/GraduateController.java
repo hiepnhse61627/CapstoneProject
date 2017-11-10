@@ -134,6 +134,8 @@ public class GraduateController {
                         }
                     }
 
+                    subjects = subjects.stream().distinct().collect(Collectors.toList());
+
                     List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
                     for (SubjectCurriculumEntity c : subjects) {
                         if (type.equals("OJT")) {
@@ -190,6 +192,8 @@ public class GraduateController {
                         t.add(String.valueOf((tongtinchi > required) ? (tongtinchi - required) : 0));
                         data.add(t);
                     }
+                } else {
+                    System.out.println("sv" + student.getRollNumber() + " ko du dk");
                 }
             }
 
