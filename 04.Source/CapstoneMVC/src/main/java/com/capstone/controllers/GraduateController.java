@@ -102,27 +102,14 @@ public class GraduateController {
         List<RealSemesterEntity> semesters = getToCurrentSemester(semesterId);
         Set<Integer> semesterIds = semesters.stream().map(s -> s.getId()).collect(Collectors.toSet());
 
-        List<StudentEntity> studentEntityList = new ArrayList<>();
-        studentEntityList = studentService.findStudentByProgramId(programId);
+        List<StudentEntity> studentEntityList = studentService.findStudentByProgramId(programId);
         studentEntityList = studentEntityList.stream().filter(s -> s.getTerm() == 9).collect(Collectors.toList());
 
         for (StudentEntity student : studentEntityList) {
-            List<SubjectEntity> subjectEntityList = getSubjectsInCurriculumns(student.getDocumentStudentEntityList());
-            List<SubjectEntity> comparedList = new ArrayList<>();
-            comparedList.addAll(subjectEntityList);
-            for (SubjectEntity subjectEntity : subjectEntityList) {
-                List<SubjectEntity> replaces = subjectEntity.getSubjectEntityList();
-                if (replaces != null && !replaces.isEmpty()) {
-                    comparedList.addAll(replaces);
-                }
-                List<SubjectEntity> replaces2 = subjectEntity.getSubjectEntityList1();
-                if (replaces2 != null && !replaces2.isEmpty()) {
-                    comparedList.addAll(replaces2);
-                }
-            }
-            Set<String> subjectCdsInCurriculum = comparedList.stream().map(s -> s.getId()).collect(Collectors.toSet());
+            List<DocumentStudentEntity> documentStudentEntityList = student.getDocumentStudentEntityList();
+            Map<SubjectEntity, Integer> subjectsCredits = processCreditsForSubject(documentStudentEntityList);
             // calculate credits in curriculum
-            int creditsInCurriculum = countCreditsInCurriculumn(subjectEntityList);
+            int creditsInCurriculum = countCreditsInCurriculumn(documentStudentEntityList);
             // get mark list from student
             List<MarksEntity> marksEntityList = student.getMarksEntityList();
             // filter passed marks
@@ -144,9 +131,8 @@ public class GraduateController {
             // calculate student credits
             int studentCredits = 0;
             for (MarksEntity marksEntity : distinctMarks) {
-                if (subjectCdsInCurriculum.contains(marksEntity.getSubjectMarkComponentId().getSubjectId().getId())) {
-//                    studentCredits += marksEntity.getSubjectMarkComponentId().getSubjectId().getCredits();
-                }
+                studentCredits += subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) != null
+                        ? subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) : 0;
             }
 
             int percent = student.getProgramId().getGraduate();
@@ -170,7 +156,7 @@ public class GraduateController {
             for (DocumentStudentEntity documentStudentEntity : documentStudentEntityList) {
                 CurriculumEntity curriculumEntity = documentStudentEntity.getCurriculumId();
                 List<SubjectCurriculumEntity> subjectCurriculumEntityList = subjectCurriculumService.getSubjectCurriculums(curriculumEntity.getId());
-                List<SubjectEntity> subjects = subjectCurriculumEntityList.stream().filter(s -> s.getTermNumber() != 0).map(s -> s.getSubjectId()).collect(Collectors.toList());
+                List<SubjectEntity> subjects = subjectCurriculumEntityList.stream().filter(s -> s.getTermNumber() > 0).map(s -> s.getSubjectId()).collect(Collectors.toList());
 
                 subjectEntityList.addAll(subjects);
             }
@@ -178,11 +164,17 @@ public class GraduateController {
         return subjectEntityList;
     }
 
-    private Integer countCreditsInCurriculumn(List<SubjectEntity> subjectEntityList) {
+    private Integer countCreditsInCurriculumn(List<DocumentStudentEntity> documentStudentEntityList) {
         int credits = 0;
-        if (subjectEntityList != null && !subjectEntityList.isEmpty()) {
-            for (SubjectEntity subjectEntity : subjectEntityList) {
-//                credits += subjectEntity.getCredits();
+        if (documentStudentEntityList != null && !documentStudentEntityList.isEmpty()) {
+            for (DocumentStudentEntity documentStudentEntity : documentStudentEntityList) {
+                CurriculumEntity curriculumEntity = documentStudentEntity.getCurriculumId();
+                List<SubjectCurriculumEntity> subjectCurriculumEntityList = subjectCurriculumService.getSubjectCurriculums(curriculumEntity.getId());
+                subjectCurriculumEntityList = subjectCurriculumEntityList.stream().filter(s -> s.getTermNumber() > 0).collect(Collectors.toList());
+
+                for (SubjectCurriculumEntity subjectCurriculumEntity : subjectCurriculumEntityList) {
+                    credits += subjectCurriculumEntity.getSubjectCredits();
+                }
             }
         }
         return credits;
@@ -207,6 +199,37 @@ public class GraduateController {
             }
         }
         return listResult;
+    }
+
+    private Map<SubjectEntity, Integer> processCreditsForSubject(List<DocumentStudentEntity> documentStudentEntityList) {
+        Map<SubjectEntity, Integer> map = new HashMap<>();
+        if (documentStudentEntityList != null && !documentStudentEntityList.isEmpty()) {
+            for (DocumentStudentEntity documentStudentEntity : documentStudentEntityList) {
+                CurriculumEntity curriculumEntity = documentStudentEntity.getCurriculumId();
+                List<SubjectCurriculumEntity> subjectCurriculumEntityList = subjectCurriculumService.getSubjectCurriculums(curriculumEntity.getId());
+                subjectCurriculumEntityList = subjectCurriculumEntityList.stream().filter(s -> s.getTermNumber() > 0).collect(Collectors.toList());
+
+                for (SubjectCurriculumEntity subjectCurriculumEntity : subjectCurriculumEntityList) {
+                    SubjectEntity subjectEntity = subjectCurriculumEntity.getSubjectId();
+                    Integer subjectCredits = subjectCurriculumEntity.getSubjectCredits();
+                    map.put(subjectEntity, subjectCredits);
+                    List<SubjectEntity> replaces = subjectEntity.getSubjectEntityList();
+                    if (replaces != null && !replaces.isEmpty()) {
+                        for (SubjectEntity rep1 : replaces) {
+                            map.put(rep1, subjectCredits);
+                        }
+                    }
+                    List<SubjectEntity> replaces2 = subjectEntity.getSubjectEntityList1();
+                    if (replaces2 != null && !replaces2.isEmpty()) {
+                        for (SubjectEntity rep2 : replaces) {
+                            map.put(rep2, subjectCredits);
+                        }
+                    }
+                }
+            }
+        }
+
+        return map;
     }
 	
     private List<List<String>> proccessOJT(Map<String, String> params) {
