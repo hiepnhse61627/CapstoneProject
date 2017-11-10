@@ -133,11 +133,13 @@ public class GraduateController {
             for (MarksEntity marksEntity : distinctMarks) {
                 studentCredits += subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) != null
                         ? subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) : 0;
+                if (subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) != null && student.getId() == 46539) {
+                    System.out.println(marksEntity.getSubjectMarkComponentId().getSubjectId().getId() + "_" + subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) + "_" + studentCredits);
+                }
             }
 
             int percent = student.getProgramId().getGraduate();
             if (studentCredits >= ((creditsInCurriculum * percent * 1.0) / 100)) {
-                System.out.println(studentCredits + "_____" + creditsInCurriculum);
                 List<String> t = new ArrayList<>();
                 t.add(student.getRollNumber());
                 t.add(student.getFullName());
@@ -213,16 +215,20 @@ public class GraduateController {
                     SubjectEntity subjectEntity = subjectCurriculumEntity.getSubjectId();
                     Integer subjectCredits = subjectCurriculumEntity.getSubjectCredits();
                     map.put(subjectEntity, subjectCredits);
-                    List<SubjectEntity> replaces = subjectEntity.getSubjectEntityList();
-                    if (replaces != null && !replaces.isEmpty()) {
-                        for (SubjectEntity rep1 : replaces) {
-                            map.put(rep1, subjectCredits);
+                    List<SubjectEntity> replacesInTheRight = subjectEntity.getSubjectEntityList();
+                    if (replacesInTheRight != null && !replacesInTheRight.isEmpty()) {
+                        for (SubjectEntity rightReplace : replacesInTheRight) {
+                            map.put(rightReplace, subjectCredits);
                         }
                     }
-                    List<SubjectEntity> replaces2 = subjectEntity.getSubjectEntityList1();
-                    if (replaces2 != null && !replaces2.isEmpty()) {
-                        for (SubjectEntity rep2 : replaces) {
-                            map.put(rep2, subjectCredits);
+                    List<SubjectEntity> replacesInTheLeft = subjectEntity.getSubjectEntityList1();
+                    if (replacesInTheLeft != null && !replacesInTheLeft.isEmpty()) {
+                        for (SubjectEntity leftReplace : replacesInTheLeft) {
+                            map.put(leftReplace, subjectCredits);
+
+                            for (SubjectEntity rightOfLeftReplace : leftReplace.getSubjectEntityList()) {
+                                map.put(rightOfLeftReplace, subjectCredits);
+                            }
                         }
                     }
                 }
