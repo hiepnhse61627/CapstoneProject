@@ -75,6 +75,7 @@
                 <div class="row">
                     <div class="my-content">
                         <button id="find" type="button" class="btn btn-primary">Tìm kiếm</button>
+                        <button id="detail" type="button" class="btn btn-success" style="display: none" onclick="GetAllStudentMarks()">Xem điểm chi tiết sinh viên</button>
                     </div>
                 </div>
             </div>
@@ -219,6 +220,37 @@
     <input name="semesterId"/>
 </form>
 
+<div id="markDetail" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Chi tiết điểm</h4>
+            </div>
+            <div class="modal-body">
+                <div class="col-md-12">
+                    <table id="table-mark-detail">
+                        <thead>
+                        <tr>
+                            <th>Môn học</th>
+                            <th>Học kỳ</th>
+                            <th>Số lần học</th>
+                            <th>Điểm trung bình</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 <script>
     var table = null;
     var nextCourseTable = null;
@@ -259,6 +291,31 @@
         });
         return this;
     };
+
+    function GetAllStudentMarks() {
+        var form = new FormData();
+        form.append("studentId", $('#cb-student').val());
+
+        $.ajax({
+            type: "POST",
+            url: "/student/getAllLatestMarks",
+            processData: false,
+            contentType: false,
+            data: form,
+            success: function (result) {
+
+                if (result.success) {
+                    result.studentMarkDetail = JSON.parse(result.studentMarkDetail);
+
+                    $("#markDetail").find(".modal-title").html("Chi tiết điểm - " + result.studentMarkDetail.studentName);
+                    CreateMarkDetailTable(result.studentMarkDetail.markList);
+                    $("#markDetail").modal();
+                } else {
+                    swal('', 'Có lỗi xảy ra, vui lòng thử lại sau', 'warning');
+                }
+            }
+        });
+    }
 
     $(document).ready(function () {
         CreateSelect();
@@ -304,6 +361,7 @@
                 }
             }
         });
+        $("#semester").select2();
     }
 
     function CreateDebtTable() {
@@ -644,6 +702,8 @@
     }
 
     function RefreshTable() {
+        $('#detail').css('display', 'block');
+
         if (table != null) {
             table._fnPageChange(0);
             table._fnAjaxUpdate();
