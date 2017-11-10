@@ -82,7 +82,25 @@ public class GraduateController {
             StudentDetail detail = new StudentDetail();
             for (StudentEntity student : students) {
 
-                boolean aye = true;
+                List<SubjectCurriculumEntity> subjects = new ArrayList<>();
+
+                int ojt = 1;
+                List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+                for (DocumentStudentEntity doc : docs) {
+                    if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
+                        List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                        for (SubjectCurriculumEntity s : list) {
+                            if (!subjects.contains(s)) {
+                                subjects.add(s);
+                                if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId())
+                                    ojt = s.getTermNumber();
+                            }
+                        }
+                    }
+                }
+                subjects = subjects.stream().distinct().collect(Collectors.toList());
+
+                boolean aye = false;
 
                 // CHECK OJT DIEU KIEN DU THU KHAC NHAU
                 Suggestion suggestion = detail.processSuggestion(student.getId(), semester.getSemester());
@@ -99,42 +117,27 @@ public class GraduateController {
                     }
                 }
                 for (List<String> r : result2) {
-                    if (type.equals("OJT")) {
-                        if (r.get(0).toLowerCase().contains("oj")) {
-                            System.out.println("sinh viên " + student.getRollNumber() + " ko đủ đk ojt");
-                            aye = false;
-                            break;
-                        }
-                    } else if (type.equals("SWP")) {
-                        if (r.get(0).toLowerCase().contains("swp")) {
-                            System.out.println("sinh viên " + student.getRollNumber() + " ko đủ đk capstone");
-                            aye = false;
-                            break;
-                        }
+                    SubjectCurriculumEntity s = subjects.stream().filter(c -> c.getSubjectId().getId().equals(r.get(0))).findFirst().get();
+//                    if (type.equals("OJT")) {
+//                        if (r.get(0).toLowerCase().contains("oj")) {
+//                            aye = true;
+//                            break;
+//                        }
+//                    } else if (type.equals("SWP")) {
+//                        if (r.get(0).toLowerCase().contains("swp")) {
+//                            aye = true;
+//                            break;
+//                        }
+//                    }
+                    if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId() ||
+                            s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
+                        aye = true;
+                        break;
                     }
                 }
 
                 if (aye) {
-                    System.out.println((i++) + " - " + students.size());
-
-                    List<SubjectCurriculumEntity> subjects = new ArrayList<>();
-
-                    int ojt = 1;
-                    List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
-                    for (DocumentStudentEntity doc : docs) {
-                        if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
-                            List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
-                            for (SubjectCurriculumEntity s : list) {
-                                if (!subjects.contains(s)) {
-                                    subjects.add(s);
-                                    if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId())
-                                        ojt = s.getTermNumber();
-                                }
-                            }
-                        }
-                    }
-
-                    subjects = subjects.stream().distinct().collect(Collectors.toList());
+                    System.out.println(i + " - " + students.size());
 
                     List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
                     for (SubjectCurriculumEntity c : subjects) {
@@ -193,8 +196,10 @@ public class GraduateController {
                         data.add(t);
                     }
                 } else {
-                    System.out.println("sv" + student.getRollNumber() + " ko du dk");
+                    System.out.println("sinh viên " + student.getRollNumber() + " ko đủ đk");
                 }
+
+                i++;
             }
 
             List<List<String>> searchList = data.stream().filter(s ->
