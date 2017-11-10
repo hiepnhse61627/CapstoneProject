@@ -163,9 +163,9 @@ public class StudentArrangementController {
                         if (student != null) {
                             List<List<String>> subjectList = null;
                             if (status.equals("HD")) {
-                                subjectList = studentDetailController.processNext(student.getId(), false, false);
+                                subjectList = studentDetailController.processNext(student.getId(), "", false, false);
                             } else if (status.equals("HL")) {
-                                Suggestion suggestion = studentDetailController.processSuggestion(student.getId());
+                                Suggestion suggestion = studentDetailController.processSuggestion(student.getId(), "");
                                 subjectList = suggestion.getData();
                                 List<String> brea = new ArrayList<>();
                                 brea.add("break");
