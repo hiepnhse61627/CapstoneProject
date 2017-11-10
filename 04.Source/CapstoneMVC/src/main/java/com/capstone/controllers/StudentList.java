@@ -116,6 +116,9 @@ public class StudentList {
                     markModel.setStatus((String) row[6]);
 
                     curMarkList.add(markModel);
+
+//                    curMarkList = curMarkList.stream().filter(Ultilities.distinctByKey(c -> c.getSubject() + "_" + c.getSemester())).collect(Collectors.toList());
+
                     markIdList.add((Integer) row[0]);
                 }
 
@@ -126,11 +129,21 @@ public class StudentList {
                     }
                 });
 
-                queryStr = "SELECT m.id, sub.id, sub.name, m.semesterId.semester, m.id, m.averageMark, m.status" +
+//                queryStr = "SELECT m.id, sub.id, sub.name, m.semesterId.semester, m.id, m.averageMark, m.status" +
+//                        " FROM MarksEntity m" +
+//                        " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id" +
+//                        " INNER JOIN SubjectEntity sub ON smc.subjectId.id = sub.id" +
+//                        " INNER JOIN MarkComponentEntity mc ON smc.markComponentId.id = mc.id" +
+//                        " AND mc.name LIKE :markComponentName" +
+//                        " AND m.studentId.id = :studentId" +
+//                        " AND m.id NOT IN :sList";
+                queryStr = "SELECT m.id, sub.id, sub.name, m.semesterId.semester, sc.subjectCredits, m.averageMark, m.status" +
                         " FROM MarksEntity m" +
                         " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id" +
                         " INNER JOIN SubjectEntity sub ON smc.subjectId.id = sub.id" +
                         " INNER JOIN MarkComponentEntity mc ON smc.markComponentId.id = mc.id" +
+                        " INNER JOIN DocumentStudentEntity ds ON ds.studentId.id = m.studentId.id" +
+                        " INNER JOIN SubjectCurriculumEntity sc ON ds.curriculumId.id = sc.curriculumId.id" +
                         " AND mc.name LIKE :markComponentName" +
                         " AND m.studentId.id = :studentId" +
                         " AND m.id NOT IN :sList";
@@ -154,6 +167,8 @@ public class StudentList {
 
                         markList.add(markModel);
                     }
+
+                    markList = markList.stream().filter(Ultilities.distinctByKey(c -> c.getSubject() + "_" + c.getSemester())).collect(Collectors.toList());
 
                     StudentDetailModel studentDetailModel = new StudentDetailModel();
                     studentDetailModel.term = -1;
