@@ -170,7 +170,7 @@ public class StudentList {
                     }
                 });
 
-                queryStr = "SELECT m.id, sub.id, sub.name, m.semesterId.semester, sub.credits, m.averageMark, m.status" +
+                queryStr = "SELECT m.id, sub.id, sub.name, m.semesterId.semester, m.id, m.averageMark, m.status" +
                         " FROM MarksEntity m" +
                         " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id" +
                         " INNER JOIN SubjectEntity sub ON smc.subjectId.id = sub.id" +
