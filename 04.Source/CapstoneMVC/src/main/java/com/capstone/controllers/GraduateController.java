@@ -118,21 +118,16 @@ public class GraduateController {
                 }
                 for (List<String> r : result2) {
                     SubjectCurriculumEntity s = subjects.stream().filter(c -> c.getSubjectId().getId().equals(r.get(0))).findFirst().get();
-//                    if (type.equals("OJT")) {
-//                        if (r.get(0).toLowerCase().contains("oj")) {
-//                            aye = true;
-//                            break;
-//                        }
-//                    } else if (type.equals("SWP")) {
-//                        if (r.get(0).toLowerCase().contains("swp")) {
-//                            aye = true;
-//                            break;
-//                        }
-//                    }
-                    if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId() ||
-                            s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
-                        aye = true;
-                        break;
+                    if (type.equals("OJT")) {
+                        if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
+                            aye = true;
+                            break;
+                        }
+                    } else if (type.equals("SWP")) {
+                        if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
+                            aye = true;
+                            break;
+                        }
                     }
                 }
 
