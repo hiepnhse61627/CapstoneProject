@@ -134,7 +134,7 @@ public class ExDocumentStudentEntityJpaController extends DocumentStudentEntityJ
             TypedQuery<DocumentStudentEntity> query = em.createQuery(queryStr, DocumentStudentEntity.class);
             query.setParameter("idList", idList);
             result = query.getResultList();
-            result = Ultilities.sortDocumentStudentListByDate(result);
+//            result = Ultilities.sortDocumentStudentListByDate(result);
         } finally {
             if (em != null) {
                 em.close();
