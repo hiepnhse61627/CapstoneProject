@@ -87,7 +87,7 @@ public class ExportCurriculumImpl implements IExportObject {
 
                 cell = row.createCell(4);
                 cell.setCellStyle(cellStyle);
-                cell.setCellValue(entity.getSubjectId().getCredits());
+//                cell.setCellValue(entity.getSubjectId().getCredits());
 
                 rowIndex++;
             }

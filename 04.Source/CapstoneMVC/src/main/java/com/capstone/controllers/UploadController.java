@@ -73,8 +73,12 @@ public class UploadController {
         view.addObject("title", "Nhập danh sách sinh viên");
 
         ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+        semesters = semesters.stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
         File[] list = read.readFiles(context, folder);
         view.addObject("files", list);
+        view.addObject("semesters", semesters);
         return view;
     }
 
@@ -89,7 +93,7 @@ public class UploadController {
 
     @RequestMapping(value = "/uploadStudentExistFile", method = RequestMethod.POST)
     @ResponseBody
-    public Callable<JsonObject> chooseExistFile(@RequestParam("file") String file) {
+    public Callable<JsonObject> chooseExistFile(@RequestParam("file") String file, @RequestParam String semesterId) {
         Callable<JsonObject> callable = new Callable<JsonObject>() {
             @Override
             public JsonObject call() throws Exception {
@@ -97,7 +101,7 @@ public class UploadController {
 
                 try {
                     File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
-                    obj = ReadFile(null, f, false);
+                    obj = ReadFile(null, f, false, semesterId);
                 } catch (Exception e) {
                     obj = new JsonObject();
                     obj.addProperty("success", false);
@@ -114,7 +118,7 @@ public class UploadController {
 
     @RequestMapping(value = "/uploadStudentList", method = RequestMethod.POST)
     @ResponseBody
-    public Callable<JsonObject> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam boolean update) {
+    public Callable<JsonObject> uploadFile(@RequestParam("file") MultipartFile file, @RequestParam boolean update, @RequestParam String semesterId) {
         Callable<JsonObject> callable = new Callable<JsonObject>() {
             @Override
             public JsonObject call() throws Exception {
@@ -122,7 +126,7 @@ public class UploadController {
                 if (update) {
                     obj = UpdateFile(file, null, true);
                 } else {
-                    obj = ReadFile(file, null, true);
+                    obj = ReadFile(file, null, true, semesterId);
                 }
 
                 if (obj.get("success").getAsBoolean()) {
@@ -137,7 +141,7 @@ public class UploadController {
         return callable;
     }
 
-    private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile) {
+    private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile, String semesterId) {
 
         JsonObject obj = new JsonObject();
 
@@ -234,17 +238,26 @@ public class UploadController {
                     }
                     // save student
                     studentEntity = studentService.createStudent(studentEntity);
+                    // save status
+                    if (statusCell != null) {
+                        RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterById(Integer.parseInt(semesterId));
+                        StudentStatusEntity studentStatusEntity = new StudentStatusEntity();
+                        studentStatusEntity.setSemesterId(realSemesterEntity);
+                        studentStatusEntity.setStudentId(studentEntity);
+                        studentStatusEntity.setStatus(statusCell.getStringCellValue().trim());
+                    }
                     // start save document student
                     DocumentEntity documentEntity = documentService.getAllDocuments().get(0);
-                    if (curriculumCell1 != null) {
-                        if (!curriculumCell1.getStringCellValue().isEmpty()) {
-                            CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCell1.getStringCellValue().trim());
+                    List<DocumentStudentEntity> documentStudentEntityList = new ArrayList<>();
+                    if (curriculumCell3 != null) {
+                        if (!curriculumCell3.getStringCellValue().isEmpty()) {
+                            CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCell3.getStringCellValue().trim());
                             DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
                             documentStudentEntity.setStudentId(studentEntity);
                             documentStudentEntity.setDocumentId(documentEntity);
                             documentStudentEntity.setCurriculumId(curriculumEntity);
 
-                            documentStudentService.createDocumentStudent(documentStudentEntity);
+                            documentStudentEntityList.add(documentStudentEntity);
                         }
                     }
 
@@ -257,19 +270,19 @@ public class UploadController {
                             documentStudentEntity.setDocumentId(documentEntity);
                             documentStudentEntity.setCurriculumId(curriculumEntity);
 
-                            documentStudentService.createDocumentStudent(documentStudentEntity);
+                            documentStudentEntityList.add(documentStudentEntity);
                         }
                     }
 
-                    if (curriculumCell3 != null) {
-                        if (!curriculumCell3.getStringCellValue().isEmpty()) {
-                            CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCell3.getStringCellValue().trim());
+                    if (curriculumCell1 != null) {
+                        if (!curriculumCell1.getStringCellValue().isEmpty()) {
+                            CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCell1.getStringCellValue().trim());
                             DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
                             documentStudentEntity.setStudentId(studentEntity);
                             documentStudentEntity.setDocumentId(documentEntity);
                             documentStudentEntity.setCurriculumId(curriculumEntity);
 
-                            documentStudentService.createDocumentStudent(documentStudentEntity);
+                            documentStudentEntityList.add(documentStudentEntity);
                         }
                     }
                     // start save old roll number
@@ -287,7 +300,15 @@ public class UploadController {
                         documentStudentEntity.setOldStudentId(oldRollNumberEntity);
                         documentStudentEntity.setDocumentId(documentEntity);
 
-                        documentStudentService.createDocumentStudent(documentStudentEntity);
+                        documentStudentEntityList.add(documentStudentEntity);
+                    }
+
+                    // save document List
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(new Date());
+                    for (DocumentStudentEntity documentStudentEntity : documentStudentEntityList) {
+                        documentStudentEntity.setCreatedDate(calendar.getTime());
+                        calendar.add(Calendar.MONTH, -4);
                     }
                 }
             }

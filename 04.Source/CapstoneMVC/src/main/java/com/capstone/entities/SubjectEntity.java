@@ -40,8 +40,6 @@ public class SubjectEntity implements Serializable {
     private String name;
     @Column(name = "Abbreviation", length = 255)
     private String abbreviation;
-    @Column(name = "Credits")
-    private Integer credits;
     @Column(name = "IsSpecialized")
     private Boolean isSpecialized;
     @Column(name = "Type")
@@ -89,14 +87,6 @@ public class SubjectEntity implements Serializable {
 
     public void setAbbreviation(String abbreviation) {
         this.abbreviation = abbreviation;
-    }
-
-    public Integer getCredits() {
-        return credits;
-    }
-
-    public void setCredits(Integer credits) {
-        this.credits = credits;
     }
 
     public Boolean getIsSpecialized() {
