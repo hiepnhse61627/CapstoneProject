@@ -6,19 +6,25 @@
         <div class="b-header">
             <div class="row">
                 <div class="col-md-9 title">
-                    <h1>Danh sách sinh viên</h1>
-                </div>
-                <div class="col-md-3 text-right">
-                    <button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
-                        <i class="glyphicon glyphicon-open"></i>
-                        <div>XUẤT DỮ LIỆU</div>
-                    </button>
+                    <h1>Danh sách học kỳ</h1>
                 </div>
             </div>
             <hr>
         </div>
 
         <div class="b-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <h4>Tạo học kì mới</h4>
+                    <div class="col-md-12">
+                        <label for="s">Tên học kì: </label>
+                        <input id="s" placeholder="Tên" class="form-control"/>
+                    </div>
+                    <div class="col-md-12">
+                        <button type="button" class="btn btn-success" onclick="Create()">Tạo</button>
+                    </div>
+                </div>
+            </div>
             <div class="row">
                 <div class="col-md-12">
                     <table id="tbl-semester">
@@ -97,4 +103,16 @@
         });
         $("#tbl-semester").DataTable();
     });
+
+    function Create() {
+        $.ajax({
+            type: "GET",
+            url: "/managerrole/semester/create",
+            data: { "name": $("#s").val() },
+            success: function (result) {
+                console.log(result);
+                location.reload();
+            }
+        });
+    }
 </script>

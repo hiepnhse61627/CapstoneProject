@@ -44,4 +44,24 @@ public class RealSemesterController {
 
         return obj;
     }
+
+    @RequestMapping("/semester/create")
+    @ResponseBody
+    public JsonObject Create(@RequestParam String name) {
+        JsonObject obj = new JsonObject();
+        try {
+            IRealSemesterService service = new RealSemesterServiceImpl();
+            RealSemesterEntity semester = new RealSemesterEntity();
+            semester.setActive(true);
+            semester.setSemester(name);
+            service.createRealSemester(semester);
+            obj.addProperty("success", true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            obj.addProperty("success", false);
+            obj.addProperty("msg", e.getMessage());
+        }
+
+        return obj;
+    }
 }
