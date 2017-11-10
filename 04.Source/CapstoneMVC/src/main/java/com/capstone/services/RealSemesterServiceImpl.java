@@ -27,4 +27,9 @@ public class RealSemesterServiceImpl implements IRealSemesterService {
     public List<RealSemesterEntity> getAllSemester() {
         return realSemesterEntityJpaController.findRealSemesterEntityEntities();
     }
+
+    @Override
+    public RealSemesterEntity findSemesterById(Integer id) {
+        return realSemesterEntityJpaController.findRealSemesterEntity(id);
+    }
 }

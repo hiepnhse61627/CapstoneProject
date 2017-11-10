@@ -117,7 +117,7 @@ public class GraduateController {
 
                 int required = 0;
                 for (SubjectCurriculumEntity s : processedSub) {
-                    required += s.getSubjectId().getCredits();
+//                    required += s.getSubjectId().getCredits();
                 }
 
                 int percent = 9999;
@@ -134,7 +134,7 @@ public class GraduateController {
                 for (MarksEntity mark : marks) {
                     if (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt")) {
                         if (!datontai.contains(mark.getSubjectMarkComponentId().getSubjectId().getId())) {
-                            tongtinchi += mark.getSubjectMarkComponentId().getSubjectId().getCredits();
+//                            tongtinchi += mark.getSubjectMarkComponentId().getSubjectId().getCredits();
                             datontai.add(mark.getSubjectMarkComponentId().getSubjectId().getId());
                         }
                     }

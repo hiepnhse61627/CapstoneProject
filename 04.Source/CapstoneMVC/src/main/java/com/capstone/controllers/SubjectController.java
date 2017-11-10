@@ -198,7 +198,7 @@ public class SubjectController {
                 subjectModel.setFailMark(entity.getPrequisiteEntity().getFailMark());
             }
 
-            subjectModel.setCredits(entity.getCredits());
+//            subjectModel.setCredits(entity.getCredits());
 //            subjectModel.setPrerequisiteEffectStart(entity.getPrequisiteEntity().getPrerequisiteEffectStart());
 //            subjectModel.setPrerequisiteEffectEnd(entity.getPrequisiteEntity().getPrerequisiteEffectEnd());
             if (!replacementSubject.equals("")) {
@@ -232,7 +232,8 @@ public class SubjectController {
             EntityManager em = emf.createEntityManager();
 
             // Lấy thông tin chi tiết môn
-            String queryStr = "select s.id, s.name, s.credits from SubjectEntity s where s.id = :sId";
+//            String queryStr = "select s.id, s.name, s.credits from SubjectEntity s where s.id = :sId";
+            String queryStr = "select s.id, s.name from SubjectEntity s where s.id = :sId";
             TypedQuery<SubjectEntity> querySubject = em.createQuery(queryStr, SubjectEntity.class);
             querySubject.setParameter("sId", subjectId);
             SubjectEntity subject = querySubject.getSingleResult();
@@ -240,7 +241,7 @@ public class SubjectController {
             SubjectModel model = new SubjectModel();
             model.setSubjectID(subjectId);
             model.setSubjectName(subject.getName());
-            model.setCredits(subject.getCredits());
+//            model.setCredits(subject.getCredits());
 
             // Lấy môn tiên quyết
 //            queryStr = "select p.prequisiteSubs, p.prerequisiteEffectStart ,p.prerequisiteEffectEnd from PrequisiteEntity p where p.subjectId = :sId";
@@ -306,12 +307,6 @@ public class SubjectController {
                                 en.setAbbreviation(cell.getStringCellValue().trim());
                             } else if (cell.getColumnIndex() == 2) { // Subject name
                                 en.setName(cell.getStringCellValue().trim());
-                            } else if (cell.getColumnIndex() == 3) { // No. of credits
-                                try {
-                                    en.setCredits((int) cell.getNumericCellValue());
-                                } catch (Exception e) {
-                                    en.setCredits(null);
-                                }
                             } else if (cell.getColumnIndex() == 4) { // Prerequisite
                                 String prequisite = cell.getStringCellValue().trim();
                                 if (prequisiteEntity != null && prequisite != null && !prequisite.isEmpty()) {

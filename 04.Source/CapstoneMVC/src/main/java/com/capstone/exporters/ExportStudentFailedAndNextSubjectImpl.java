@@ -101,8 +101,8 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 int credits = 0;
                 for (MarksEntity mark : marksCredits) {
                     if (mark.getIsActivated() && (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt"))) {
-                        Integer tmp = mark.getSubjectMarkComponentId().getSubjectId().getCredits();
-                        credits += (tmp == null ? 0 : tmp);
+//                        Integer tmp = mark.getSubjectMarkComponentId().getSubjectId().getCredits();
+//                        credits += (tmp == null ? 0 : tmp);
                     }
                 }
                 tinchi.setCellValue(credits);

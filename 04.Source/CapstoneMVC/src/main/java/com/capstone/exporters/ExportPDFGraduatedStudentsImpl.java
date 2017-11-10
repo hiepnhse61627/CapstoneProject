@@ -115,7 +115,7 @@ public class ExportPDFGraduatedStudentsImpl implements IExportObject {
                 // credit
                 XSSFCell creditCell = row.createCell(6);
                 creditCell.setCellStyle(cellStyle);
-                creditCell.setCellValue(subjectEntity.getCredits() + "");
+//                creditCell.setCellValue(subjectEntity.getCredits() + "");
                 // mark
                 XSSFCell markCell = row.createCell(7);
                 markCell.setCellStyle(cellStyle);

@@ -8,4 +8,5 @@ public interface IRealSemesterService {
     RealSemesterEntity findSemesterByName(String name);
     RealSemesterEntity createRealSemester(RealSemesterEntity entity);
     List<RealSemesterEntity> getAllSemester();
+    RealSemesterEntity findSemesterById(Integer id);
 }
