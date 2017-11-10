@@ -144,6 +144,7 @@
 
 <script>
     var tblStudenArrangement = null;
+    var isRunning = false;
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -276,8 +277,24 @@
                         }
                     }
                 });
+                updateProgress(isRunning);
             },
             allowOutsideClick: false
+        });
+    }
+
+    function updateProgress(running) {
+        $.ajax({
+            type: "GET",
+            url: "/studentArrangement/updateProgress",
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                $('#progress').html("<div>(" + result.count + "/" + result.total + ")</div>");
+                if (running) {
+                    setTimeout("updateProgress(isRunning)", 50);
+                }
+            }
         });
     }
 </script>
