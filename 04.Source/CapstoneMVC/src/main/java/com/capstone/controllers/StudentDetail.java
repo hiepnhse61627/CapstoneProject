@@ -580,15 +580,15 @@ public class StudentDetail {
                             List<SubjectCurriculumEntity> curSubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
                             int total = 0; // total total tin chi
                             for (SubjectCurriculumEntity m : curSubs) {
-                                Integer num = m.getSubjectId().getCredits();
-                                total += (num == null ? 0 : num);
+//                                Integer num = m.getSubjectId().getCredits();
+//                                total += (num == null ? 0 : num);
                             }
                             List<MarksEntity> stuSubs = student.getMarksEntityList();
                             int tongtinchi = 0;
                             for (MarksEntity mark : stuSubs) {
                                 if (mark.getIsActivated() && (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt"))) {
-                                    Integer tmp = mark.getSubjectMarkComponentId().getSubjectId().getCredits();
-                                    tongtinchi += (tmp == null ? 0 : tmp);
+//                                    Integer tmp = mark.getSubjectMarkComponentId().getSubjectId().getCredits();
+//                                    tongtinchi += (tmp == null ? 0 : tmp);
                                 }
                             }
                             // tính tổng tín chỉ

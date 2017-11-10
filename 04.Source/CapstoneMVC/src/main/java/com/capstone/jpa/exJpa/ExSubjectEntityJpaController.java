@@ -81,7 +81,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 
 //                uSubject.getPrequisiteEntity().setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
 //                uSubject.getPrequisiteEntity().setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
-                uSubject.setCredits(subject.getCredits());
+//                uSubject.setCredits(subject.getCredits());
 
                 manager.persist(uSubject);
                 manager.flush();
@@ -171,7 +171,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 //            uSubject.getPrequisiteEntity().setPrerequisiteEffectStart(subject.getPrerequisiteEffectStart());
 //            uSubject.getPrequisiteEntity().setPrerequisiteEffectEnd(subject.getPrerequisiteEffectEnd());
             uSubject.getPrequisiteEntity().setPrequisiteSubs(null);
-            uSubject.setCredits(subject.getCredits());
+//            uSubject.setCredits(subject.getCredits());
             uSubject.setSubjectEntityList(new ArrayList<SubjectEntity>());
             uSubject.setSubjectEntityList1(new ArrayList<SubjectEntity>());
             if (!subject.getEffectionSemester().equals("0")){

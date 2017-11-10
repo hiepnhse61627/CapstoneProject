@@ -9,7 +9,6 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Basic;
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -56,13 +55,11 @@ public class StudentEntity implements Serializable {
     private Boolean gender;
     @Column(name = "Term")
     private Integer term;
-    @Column(name = "Status", length = 50)
-    private String status;
     @Column(name = "Shift", length = 5)
     private String shift;
     @Column(name = "PayRollClass", length = 50)
     private String payRollClass;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "studentId")
+    @OneToMany(mappedBy = "studentId")
     private List<DocumentStudentEntity> documentStudentEntityList;
     @OneToMany(mappedBy = "studentId")
     private List<OldRollNumberEntity> oldRollNumberEntityList;
@@ -71,6 +68,8 @@ public class StudentEntity implements Serializable {
     @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
     @ManyToOne
     private ProgramEntity programId;
+    @OneToMany(mappedBy = "studentId")
+    private List<StudentStatusEntity> studentStatusEntityList;
 
     public StudentEntity() {
     }
@@ -140,14 +139,6 @@ public class StudentEntity implements Serializable {
         this.term = term;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public String getShift() {
         return shift;
     }
@@ -194,6 +185,14 @@ public class StudentEntity implements Serializable {
 
     public void setProgramId(ProgramEntity programId) {
         this.programId = programId;
+    }
+
+    public List<StudentStatusEntity> getStudentStatusEntityList() {
+        return studentStatusEntityList;
+    }
+
+    public void setStudentStatusEntityList(List<StudentStatusEntity> studentStatusEntityList) {
+        this.studentStatusEntityList = studentStatusEntityList;
     }
 
     @Override

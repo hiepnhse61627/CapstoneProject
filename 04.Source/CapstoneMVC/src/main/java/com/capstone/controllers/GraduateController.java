@@ -145,7 +145,7 @@ public class GraduateController {
             int studentCredits = 0;
             for (MarksEntity marksEntity : distinctMarks) {
                 if (subjectCdsInCurriculum.contains(marksEntity.getSubjectMarkComponentId().getSubjectId().getId())) {
-                    studentCredits += marksEntity.getSubjectMarkComponentId().getSubjectId().getCredits();
+//                    studentCredits += marksEntity.getSubjectMarkComponentId().getSubjectId().getCredits();
                 }
             }
 
@@ -182,7 +182,7 @@ public class GraduateController {
         int credits = 0;
         if (subjectEntityList != null && !subjectEntityList.isEmpty()) {
             for (SubjectEntity subjectEntity : subjectEntityList) {
-                credits += subjectEntity.getCredits();
+//                credits += subjectEntity.getCredits();
             }
         }
         return credits;
@@ -253,7 +253,7 @@ public class GraduateController {
 
                 int required = 0;
                 for (SubjectCurriculumEntity s : processedSub) {
-                    required += s.getSubjectId().getCredits();
+//                    required += s.getSubjectId().getCredits();
                 }
                 int percent = student.getProgramId().getOjt();
                 int tongtinchi = 0;
@@ -261,7 +261,7 @@ public class GraduateController {
                 for (MarksEntity mark : marks) {
                     if (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt")) {
                         if (!datontai.contains(mark.getSubjectMarkComponentId().getSubjectId().getId())) {
-                            tongtinchi += mark.getSubjectMarkComponentId().getSubjectId().getCredits();
+//                            tongtinchi += mark.getSubjectMarkComponentId().getSubjectId().getCredits();
                             datontai.add(mark.getSubjectMarkComponentId().getSubjectId().getId());
                         }
                     }

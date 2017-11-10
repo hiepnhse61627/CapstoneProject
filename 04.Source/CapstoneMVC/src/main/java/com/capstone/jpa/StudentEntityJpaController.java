@@ -17,7 +17,7 @@ import java.util.List;
 import com.capstone.entities.OldRollNumberEntity;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
-import com.capstone.jpa.exceptions.IllegalOrphanException;
+import com.capstone.entities.StudentStatusEntity;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -47,6 +47,9 @@ public class StudentEntityJpaController implements Serializable {
         if (studentEntity.getMarksEntityList() == null) {
             studentEntity.setMarksEntityList(new ArrayList<MarksEntity>());
         }
+        if (studentEntity.getStudentStatusEntityList() == null) {
+            studentEntity.setStudentStatusEntityList(new ArrayList<StudentStatusEntity>());
+        }
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -74,6 +77,12 @@ public class StudentEntityJpaController implements Serializable {
                 attachedMarksEntityList.add(marksEntityListMarksEntityToAttach);
             }
             studentEntity.setMarksEntityList(attachedMarksEntityList);
+            List<StudentStatusEntity> attachedStudentStatusEntityList = new ArrayList<StudentStatusEntity>();
+            for (StudentStatusEntity studentStatusEntityListStudentStatusEntityToAttach : studentEntity.getStudentStatusEntityList()) {
+                studentStatusEntityListStudentStatusEntityToAttach = em.getReference(studentStatusEntityListStudentStatusEntityToAttach.getClass(), studentStatusEntityListStudentStatusEntityToAttach.getId());
+                attachedStudentStatusEntityList.add(studentStatusEntityListStudentStatusEntityToAttach);
+            }
+            studentEntity.setStudentStatusEntityList(attachedStudentStatusEntityList);
             em.persist(studentEntity);
             if (programId != null) {
                 programId.getStudentEntityList().add(studentEntity);
@@ -106,6 +115,15 @@ public class StudentEntityJpaController implements Serializable {
                     oldStudentIdOfMarksEntityListMarksEntity = em.merge(oldStudentIdOfMarksEntityListMarksEntity);
                 }
             }
+            for (StudentStatusEntity studentStatusEntityListStudentStatusEntity : studentEntity.getStudentStatusEntityList()) {
+                StudentEntity oldStudentIdOfStudentStatusEntityListStudentStatusEntity = studentStatusEntityListStudentStatusEntity.getStudentId();
+                studentStatusEntityListStudentStatusEntity.setStudentId(studentEntity);
+                studentStatusEntityListStudentStatusEntity = em.merge(studentStatusEntityListStudentStatusEntity);
+                if (oldStudentIdOfStudentStatusEntityListStudentStatusEntity != null) {
+                    oldStudentIdOfStudentStatusEntityListStudentStatusEntity.getStudentStatusEntityList().remove(studentStatusEntityListStudentStatusEntity);
+                    oldStudentIdOfStudentStatusEntityListStudentStatusEntity = em.merge(oldStudentIdOfStudentStatusEntityListStudentStatusEntity);
+                }
+            }
             em.getTransaction().commit();
         } finally {
             if (em != null) {
@@ -114,7 +132,7 @@ public class StudentEntityJpaController implements Serializable {
         }
     }
 
-    public void edit(StudentEntity studentEntity) throws IllegalOrphanException, NonexistentEntityException, Exception {
+    public void edit(StudentEntity studentEntity) throws NonexistentEntityException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -128,18 +146,8 @@ public class StudentEntityJpaController implements Serializable {
             List<OldRollNumberEntity> oldRollNumberEntityListNew = studentEntity.getOldRollNumberEntityList();
             List<MarksEntity> marksEntityListOld = persistentStudentEntity.getMarksEntityList();
             List<MarksEntity> marksEntityListNew = studentEntity.getMarksEntityList();
-            List<String> illegalOrphanMessages = null;
-            for (DocumentStudentEntity documentStudentEntityListOldDocumentStudentEntity : documentStudentEntityListOld) {
-                if (!documentStudentEntityListNew.contains(documentStudentEntityListOldDocumentStudentEntity)) {
-                    if (illegalOrphanMessages == null) {
-                        illegalOrphanMessages = new ArrayList<String>();
-                    }
-                    illegalOrphanMessages.add("You must retain DocumentStudentEntity " + documentStudentEntityListOldDocumentStudentEntity + " since its studentId field is not nullable.");
-                }
-            }
-            if (illegalOrphanMessages != null) {
-                throw new IllegalOrphanException(illegalOrphanMessages);
-            }
+            List<StudentStatusEntity> studentStatusEntityListOld = persistentStudentEntity.getStudentStatusEntityList();
+            List<StudentStatusEntity> studentStatusEntityListNew = studentEntity.getStudentStatusEntityList();
             if (programIdNew != null) {
                 programIdNew = em.getReference(programIdNew.getClass(), programIdNew.getId());
                 studentEntity.setProgramId(programIdNew);
@@ -165,6 +173,13 @@ public class StudentEntityJpaController implements Serializable {
             }
             marksEntityListNew = attachedMarksEntityListNew;
             studentEntity.setMarksEntityList(marksEntityListNew);
+            List<StudentStatusEntity> attachedStudentStatusEntityListNew = new ArrayList<StudentStatusEntity>();
+            for (StudentStatusEntity studentStatusEntityListNewStudentStatusEntityToAttach : studentStatusEntityListNew) {
+                studentStatusEntityListNewStudentStatusEntityToAttach = em.getReference(studentStatusEntityListNewStudentStatusEntityToAttach.getClass(), studentStatusEntityListNewStudentStatusEntityToAttach.getId());
+                attachedStudentStatusEntityListNew.add(studentStatusEntityListNewStudentStatusEntityToAttach);
+            }
+            studentStatusEntityListNew = attachedStudentStatusEntityListNew;
+            studentEntity.setStudentStatusEntityList(studentStatusEntityListNew);
             studentEntity = em.merge(studentEntity);
             if (programIdOld != null && !programIdOld.equals(programIdNew)) {
                 programIdOld.getStudentEntityList().remove(studentEntity);
@@ -173,6 +188,12 @@ public class StudentEntityJpaController implements Serializable {
             if (programIdNew != null && !programIdNew.equals(programIdOld)) {
                 programIdNew.getStudentEntityList().add(studentEntity);
                 programIdNew = em.merge(programIdNew);
+            }
+            for (DocumentStudentEntity documentStudentEntityListOldDocumentStudentEntity : documentStudentEntityListOld) {
+                if (!documentStudentEntityListNew.contains(documentStudentEntityListOldDocumentStudentEntity)) {
+                    documentStudentEntityListOldDocumentStudentEntity.setStudentId(null);
+                    documentStudentEntityListOldDocumentStudentEntity = em.merge(documentStudentEntityListOldDocumentStudentEntity);
+                }
             }
             for (DocumentStudentEntity documentStudentEntityListNewDocumentStudentEntity : documentStudentEntityListNew) {
                 if (!documentStudentEntityListOld.contains(documentStudentEntityListNewDocumentStudentEntity)) {
@@ -219,6 +240,23 @@ public class StudentEntityJpaController implements Serializable {
                     }
                 }
             }
+            for (StudentStatusEntity studentStatusEntityListOldStudentStatusEntity : studentStatusEntityListOld) {
+                if (!studentStatusEntityListNew.contains(studentStatusEntityListOldStudentStatusEntity)) {
+                    studentStatusEntityListOldStudentStatusEntity.setStudentId(null);
+                    studentStatusEntityListOldStudentStatusEntity = em.merge(studentStatusEntityListOldStudentStatusEntity);
+                }
+            }
+            for (StudentStatusEntity studentStatusEntityListNewStudentStatusEntity : studentStatusEntityListNew) {
+                if (!studentStatusEntityListOld.contains(studentStatusEntityListNewStudentStatusEntity)) {
+                    StudentEntity oldStudentIdOfStudentStatusEntityListNewStudentStatusEntity = studentStatusEntityListNewStudentStatusEntity.getStudentId();
+                    studentStatusEntityListNewStudentStatusEntity.setStudentId(studentEntity);
+                    studentStatusEntityListNewStudentStatusEntity = em.merge(studentStatusEntityListNewStudentStatusEntity);
+                    if (oldStudentIdOfStudentStatusEntityListNewStudentStatusEntity != null && !oldStudentIdOfStudentStatusEntityListNewStudentStatusEntity.equals(studentEntity)) {
+                        oldStudentIdOfStudentStatusEntityListNewStudentStatusEntity.getStudentStatusEntityList().remove(studentStatusEntityListNewStudentStatusEntity);
+                        oldStudentIdOfStudentStatusEntityListNewStudentStatusEntity = em.merge(oldStudentIdOfStudentStatusEntityListNewStudentStatusEntity);
+                    }
+                }
+            }
             em.getTransaction().commit();
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
@@ -236,7 +274,7 @@ public class StudentEntityJpaController implements Serializable {
         }
     }
 
-    public void destroy(Integer id) throws IllegalOrphanException, NonexistentEntityException {
+    public void destroy(Integer id) throws NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -248,21 +286,15 @@ public class StudentEntityJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The studentEntity with id " + id + " no longer exists.", enfe);
             }
-            List<String> illegalOrphanMessages = null;
-            List<DocumentStudentEntity> documentStudentEntityListOrphanCheck = studentEntity.getDocumentStudentEntityList();
-            for (DocumentStudentEntity documentStudentEntityListOrphanCheckDocumentStudentEntity : documentStudentEntityListOrphanCheck) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("This StudentEntity (" + studentEntity + ") cannot be destroyed since the DocumentStudentEntity " + documentStudentEntityListOrphanCheckDocumentStudentEntity + " in its documentStudentEntityList field has a non-nullable studentId field.");
-            }
-            if (illegalOrphanMessages != null) {
-                throw new IllegalOrphanException(illegalOrphanMessages);
-            }
             ProgramEntity programId = studentEntity.getProgramId();
             if (programId != null) {
                 programId.getStudentEntityList().remove(studentEntity);
                 programId = em.merge(programId);
+            }
+            List<DocumentStudentEntity> documentStudentEntityList = studentEntity.getDocumentStudentEntityList();
+            for (DocumentStudentEntity documentStudentEntityListDocumentStudentEntity : documentStudentEntityList) {
+                documentStudentEntityListDocumentStudentEntity.setStudentId(null);
+                documentStudentEntityListDocumentStudentEntity = em.merge(documentStudentEntityListDocumentStudentEntity);
             }
             List<OldRollNumberEntity> oldRollNumberEntityList = studentEntity.getOldRollNumberEntityList();
             for (OldRollNumberEntity oldRollNumberEntityListOldRollNumberEntity : oldRollNumberEntityList) {
@@ -273,6 +305,11 @@ public class StudentEntityJpaController implements Serializable {
             for (MarksEntity marksEntityListMarksEntity : marksEntityList) {
                 marksEntityListMarksEntity.setStudentId(null);
                 marksEntityListMarksEntity = em.merge(marksEntityListMarksEntity);
+            }
+            List<StudentStatusEntity> studentStatusEntityList = studentEntity.getStudentStatusEntityList();
+            for (StudentStatusEntity studentStatusEntityListStudentStatusEntity : studentStatusEntityList) {
+                studentStatusEntityListStudentStatusEntity.setStudentId(null);
+                studentStatusEntityListStudentStatusEntity = em.merge(studentStatusEntityListStudentStatusEntity);
             }
             em.remove(studentEntity);
             em.getTransaction().commit();

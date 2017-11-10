@@ -38,6 +38,8 @@ public class SubjectCurriculumEntity implements Serializable {
     private Integer ordinalNumber;
     @Column(name = "TermNumber")
     private Integer termNumber;
+    @Column(name = "SubjectCredits")
+    private Integer subjectCredits;
     @JoinColumn(name = "CurriculumId", referencedColumnName = "Id")
     @ManyToOne
     private CurriculumEntity curriculumId;
@@ -62,6 +64,14 @@ public class SubjectCurriculumEntity implements Serializable {
 
     public Integer getOrdinalNumber() {
         return ordinalNumber;
+    }
+
+    public Integer getSubjectCredits() {
+        return subjectCredits;
+    }
+
+    public void setSubjectCredits(Integer subjectCredits) {
+        this.subjectCredits = subjectCredits;
     }
 
     public void setOrdinalNumber(Integer ordinalNumber) {
