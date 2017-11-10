@@ -1,5 +1,6 @@
 package com.capstone.controllers;
 
+import com.capstone.entities.CurriculumEntity;
 import com.capstone.entities.DocumentStudentEntity;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
@@ -8,6 +9,7 @@ import com.capstone.services.DocumentStudentServiceImpl;
 import com.capstone.services.IDocumentStudentService;
 import com.capstone.services.IStudentService;
 import com.capstone.services.StudentServiceImpl;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -41,18 +43,18 @@ public class StudentList {
         view.addObject("title", "Thông tin sinh viên");
 
         StudentEntity student = studentService.findStudentById(studentId);
-        DocumentStudentEntity docStudent = documentStudentService.getLastestDocumentStudentById(studentId);
+//        DocumentStudentEntity docStudent = documentStudentService.getLastestDocumentStudentById(studentId);
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         view.addObject("student", student);
-        view.addObject("docStudent", docStudent);
+        view.addObject("docStudent", Lists.reverse(student.getDocumentStudentEntityList()).get(0));
 
         view.addObject("gender", student.getGender() == Enums.Gender.MALE.getValue()
                 ? Enums.Gender.MALE.getName() : Enums.Gender.FEMALE.getName());
         view.addObject("dateOfBirth", sdf.format(student.getDateOfBirth()));
         view.addObject("program", student.getProgramId() != null ? student.getProgramId().getName() : "N/A");
-        view.addObject("curriculum", docStudent != null ? docStudent.getCurriculumId().getProgramId().getName()
-                + "_" + docStudent.getCurriculumId().getName() : "N/A");
+        CurriculumEntity cur = Lists.reverse(student.getDocumentStudentEntityList()).get(0).getCurriculumId();
+        view.addObject("curriculum", cur != null ? cur.getName() : "N/A");
 
         return view;
     }
@@ -240,13 +242,7 @@ public class StudentList {
                 dataList.add(std.getGender() == Enums.Gender.MALE.getValue()
                         ? Enums.Gender.MALE.getName() : Enums.Gender.FEMALE.getName());
                 dataList.add(std.getProgramId() != null ? std.getProgramId().getName() : "N/A");
-
-                for (DocumentStudentEntity docStudent : docStudentList) {
-                    if (docStudent.getStudentId().getId() == std.getId()) {
-                        ds = docStudent;
-                    }
-                }
-                dataList.add(std.getProgramId().getName());
+                dataList.add(Lists.reverse(std.getDocumentStudentEntityList()).get(0).getCurriculumId() == null ? "N/A" : Lists.reverse(std.getDocumentStudentEntityList()).get(0).getCurriculumId().getName());
                 dataList.add(std.getId() + "");
 
                 result.add(dataList);

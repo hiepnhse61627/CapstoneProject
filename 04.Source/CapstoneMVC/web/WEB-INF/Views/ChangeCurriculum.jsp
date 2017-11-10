@@ -42,7 +42,8 @@
                                 <b>Thông tin</b>
                             </div>
                             <div class="m-b-7">
-                                Ngành hiện tại: <span id="info"></span>
+                                <p>Ngành hiện tại: <span id="info"></span></p>
+                                <p>Khung hiện tại: <span id="khung"></span></p>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -78,7 +79,7 @@
                                         <div class="form-group">
                                             <select id="curriculum" class="select form-control">
                                                 <c:forEach var="cur" items="${curs}">
-                                                    <option value="${cur.id}">${cur.programId.name}_${cur.name}</option>
+                                                    <option value="${cur.id}">${cur.name}</option>
                                                 </c:forEach>
                                             </select>
                                         </div>
@@ -250,6 +251,7 @@
                 console.log(result);
                 $('#info').html(result.info);
                 $('#curid').val(result.curriculum);
+                $("#khung").html(result.khung);
 
                 GetCurrent();
                 GetNew();

@@ -45,13 +45,37 @@
                             </div>
                             <div class="right-content width-30 width-m-70">
                                 <select id="cb-student" class="select">
-                                    <%--<option value="0">-- Select --</option>--%>
-                                    <%--<c:forEach var="stu" items="${students}">--%>
-                                        <%--<option value="${stu.id}">${stu.rollNumber} - ${stu.fullName}</option>--%>
-                                    <%--</c:forEach>--%>
                                 </select>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="my-content">
+                        <div class="my-input-group">
+                            <div class="left-content m-r-5">
+                                <label class="p-t-8">Chọn kì</label>
+                            </div>
+                            <div class="right-content width-30 width-m-70">
+                                <select id="semester" class="select">
+                                    <c:forEach var="sem" items="${semesters}">
+                                        <option value="${sem.semester}">${sem.semester}</option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="my-content">
+                        <button id="find" type="button" class="btn btn-primary">Tìm kiếm</button>
+                        <button id="detail" type="button" class="btn btn-success" style="display: none" onclick="GetAllStudentMarks()">Xem điểm chi tiết sinh viên</button>
                     </div>
                 </div>
             </div>
@@ -193,7 +217,39 @@
 <form id="export-excel" action="/exportExcel" hidden>
     <input name="objectType"/>
     <input name="studentId"/>
+    <input name="semesterId"/>
 </form>
+
+<div id="markDetail" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Chi tiết điểm</h4>
+            </div>
+            <div class="modal-body">
+                <div class="col-md-12">
+                    <table id="table-mark-detail">
+                        <thead>
+                        <tr>
+                            <th>Môn học</th>
+                            <th>Học kỳ</th>
+                            <th>Số lần học</th>
+                            <th>Điểm trung bình</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
 
 <script>
     var table = null;
@@ -236,9 +292,35 @@
         return this;
     };
 
+    function GetAllStudentMarks() {
+        var form = new FormData();
+        form.append("studentId", $('#cb-student').val());
+
+        $.ajax({
+            type: "POST",
+            url: "/student/getAllLatestMarks",
+            processData: false,
+            contentType: false,
+            data: form,
+            success: function (result) {
+
+                if (result.success) {
+                    result.studentMarkDetail = JSON.parse(result.studentMarkDetail);
+
+                    $("#markDetail").find(".modal-title").html("Chi tiết điểm - " + result.studentMarkDetail.studentName);
+                    CreateMarkDetailTable(result.studentMarkDetail.markList);
+                    $("#markDetail").modal();
+                } else {
+                    swal('', 'Có lỗi xảy ra, vui lòng thử lại sau', 'warning');
+                }
+            }
+        });
+    }
+
     $(document).ready(function () {
         CreateSelect();
-        $('#cb-student').on("change", function () {
+
+        $('#find').on("click", function () {
             RefreshTable();
             CreateSelect();
         });
@@ -279,6 +361,7 @@
                 }
             }
         });
+        $("#semester").select2();
     }
 
     function CreateDebtTable() {
@@ -292,7 +375,8 @@
             "bSort": false,
             "sAjaxSource": "/getStudentDetail",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()}),
+                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -331,7 +415,8 @@
             "bSort": false,
             "sAjaxSource": "/getStudentNextCourse",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()}),
+                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -369,7 +454,8 @@
             "bSort": false,
             "sAjaxSource": "/getStudentNotNextCourse",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()}),
+                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -417,7 +503,8 @@
             "bSort": false,
             "sAjaxSource": "/getStudentCurrentCourse",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()}),
+                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -465,7 +552,8 @@
             "bSort": false,
             "sAjaxSource": "/getStudentNextCourseSuggestion",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()}),
+                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -513,7 +601,8 @@
             "bSort": false,
             "sAjaxSource": "/getStudentNotStart",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()}),
+                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -561,6 +650,7 @@
     function ExportExcelForOneStudent() {
         $("input[name='objectType']").val(2);
         $("input[name='studentId']").val($('#cb-student').val());
+        $("input[name='semesterId']").val($('#semester').val())
         $("#export-excel").submit();
 
         Call();
@@ -612,6 +702,8 @@
     }
 
     function RefreshTable() {
+        $('#detail').css('display', 'block');
+
         if (table != null) {
             table._fnPageChange(0);
             table._fnAjaxUpdate();

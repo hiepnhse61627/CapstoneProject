@@ -4,6 +4,7 @@ import com.capstone.entities.*;
 import com.capstone.models.Logger;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -38,7 +39,7 @@ public class ManagerController {
         view.addObject("students", list);
         ICurriculumService curriculumService = new CurriculumServiceImpl();
         List<CurriculumEntity> list2 = curriculumService.getAllCurriculums();
-        list2.sort(Comparator.comparing(c -> c.getProgramId().getName() + "_" + c.getName()));
+        list2.sort(Comparator.comparing(c -> c.getName()));
         view.addObject("curs", list2);
         return view;
     }
@@ -155,19 +156,13 @@ public class ManagerController {
         JsonObject result = new JsonObject();
 
         try {
-            IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
-            List<Integer> list = new ArrayList<>();
-            list.add(stuId);
-            List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentByByStudentId(list);
-            String data = "";
-            DocumentStudentEntity d = null;
-            if (!docs.isEmpty()) {
-                d = docs.get(0);
-                data = d.getCurriculumId().getProgramId().getName() + "_" + d.getCurriculumId().getName();
-            }
-
-            result.addProperty("info", data);
-            result.addProperty("curriculum", d == null ? -1 : d.getCurriculumId().getId());
+            IStudentService studentService = new StudentServiceImpl();
+            StudentEntity student = studentService.findStudentById(stuId);
+            result.addProperty("info", student.getProgramId().getName());
+            List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+            docs = Lists.reverse(docs);
+            result.addProperty("khung", docs.get(0).getCurriculumId().getName());
+            result.addProperty("curriculum", docs.get(0).getCurriculumId().getId());
         } catch (Exception e) {
             Logger.writeLog(e);
             e.printStackTrace();
@@ -188,14 +183,15 @@ public class ManagerController {
             list.add(stuId);
             List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentByByStudentId(list);
             SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+            docs = Lists.reverse(docs);
 
             List<List<String>> parent = new ArrayList<>();
             if (!docs.isEmpty()) {
                 docs.forEach(c -> {
                     List<String> tmp = new ArrayList<>();
-                    tmp.add(c.getCurriculumId() == null ? "N/A" : c.getCurriculumId().getProgramId().getName() + "_" + c.getCurriculumId().getName());
+                    tmp.add(c.getCurriculumId() == null ? "N/A" : c.getCurriculumId().getName());
                     tmp.add(c.getDocumentId().getCode() + " - " + c.getDocumentId().getDocTypeId().getName());
-                    tmp.add(df.format(c.getCreatedDate()));
+                    tmp.add(c.getCreatedDate() == null ? "N/A" : df.format(c.getCreatedDate()));
                     parent.add(tmp);
                 });
             }
