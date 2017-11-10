@@ -63,6 +63,7 @@ public class UploadController {
     IMarkComponentService markComponentService = new MarkComponentServiceImpl();
     IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
     IOldRollNumberService oldRollNumberService = new OldRollNumberServiceImpl();
+    IStudentStatusService studentStatusService = new StudentStatusServiceImpl();
 
     /**
      * --------------STUDENTS------------
@@ -245,12 +246,15 @@ public class UploadController {
                         studentStatusEntity.setSemesterId(realSemesterEntity);
                         studentStatusEntity.setStudentId(studentEntity);
                         studentStatusEntity.setStatus(statusCell.getStringCellValue().trim());
+
+                        studentStatusService.createStudentStatus(studentStatusEntity);
                     }
                     // start save document student
                     DocumentEntity documentEntity = documentService.getAllDocuments().get(0);
                     List<DocumentStudentEntity> documentStudentEntityList = new ArrayList<>();
                     if (curriculumCell3 != null) {
                         if (!curriculumCell3.getStringCellValue().isEmpty()) {
+                            System.out.println(curriculumCell3.getStringCellValue());
                             CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCell3.getStringCellValue().trim());
                             DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
                             documentStudentEntity.setStudentId(studentEntity);
@@ -263,6 +267,7 @@ public class UploadController {
 
                     if (curriculumCell2 != null) {
                         if (!curriculumCell2.getStringCellValue().isEmpty()) {
+                            System.out.println(curriculumCell2.getStringCellValue());
                             System.out.println(curriculumCell2.getStringCellValue().trim());
                             CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCell2.getStringCellValue().trim());
                             DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
@@ -276,6 +281,7 @@ public class UploadController {
 
                     if (curriculumCell1 != null) {
                         if (!curriculumCell1.getStringCellValue().isEmpty()) {
+                            System.out.println(curriculumCell1.getStringCellValue());
                             CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCell1.getStringCellValue().trim());
                             DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
                             documentStudentEntity.setStudentId(studentEntity);
@@ -309,6 +315,8 @@ public class UploadController {
                     for (DocumentStudentEntity documentStudentEntity : documentStudentEntityList) {
                         documentStudentEntity.setCreatedDate(calendar.getTime());
                         calendar.add(Calendar.MONTH, -4);
+
+                        documentStudentService.createDocumentStudent(documentStudentEntity);
                     }
                 }
             }
