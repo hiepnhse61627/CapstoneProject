@@ -21,4 +21,5 @@ public interface IStudentService {
     List<StudentEntity> getStudentByProgram(int programId);
     StudentEntity createStudent(StudentEntity studentEntity);
     List<StudentEntity> findStudentByProgramId(Integer programId);
+    void updateStudent(StudentEntity entity);
 }

@@ -78,6 +78,15 @@ public class StudentServiceImpl implements IStudentService {
     }
 
     @Override
+    public void updateStudent(StudentEntity entity) {
+        try {
+            studentEntityJpaController.edit(entity);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public int getCurrentLine() {
         return studentEntityJpaController.getCurrentLine();
     }
