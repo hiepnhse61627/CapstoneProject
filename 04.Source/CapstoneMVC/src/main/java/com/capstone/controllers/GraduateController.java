@@ -11,6 +11,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -56,8 +57,9 @@ public class GraduateController {
 
         final String sSearch = params.get("sSearch");
 
-        int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
-        int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
+//        int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
+//        int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
+        boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
 
         try {
             // RollNumber, FullName, TotalCredits, TotalSpecializedCredits
@@ -67,19 +69,19 @@ public class GraduateController {
             } else {
                 studentList = proccessOJT(params);
             }
-            List<List<String>> searchList = studentList.stream().filter(s ->
-                    Ultilities.containsIgnoreCase(s.get(0), sSearch)
-                            || Ultilities.containsIgnoreCase(s.get(1), sSearch)).collect(Collectors.toList());
-            List<List<String>> result = searchList.stream()
-                    .skip(iDisplayStart).limit(iDisplayLength)
-                    .collect(Collectors.toList());
+//            List<List<String>> searchList = studentList.stream().filter(s ->
+//                    Ultilities.containsIgnoreCase(s.get(0), sSearch)
+//                            || Ultilities.containsIgnoreCase(s.get(1), sSearch)).collect(Collectors.toList());
+//            List<List<String>> result = searchList.stream()
+//                    .skip(iDisplayStart).limit(iDisplayLength)
+//                    .collect(Collectors.toList());
 
-            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(studentList);
 
-            obj.addProperty("iTotalRecords", studentList.size());
-            obj.addProperty("iTotalDisplayRecords", searchList.size());
+//            obj.addProperty("iTotalRecords", studentList.size());
+//            obj.addProperty("iTotalDisplayRecords", studentList.size());
             obj.add("aaData", aaData);
-            obj.addProperty("sEcho", params.get("sEcho"));
+//            obj.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {
             e.printStackTrace();
             Logger.writeLog(e);
@@ -93,6 +95,7 @@ public class GraduateController {
 
         int programId = Integer.parseInt(params.get("programId"));
         int semesterId = Integer.parseInt(params.get("semesterId"));
+        boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
 
         // get list semester to current semesterId
         List<RealSemesterEntity> semesters = getToCurrentSemester(semesterId);
@@ -135,32 +138,45 @@ public class GraduateController {
             }
 
             int percent = student.getProgramId().getGraduate();
-            if (studentCredits >= ((creditsInCurriculum * percent * 1.0) / 100)) {
-                List<String> t = new ArrayList<>();
-                t.add(student.getRollNumber());
-                t.add(student.getFullName());
-                t.add(String.valueOf(studentCredits));
-                t.add(String.valueOf(studentCredits > creditsInCurriculum ? (studentCredits - creditsInCurriculum) : 0));
-                data.add(t);
+            if (isGraduate) {
+                if (studentCredits >= ((creditsInCurriculum * percent * 1.0) / 100)) {
+                    List<String> t = new ArrayList<>();
+                    t.add(student.getRollNumber());
+                    t.add(student.getFullName());
+                    t.add(String.valueOf(studentCredits));
+//                    t.add(String.valueOf(studentCredits > creditsInCurriculum ? (studentCredits - creditsInCurriculum) : 0));
+                    t.add(String.valueOf(creditsInCurriculum));
+                    data.add(t);
+                }
+            } else {
+                if (studentCredits < ((creditsInCurriculum * percent * 1.0) / 100)) {
+                    List<String> t = new ArrayList<>();
+                    t.add(student.getRollNumber());
+                    t.add(student.getFullName());
+                    t.add(String.valueOf(studentCredits));
+//                    t.add(String.valueOf(studentCredits > creditsInCurriculum ? (studentCredits - creditsInCurriculum) : 0));
+                    t.add(String.valueOf(creditsInCurriculum));
+                    data.add(t);
+                }
             }
         }
 
         return data;
     }
 
-    private List<SubjectEntity> getSubjectsInCurriculumns(List<DocumentStudentEntity> documentStudentEntityList) {
-        List<SubjectEntity> subjectEntityList = new ArrayList<>();
-        if (documentStudentEntityList != null && !documentStudentEntityList.isEmpty()) {
-            for (DocumentStudentEntity documentStudentEntity : documentStudentEntityList) {
-                CurriculumEntity curriculumEntity = documentStudentEntity.getCurriculumId();
-                List<SubjectCurriculumEntity> subjectCurriculumEntityList = subjectCurriculumService.getSubjectCurriculums(curriculumEntity.getId());
-                List<SubjectEntity> subjects = subjectCurriculumEntityList.stream().filter(s -> s.getTermNumber() > 0).map(s -> s.getSubjectId()).collect(Collectors.toList());
-
-                subjectEntityList.addAll(subjects);
-            }
-        }
-        return subjectEntityList;
-    }
+//    private List<SubjectEntity> getSubjectsInCurriculumns(List<DocumentStudentEntity> documentStudentEntityList) {
+//        List<SubjectEntity> subjectEntityList = new ArrayList<>();
+//        if (documentStudentEntityList != null && !documentStudentEntityList.isEmpty()) {
+//            for (DocumentStudentEntity documentStudentEntity : documentStudentEntityList) {
+//                CurriculumEntity curriculumEntity = documentStudentEntity.getCurriculumId();
+//                List<SubjectCurriculumEntity> subjectCurriculumEntityList = subjectCurriculumService.getSubjectCurriculums(curriculumEntity.getId());
+//                List<SubjectEntity> subjects = subjectCurriculumEntityList.stream().filter(s -> s.getTermNumber() > 0).map(s -> s.getSubjectId()).collect(Collectors.toList());
+//
+//                subjectEntityList.addAll(subjects);
+//            }
+//        }
+//        return subjectEntityList;
+//    }
 
     private Integer countCreditsInCurriculumn(List<DocumentStudentEntity> documentStudentEntityList) {
         int credits = 0;
@@ -240,15 +256,9 @@ public class GraduateController {
 
         int programId = Integer.parseInt(params.get("programId"));
         int semesterId = Integer.parseInt(params.get("semesterId"));
+        boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
 
         String type = params.get("type");
-
-        String sSearch = params.get("sSearch");
-
-        int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
-        int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
-
-        RealSemesterEntity semester = semesterService.findSemesterById(semesterId);
 
         IStudentService studentService = new StudentServiceImpl();
         IMarksService marksService = new MarksServiceImpl();
@@ -264,7 +274,7 @@ public class GraduateController {
         }
 
         int i = 1;
-        StudentDetail detail = new StudentDetail();
+//        StudentDetail detail = new StudentDetail();
         for (StudentEntity student : students) {
 
             List<SubjectCurriculumEntity> subjects = new ArrayList<>();
@@ -317,6 +327,7 @@ public class GraduateController {
 //                }
 
 //                if (aye) {
+
             System.out.println(i + " - " + students.size());
 
             List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
@@ -364,7 +375,7 @@ public class GraduateController {
             }
 
             int tongtinchi = 0;
-            List<String> datontai = new ArrayList<>();
+//            List<String> datontai = new ArrayList<>();
             for (SubjectCurriculumEntity s : processedSub) {
                 if (map.get(s.getSubjectId().getId()) != null) {
                     List<MarksEntity> list = map.get(s.getSubjectId().getId());
@@ -403,17 +414,27 @@ public class GraduateController {
 //                }
 //            }
 
-            if (tongtinchi >= ((required * percent * 1.0) / 100)) {
-                List<String> t = new ArrayList<>();
-                t.add(student.getRollNumber());
-                t.add(student.getFullName());
-                t.add(String.valueOf(tongtinchi));
-                t.add(String.valueOf((tongtinchi > required) ? (tongtinchi - required) : 0));
-                data.add(t);
+            if (isGraduate) {
+                if (tongtinchi >= ((required * percent * 1.0) / 100)) {
+                    List<String> t = new ArrayList<>();
+                    t.add(student.getRollNumber());
+                    t.add(student.getFullName());
+                    t.add(String.valueOf(tongtinchi));
+//                    t.add(String.valueOf((tongtinchi > required) ? (tongtinchi - required) : 0));.
+                    t.add(String.valueOf(required));
+                    data.add(t);
+                }
+            } else {
+                if (tongtinchi < ((required * percent * 1.0) / 100)) {
+                    List<String> t = new ArrayList<>();
+                    t.add(student.getRollNumber());
+                    t.add(student.getFullName());
+                    t.add(String.valueOf(tongtinchi));
+//                    t.add(String.valueOf((tongtinchi > required) ? (tongtinchi - required) : 0));
+                    t.add(String.valueOf(required));
+                    data.add(t);
+                }
             }
-//                } else {
-//                    System.out.println("sinh viên " + student.getRollNumber() + " ko đủ đk");
-//                }
 
             i++;
         }
