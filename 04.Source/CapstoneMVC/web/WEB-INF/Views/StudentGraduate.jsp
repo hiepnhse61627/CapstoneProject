@@ -108,11 +108,10 @@
 
 <form id="export-excel" action="/exportExcel" hidden>
     <input name="objectType"/>
-    <input name="credit"/>
-    <input name="sCredit"/>
     <input name="programId"/>
     <input name="semesterId"/>
-    <input name="sSearch"/>
+    <input name="boolean"/>
+    <input name="type"/>
 </form>
 
 <script>
@@ -234,11 +233,10 @@
 
     function ExportExcel() {
         $("input[name='objectType']").val(4);
-        $("input[name='credit']").val($('#credit').val());
-        $("input[name='sCredit']").val($('#sCredit').val());
-        $("input[name='programId']").val($('#program').val());
-        $("input[name='semesterId']").val($('#semester').val());
-        $("input[name='sSearch']").val(table.api().context[0].oPreviousSearch.sSearch);
+        $("input[name='programId']").val($("#program").val());
+        $("input[name='semesterId']").val($("#semester").val());
+        $("input[name='type']").val($("#type").val());
+        $("input[name='boolean']").val($("#pass").val());
 
         $("#export-excel").submit();
     }

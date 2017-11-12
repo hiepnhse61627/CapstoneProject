@@ -7,6 +7,7 @@ import com.capstone.models.Logger;
 import com.capstone.models.Suggestion;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -40,6 +41,7 @@ public class GraduateController {
         List<ProgramEntity> programList = programService.getAllPrograms();
         List<RealSemesterEntity> semesterList = semesterService.getAllSemester();
         semesterList = Ultilities.SortSemesters(semesterList);
+        semesterList = Lists.reverse(semesterList);
 
         view.addObject("programList", programList);
         view.addObject("semesterList", semesterList);
@@ -55,11 +57,11 @@ public class GraduateController {
 
         String type = params.get("type");
 
-        final String sSearch = params.get("sSearch");
+//        final String sSearch = params.get("sSearch");
 
 //        int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
 //        int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
-        boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
+//        boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
 
         try {
             // RollNumber, FullName, TotalCredits, TotalSpecializedCredits
@@ -90,7 +92,7 @@ public class GraduateController {
         return obj;
     }
 
-    private List<List<String>> processGraduate(Map<String, String> params) {
+    public List<List<String>> processGraduate(Map<String, String> params) {
         List<List<String>> data = new ArrayList<>();
 
         int programId = Integer.parseInt(params.get("programId"));
@@ -251,7 +253,7 @@ public class GraduateController {
         return map;
     }
 
-    private List<List<String>> proccessOJT(Map<String, String> params) {
+    public List<List<String>> proccessOJT(Map<String, String> params) {
         List<List<String>> data = new ArrayList<>();
 
         int programId = Integer.parseInt(params.get("programId"));
@@ -421,7 +423,7 @@ public class GraduateController {
                     t.add(student.getFullName());
                     t.add(String.valueOf(tongtinchi));
 //                    t.add(String.valueOf((tongtinchi > required) ? (tongtinchi - required) : 0));.
-                    t.add(String.valueOf(required));
+                    t.add(String.valueOf(Math.round((required * percent * 1.0) / 100)));
                     data.add(t);
                 }
             } else {
@@ -431,7 +433,7 @@ public class GraduateController {
                     t.add(student.getFullName());
                     t.add(String.valueOf(tongtinchi));
 //                    t.add(String.valueOf((tongtinchi > required) ? (tongtinchi - required) : 0));
-                    t.add(String.valueOf(required));
+                    t.add(String.valueOf(Math.round((required * percent * 1.0) / 100)));
                     data.add(t);
                 }
             }
