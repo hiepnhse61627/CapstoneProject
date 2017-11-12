@@ -1,9 +1,6 @@
 package com.capstone.controllers;
 
-import com.capstone.entities.CurriculumEntity;
-import com.capstone.entities.DocumentStudentEntity;
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.StudentEntity;
+import com.capstone.entities.*;
 import com.capstone.models.*;
 import com.capstone.services.DocumentStudentServiceImpl;
 import com.capstone.services.IDocumentStudentService;
@@ -371,6 +368,49 @@ public class StudentList {
         } catch (Exception e) {
             jsonObj.addProperty("success", false);
             jsonObj.addProperty("error", e.getMessage());
+        }
+
+        return jsonObj;
+    }
+
+    @RequestMapping(value = "/studentList/gettotal")
+    @ResponseBody
+    public JsonObject LoadStudentListAll(@RequestParam int id) {
+        JsonObject jsonObj = new JsonObject();
+
+        try {
+            IStudentService studentService = new StudentServiceImpl();
+
+            StudentEntity student = studentService.findStudentById(id);
+            List<SubjectCurriculumEntity> subs = new ArrayList<>();
+            for (DocumentStudentEntity doc : student.getDocumentStudentEntityList()) {
+                if (doc.getCurriculumId() != null) {
+                    CurriculumEntity cur = doc.getCurriculumId();
+                    subs.addAll(cur.getSubjectCurriculumEntityList());
+                }
+            }
+            int tongtinchi = subs.stream()
+                    .filter(Ultilities.distinctByKey(c -> c.getSubjectId().getId()))
+                    .filter(c -> student.getMarksEntityList().stream().anyMatch(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getSubjectId().getId())))
+                    .mapToInt(c -> c.getSubjectCredits())
+                    .sum();
+            double dtb = student.getMarksEntityList().stream()
+                    .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))
+                    .sorted(Comparator.comparingDouble(c -> {
+                        MarksEntity mark = (MarksEntity)c;
+                        return mark.getAverageMark();
+                    }).reversed())
+                    .mapToDouble(c -> c.getAverageMark())
+                    .average()
+                    .getAsDouble();
+
+            jsonObj.addProperty("success", true);
+            jsonObj.addProperty("tinchi", String.valueOf(tongtinchi));
+            jsonObj.addProperty("dtb", String.valueOf(Math.round(dtb * 100.0) / 100.0));
+        } catch (Exception e) {
+            e.printStackTrace();
+            jsonObj.addProperty("success", false);
+            jsonObj.addProperty("msg", e.getMessage());
         }
 
         return jsonObj;

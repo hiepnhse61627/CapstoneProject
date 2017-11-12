@@ -193,7 +193,9 @@
                 <div class="row">
                     <div class="title">
                         <h4>Thông tin chi tiết</h4>
-                        <i><button id="onOff"onclick="return onEdit()">Edit</button></i>
+                        <i>
+                            <button id="onOff" onclick="return onEdit()">Edit</button>
+                        </i>
                     </div>
                     <div class="my-content">
                         <div class="row m-0">
@@ -263,7 +265,8 @@
                         </div>
                         <div class="row m-0">
                             <button style="display: none" id="change" type="button" class="btn btn-primary" onclick="return EditStudent($('#rollNumber').val(),$('#studentName').val()
-                                    ,$('#gender').val(),$('#dateOfBirth').val(),$('#program').val(),$('#curriculum').val())">Thay đổi thông tin
+                                    ,$('#gender').val(),$('#dateOfBirth').val(),$('#program').val(),$('#curriculum').val())">
+                                Thay đổi thông tin
                             </button>
 
                         </div>
@@ -296,24 +299,23 @@
                                 </div>
 
                                 <div class="mark-detail-content">
-                                    <%--<div class="term-wrapper">--%>
-                                        <%--<div class="term"><span>Học kỳ 1</span></div>--%>
-                                        <%--<div class="marks">--%>
-                                            <%--<div class="mark">--%>
-                                                <%--<div class="small-col"><span>CSD211</span></div>--%>
-                                                <%--<div class="medium-col text-left"><span>Lập trình blap</span></div>--%>
-                                                <%--<div class="small-col"><span>3</span></div>--%>
-                                                <%--<div class="small-col"><span>8.3</span></div>--%>
-                                                <%--<div class="small-col"><span>Passed</span></div>--%>
-                                            <%--</div>--%>
-                                        <%--</div>--%>
-                                        <%--&lt;%&ndash;<div class="average">&ndash;%&gt;--%>
-                                        <%--&lt;%&ndash;<div class="title">Điểm TB</div>&ndash;%&gt;--%>
-                                        <%--&lt;%&ndash;<div class="number">7.3</div>&ndash;%&gt;--%>
-                                        <%--&lt;%&ndash;</div>&ndash;%&gt;--%>
-                                    <%--</div>--%>
-
                                 </div>
+
+                                <%--<div class="mark-detail-content">--%>
+                                <%--<div class='term-wrapper'>--%>
+                                <%--<div class='term'><span>Tổng tín chỉ và điểm trung bình</span></div>--%>
+                                <%--<div class='marks'>--%>
+                                <%--<div class='mark'>--%>
+                                <%--<div class='small-col'><span> </span></div>--%>
+                                <%--<div class='large-col text-left'><span></span></div>--%>
+                                <%--<div class='medium-col'><span></span></div>--%>
+                                <%--<div class='small-col'><span id="total"></span></div>--%>
+                                <%--<div class='small-col'><span id="average"></span></div>--%>
+                                <%--<div class='medium-col'><span></span></div>--%>
+                                <%--</div>--%>
+                                <%--</div>--%>
+                                <%--</div>--%>
+                                <%--</div>--%>
                             </div>
                         </div>
                     </div>
@@ -322,7 +324,6 @@
         </div>
     </div>
 </section>
-
 
 
 <script>
@@ -358,8 +359,6 @@
     }
 
     function RenderMarkList(list) {
-        debugger
-
         if (list.length > 0) {
             $('.mark-detail-wrapper').show();
             $('.no-data').hide();
@@ -369,7 +368,7 @@
         }
 
         var html = "";
-        for (var i = 0;  i < list.length; ++i) {
+        for (var i = 0; i < list.length; ++i) {
             var term = list[i].term;
             var markList = list[i].markList;
 
@@ -393,10 +392,43 @@
             html += "</div></div>"
         }
 
+        html += "<div class='term-wrapper'>";
+        html += "<div class='term'><span>Tổng tín chỉ và điểm trung bình</span></div>";
+        html += "<div class='marks'>";
+        html += "<div class='mark'>"
+        html += "<div class='small-col'><span></span></div>";
+        html += "<div class='large-col text-left'><span></span></div>";
+        html += "<div class='medium-col'><span></span></div>";
+        html += "<div class='small-col'><span id='total'></span></div>";
+        html += "<div class='small-col'><span id='average'></span></div>";
+        html += "<div class='medium-col'><span></span></div>";
+        html += "</div>";
+        html += "</div></div>"
+
         $('.mark-detail-content').html(html);
+
+        GetTotal();
     }
 
-    function EditStudent(rollNumber, fullName, gender, dob, program, curriculum){
+    function GetTotal() {
+        $.ajax({
+            type: "POST",
+            url: "/studentList/gettotal",
+            data: {
+                "id": ${student.id}
+            },
+            success: function (result) {
+                if (result.success) {
+                    $('#total').html("<b>" + result.tinchi + "</b>");
+                    $('#average').html("<b>" + result.dtb + "</b>");
+                } else {
+                    swal('', result.message, 'error');
+                }
+            }
+        });
+    }
+
+    function EditStudent(rollNumber, fullName, gender, dob, program, curriculum) {
 
         $.ajax({
             type: "POST",
@@ -433,7 +465,7 @@
 
     }
 
-    function onEdit(){
+    function onEdit() {
         document.getElementById('studentName').disabled = false;
         document.getElementById('onOff').style.display = 'none';
         document.getElementById('dateOfBirth').disabled = false;
