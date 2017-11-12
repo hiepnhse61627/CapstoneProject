@@ -7,6 +7,14 @@
         min-width: 70px;
     }
 
+    .f-red {
+        color: red;
+    }
+
+    .f-green {
+        color: green;
+    }
+
 </style>
 
 <section class="content">
@@ -18,7 +26,7 @@
                 </div>
                 <div class="col-md-5 text-right">
                     <button type="button" class="btn btn-success" onclick="ExportExcel()">Xuất dữ liệu</button>
-                    <button type="button" class="btn btn-warning" onclick="ShowImportModal()">Import dữ liệu</button>
+                    <button type="button" class="btn btn-warning" onclick="ShowImportModal()">Nhập dữ liệu</button>
                 </div>
             </div>
             <hr>
@@ -26,24 +34,24 @@
 
         <div class="b-body">
             <%--<div class="form-group">--%>
-                <%--<div class="row">--%>
-                    <%--<div class="title">--%>
-                        <%--<h4>Thông tin bộ lọc</h4>--%>
-                    <%--</div>--%>
-                    <%--<div class="my-content p-l-10">--%>
-                        <%--<div class="my-input-group">--%>
-                            <%--<div class="left-content m-r-5">--%>
-                                <%--<label class="p-t-8">Danh sách</label>--%>
-                            <%--</div>--%>
-                            <%--<div class="right-content width-30 width-m-70">--%>
-                                <%--<select id="type" class="select form-control">--%>
-                                    <%--<option value="AM">Buổi sáng</option>--%>
-                                    <%--<option value="PM">Buổi chiều</option>--%>
-                                <%--</select>--%>
-                            <%--</div>--%>
-                        <%--</div>--%>
-                    <%--</div>--%>
-                <%--</div>--%>
+            <%--<div class="row">--%>
+            <%--<div class="title">--%>
+            <%--<h4>Thông tin bộ lọc</h4>--%>
+            <%--</div>--%>
+            <%--<div class="my-content p-l-10">--%>
+            <%--<div class="my-input-group">--%>
+            <%--<div class="left-content m-r-5">--%>
+            <%--<label class="p-t-8">Danh sách</label>--%>
+            <%--</div>--%>
+            <%--<div class="right-content width-30 width-m-70">--%>
+            <%--<select id="type" class="select form-control">--%>
+            <%--<option value="AM">Buổi sáng</option>--%>
+            <%--<option value="PM">Buổi chiều</option>--%>
+            <%--</select>--%>
+            <%--</div>--%>
+            <%--</div>--%>
+            <%--</div>--%>
+            <%--</div>--%>
             <%--</div>--%>
 
             <div class="form-group">
@@ -75,52 +83,109 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Nhập khung chương trình</h4>
+                <h4 class="modal-title">Nhập dữ liệu</h4>
             </div>
             <div class="modal-body">
-                <c:if test="${not empty files}">
-                    <div class="form-group">
-                        <div class="row">
-                            <div class="title">
-                                <h4>Các file gần đây:</h4>
-                            </div>
-                            <div class="my-content">
-                                <div class="col-md-12">
-                                    <table id="choose" class="table">
-                                        <c:forEach var="file" items="${files}">
-                                            <tr class="table-row">
-                                                <td>${file.name}</td>
-                                            </tr>
-                                        </c:forEach>
-                                    </table>
-                                </div>
-                                <div class="col-md-12">
-                                    <button type="button" class="btn btn-primary" onclick="UseFile()">Sử dụng</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </c:if>
+                <%--<c:if test="${not empty files}">--%>
+                <%--<div class="form-group">--%>
+                <%--<div class="row">--%>
+                <%--<div class="title">--%>
+                <%--<h4>Các file gần đây:</h4>--%>
+                <%--</div>--%>
+                <%--<div class="my-content">--%>
+                <%--<div class="col-md-12">--%>
+                <%--<table id="choose" class="table">--%>
+                <%--<c:forEach var="file" items="${files}">--%>
+                <%--<tr class="table-row">--%>
+                <%--<td>${file.name}</td>--%>
+                <%--</tr>--%>
+                <%--</c:forEach>--%>
+                <%--</table>--%>
+                <%--</div>--%>
+                <%--<div class="col-md-12">--%>
+                <%--<button type="button" class="btn btn-primary" onclick="UseFile()">Sử dụng</button>--%>
+                <%--</div>--%>
+                <%--</div>--%>
+                <%--</div>--%>
+                <%--</div>--%>
+                <%--</c:if>--%>
 
                 <div class="form-group">
                     <div class="row">
                         <div class="title">
-                            <h4>Chọn file:</h4>
+                            <h4>Chọn học kỳ:</h4>
                         </div>
                         <div class="my-content">
                             <div class="col-md-12">
-                                <label for="file" hidden></label>
-                                <input type="file" accept=".xlsx, .xls" id="file" name="file"/>
+                                <select id="cb-semester" class="select">
+                                    <option value="-1">- Chọn học kỳ -</option>
+                                    <c:forEach var="s" items="${semesters}">
+                                        <option value="${s.id}">${s.semester}</option>
+                                    </c:forEach>
+                                </select>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    Bấm vào <a class="link" href="/Resources/FileTemplates/SubjectList_Upload_Template.xls">Template</a>
-                    để tải
-                    về bản mẫu
+                    <div class="row">
+                        <div class="title">
+                            <h4>Nhập danh sách kế hoạch học đi và học lại:</h4>
+                        </div>
+                        <div class="my-content">
+                            <div class="col-md-12">
+                                <label for="file-suggestion" hidden></label>
+                                <input type="file" accept=".xlsx, .xls" id="file-suggestion"/>
+                            </div>
+                            <div class="col-md-12 m-t-5">
+                                Bấm vào <a class="link" href="/Resources/FileTemplates/SubjectList_Upload_Template.xls">Template</a>
+                                để tải
+                                về bản mẫu
+                            </div>
+                        </div>
+                    </div>
                 </div>
+
+                <div class="form-group">
+                    <div class="row">
+                        <div class="title">
+                            <h4>Nhập danh sách sinh viên học đi:</h4>
+                        </div>
+                        <div class="my-content">
+                            <div class="col-md-12">
+                                <label for="file-going" hidden></label>
+                                <input type="file" accept=".xlsx, .xls" id="file-going"/>
+                            </div>
+                            <div class="col-md-12 m-t-5">
+                                Bấm vào <a class="link" href="/Resources/FileTemplates/SubjectList_Upload_Template.xls">Template</a>
+                                để tải
+                                về bản mẫu
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="row">
+                        <div class="title">
+                            <h4>Nhập danh sách sinh viên học lại:</h4>
+                        </div>
+                        <div class="my-content">
+                            <div class="col-md-12">
+                                <label for="file-relearn" hidden></label>
+                                <input type="file" accept=".xlsx, .xls" id="file-relearn"/>
+                            </div>
+                            <div class="col-md-12 m-t-5">
+                                Bấm vào <a class="link" href="/Resources/FileTemplates/SubjectList_Upload_Template.xls">Template</a>
+                                để tải
+                                về bản mẫu
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
                 <div class="form-group">
                     <button type="button" onclick="ImportFile()" class="btn btn-success">Import</button>
                 </div>
@@ -197,6 +262,7 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
+            "iDisplayLength": '25',
             "sAjaxSource": "/studentArrangement/loadTable",
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "type", "value": $("#type").val()})
@@ -246,12 +312,29 @@
     }
 
     function ImportFile() {
+        if ($('#cb-semester').val() == '-1') {
+            swal('', 'Xin chọn học kỳ', 'warning');
+            return;
+        } else if (typeof($('#file-suggestion')[0].files[0]) == 'undefined' || $('#file-suggestion')[0].files[0] == null) {
+            swal('', 'Xin nhập danh sách kế hoạch học đi và học lại', 'warning');
+            return;
+        } else if (typeof($('#file-going')[0].files[0]) == 'undefined' || $('#file-going')[0].files[0] == null) {
+            swal('', 'Xin nhập danh sách sinh viên học đi', 'warning');
+            return;
+        } else if (typeof($('#file-relearn')[0].files[0]) == 'undefined' || $('#file-relearn')[0].files[0] == null) {
+            swal('', 'Xin nhập danh sách sinh viên học lại', 'warning');
+            return;
+        }
+
         var form = new FormData();
-        form.append('file', $('#file')[0].files[0]);
+        form.append('semesterId', $('#cb-semester').val());
+        form.append('file-suggestion', $('#file-suggestion')[0].files[0]);
+        form.append('file-going', $('#file-going')[0].files[0]);
+        form.append('file-relearn', $('#file-relearn')[0].files[0]);
 
         swal({
             title: 'Đang xử lý',
-            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!</div><div id='progress-file-1' class='form-group'></div><div id='progress-file-2' class='form-group'></div><div id='progress-file-3' class='form-group'></div><div id='progress' class='form-group'></div>",
             type: 'info',
             onOpen: function () {
                 swal.showLoading();
@@ -290,6 +373,24 @@
             processData: false,
             contentType: false,
             success: function (result) {
+                if (result.file1Done) {
+                    $('#progress-file-1').html("<div class='f-green'>Đã xử lý danh sách kế hoạch học đi và học lại</div>");
+                } else {
+                    $('#progress-file-1').html("<div class='f-red'>Đang xử lý danh sách kế hoạch học đi và học lại</div>");
+                }
+
+                if (result.file2Done) {
+                    $('#progress-file-2').html("<div class='f-green'>Đã xử lý danh sách sinh viên học đi</div>");
+                } else {
+                    $('#progress-file-2').html("<div class='f-red'>Đang xử lý danh sách sinh viên học đi</div>");
+                }
+
+                if (result.file3Done) {
+                    $('#progress-file-3').html("<div class='f-green'>Đã xử lý danh sách sinh viên học lại</div>");
+                } else {
+                    $('#progress-file-3').html("<div class='f-red'>Đang xử lý danh sách sinh viên học lại</div>");
+                }
+
                 $('#progress').html("<div>(" + result.count + "/" + result.total + ")</div>");
                 if (running) {
                     setTimeout("updateProgress(isRunning)", 50);

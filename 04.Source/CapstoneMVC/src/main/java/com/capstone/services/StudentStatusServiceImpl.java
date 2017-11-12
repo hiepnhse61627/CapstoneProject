@@ -5,6 +5,7 @@ import com.capstone.jpa.exJpa.ExStudentStatusEntityJpaController;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.util.List;
 
 public class StudentStatusServiceImpl implements IStudentStatusService {
 
@@ -14,5 +15,10 @@ public class StudentStatusServiceImpl implements IStudentStatusService {
     @Override
     public void createStudentStatus(StudentStatusEntity entity) {
         studentStatusEntityJpaController.create(entity);
+    }
+
+    @Override
+    public List<StudentStatusEntity> getStudentStatusForStudentArrangement(int semesterId, List<String> statusList) {
+        return studentStatusEntityJpaController.getStudentStatusForStudentArrangement(semesterId, statusList);
     }
 }
