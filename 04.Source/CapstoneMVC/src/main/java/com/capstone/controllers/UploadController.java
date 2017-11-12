@@ -125,7 +125,7 @@ public class UploadController {
             public JsonObject call() throws Exception {
                 JsonObject obj;
                 if (update) {
-                    obj = UpdateFile(file, null, true);
+                    obj = UpdateFile(file, null, true, semesterId);
                 } else {
                     obj = ReadFile(file, null, true, semesterId);
                 }
@@ -331,7 +331,7 @@ public class UploadController {
         return obj;
     }
 
-    private JsonObject UpdateFile(MultipartFile file, File file2, boolean isNewFile) {
+    private JsonObject UpdateFile(MultipartFile file, File file2, boolean isNewFile, String semesterId) {
         JsonObject obj = new JsonObject();
 
         try {
@@ -359,176 +359,35 @@ public class UploadController {
                 return obj;
             }
 
-            int excelDataIndex = 1;
+            int excelDataIndexRow = 1;
 
             int rollNumberIndex = 0;
-            int oldRollNumberIndex = 1;
-            int studentNameIndex = 2;
-            int dateOfBirthIndex = 3;
-            int genderIndex = 4;
-            int programNameIndex = 5;
-//            int curriculumIndex = 13;
-            int termIndex = 16;
-            int email = 28;
-            int statusIndex = 19;
-
-            int changeCurIndex = 6;
-            int cur1 = 13;
-            int cur2 = 14;
-            int cur3 = 15;
-
-            int mainClass = 15;
+            int payRollClassIndex = 17;
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-            for (int rowIndex = excelDataIndex; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+            for (int rowIndex = excelDataIndexRow; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
                 System.out.println(rowIndex + " - " + spreadsheet.getLastRowNum());
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
-//                    StudentEntity student = new StudentEntity();
-
                     Cell rollNumberCell = row.getCell(rollNumberIndex);
-                    Cell studentNameCell = row.getCell(studentNameIndex);
-                    Cell dateOfBirthCell = row.getCell(dateOfBirthIndex);
-                    Cell genderCell = row.getCell(genderIndex);
-                    Cell programNameCell = row.getCell(programNameIndex);
-//                    Cell curriculumCell = row.getCell(curriculumIndex);
-                    Cell emailcell = row.getCell(email);
-                    Cell changeCurCell = row.getCell(changeCurIndex);
-                    Cell oldRollNumCell = row.getCell(oldRollNumberIndex);
-                    Cell statusCell = row.getCell(statusIndex);
+                    Cell payRollClassCell = row.getCell(payRollClassIndex);
 
-                    Cell cur1Cell = row.getCell(cur1);
-                    Cell cur2Cell = row.getCell(cur2);
-                    Cell cur3Cell = row.getCell(cur3);
-
-                            Cell termCell = row.getCell(termIndex);
-
-                    // Get Student Info
                     if (rollNumberCell != null) {
-                        String rollNumber = rollNumberCell.getCellType() == Cell.CELL_TYPE_STRING ?
-                                rollNumberCell.getStringCellValue() : (rollNumberCell.getNumericCellValue() == 0 ?
-                                "" : Integer.toString((int) rollNumberCell.getNumericCellValue()));
-                        if (!rollNumber.isEmpty()) {
-                            StudentEntity student = studentService.findStudentByRollNumber(rollNumber);
-                            if (student != null) {
-                                student.setRollNumber(rollNumber);
-                                student = studentService.cleanDocumentAndOldRollNumber(student);
-
-                                // update student
-                                if (emailcell != null) {
-                                    String e = emailcell.getCellType() == Cell.CELL_TYPE_STRING ?
-                                            emailcell.getStringCellValue() : (emailcell.getNumericCellValue() == 0 ?
-                                            "" : Integer.toString((int) emailcell.getNumericCellValue()));
-                                    if (!e.isEmpty()) {
-                                        student.setEmail(e);
-                                    }
+                        StudentEntity student = studentService.findStudentByRollNumber(rollNumberCell.getStringCellValue().trim());
+                        if (student != null) {
+                            if (payRollClassCell != null) {
+                                String payRollClass = payRollClassCell.getStringCellValue().trim();
+                                if (!payRollClass.isEmpty() && payRollClass.matches("^[a-zA-Z]+\\d+$")) {
+                                    student.setPayRollClass(payRollClass);
+                                    Integer classNumber = Integer.parseInt(payRollClass.replaceAll("[^0-9]", ""));
+                                    student.setShift(classNumber % 2 == 0 ? "AM" : "PM");
                                 }
-
-                                String studentFullName;
-                                if (studentNameCell != null &&
-                                        !(studentFullName = studentNameCell.getStringCellValue().trim()).isEmpty()) {
-                                    student.setFullName(studentFullName);
-                                }
-
-                                String dateOfBirth;
-                                if (dateOfBirthCell != null &&
-                                        !(dateOfBirth = dateOfBirthCell.getStringCellValue().trim()).isEmpty()) {
-                                    if (dateOfBirth.matches("\\d{1,2}-\\d{1,2}-\\d{4}")) {
-                                        student.setDateOfBirth(sdf.parse(dateOfBirth));
-                                    }
-                                }
-
-                                String gender;
-                                if (genderCell != null &&
-                                        !(gender = genderCell.getStringCellValue().trim()).isEmpty()) {
-                                    student.setGender(gender.equalsIgnoreCase("Nam"));
-                                }
-
-                                ProgramEntity studentProgram;
-                                String programName;
-                                if (programNameCell != null &&
-                                        !(programName = programNameCell.getStringCellValue().trim()).isEmpty()) {
-                                    studentProgram = this.findOrCreateProgram(programList, programName);
-                                    student.setProgramId(studentProgram);
-                                }
-
-                                if (termCell != null) {
-                                    double term = termCell.getNumericCellValue();
-                                    student.setTerm(((Number) term).intValue());
-                                }
-
-                                if (student.getRollNumber() != null) {
-//                                    List<DocTypeEntity> docTypeList = docTypeService.getAllDocTypes();
-
-                                    DocTypeEntity docType = docTypeService.findDocType(statusCell.getStringCellValue());
-                                    if (docType == null) {
-                                        docType = new DocTypeEntity();
-                                        docType.setName(statusCell.getStringCellValue());
-                                        docTypeService.createDocType(docType);
-                                    }
-                                    DocumentEntity templateDoc = documentService.getDocumentByDocTypeId(docType.getId());
-                                    if (templateDoc == null) {
-                                        templateDoc = new DocumentEntity();
-                                        templateDoc.setDocTypeId(docType);
-                                        templateDoc.setCode(RandomStringUtils.randomAlphanumeric(10).toUpperCase());
-                                        documentService.createDocument(templateDoc);
-                                    }
-
-                                    CurriculumEntity cur = null;
-                                    String curriculumStr;
-                                    Calendar cal = Calendar.getInstance();
-                                    int j = 0;
-                                    for (int i = cur1; i < cur3 + 1; i++) {
-                                        cal.add(Calendar.YEAR, j++);
-                                        if (row.getCell(i) != null && !(curriculumStr = row.getCell(i).getStringCellValue().trim()).isEmpty()) {
-                                            int pos = curriculumStr.indexOf("_");
-                                            if (pos != -1) {
-                                                String curPogramName = curriculumStr.substring(0, pos);
-                                                String curCurriName = curriculumStr.substring(pos + 1);
-
-                                                cur = findOrCreateCurriculum(programList, curriculumList, curPogramName, curCurriName);
-
-                                                DocumentStudentEntity docStd = new DocumentStudentEntity();
-                                                docStd.setStudentId(student);
-                                                docStd.setCurriculumId(cur);
-                                                docStd.setDocumentId(templateDoc);
-                                                docStd.setCreatedDate(cal.getTime());
-                                                student.getDocumentStudentEntityList().add(docStd);
-                                            }
-                                        }
-                                    }
-
-                                    cal.add(Calendar.YEAR, -10);
-                                    if (changeCurCell != null) {
-                                        DocumentStudentEntity oldDoc = new DocumentStudentEntity();
-                                        oldDoc.setStudentId(student);
-                                        oldDoc.setCurriculumId(null);
-                                        oldDoc.setDocumentId(documentService.getDocumentById(2));
-                                        oldDoc.setCreatedDate(cal.getTime());
-                                        student.getDocumentStudentEntityList().add(oldDoc);
-                                    }
-
-                                    if (oldRollNumCell != null) {
-                                        OldRollNumberEntity old = new OldRollNumberEntity();
-                                        old.setStudentId(student);
-                                        old.setChangedCurriculumDate(cal.getTime());
-                                        if (oldRollNumCell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
-                                            old.setOldRollNumber(String.valueOf(oldRollNumCell.getNumericCellValue()));
-                                        } else {
-                                            old.setOldRollNumber(oldRollNumCell.getStringCellValue());
-                                        }
-                                        student.getOldRollNumberEntityList().add(old);
-                                    }
-                                }
-
-                                studentService.saveStudent(student);
                             }
                         }
+                        studentService.updateStudent(student);
                     }
                 }
             }
-
-//            studentService.createStudentList(studentList);
         } catch (Exception e) {
             obj.addProperty("success", false);
             obj.addProperty("message", e.getMessage());
