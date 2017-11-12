@@ -61,11 +61,15 @@ public class GraduateController {
 
         try {
             // RollNumber, FullName, TotalCredits, TotalSpecializedCredits
-//            List<List<String>> studentList = markService.getMarksForGraduatedStudent(
-//                    programId, semesterId, totalCredit, sCredit);
+            List<List<String>> studentList;
+            if (type.equals("Graduate")) {
+                studentList = processGraduate(params);
+            } else {
+                studentList = proccessOJT(params);
+            }
             List<List<String>> searchList = studentList.stream().filter(s ->
                     Ultilities.containsIgnoreCase(s.get(0), sSearch)
-                    || Ultilities.containsIgnoreCase(s.get(1), sSearch)).collect(Collectors.toList());
+                            || Ultilities.containsIgnoreCase(s.get(1), sSearch)).collect(Collectors.toList());
             List<List<String>> result = searchList.stream()
                     .skip(iDisplayStart).limit(iDisplayLength)
                     .collect(Collectors.toList());
@@ -125,7 +129,7 @@ public class GraduateController {
             for (MarksEntity marksEntity : distinctMarks) {
                 studentCredits += subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) != null
                         ? subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) : 0;
-                if (subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) != null && student.getId() == 46539) {
+                if (subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) != null && student.getId() == 46527) {
                     System.out.println(marksEntity.getSubjectMarkComponentId().getSubjectId().getId() + "_" + subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) + "_" + studentCredits);
                 }
             }
@@ -172,17 +176,18 @@ public class GraduateController {
             }
         }
         return credits;
-	}
+    }
 
     /**
      * [This method processes (sort all semesters then iterate over the list, add semester to result list until reaching the current semester)
-     *              and returns list semesters from the beginning to current semester]
+     * and returns list semesters from the beginning to current semester]
+     *
      * @param currentSemesterId
      * @return listResult
      * @author HiepNH
      * @DateCreated 28/10/2017
      **/
-    private List<RealSemesterEntity> getToCurrentSemester (Integer currentSemesterId) {
+    private List<RealSemesterEntity> getToCurrentSemester(Integer currentSemesterId) {
         List<RealSemesterEntity> semesters = semesterService.getAllSemester();
         semesters = Ultilities.SortSemesters(semesters);
         List<RealSemesterEntity> listResult = new ArrayList<>();
@@ -229,167 +234,190 @@ public class GraduateController {
 
         return map;
     }
-	
+
     private List<List<String>> proccessOJT(Map<String, String> params) {
         List<List<String>> data = new ArrayList<>();
 
-        try {
-            int programId = Integer.parseInt(params.get("programId"));
-            int semesterId = Integer.parseInt(params.get("semesterId"));
+        int programId = Integer.parseInt(params.get("programId"));
+        int semesterId = Integer.parseInt(params.get("semesterId"));
 
-            RealSemesterEntity semester = semesterService.findSemesterById(semesterId);
+        String type = params.get("type");
 
-            IStudentService studentService = new StudentServiceImpl();
-            IMarksService marksService = new MarksServiceImpl();
+        String sSearch = params.get("sSearch");
 
-            List<StudentEntity> students = studentService.getStudentByProgram(programId);
+        int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
+        int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
 
-            if (type.equals("Graduate")) {
-                students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
-            } else if (type.equals("OJT")) {
-                students = students.stream().filter(c -> c.getTerm() == 6).collect(Collectors.toList());
-            } else if (type.equals("SWP")) {
-                students = students.stream().filter(c -> c.getTerm() == 9).collect(Collectors.toList());
-            }
+        RealSemesterEntity semester = semesterService.findSemesterById(semesterId);
 
-            int i = 1;
-            StudentDetail detail = new StudentDetail();
-            for (StudentEntity student : students) {
+        IStudentService studentService = new StudentServiceImpl();
+        IMarksService marksService = new MarksServiceImpl();
 
-                List<SubjectCurriculumEntity> subjects = new ArrayList<>();
+        List<StudentEntity> students = studentService.getStudentByProgram(programId);
 
-                int ojt = 1;
-                List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
-                for (DocumentStudentEntity doc : docs) {
-                    if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
-                        List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
-                        for (SubjectCurriculumEntity s : list) {
-                            if (!subjects.contains(s)) {
-                                subjects.add(s);
-                                if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId())
-                                    ojt = s.getTermNumber();
-                            }
-                        }
-                    }
-                }
-                subjects = subjects.stream().distinct().collect(Collectors.toList());
-
-                boolean aye = false;
-
-                // CHECK OJT DIEU KIEN DU THU KHAC NHAU
-                Suggestion suggestion = detail.processSuggestion(student.getId(), semester.getSemester());
-                List<List<String>> result2 = suggestion.getData();
-                List<String> brea = new ArrayList<>();
-                brea.add("break");
-                brea.add("");
-                int index = result2.indexOf(brea);
-                if (index > -1) {
-                    if (suggestion.isDuchitieu()) {
-                        result2 = result2.subList(index + 1, result2.size());
-                    } else {
-                        result2 = result2.subList(0, index);
-                    }
-                }
-                for (List<String> r : result2) {
-                    SubjectCurriculumEntity s = subjects.stream().filter(c -> c.getSubjectId().getId().equals(r.get(0))).findFirst().get();
-                    if (type.equals("OJT")) {
-                        if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
-                            aye = true;
-                            break;
-                        }
-                    } else if (type.equals("SWP")) {
-                        if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
-                            aye = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (aye) {
-                    System.out.println(i + " - " + students.size());
-
-                    List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
-                    for (SubjectCurriculumEntity c : subjects) {
-                        if (type.equals("OJT")) {
-                            if (c.getTermNumber() >= 1 && c.getTermNumber() <= (ojt - 1)) {
-                                processedSub.add(c);
-                            }
-                        } else {
-                            if (c.getTermNumber() >= 1) {
-                                processedSub.add(c);
-                            }
-                        }
-                    }
-
-                    List<String> tmp = new ArrayList<>();
-                    for (SubjectCurriculumEntity s : processedSub) {
-                        if (!tmp.contains(s.getSubjectId().getId())) tmp.add(s.getSubjectId().getId());
-                    }
-
-                    List<MarksEntity> marks = marksService.getMarkByConditions(semesterId, tmp, student.getId());
-
-                    int required = 0;
-                    for (SubjectCurriculumEntity s : processedSub) {
-                        required += s.getSubjectCredits();
-                    }
-
-                    int percent = 9999;
-                    if (type.equals("Graduate")) {
-                        percent = student.getProgramId().getGraduate();
-                    } else if (type.equals("OJT")) {
-                        percent = student.getProgramId().getOjt();
-                    } else if (type.equals("SWP")) {
-                        percent = student.getProgramId().getCapstone();
-                    }
-
-                    int tongtinchi = 0;
-                    List<String> datontai = new ArrayList<>();
-                    for (MarksEntity mark : marks) {
-                        if (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt")) {
-                            if (!datontai.contains(mark.getSubjectMarkComponentId().getSubjectId().getId())) {
-
-                                SubjectCurriculumEntity s = processedSub.stream().filter(c -> c.getSubjectId().getId().equals(mark.getSubjectMarkComponentId().getSubjectId().getId())).findFirst().get();
-                                tongtinchi += s.getSubjectCredits();
-
-                                datontai.add(mark.getSubjectMarkComponentId().getSubjectId().getId());
-                            }
-                        }
-                    }
-
-                    if (tongtinchi >= ((required * percent * 1.0) / 100)) {
-                        List<String> t = new ArrayList<>();
-                        t.add(student.getRollNumber());
-                        t.add(student.getFullName());
-                        t.add(String.valueOf(tongtinchi));
-                        t.add(String.valueOf((tongtinchi > required) ? (tongtinchi - required) : 0));
-                        data.add(t);
-                    }
-                } else {
-                    System.out.println("sinh viên " + student.getRollNumber() + " ko đủ đk");
-                }
-
-                i++;
-            }
-
-            List<List<String>> searchList = data.stream().filter(s ->
-                    Ultilities.containsIgnoreCase(s.get(0), sSearch)
-                            || Ultilities.containsIgnoreCase(s.get(1), sSearch)).collect(Collectors.toList());
-            List<List<String>> result = searchList.stream()
-                    .skip(iDisplayStart).limit(iDisplayLength)
-                    .collect(Collectors.toList());
-
-            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
-
-            obj.addProperty("iTotalRecords", data.size());
-            obj.addProperty("iTotalDisplayRecords", searchList.size());
-            obj.add("aaData", aaData);
-            obj.addProperty("sEcho", params.get("sEcho"));
-        } catch (Exception e) {
-            e.printStackTrace();
-            Logger.writeLog(e);
+        if (type.equals("Graduate")) {
+            students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
+        } else if (type.equals("OJT")) {
+            students = students.stream().filter(c -> c.getTerm() == 6).collect(Collectors.toList());
+        } else if (type.equals("SWP")) {
+            students = students.stream().filter(c -> c.getTerm() == 9).collect(Collectors.toList());
         }
 
-        return obj;
+        int i = 1;
+        StudentDetail detail = new StudentDetail();
+        for (StudentEntity student : students) {
+
+            List<SubjectCurriculumEntity> subjects = new ArrayList<>();
+
+            int ojt = 1;
+            List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+            for (DocumentStudentEntity doc : docs) {
+                if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
+                    List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                    for (SubjectCurriculumEntity s : list) {
+                        if (!subjects.contains(s)) {
+                            subjects.add(s);
+                            if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId())
+                                ojt = s.getTermNumber();
+                        }
+                    }
+                }
+            }
+            subjects = subjects.stream().distinct().collect(Collectors.toList());
+
+//                boolean aye = false;
+
+            // CHECK OJT DIEU KIEN DU THU KHAC NHAU
+//                Suggestion suggestion = detail.processSuggestion(student.getId(), semester.getSemester());
+//                List<List<String>> result2 = suggestion.getData();
+//                List<String> brea = new ArrayList<>();
+//                brea.add("break");
+//                brea.add("");
+//                int index = result2.indexOf(brea);
+//                if (index > -1) {
+//                    if (suggestion.isDuchitieu()) {
+//                        result2 = result2.subList(index + 1, result2.size());
+//                    } else {
+//                        result2 = result2.subList(0, index);
+//                    }
+//                }
+//                for (List<String> r : result2) {
+//                    SubjectCurriculumEntity s = subjects.stream().filter(c -> c.getSubjectId().getId().equals(r.get(0))).findFirst().get();
+//                    if (type.equals("OJT")) {
+//                        if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
+//                            aye = true;
+//                            break;
+//                        }
+//                    } else if (type.equals("SWP")) {
+//                        if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
+//                            aye = true;
+//                            break;
+//                        }
+//                    }
+//                }
+
+//                if (aye) {
+            System.out.println(i + " - " + students.size());
+
+            List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
+            for (SubjectCurriculumEntity c : subjects) {
+                if (type.equals("OJT")) {
+                    if (c.getTermNumber() >= 1 && c.getTermNumber() <= (ojt - 1)) {
+                        processedSub.add(c);
+                    }
+                } else {
+                    if (c.getTermNumber() >= 1) {
+                        processedSub.add(c);
+                    }
+                }
+            }
+
+            List<String> tmp = new ArrayList<>();
+            for (SubjectCurriculumEntity s : processedSub) {
+                if (!tmp.contains(s.getSubjectId().getId())) tmp.add(s.getSubjectId().getId());
+            }
+
+            List<MarksEntity> marks = marksService.getMarkByConditions(semesterId, tmp, student.getId());
+            Map<String, List<MarksEntity>> map = new HashMap<>();
+            for (MarksEntity m : marks) {
+                if (map.get(m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
+                    List<MarksEntity> l = new ArrayList<>();
+                    l.add(m);
+                    map.put(m.getSubjectMarkComponentId().getSubjectId().getId(), l);
+                } else {
+                    map.get(m.getSubjectMarkComponentId().getSubjectId().getId()).add(m);
+                }
+            }
+
+            int required = 0;
+            for (SubjectCurriculumEntity s : processedSub) {
+                required += s.getSubjectCredits();
+            }
+
+            int percent = 9999;
+            if (type.equals("Graduate")) {
+                percent = student.getProgramId().getGraduate();
+            } else if (type.equals("OJT")) {
+                percent = student.getProgramId().getOjt();
+            } else if (type.equals("SWP")) {
+                percent = student.getProgramId().getCapstone();
+            }
+
+            int tongtinchi = 0;
+            List<String> datontai = new ArrayList<>();
+            for (SubjectCurriculumEntity s : processedSub) {
+                if (map.get(s.getSubjectId().getId()) != null) {
+                    List<MarksEntity> list = map.get(s.getSubjectId().getId());
+                    if (list.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+                        tongtinchi += s.getSubjectCredits();
+                    } else {
+                        boolean dacong = false;
+                        for (SubjectEntity ss : s.getSubjectId().getSubjectEntityList()) {
+                            List<MarksEntity> t = student.getMarksEntityList().stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(ss.getId())).collect(Collectors.toList());
+                            if (t.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+                                tongtinchi += s.getSubjectCredits();
+                                dacong = true;
+                                break;
+                            }
+                        }
+                        if (!dacong) {
+                            for (SubjectEntity ss : s.getSubjectId().getSubjectEntityList1()) {
+                                for (SubjectEntity sss : ss.getSubjectEntityList()) {
+                                    List<MarksEntity> t = student.getMarksEntityList().stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(sss.getId())).collect(Collectors.toList());
+                                    if (t.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+                                        tongtinchi += s.getSubjectCredits();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+//            for (MarksEntity mark : marks) {
+//                if (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt")) {
+//                    if (!datontai.contains(mark.getSubjectMarkComponentId().getSubjectId().getId())) {
+//                        SubjectCurriculumEntity s = processedSub.stream().filter(c -> c.getSubjectId().getId().equals(mark.getSubjectMarkComponentId().getSubjectId().getId())).findFirst().get();
+//                        tongtinchi += s.getSubjectCredits();
+//                        datontai.add(mark.getSubjectMarkComponentId().getSubjectId().getId());
+//                    }
+//                }
+//            }
+
+            if (tongtinchi >= ((required * percent * 1.0) / 100)) {
+                List<String> t = new ArrayList<>();
+                t.add(student.getRollNumber());
+                t.add(student.getFullName());
+                t.add(String.valueOf(tongtinchi));
+                t.add(String.valueOf((tongtinchi > required) ? (tongtinchi - required) : 0));
+                data.add(t);
+            }
+//                } else {
+//                    System.out.println("sinh viên " + student.getRollNumber() + " ko đủ đk");
+//                }
+
+            i++;
+        }
+        return data;
     }
 
 //    private List<List<String>> processGraduate(Map<String, String> params) {
