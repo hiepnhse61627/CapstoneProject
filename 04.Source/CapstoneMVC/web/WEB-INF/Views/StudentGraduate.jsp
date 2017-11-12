@@ -18,38 +18,7 @@
                 </div>
                 <div class="col-md-5 text-right">
                     <button type="button" class="btn btn-success" onclick="ExportExcel()">Xuất dữ liệu</button>
-                    <button type="button" class="btn btn-warning" onclick="ExportExcelPDF()">Xuất dữ liệu (PDF)
-                    <%--<div class="export-content">--%>
-                        <%--<div class="btn btn-success btn-with-icon btn-excel">--%>
-                            <%--<i class="glyphicon glyphicon-open"></i>--%>
-                            <%--<div>XUẤT DỮ LIỆU</div>--%>
-                        <%--</div>--%>
-                        <%--<div class="excel-modal">--%>
-                            <%--<div class="arrow-up"></div>--%>
-                            <%--<div class="my-content-wrap">--%>
-                                <%--<div class="content">--%>
-                                    <%--<div class="item">--%>
-                                        <%--<i class="fa fa-angle-left"></i>--%>
-                                        <%--<span>In tất cả sinh viên</span>--%>
-                                        <%--<div class="sub-item-wrapper">--%>
-                                            <%--&lt;%&ndash;<div class="item"><span>Word</span></div>&ndash;%&gt;--%>
-                                            <%--<div class="item" onclick="Test(1)"><span>PDF</span></div>--%>
-                                            <%--<div class="item" onclick="Test(2)"><span>Excel</span></div>--%>
-                                        <%--</div>--%>
-                                    <%--</div>--%>
-                                    <%--<div class="item">--%>
-                                        <%--<i class="fa fa-angle-left"></i>--%>
-                                        <%--<span>In một sinh viên</span>--%>
-                                        <%--<div class="sub-item-wrapper">--%>
-                                            <%--&lt;%&ndash;<div class="item"><span>Word</span></div>&ndash;%&gt;--%>
-                                            <%--<div class="item" onclick="Test(3)"><span>PDF</span></div>--%>
-                                            <%--<div class="item" onclick="Test(4)"><span>Excel</span></div>--%>
-                                        <%--</div>--%>
-                                    <%--</div>--%>
-                                <%--</div>--%>
-                            <%--</div>--%>
-                        <%--</div>--%>
-                    <%--</div>--%>
+                    <%--<button type="button" class="btn btn-warning" onclick="ExportExcelPDF()">Xuất dữ liệu (PDF)</button>--%>
                 </div>
             </div>
             <hr>
@@ -62,6 +31,17 @@
                         <h4>Thông tin bộ lọc</h4>
                     </div>
                     <div class="my-content p-l-10">
+                        <div class="my-input-group">
+                            <div class="left-content m-r-5">
+                                <label class="p-t-8">Loại xét</label>
+                            </div>
+                            <div class="right-content width-30 width-m-70">
+                                <select id="pass" class="select form-control">
+                                    <option value="true">Sinh viên đạt điều kiện</option>
+                                    <option value="false">Sinh viên không đạt điều kiện</option>
+                                </select>
+                            </div>
+                        </div>
                         <div class="my-input-group">
                             <div class="left-content m-r-5">
                                 <label class="p-t-8">Loại xét</label>
@@ -99,12 +79,9 @@
                             </div>
                         </div>
                     </div>
-                    <%--<div class="col-md-12">--%>
-                        <%--&lt;%&ndash;<button class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>&ndash;%&gt;--%>
-                        <%--<button type="button" class="btn btn-primary" onclick="ExportExcel()">Xuất dữ liệu</button>--%>
-                        <%--<button type="button" class="btn btn-warning" onclick="ExportExcelPDF()">Xuất dữ liệu (PDF)--%>
-                        <%--</button>--%>
-                    <%--</div>--%>
+                    <div class="col-md-12">
+                        <button class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>
+                    </div>
                 </div>
             </div>
 
@@ -117,7 +94,7 @@
                                 <th>MSSV</th>
                                 <th>Tên</th>
                                 <th>Tín chỉ tích lũy</th>
-                                <th>Tín chỉ dư</th>
+                                <th>Tín chỉ yêu cầu</th>
                             </tr>
                             </thead>
                             <tbody></tbody>
@@ -131,11 +108,10 @@
 
 <form id="export-excel" action="/exportExcel" hidden>
     <input name="objectType"/>
-    <input name="credit"/>
-    <input name="sCredit"/>
     <input name="programId"/>
     <input name="semesterId"/>
-    <input name="sSearch"/>
+    <input name="boolean"/>
+    <input name="type"/>
 </form>
 
 <script>
@@ -202,20 +178,20 @@
 //            }
 //        });
 
-        $('#program').on('change', function() {
-            RefreshTable();
-        });
-
-        $('#semester').on('change', function() {
-            RefreshTable();
-        });
-
-        $('#type').on('change', function() {
-            RefreshTable();
-        });
+//        $('#program').on('change', function() {
+//            RefreshTable();
+//        });
+//
+//        $('#semester').on('change', function() {
+//            RefreshTable();
+//        });
+//
+//        $('#type').on('change', function() {
+//            RefreshTable();
+//        });
 
         table = $('#table').dataTable({
-            "bServerSide": true,
+            "bServerSide": false,
             "bFilter": true,
             "bRetrieve": true,
             "sScrollX": "100%",
@@ -226,7 +202,8 @@
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "programId", "value": $("#program").val()}),
                     aoData.push({"name": "semesterId", "value": $("#semester").val()}),
-                    aoData.push({"name": "type", "value": $("#type").val()})
+                    aoData.push({"name": "type", "value": $("#type").val()}),
+                    aoData.push({"name": "boolean", "value": $("#pass").val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "Tìm kiếm theo MSSV, Tên",
@@ -256,32 +233,27 @@
 
     function ExportExcel() {
         $("input[name='objectType']").val(4);
-        $("input[name='credit']").val($('#credit').val());
-        $("input[name='sCredit']").val($('#sCredit').val());
-        $("input[name='programId']").val($('#program').val());
-        $("input[name='semesterId']").val($('#semester').val());
-        $("input[name='sSearch']").val(table.api().context[0].oPreviousSearch.sSearch);
+        $("input[name='programId']").val($("#program").val());
+        $("input[name='semesterId']").val($("#semester").val());
+        $("input[name='type']").val($("#type").val());
+        $("input[name='boolean']").val($("#pass").val());
 
         $("#export-excel").submit();
     }
 
-    function ExportExcelPDF() {
-        $("input[name='objectType']").val(5);
-        $("input[name='credit']").val($('#credit').val());
-        $("input[name='sCredit']").val($('#sCredit').val());
-        $("input[name='programId']").val($('#program').val());
-        $("input[name='semesterId']").val($('#semester').val());
-        $("input[name='sSearch']").val(table.api().context[0].oPreviousSearch.sSearch);
-
-        $("#export-excel").submit();
-    }
+//    function ExportExcelPDF() {
+//        $("input[name='objectType']").val(5);
+//        $("input[name='credit']").val($('#credit').val());
+//        $("input[name='sCredit']").val($('#sCredit').val());
+//        $("input[name='programId']").val($('#program').val());
+//        $("input[name='semesterId']").val($('#semester').val());
+//        $("input[name='sSearch']").val(table.api().context[0].oPreviousSearch.sSearch);
+//
+//        $("#export-excel").submit();
+//    }
 
     function RefreshTable() {
         table._fnPageChange(0);
         table._fnAjaxUpdate();
-    }
-
-    function Test(param) {
-        alert("yasss" + param);
     }
 </script>
