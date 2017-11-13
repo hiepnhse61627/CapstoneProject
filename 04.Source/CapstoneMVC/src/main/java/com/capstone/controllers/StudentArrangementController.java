@@ -2,6 +2,7 @@ package com.capstone.controllers;
 
 import com.capstone.entities.RealSemesterEntity;
 import com.capstone.entities.StudentEntity;
+import com.capstone.entities.StudentStatusEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.models.ReadAndSaveFileToServer;
 import com.capstone.models.Suggestion;
@@ -25,15 +26,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.security.auth.Subject;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,11 +49,19 @@ public class StudentArrangementController {
 
     private int totalStudents;
     private int countStudents;
+    private boolean file1Done;
+    private boolean file2Done;
+    private boolean file3Done;
 
     @RequestMapping("/studentArrangement")
     public ModelAndView StudentArrangementIndex() {
         ModelAndView view = new ModelAndView("StudentArrangement");
         view.addObject("title", "Danh sách sinh viên theo lớp môn");
+
+        IRealSemesterService semesterService = new RealSemesterServiceImpl();
+        List<RealSemesterEntity> semesters = semesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+        view.addObject("semesters", semesters);
 
         return view;
     }
@@ -88,15 +95,19 @@ public class StudentArrangementController {
 
     @RequestMapping(value = "/studentArrangement/import", method = RequestMethod.POST)
     @ResponseBody
-    public Callable<JsonObject> upload(@RequestParam("file") MultipartFile file, HttpServletRequest request) {
+    public Callable<JsonObject> importFile(
+            @RequestParam("file-suggestion") MultipartFile fileSuggestion,
+            @RequestParam("file-going") MultipartFile fileGoing,
+            @RequestParam("file-relearn") MultipartFile fileRelearn,
+            @RequestParam("semesterId") int semesterId, HttpServletRequest request) {
         Callable<JsonObject> callable = new Callable<JsonObject>() {
             @Override
             public JsonObject call() throws Exception {
-                JsonObject obj = ReadFile(file, null, true, request);
-                if (obj.get("success").getAsBoolean()) {
-                    ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
-                    read.saveFile(context, file, folder);
-                }
+                JsonObject obj = ReadFile(fileSuggestion, fileGoing, fileRelearn, semesterId, request);
+//                if (obj.get("success").getAsBoolean()) {
+//                    ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+//                    read.saveFile(context, file, folder);
+//                }
 
                 return obj;
             }
@@ -105,138 +116,102 @@ public class StudentArrangementController {
         return callable;
     }
 
-    private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile, HttpServletRequest request) {
+    private JsonObject ReadFile(MultipartFile fileSuggestion, MultipartFile fileGoing,
+                                MultipartFile fileRelearn, int semesterId, HttpServletRequest request) {
         JsonObject jsonObj = new JsonObject();
-        IStudentService studentService = new StudentServiceImpl();
+        IStudentStatusService studentStatusService = new StudentStatusServiceImpl();
         ISubjectService subjectService = new SubjectServiceImpl();
-        IRealSemesterService semesterService = new RealSemesterServiceImpl();
-        StudentDetail studentDetailController = new StudentDetail();
 
         this.totalStudents = 0;
         this.countStudents = 0;
-
-        List<RealSemesterEntity> sortedSemester = Ultilities.SortSemesters(semesterService.getAllSemester());
-        String lastestSemester = sortedSemester.get(sortedSemester.size() - 1).getSemester();
+        this.file1Done = false;
+        this.file2Done = false;
+        this.file3Done = false;
 
         try {
-            InputStream is = isNewFile ? file.getInputStream() : new FileInputStream(file2);
+            Map<String, SubjectList> studentSubjectSuggestion = this.getSubjectSuggestionList(fileSuggestion);
+            List<String> goingList = this.getGoingListAlreadyPaying(fileGoing);
+            Map<String, List<String>> relearnList = this.getRelearnListAlreadyPaying(fileRelearn);
 
-            String originalFileName = isNewFile ? file.getOriginalFilename() : file2.getName();
-            String extension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1, originalFileName.length());
+            List<String> statusList = new ArrayList<>();
+            statusList.add("HD");
+            statusList.add("HL");
+            List<StudentStatusEntity> studentStatusList = studentStatusService
+                    .getStudentStatusForStudentArrangement(semesterId, statusList);
 
-            Workbook workbook = null;
-            Sheet spreadsheet = null;
-            Row row = null;
-            if (extension.equals(xlsExcelExtension)) {
-                workbook = new HSSFWorkbook(is);
-                spreadsheet = workbook.getSheetAt(0);
-            } else if (extension.equals(xlsxExcelExtension)) {
-                workbook = new XSSFWorkbook(is);
-                spreadsheet = workbook.getSheetAt(0);
-            } else {
-                jsonObj.addProperty("success", false);
-                jsonObj.addProperty("message", "Chỉ chấp nhận file excel");
-                return jsonObj;
-            }
+            // Get students that have rollNumber in goingList and relearnList
+            List<StudentStatusEntity> studentList = new ArrayList<>();
+            for (StudentStatusEntity studentStatus : studentStatusList) {
+                String curStudentRollNumber = studentStatus.getStudentId().getRollNumber();
+                String curStudentStatus = studentStatus.getStatus();
 
-            int excelDataIndexRow = 1;
-
-            int rollNumberIndex = 0;
-            int termIndex = 16;
-            int classIndex = 17;
-            int statusIndex = 19;
-
-            List<StudentModel> studentList = new ArrayList<>();
-            for (int rowIndex = excelDataIndexRow; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
-                row = spreadsheet.getRow(rowIndex);
-                if (row != null) {
-                    Cell rollNumberCell = row.getCell(rollNumberIndex);
-                    Cell classCell = row.getCell(classIndex);
-                    Cell statusCell = row.getCell(statusIndex);
-
-                    String rollNumber = "";
-                    if (rollNumberCell != null) {
-                        rollNumber = rollNumberCell.getCellType() == Cell.CELL_TYPE_STRING ?
-                                rollNumberCell.getStringCellValue() : (rollNumberCell.getNumericCellValue() == 0 ?
-                                "" : Integer.toString((int) rollNumberCell.getNumericCellValue()));
+                if (curStudentStatus.equals("HD")) {
+                    for (String rollNumber : goingList) {
+                        if (curStudentRollNumber.equals(rollNumber)) {
+                            studentList.add(studentStatus);
+                            break;
+                        }
                     }
-
-                    String clazz = "";
-                    if (classCell != null) {
-                        clazz = classCell.getStringCellValue().trim();
-                    }
-
-                    String status = "";
-                    if (statusCell != null) {
-                        status = statusCell.getStringCellValue().trim();
-                    }
-
-                    if (!rollNumber.isEmpty()
-                            && (status.equals("HD") || status.equals("HL"))
-                            && !clazz.isEmpty() && clazz.matches("^[a-zA-Z]+\\d+$")) {
-                        StudentModel student = new StudentModel();
-                        student.rollNumber = rollNumber;
-                        student.clazz = clazz;
-                        student.status = status;
-
-                        studentList.add(student);
+                } else if (curStudentStatus.equals("HL")) {
+                    for (String rollNumber : relearnList.keySet()) {
+                        if (curStudentRollNumber.equals(rollNumber)) {
+                            studentList.add(studentStatus);
+                            break;
+                        }
                     }
                 }
             }
-
             this.totalStudents = studentList.size();
 
-            Pattern pattern = Pattern.compile("\\d+");
-            // Map<Shift, Map<SubjectCode, StudentList>>
             Map<String, Map<String, StudentList>> shiftMap = new HashMap<>();
-            for (StudentModel std : studentList) {
-                StudentEntity student = studentService.findStudentByRollNumber(std.rollNumber);
-                if (student != null) {
-                    List<List<String>> subjectList = null;
-                    Suggestion suggestion = studentDetailController.processSuggestion(student.getId(),
-                            lastestSemester);
-                    subjectList = suggestion.getData();
-                    List<String> brea = new ArrayList<>();
-                    brea.add("break");
-                    brea.add("");
+            for (StudentStatusEntity studentStatus : studentList) {
+                String curStudentRollNumber = studentStatus.getStudentId().getRollNumber();
+                String curStudentStatus = studentStatus.getStatus();
+                String curStudentShift = studentStatus.getStudentId().getShift();
 
-                    int index = subjectList.indexOf(brea);
-                    if (index > -1) {
-                        if (suggestion.isDuchitieu()) {
-                            subjectList = subjectList.subList(0, index);
-                        } else {
-                            subjectList = subjectList.subList(index + 1, subjectList.size());
+                Map<String, StudentList> subjectMap = shiftMap.get(curStudentShift);
+                if (subjectMap == null) {
+                    subjectMap = new HashMap<>();
+                    shiftMap.put(curStudentShift, subjectMap);
+                }
+
+                SubjectList subjectSuggestionList = studentSubjectSuggestion.get(curStudentRollNumber);
+                List<String> subjects = null;
+                if (curStudentStatus.equals("HD")) {
+                    subjects = subjectSuggestionList.nextCourseList;
+                } else if (curStudentStatus.equals("HL")) {
+                    List<String> suggestionList = subjectSuggestionList.suggestionList;
+                    List<String> relearnSubjects = relearnList.get(curStudentRollNumber);
+                    subjects = this.removeRelearnedSubjectsNotInSuggestionList(relearnSubjects, suggestionList);
+                }
+                addStudentToSubjectMap(subjectMap, subjects, studentStatus.getStudentId(), curStudentStatus);
+
+                // Check if student has HD status want to relearn
+                if (curStudentStatus.equals("HD")) {
+                    boolean isRelearn = false;
+                    for (String rollNumber : relearnList.keySet()) {
+                        if (curStudentRollNumber.equals(rollNumber)) {
+                            isRelearn = true;
+                            break;
                         }
                     }
 
-                    Matcher matcher = pattern.matcher(std.clazz);
-                    matcher.find();
-                    int classNumber = Integer.parseInt(std.clazz.substring(matcher.start(), std.clazz.length()));
-                    String shift = classNumber % 2 == 0 ? "PM" : "AM";
-
-                    Map<String, StudentList> subjectMap = shiftMap.get(shift);
-                    if (subjectMap == null) {
-                        subjectMap = new HashMap<>();
-                        shiftMap.put(shift, subjectMap);
-                    }
-
-                    for (List<String> subject : subjectList) {
-                        String subjectCode = subject.get(0);
-                        StudentList list = subjectMap.get(subjectCode);
-                        if (list == null) {
-                            list = new StudentList();
-                            subjectMap.put(subjectCode, list);
+                    if (isRelearn) {
+                        String otherShift = curStudentShift == "AM" ? "PM" : "AM";
+                        subjectMap = shiftMap.get(otherShift);
+                        if (subjectMap == null) {
+                            subjectMap = new HashMap<>();
+                            shiftMap.put(otherShift, subjectMap);
                         }
 
-                        if (std.status.equals("HD")) {
-                            list.goingList.add(student);
-                        } else if (std.status.equals("HL")) {
-                            list.relearnList.add(student);
-                        }
+                        List<String> suggestionList = subjectSuggestionList.suggestionList;
+                        List<String> relearnSubjects = relearnList.get(curStudentRollNumber);
+                        subjects = this.removeRelearnedSubjectsNotInSuggestionList(relearnSubjects, suggestionList);
+                        addStudentToSubjectMap(subjectMap, subjects, studentStatus.getStudentId(), "HL");
                     }
                 }
+
                 ++this.countStudents;
-                System.out.println(countStudents);
             }
 
             List<List<String>> result = new ArrayList<>();
@@ -294,9 +269,266 @@ public class StudentArrangementController {
             jsonObj.addProperty("success", true);
         } catch (Exception e) {
             e.printStackTrace();
+            jsonObj.addProperty("success", false);
+            jsonObj.addProperty("message", e.getMessage());
         }
 
         return jsonObj;
+    }
+
+    private void addStudentToSubjectMap(Map<String, StudentList> subjectMap,
+                                        List<String> subjects, StudentEntity student, String status) {
+        for (String subjectCode : subjects) {
+            StudentList studentList = subjectMap.get(subjectCode);
+            if (studentList == null) {
+                studentList = new StudentList();
+                subjectMap.put(subjectCode, studentList);
+            }
+
+            if (status.equals("HD")) {
+                studentList.goingList.add(student);
+            } else if (status.equals("HL")) {
+                studentList.relearnList.add(student);
+            }
+        }
+    }
+
+    private Map<String, SubjectList> getSubjectSuggestionList(MultipartFile file) {
+        Map<String, SubjectList> result = new HashMap<>();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            String originalFileName = file.getOriginalFilename();
+            String extension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1, originalFileName.length());
+
+            Workbook workbook = null;
+            Sheet spreadsheet = null;
+            Row row = null;
+            if (extension.equals(xlsExcelExtension)) {
+                workbook = new HSSFWorkbook(is);
+                spreadsheet = workbook.getSheetAt(0);
+            } else if (extension.equals(xlsxExcelExtension)) {
+                workbook = new XSSFWorkbook(is);
+                spreadsheet = workbook.getSheetAt(0);
+            }
+
+            int excelDataIndexRow = 6;
+            int rollNumberIndex = 0;
+            int subjectsInNextCourseIndex = 5;
+            int subjectsSuggestionIndex = 8;
+
+            for (int rowIndex = excelDataIndexRow; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+                if (row != null) {
+                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    Cell subjectsInNextCourseCell = row.getCell(subjectsInNextCourseIndex);
+                    Cell subjectsSuggestionCell = row.getCell(subjectsSuggestionIndex);
+
+                    String rollNumber = null;
+                    if (rollNumberCell != null) {
+                        rollNumber = rollNumberCell.getCellType() == Cell.CELL_TYPE_STRING ?
+                                rollNumberCell.getStringCellValue() : (rollNumberCell.getNumericCellValue() == 0 ?
+                                "" : Integer.toString((int) rollNumberCell.getNumericCellValue()));
+                    }
+
+                    String subjectsInNextCourseStr = null;
+                    if (subjectsInNextCourseCell != null) {
+                        subjectsInNextCourseStr = subjectsInNextCourseCell.getStringCellValue().trim();
+                    }
+
+                    String subjectsSuggestionStr = null;
+                    if (subjectsSuggestionCell != null) {
+                        subjectsSuggestionStr = subjectsSuggestionCell.getStringCellValue().trim();
+                    }
+
+                    if (rollNumber != null && subjectsInNextCourseStr != null && subjectsSuggestionStr != null) {
+                        List<String> nextCourseList = this.changeSubjectStringToList(subjectsInNextCourseStr);
+                        if (!nextCourseList.isEmpty()) {
+                            nextCourseList = this.removeVOVInSubjectList(nextCourseList);
+                        }
+
+                        List<String> suggestionList = this.changeSubjectStringToList(subjectsSuggestionStr);
+                        if (!suggestionList.isEmpty()) {
+                            suggestionList = this.removeVOVInSubjectList(suggestionList);
+                        }
+
+                        SubjectList subjectList = new SubjectList();
+                        subjectList.nextCourseList = nextCourseList;
+                        subjectList.suggestionList = suggestionList;
+
+                        result.put(rollNumber, subjectList);
+                    }
+                }
+            }
+
+            this.file1Done = true;
+            workbook.close();
+            is.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    private List<String> getGoingListAlreadyPaying(MultipartFile file) {
+        List<String> result = new ArrayList<>();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            String originalFileName = file.getOriginalFilename();
+            String extension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1, originalFileName.length());
+
+            Workbook workbook = null;
+            Sheet spreadsheet = null;
+            Row row = null;
+            if (extension.equals(xlsExcelExtension)) {
+                workbook = new HSSFWorkbook(is);
+                spreadsheet = workbook.getSheetAt(0);
+            } else if (extension.equals(xlsxExcelExtension)) {
+                workbook = new XSSFWorkbook(is);
+                spreadsheet = workbook.getSheetAt(0);
+            }
+
+            int excelDataIndexRow = 10;
+            int rollNumberIndex = 4;
+
+            for (int rowIndex = excelDataIndexRow; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+                if (row != null) {
+                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+
+                    if (rollNumberCell != null) {
+                        String rollNumber = rollNumberCell.getCellType() == Cell.CELL_TYPE_STRING ?
+                                rollNumberCell.getStringCellValue() : (rollNumberCell.getNumericCellValue() == 0 ?
+                                "" : Integer.toString((int) rollNumberCell.getNumericCellValue()));
+                        if (!rollNumber.isEmpty()) {
+                            result.add(rollNumber);
+                        }
+                    }
+                }
+            }
+
+            this.file2Done = true;
+            workbook.close();
+            is.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    private Map<String, List<String>> getRelearnListAlreadyPaying(MultipartFile file) {
+        Map<String, List<String>> result = new HashMap<>();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            String originalFileName = file.getOriginalFilename();
+            String extension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1, originalFileName.length());
+
+            Workbook workbook = null;
+            Sheet spreadsheet = null;
+            Row row = null;
+            if (extension.equals(xlsExcelExtension)) {
+                workbook = new HSSFWorkbook(is);
+                spreadsheet = workbook.getSheetAt(0);
+            } else if (extension.equals(xlsxExcelExtension)) {
+                workbook = new XSSFWorkbook(is);
+                spreadsheet = workbook.getSheetAt(0);
+            }
+
+            int excelDataIndexRow = 1;
+            int rollNumberIndex = 1;
+            int subjectsIndex = 3;
+
+            for (int rowIndex = excelDataIndexRow; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+                if (row != null) {
+                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    Cell subjectsCell = row.getCell(subjectsIndex);
+
+                    String rollNumber = null;
+                    if (rollNumberCell != null) {
+                        rollNumber = rollNumberCell.getCellType() == Cell.CELL_TYPE_STRING ?
+                                rollNumberCell.getStringCellValue().trim() : (rollNumberCell.getNumericCellValue() == 0 ?
+                                "" : Integer.toString((int) rollNumberCell.getNumericCellValue()));
+                    }
+
+                    String subjectsStr = null;
+                    if (subjectsCell != null) {
+                        subjectsStr = subjectsCell.getStringCellValue().trim();
+                    }
+
+                    if (rollNumber != null && subjectsStr != null) {
+                        List<String> subjectList = this.changeSubjectStringToList(subjectsStr);
+                        if (!subjectList.isEmpty()) {
+                            subjectList = this.removeVOVInSubjectList(subjectList);
+                        }
+
+                        result.put(rollNumber, subjectList);
+                    }
+                }
+            }
+
+            this.file3Done = true;
+            workbook.close();
+            is.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    private List<String> changeSubjectStringToList(String subjectStr) {
+        if (subjectStr.isEmpty() || subjectStr.equals("N/A")) {
+            return new ArrayList<>();
+        }
+
+        String[] subjectArr;
+        if (subjectStr.contains(",")) {
+            subjectArr = subjectStr.split(",");
+        } else {
+            subjectArr = new String[1];
+            subjectArr[0] = subjectStr;
+        }
+
+        return new LinkedList<String>(Arrays.asList(subjectArr));
+    }
+
+    private List<String> removeVOVInSubjectList(List<String> subjectList) {
+        int pos;
+        do {
+            pos = -1;
+            for (int i = 0; i < subjectList.size(); ++i) {
+                if (subjectList.get(i).contains("VOV")) {
+                    pos = i;
+                    break;
+                }
+            }
+
+            if (pos >= 0) subjectList.remove(pos);
+        } while (pos >= 0 && !subjectList.isEmpty());
+
+        return subjectList;
+    }
+
+    private List<String> removeRelearnedSubjectsNotInSuggestionList(List<String> relearnList, List<String> suggestionList) {
+        List<String> result = new ArrayList<>();
+        for (String relearnSubject : relearnList) {
+            for (String suggestionSubject : suggestionList) {
+                if (relearnList.equals(suggestionSubject)) {
+                    result.add(relearnSubject);
+                    break;
+                }
+            }
+        }
+
+        return result;
     }
 
     @RequestMapping(value = "/studentArrangement/updateProgress")
@@ -306,6 +538,9 @@ public class StudentArrangementController {
 
         jsonObj.addProperty("total", this.totalStudents);
         jsonObj.addProperty("count", this.countStudents);
+        jsonObj.addProperty("file1Done", this.file1Done);
+        jsonObj.addProperty("file2Done", this.file2Done);
+        jsonObj.addProperty("file3Done", this.file3Done);
 
         return jsonObj;
     }
@@ -314,7 +549,6 @@ public class StudentArrangementController {
         public String rollNumber;
         public String clazz;
         public String status;
-
     }
 
     private class StudentList {
@@ -322,9 +556,14 @@ public class StudentArrangementController {
         public List<StudentEntity> relearnList;
 
         public StudentList() {
-            goingList = new ArrayList<>();
-            relearnList = new ArrayList<>();
+            this.goingList = new ArrayList<>();
+            this.relearnList = new ArrayList<>();
         }
+    }
+
+    private class SubjectList {
+        public List<String> nextCourseList;
+        public List<String> suggestionList;
     }
 
 }
