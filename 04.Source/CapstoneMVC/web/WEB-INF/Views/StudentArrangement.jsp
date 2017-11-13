@@ -33,27 +33,6 @@
         </div>
 
         <div class="b-body">
-            <%--<div class="form-group">--%>
-            <%--<div class="row">--%>
-            <%--<div class="title">--%>
-            <%--<h4>Thông tin bộ lọc</h4>--%>
-            <%--</div>--%>
-            <%--<div class="my-content p-l-10">--%>
-            <%--<div class="my-input-group">--%>
-            <%--<div class="left-content m-r-5">--%>
-            <%--<label class="p-t-8">Danh sách</label>--%>
-            <%--</div>--%>
-            <%--<div class="right-content width-30 width-m-70">--%>
-            <%--<select id="type" class="select form-control">--%>
-            <%--<option value="AM">Buổi sáng</option>--%>
-            <%--<option value="PM">Buổi chiều</option>--%>
-            <%--</select>--%>
-            <%--</div>--%>
-            <%--</div>--%>
-            <%--</div>--%>
-            <%--</div>--%>
-            <%--</div>--%>
-
             <div class="form-group">
                 <div class="row">
                     <div class="col-md-12">
@@ -268,7 +247,7 @@
                 aoData.push({"name": "type", "value": $("#type").val()})
             },
             "oLanguage": {
-                "sSearchPlaceholder": "Tìm kiếm theo MSSV, Tên",
+                "sSearchPlaceholder": "Mã môn, Tên môn, MSSV, TênSv",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",

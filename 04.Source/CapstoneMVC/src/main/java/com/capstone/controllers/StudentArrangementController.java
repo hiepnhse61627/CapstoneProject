@@ -73,17 +73,24 @@ public class StudentArrangementController {
 
         int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
         int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
+        String sSearch = params.get("sSearch");
 
         try {
             List<List<String>> studentList = (List<List<String>>) request.getSession().getAttribute("studentArrangementList");
             if (studentList == null) {
                 studentList = new ArrayList<>();
             }
-            List<List<String>> result = studentList.stream().skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
+            List<List<String>> searchList = studentList.stream().filter(s ->
+                    Ultilities.containsIgnoreCase(s.get(0), sSearch)
+                    || Ultilities.containsIgnoreCase(s.get(1), sSearch)
+                    || Ultilities.containsIgnoreCase(s.get(2), sSearch)
+                    || Ultilities.containsIgnoreCase(s.get(3), sSearch)).collect(Collectors.toList());
+
+            List<List<String>> result = searchList.stream().skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
             JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
 
             jsonObj.addProperty("iTotalRecords", studentList.size());
-            jsonObj.addProperty("iTotalDisplayRecords", studentList.size());
+            jsonObj.addProperty("iTotalDisplayRecords", searchList.size());
             jsonObj.add("aaData", aaData);
             jsonObj.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {
@@ -222,8 +229,12 @@ public class StudentArrangementController {
                 for (String subjectCode : subjectMap.keySet()) {
                     count = 0;
                     classNumber++;
-                    StudentList list = subjectMap.get(subjectCode);
+
                     SubjectEntity subject = subjectService.findSubjectById(subjectCode);
+
+                    StudentList list = subjectMap.get(subjectCode);
+                    Collections.sort(list.goingList, new RollNumberComparator());
+                    Collections.sort(list.relearnList, new RollNumberComparator());
 
                     List<String> dataRow;
                     for (StudentEntity student : list.goingList) {
@@ -545,10 +556,11 @@ public class StudentArrangementController {
         return jsonObj;
     }
 
-    private class StudentModel {
-        public String rollNumber;
-        public String clazz;
-        public String status;
+    private class RollNumberComparator implements Comparator<StudentEntity> {
+        @Override
+        public int compare(StudentEntity o1, StudentEntity o2) {
+            return o1.getRollNumber().compareTo(o2.getRollNumber());
+        }
     }
 
     private class StudentList {
