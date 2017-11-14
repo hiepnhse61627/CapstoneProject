@@ -60,6 +60,7 @@ public class ManagerController {
         view.addObject("curs", list2);
         return view;
     }
+
     @RequestMapping("/averageStudentInClass")
     public ModelAndView AverageClass() {
         ModelAndView view = new ModelAndView("AverageStudentInClass");
@@ -96,7 +97,7 @@ public class ManagerController {
             int studentId = stuId;
 
             String queryStr;
-            if (stuId == -1){
+            if (stuId == -1) {
                 queryStr = "select distinct s.RollNumber,s.FullName,sm.SubjectId,sb.Name, m.IsActivated " +
                         "from Marks m, Student s, Subject_MarkComponent sm, Subject sb " +
                         "where m.StudentId = s.Id and m.Status = 'Passed' and m.IsActivated = 0 " +
@@ -121,7 +122,7 @@ public class ManagerController {
                 json.addProperty("iTotalDisplayRecords", searchList.size());
                 json.add("aaData", aaData);
                 json.addProperty("sEcho", params.get("sEcho"));
-            }else{
+            } else {
                 queryStr = "select distinct s.RollNumber, s.FullName,sm.SubjectId,sb.Name, m.IsActivated " +
                         "from Marks m, Student s, Subject_MarkComponent sm, Subject sb " +
                         "where m.StudentId = s.Id and m.Status = 'Passed' and m.IsActivated = 0 " +
@@ -354,29 +355,8 @@ public class ManagerController {
                 }
             }
 
-            IStudentService studentService = new StudentServiceImpl();
-            StudentEntity student = studentService.findStudentById(stuId);
-            List<MarksEntity> marks = student.getMarksEntityList();
+            List<ChangeCurriculumModel> model = GetModel(stuId, common);
 
-            List<ChangeCurriculumModel> model = common
-                    .stream()
-                    .map(c -> new ChangeCurriculumModel(c.getId(), marks
-                            .stream()
-                            .filter(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getId()))
-                            .map(a -> new MarkModel(a.getId(), a.getSemesterId().getSemester(), a.getIsActivated(), a.getAverageMark()))
-                            .collect(Collectors.toList())))
-                    .collect(Collectors.toList());
-            model = model.stream().filter(c -> c.getData().size() > 0).collect(Collectors.toList());
-
-//            List<List<String>> parent = new ArrayList<>();
-//            if (!common.isEmpty()) {
-//                common.forEach(c -> {
-//                    List<String> tmp = new ArrayList<>();
-//                    tmp.add(c.getId());
-//                    tmp.add(c.getName());
-//                    parent.add(tmp);
-//                });
-//            }
 
             JsonArray aaData = (JsonArray) new Gson().toJsonTree(model);
 
@@ -411,19 +391,7 @@ public class ManagerController {
                 }
             }
 
-            IStudentService studentService = new StudentServiceImpl();
-            StudentEntity student = studentService.findStudentById(stuId);
-            List<MarksEntity> marks = student.getMarksEntityList();
-
-            List<ChangeCurriculumModel> model = notcommon
-                    .stream()
-                    .map(c -> new ChangeCurriculumModel(c.getId(), marks
-                            .stream()
-                            .filter(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getId()))
-                            .map(a -> new MarkModel(a.getId(), a.getSemesterId().getSemester(), a.getIsActivated(), a.getAverageMark()))
-                            .collect(Collectors.toList())))
-                    .collect(Collectors.toList());
-            model = model.stream().filter(c -> c.getData().size() > 0).collect(Collectors.toList());
+            List<ChangeCurriculumModel> model = GetModel(stuId, notcommon);
 
             JsonArray aaData = (JsonArray) new Gson().toJsonTree(model);
 
@@ -476,22 +444,12 @@ public class ManagerController {
             List<SubjectEntity> others = new ArrayList<>();
             for (MarksEntity mark : list) {
                 if (!common.stream().anyMatch(c -> c.getId().equals(mark.getSubjectMarkComponentId().getSubjectId().getId()))) {
-                    if (!others.contains(mark.getSubjectMarkComponentId().getSubjectId())) others.add(mark.getSubjectMarkComponentId().getSubjectId());
+                    if (!others.contains(mark.getSubjectMarkComponentId().getSubjectId()))
+                        others.add(mark.getSubjectMarkComponentId().getSubjectId());
                 }
             }
 
-            StudentEntity student = studentService.findStudentById(stuId);
-            List<MarksEntity> marks = student.getMarksEntityList();
-
-            List<ChangeCurriculumModel> model = others
-                    .stream()
-                    .map(c -> new ChangeCurriculumModel(c.getId(), marks
-                            .stream()
-                            .filter(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getId()))
-                            .map(a -> new MarkModel(a.getId(), a.getSemesterId().getSemester(), a.getIsActivated(), a.getAverageMark()))
-                            .collect(Collectors.toList())))
-                    .collect(Collectors.toList());
-            model = model.stream().filter(c -> c.getData().size() > 0).collect(Collectors.toList());
+            List<ChangeCurriculumModel> model = GetModel(stuId, others);
 
             JsonArray aaData = (JsonArray) new Gson().toJsonTree(model);
 
@@ -504,6 +462,61 @@ public class ManagerController {
         return result;
     }
 
+    private List<ChangeCurriculumModel> GetModel(int stuId, List<SubjectEntity> list) {
+        IStudentService studentService = new StudentServiceImpl();
+        StudentEntity student = studentService.findStudentById(stuId);
+        List<MarksEntity> marks = student.getMarksEntityList();
+        List<MarksEntity> filterMarks = marks.stream().filter(a -> a.getStatus().toLowerCase().contains("pass") || a.getStatus().toLowerCase().contains("exempt")).collect(Collectors.toList());
+
+        List<ChangeCurriculumModel> model = list
+                .stream()
+                .map(c -> new ChangeCurriculumModel(c.getId(), filterMarks
+                        .stream()
+                        .filter(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getId()))
+                        .map(a -> new MarkModel(a.getId(), a.getSemesterId().getSemester(), a.getIsActivated(), a.getAverageMark()))
+                        .collect(Collectors.toList())))
+                .collect(Collectors.toList());
+
+        for (SubjectEntity sub : list) {
+            List<SubjectEntity> replaces = sub.getSubjectEntityList();
+            if (!replaces.isEmpty()) {
+                List<ChangeCurriculumModel> l = replaces
+                        .stream()
+                        .map(c -> new ChangeCurriculumModel(c.getId(), filterMarks
+                                .stream()
+                                .filter(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getId()))
+                                .map(a -> new MarkModel(a.getId(), a.getSemesterId().getSemester(), a.getIsActivated(), a.getAverageMark()))
+                                .collect(Collectors.toList())))
+                        .collect(Collectors.toList());
+                model.addAll(l);
+            }
+            List<SubjectEntity> replaces2 = sub.getSubjectEntityList1();
+            if (!replaces2.isEmpty()) {
+                for (SubjectEntity sub2 : replaces2) {
+                    List<SubjectEntity> replaces3 = sub2.getSubjectEntityList();
+                    if (!replaces3.isEmpty()) {
+                        List<ChangeCurriculumModel> n = replaces3
+                                .stream()
+                                .map(c -> new ChangeCurriculumModel(c.getId(), filterMarks
+                                        .stream()
+                                        .filter(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getId()))
+                                        .map(a -> new MarkModel(a.getId(), a.getSemesterId().getSemester(), a.getIsActivated(), a.getAverageMark()))
+                                        .collect(Collectors.toList())))
+                                .collect(Collectors.toList());
+                        model.addAll(n);
+                    }
+                }
+            }
+        }
+
+        model = model.stream()
+                .filter(c -> c.getData().size() > 0)
+                .filter(Ultilities.distinctByKey(c -> c.getSubjectCode()))
+                .collect(Collectors.toList());
+
+        return model;
+    }
+
     @RequestMapping("/change")
     @ResponseBody
     public JsonObject Change(@RequestParam int stuId,
@@ -514,21 +527,22 @@ public class ManagerController {
 
         try {
             Gson gson = new Gson();
-            List<String> curList = gson.fromJson(data, new TypeToken<List<String>>(){}.getType());
+            List<String> curList = gson.fromJson(data, new TypeToken<List<String>>() {
+            }.getType());
 
             IStudentService studentService = new StudentServiceImpl();
-//            ICurriculumService curriculumService = new CurriculumServiceImpl();
-//            IDocumentService documentService = new DocumentServiceImpl();
+            ICurriculumService curriculumService = new CurriculumServiceImpl();
+            IDocumentService documentService = new DocumentServiceImpl();
 
             StudentEntity stu = studentService.findStudentById(stuId);
-//            CurriculumEntity newCur = curriculumService.getCurriculumById(newId);
-//
-//            DocumentStudentEntity doc = new DocumentStudentEntity();
-//            doc.setStudentId(stu);
-//            doc.setCurriculumId(newCur);
-//            doc.setDocumentId(documentService.getDocumentById(2));
-//            doc.setCreatedDate(Calendar.getInstance().getTime());
-//            stu.getDocumentStudentEntityList().add(doc);
+            CurriculumEntity newCur = curriculumService.getCurriculumById(newId);
+
+            DocumentStudentEntity doc = new DocumentStudentEntity();
+            doc.setStudentId(stu);
+            doc.setCurriculumId(newCur);
+            doc.setDocumentId(documentService.getDocumentById(2));
+            doc.setCreatedDate(Calendar.getInstance().getTime());
+            stu.getDocumentStudentEntityList().add(doc);
 
             List<MarksEntity> marks = stu.getMarksEntityList();
             for (MarksEntity mark : marks) {

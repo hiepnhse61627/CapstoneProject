@@ -7,19 +7,7 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.List;
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  *
@@ -53,7 +41,7 @@ public class SubjectEntity implements Serializable {
     private List<SubjectEntity> subjectEntityList1;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
     private PrequisiteEntity prequisiteEntity;
-    @OneToMany(mappedBy = "subjectId")
+    @OneToMany(mappedBy = "subjectId", fetch = FetchType.EAGER)
     private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
     @OneToMany(mappedBy = "subjectId")
     private List<SubjectMarkComponentEntity> subjectMarkComponentEntityList;
