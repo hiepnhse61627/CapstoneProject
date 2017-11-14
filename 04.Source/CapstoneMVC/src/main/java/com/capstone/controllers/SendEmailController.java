@@ -138,7 +138,11 @@ public class SendEmailController {
 
     @RequestMapping("/send")
     @ResponseBody
-    public Callable<JsonObject> SendEmail(@RequestParam Map<String, String> params, @RequestParam String token, @RequestParam String username, @RequestParam String name) {
+    public Callable<JsonObject> SendEmail(@RequestParam Map<String, String> params,
+                                          @RequestParam String token,
+                                          @RequestParam String username,
+                                          @RequestParam String name,
+                                          @RequestParam String editor) {
         run = true;
         status = "";
 
@@ -152,7 +156,7 @@ public class SendEmailController {
 
 //                Properties props = new Properties();
 
-                String server = "smtp.gmail.com";
+//                String server = "smtp.gmail.com";
 //                String userAccount = "fptsendtestemail@gmail.com"; // Sender Account.
 //               String password = "namlai120"; // Password -> Application Specific Password.
 
@@ -212,6 +216,10 @@ public class SendEmailController {
                             "<p>Môn đang học: " + student.get(6) + "</p>" +
                             "<p>Môn châm tiến độ: " + student.get(7) + "</p>" +
                             "<p>Môn dề xuất dự kiến: " + student.get(8) + "</p>" +
+                            "</div>" +
+                            "</hr>" +
+                            "<div style='margin-top: 28px'>" +
+                            editor +
                             "</div>";
                     mimeMessage.setContent(msg, "text/html; charset=UTF-8");
                     mimeMessage.setFrom(fromAddress);

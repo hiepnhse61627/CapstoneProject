@@ -47,9 +47,9 @@
     <link rel="stylesheet" href="/Resources/plugins/bootstrap-switch/css/bootstrap3/bootstrap-switch.min.css"/>
     <link rel="stylesheet" href="/Resources/plugins/Scroller-1.4.3/css/scroller.dataTables.css"/>
     <link rel="stylesheet" href="/Resources/plugins/dist/css/template.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dist/css/skins/_all-skins.css"/>
 
     <!-- REQUIRED JS SCRIPTS -->
-
     <!-- jQuery 2.1.4 -->
     <script src="/Resources/plugins/jQuery/jquery-1.12.4.min.js"></script>
     <script src="/Resources/plugins/serializeToJson/jquery.serializejson.min.js"></script>
@@ -68,7 +68,9 @@
     <script src="/Resources/plugins/dist/js/template.js"></script>
     <script src="/Resources/plugins/bootstrap-switch/js/bootstrap-switch.js"></script>
     <script src="/Resources/plugins/Scroller-1.4.3/js/dataTables.scroller.min.js"></script>
-
+    <%--<script src="/Resources/plugins/jQuery/jquery.hotkeys.js"></script>--%>
+    <script src="/Resources/plugins/ckeditor/ckeditor.js"></script>
+    <script src="/Resources/plugins/ckeditor/adapters/jquery.js"></script>
 </head>
 <body class="hold-transition skin-custom sidebar-mini">
 <div class="wrapper" style="position: relative">
