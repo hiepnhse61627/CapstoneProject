@@ -34,6 +34,11 @@ a {
     cursor: pointer;
 }
 
+.table-scroll {
+    width: 100%;
+    overflow-x: auto;
+}
+
 .select, .select2 {
     width: 100% !important;
 }

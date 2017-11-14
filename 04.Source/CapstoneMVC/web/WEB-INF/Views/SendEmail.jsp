@@ -4,6 +4,20 @@
 
 <link rel="stylesheet" href="/Resources/plugins/dist/css/upload-page.css">
 
+<style>
+    .min-width-50px {
+        min-width: 50px;
+    }
+
+    .min-width-75px {
+        min-width: 75px;
+    }
+
+    .min-width-100px {
+        min-width: 100px;
+    }
+</style>
+
 <section class="content">
     <div class="box">
         <div class="b-header">
@@ -54,11 +68,11 @@
                                     <th>MSSV</th>
                                     <th>Họ tên</th>
                                     <th>Email</th>
-                                    <th>tín chỉ tích lũySV</th>
-                                    <th>môn nợ</th>
-                                    <th>môn tiếp theo</th>
-                                    <th>môn đang học trong kỳ</th>
-                                    <th>môn chậm tiến độ</th>
+                                    <th>Tín chỉ tích lũy</th>
+                                    <th>Môn nợ</th>
+                                    <th>Môn tiếp theo</th>
+                                    <th>Môn đang học trong kỳ</th>
+                                    <th>Môn chậm tiến độ</th>
                                     <th>Danh sách môn học dự kiến tiếp theo</th>
                                 </tr>
                                 </thead>
@@ -143,7 +157,8 @@
     }
 
     $(document).ready(function () {
-        $('#table').DataTable();
+        CreateEmptyDataTable("#table");
+        $('#table').wrap("<div class='table-scroll'></div>");
     });
 
     function Add() {
@@ -167,38 +182,67 @@
                         isRunning = false;
                         if (result.success) {
                             array = result.data;
-                            $('#table').DataTable().destroy();
-                            table = $('#table').DataTable({
+                            $('#table').dataTable().fnDestroy();
+                            table = $('#table').dataTable({
+                                "bFilter": true,
+                                "bRetrieve": true,
+                                "bScrollCollapse": true,
+                                "bProcessing": true,
+                                "bSort": false,
                                 "data": array,
-                                "deferRender": false,
-                                "scrollY": 600,
-                                "scrollX": true,
-                                "scrollCollapse": true,
-                                "scroller": true,
-                                "columnDefs": [
+                                "oLanguage": {
+                                    "sSearchPlaceholder": "",
+                                    "sSearch": "Tìm kiếm:",
+                                    "sZeroRecords": "Không có dữ liệu phù hợp",
+                                    "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
+                                    "sEmptyTable": "Không có dữ liệu",
+                                    "sInfoFiltered": " - lọc ra từ _MAX_ dòng",
+                                    "sLengthMenu": "Hiển thị _MENU_ dòng",
+                                    "sProcessing": "Đang xử lý...",
+                                    "oPaginate": {
+                                        "sNext": "<i class='fa fa-chevron-right'></i>",
+                                        "sPrevious": "<i class='fa fa-chevron-left'></i>"
+                                    }
+
+                                },
+                                "aoColumnDefs": [
                                     {
-                                        "targets": [1, 2, 3, 4, 6, 7, 8],
-                                        "sortable": false,
-                                        "class": "text-center",
+                                        "aTargets": [0, 1, 4, 5, 6, 7, 8, 9],
+                                        "bSortable": false,
+                                        "sClass": "text-center",
                                     },
+                                    {"aTargets": [0], "sClass": "min-width-50px",},
+                                    {"aTargets": [1], "sClass": "min-width-50px",},
+                                    {"aTargets": [2], "sClass": "min-width-100px",},
+                                    {"aTargets": [3], "sClass": "min-width-100px",},
+                                    {"aTargets": [4], "sClass": "min-width-75px",},
+                                    {"aTargets": [5], "sClass": "min-width-100px",},
+                                    {"aTargets": [6], "sClass": "min-width-100px",},
+                                    {"aTargets": [7], "sClass": "min-width-100px",},
+                                    {"aTargets": [8], "sClass": "min-width-100px",},
+                                    {"aTargets": [9], "sClass": "min-width-100px",},
                                     {
-                                        "targets": [0],
-                                        "render": function (data, type, row) {
+                                        "aTargets": [0],
+                                        "mRender": function (data, type, row) {
                                             return "<input name='send' type='checkbox'/>";
                                         },
-                                        "sortable": false,
                                     },
                                     {
-                                        "targets": [5],
-                                        "render": function (data, type, row) {
-                                            return data + "<input type='hidden' name='data' value='" + data + "'/>";
-                                        },
-                                        "sortable": false,
-                                    }
+                                        "aTargets": [5],
+                                        "mRender": function (data, type, row) {
+                                            return FormatText(data) + "<input type='hidden' name='data' value='" + data + "'/>";
+                                        }
+                                    },
+                                    {
+                                        "aTargets": [6, 7, 8, 9],
+                                        "mRender": function (data, type, row) {
+                                            return FormatText(data);
+                                        }
+                                    },
                                 ],
-//                                "search": true,
-//                                "filter": false,
+                                "bAutoWidth": false,
                             });
+                            $('#table').wrap("<div class='table-scroll'></div>");
                             swal.close();
                         } else {
                             swal('Đã xảy ra lỗi!', result.message, 'error');
@@ -295,5 +339,16 @@
                 }
             }
         });
+    }
+
+    function FormatText(str) {
+        var data = str.split(",");
+        var result = data[0];
+        for (var i = 1; i < data.length; ++i) {
+            if (data[i] != '') {
+                result += ", " + data[i];
+            }
+        }
+        return result;
     }
 </script>
