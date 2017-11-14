@@ -37,8 +37,14 @@
                     <div class="my-content">
                         <div class="col-md-12">
                             <button type="button" class="btn btn-warning" onclick="SelectAll()">Chọn tất cả</button>
-                            <button type="button" class="btn btn-warning" onclick="SelectOnlyFail()">Chỉ chọn sv có rớt môn</button>
-                            <button type="button" class="btn btn-success pull-right" onclick="Send()">Gửi</button>
+                            <button type="button" class="btn btn-warning" onclick="SelectOnlyFail()">Chỉ chọn sv có rớt
+                                môn
+                            </button>
+                            <%--<button type="button" class="btn btn-success pull-right" onclick="Send()">Gửi</button>--%>
+                            <%--<a href="https://accounts.google.com/o/oauth2/auth?client_id=154261814473-m5o6qqmt4768ij676ore7280qbpgf03u.apps.googleusercontent.com&redirect_uri=http://localhost:8080/auth/google&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto" class="btn btn-block btn-social btn-google btn-flat">--%>
+                            <%--<i class="fa fa-google-plus"></i> Đăng nhập bằng Google+--%>
+                            <%--</a>--%>
+                            <button type="button" onclick="Authenticate()">test</button>
                         </div>
                         <div class="col-md-12">
                             <table id="table">
@@ -68,6 +74,73 @@
 
 <script>
     var table = null;
+
+    var OAUTHURL = 'https://accounts.google.com/o/oauth2/auth?';
+    var VALIDURL = 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=';
+    var SCOPE = 'https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email';
+    var CLIENTID = '415843400023-daksefsdrol9o9b5b79o9mhk8cskc9k4.apps.googleusercontent.com';
+    var REDIRECT = 'http://localhost:8080/email/google';
+    var TYPE = 'token';
+    var url = OAUTHURL + 'scope=' + SCOPE + '&client_id=' + CLIENTID + '&redirect_uri=' + REDIRECT + '&response_type=' + TYPE;
+
+    function Authenticate() {
+        var win = window.open(url, "Choose a Email", 'width=800, height=600');
+
+        var pollTimer = window.setInterval(function () {
+            try {
+                console.log(win.document.URL);
+                if (win.document.URL.indexOf(REDIRECT) != -1) {
+                    window.clearInterval(pollTimer);
+                    var url = win.document.URL;
+                    var acToken = url.match(/#(?:access_token)=([\S\s]*?)&/)[1];
+                    var tokenType = gup(url, 'token_type');
+                    var expiresIn = gup(url, 'expires_in');
+                    win.close();
+//                    Send(acToken);
+                    console.log(acToken + ", " + tokenType + ", " + expiresIn);
+                    validateToken(acToken);
+                }
+            } catch (e) {
+//                swal('', e.message, 'error');
+            }
+        }, 100);
+    }
+
+    function validateToken(token) {
+        $.ajax({
+            url: VALIDURL + token,
+            data: null,
+            success: function (responseText) {
+                console.log(responseText);
+                getUserInfo(token);
+            },
+            dataType: "jsonp"
+        });
+    }
+
+    function getUserInfo(token) {
+        $.ajax({
+            url: 'https://www.googleapis.com/oauth2/v1/userinfo?access_token=' + token,
+            data: null,
+            success: function (resp) {
+                var user = resp;
+                console.log(user);
+                Send(token, user.email, user.name);
+            },
+            dataType: "jsonp"
+        });
+    }
+
+    function gup(url, name) {
+        name = name.replace(/[[]/, "\[").replace(/[]]/, "\]");
+        var regexS = "[\?&]" + name + "=([^&#]*)";
+        var regex = new RegExp(regexS);
+        var results = regex.exec(url);
+        if (results == null)
+            return "";
+        else
+            return results[1];
+    }
 
     $(document).ready(function () {
         $('#table').DataTable();
@@ -138,18 +211,19 @@
     }
 
     var select = true;
+
     function SelectAll() {
         if (select) {
-            $("input[name='send']", table.rows({search:'applied'}).nodes()).prop('checked', true);
+            $("input[name='send']", table.rows({search: 'applied'}).nodes()).prop('checked', true);
             select = false;
         } else {
-            $("input[name='send']", table.rows({search:'applied'}).nodes()).prop('checked', false);
+            $("input[name='send']", table.rows({search: 'applied'}).nodes()).prop('checked', false);
             select = true;
         }
     }
 
     function SelectOnlyFail() {
-        $.each($("input[name='data']", table.rows({search:'applied'}).nodes()), function () {
+        $.each($("input[name='data']", table.rows({search: 'applied'}).nodes()), function () {
             var data = $(this).val();
 //            console.log(data);
             if (data != 'N/A') {
@@ -158,9 +232,9 @@
         });
     }
 
-    function Send() {
+    function Send(token, username, name) {
         var array = [];
-        $.each($("input[name='send']:checked", table.rows({search:'applied'}).nodes()), function () {
+        $.each($("input[name='send']:checked", table.rows({search: 'applied'}).nodes()), function () {
             var values = [];
             $.each($(this).closest("tr").find("td"), function (i) {
                 if (i > 0) {
@@ -182,7 +256,7 @@
                 $.ajax({
                     type: "POST",
                     url: "/email/send",
-                    data: {"params": JSON.stringify(array)},
+                    data: {"params": JSON.stringify(array), "token": token, "username": username, "name": name},
                     success: function (result) {
                         if (result.success) {
                             swal('', 'Đã gửi thành công', 'success');
