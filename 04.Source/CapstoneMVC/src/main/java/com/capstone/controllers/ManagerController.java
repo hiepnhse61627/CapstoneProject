@@ -1,7 +1,9 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.*;
+import com.capstone.models.ChangeCurriculumModel;
 import com.capstone.models.Logger;
+import com.capstone.models.MarkModel;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import com.google.common.collect.Lists;
@@ -9,6 +11,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import javafx.scene.control.TextFormatter;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -160,6 +163,7 @@ public class ManagerController {
             StudentEntity student = studentService.findStudentById(stuId);
             result.addProperty("info", student.getProgramId().getName());
             List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+            docs = docs.stream().sorted(Comparator.comparing(c -> c.getCreatedDate())).collect(Collectors.toList());
             docs = Lists.reverse(docs);
             result.addProperty("khung", docs.get(0).getCurriculumId().getName());
             result.addProperty("curriculum", docs.get(0).getCurriculumId().getId());
@@ -183,6 +187,7 @@ public class ManagerController {
             list.add(stuId);
             List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentByByStudentId(list);
             SimpleDateFormat df = new SimpleDateFormat("dd-MM-yyyy");
+            docs = docs.stream().sorted(Comparator.comparing(c -> c.getCreatedDate())).collect(Collectors.toList());
             docs = Lists.reverse(docs);
 
             List<List<String>> parent = new ArrayList<>();
@@ -328,7 +333,7 @@ public class ManagerController {
 
     @RequestMapping("/getcurrent")
     @ResponseBody
-    public JsonObject GetCurrent(@RequestParam int curId, @RequestParam int newId) {
+    public JsonObject GetCurrent(@RequestParam int curId, @RequestParam int newId, @RequestParam int stuId) {
         JsonObject result = new JsonObject();
 
         try {
@@ -349,17 +354,31 @@ public class ManagerController {
                 }
             }
 
-            List<List<String>> parent = new ArrayList<>();
-            if (!common.isEmpty()) {
-                common.forEach(c -> {
-                    List<String> tmp = new ArrayList<>();
-                    tmp.add(c.getId());
-                    tmp.add(c.getName());
-                    parent.add(tmp);
-                });
-            }
+            IStudentService studentService = new StudentServiceImpl();
+            StudentEntity student = studentService.findStudentById(stuId);
+            List<MarksEntity> marks = student.getMarksEntityList();
 
-            JsonArray aaData = (JsonArray) new Gson().toJsonTree(parent);
+            List<ChangeCurriculumModel> model = common
+                    .stream()
+                    .map(c -> new ChangeCurriculumModel(c.getId(), marks
+                            .stream()
+                            .filter(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getId()))
+                            .map(a -> new MarkModel(a.getId(), a.getSemesterId().getSemester(), a.getIsActivated(), a.getAverageMark()))
+                            .collect(Collectors.toList())))
+                    .collect(Collectors.toList());
+            model = model.stream().filter(c -> c.getData().size() > 0).collect(Collectors.toList());
+
+//            List<List<String>> parent = new ArrayList<>();
+//            if (!common.isEmpty()) {
+//                common.forEach(c -> {
+//                    List<String> tmp = new ArrayList<>();
+//                    tmp.add(c.getId());
+//                    tmp.add(c.getName());
+//                    parent.add(tmp);
+//                });
+//            }
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(model);
 
             result.add("data", aaData);
         } catch (Exception e) {
@@ -372,7 +391,7 @@ public class ManagerController {
 
     @RequestMapping("/getnew")
     @ResponseBody
-    public JsonObject GetNew(@RequestParam int curId, @RequestParam int newId) {
+    public JsonObject GetNew(@RequestParam int curId, @RequestParam int newId, @RequestParam int stuId) {
         JsonObject result = new JsonObject();
 
         try {
@@ -392,17 +411,21 @@ public class ManagerController {
                 }
             }
 
-            List<List<String>> parent = new ArrayList<>();
-            if (!notcommon.isEmpty()) {
-                notcommon.forEach(c -> {
-                    List<String> tmp = new ArrayList<>();
-                    tmp.add(c.getId());
-                    tmp.add(c.getName());
-                    parent.add(tmp);
-                });
-            }
+            IStudentService studentService = new StudentServiceImpl();
+            StudentEntity student = studentService.findStudentById(stuId);
+            List<MarksEntity> marks = student.getMarksEntityList();
 
-            JsonArray aaData = (JsonArray) new Gson().toJsonTree(parent);
+            List<ChangeCurriculumModel> model = notcommon
+                    .stream()
+                    .map(c -> new ChangeCurriculumModel(c.getId(), marks
+                            .stream()
+                            .filter(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getId()))
+                            .map(a -> new MarkModel(a.getId(), a.getSemesterId().getSemester(), a.getIsActivated(), a.getAverageMark()))
+                            .collect(Collectors.toList())))
+                    .collect(Collectors.toList());
+            model = model.stream().filter(c -> c.getData().size() > 0).collect(Collectors.toList());
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(model);
 
             result.add("data", aaData);
         } catch (Exception e) {
@@ -457,17 +480,20 @@ public class ManagerController {
                 }
             }
 
-            List<List<String>> parent = new ArrayList<>();
-            if (!others.isEmpty()) {
-                others.forEach(c -> {
-                    List<String> tmp = new ArrayList<>();
-                    tmp.add(c.getId());
-                    tmp.add(c.getName());
-                    parent.add(tmp);
-                });
-            }
+            StudentEntity student = studentService.findStudentById(stuId);
+            List<MarksEntity> marks = student.getMarksEntityList();
 
-            JsonArray aaData = (JsonArray) new Gson().toJsonTree(parent);
+            List<ChangeCurriculumModel> model = others
+                    .stream()
+                    .map(c -> new ChangeCurriculumModel(c.getId(), marks
+                            .stream()
+                            .filter(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getId()))
+                            .map(a -> new MarkModel(a.getId(), a.getSemesterId().getSemester(), a.getIsActivated(), a.getAverageMark()))
+                            .collect(Collectors.toList())))
+                    .collect(Collectors.toList());
+            model = model.stream().filter(c -> c.getData().size() > 0).collect(Collectors.toList());
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(model);
 
             result.add("data", aaData);
         } catch (Exception e) {
@@ -491,29 +517,29 @@ public class ManagerController {
             List<String> curList = gson.fromJson(data, new TypeToken<List<String>>(){}.getType());
 
             IStudentService studentService = new StudentServiceImpl();
-            ICurriculumService curriculumService = new CurriculumServiceImpl();
-            IDocumentService documentService = new DocumentServiceImpl();
+//            ICurriculumService curriculumService = new CurriculumServiceImpl();
+//            IDocumentService documentService = new DocumentServiceImpl();
 
             StudentEntity stu = studentService.findStudentById(stuId);
-            CurriculumEntity newCur = curriculumService.getCurriculumById(newId);
-
-            DocumentStudentEntity doc = new DocumentStudentEntity();
-            doc.setStudentId(stu);
-            doc.setCurriculumId(newCur);
-            doc.setDocumentId(documentService.getDocumentById(2));
-            doc.setCreatedDate(Calendar.getInstance().getTime());
-            stu.getDocumentStudentEntityList().add(doc);
+//            CurriculumEntity newCur = curriculumService.getCurriculumById(newId);
+//
+//            DocumentStudentEntity doc = new DocumentStudentEntity();
+//            doc.setStudentId(stu);
+//            doc.setCurriculumId(newCur);
+//            doc.setDocumentId(documentService.getDocumentById(2));
+//            doc.setCreatedDate(Calendar.getInstance().getTime());
+//            stu.getDocumentStudentEntityList().add(doc);
 
             List<MarksEntity> marks = stu.getMarksEntityList();
             for (MarksEntity mark : marks) {
-                if (curList.stream().anyMatch(c -> c.equals(mark.getSubjectMarkComponentId().getSubjectId().getId()))) {
+                if (curList.stream().anyMatch(c -> Integer.parseInt(c) == mark.getId())) {
                     mark.setIsActivated(false);
                 } else {
                     mark.setIsActivated(true);
                 }
             }
 
-            studentService.saveStudent(stu);
+//            studentService.saveStudent(stu);
 
             result.addProperty("success", true);
         } catch (Exception e) {
