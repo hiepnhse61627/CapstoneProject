@@ -100,7 +100,7 @@ public class SendEmailController {
                 }
             }
 
-            data = data.stream().filter(c -> !c.get(0).equals("N/A")).collect(Collectors.toList());
+            data = data.stream().filter(c -> !c.get(1).equals("N/A")).collect(Collectors.toList());
 
             JsonArray array = (JsonArray) new Gson().toJsonTree(data);
 
