@@ -517,18 +517,42 @@ public class ManagerController {
             List<String> curList = gson.fromJson(data, new TypeToken<List<String>>(){}.getType());
 
             IStudentService studentService = new StudentServiceImpl();
-//            ICurriculumService curriculumService = new CurriculumServiceImpl();
-//            IDocumentService documentService = new DocumentServiceImpl();
+            ICurriculumService curriculumService = new CurriculumServiceImpl();
+            IDocumentService documentService = new DocumentServiceImpl();
+            IDocTypeService docTypeService = new DocTypeServiceImpl();
+
+            DocumentEntity document;
+            DocTypeEntity docType = docTypeService.findDocType("Chuyển ngành");
+            if (docType != null) {
+                document = documentService.getDocumentByDocTypeId(docType.getId());
+                if (document == null) {
+                    document = new DocumentEntity();
+                    document.setDocTypeId(docType);
+                    document.setCode("111111");
+
+                    documentService.createDocument(document);
+                }
+            } else {
+                docType = new DocTypeEntity();
+                docType.setName("Chuyển ngành");
+                docTypeService.createDocType(docType);
+
+                document = new DocumentEntity();
+                document.setDocTypeId(docType);
+                document.setCode("111111");
+
+                documentService.createDocument(document);
+            }
 
             StudentEntity stu = studentService.findStudentById(stuId);
-//            CurriculumEntity newCur = curriculumService.getCurriculumById(newId);
-//
-//            DocumentStudentEntity doc = new DocumentStudentEntity();
-//            doc.setStudentId(stu);
-//            doc.setCurriculumId(newCur);
-//            doc.setDocumentId(documentService.getDocumentById(2));
-//            doc.setCreatedDate(Calendar.getInstance().getTime());
-//            stu.getDocumentStudentEntityList().add(doc);
+            CurriculumEntity newCur = curriculumService.getCurriculumById(newId);
+
+            DocumentStudentEntity doc = new DocumentStudentEntity();
+            doc.setStudentId(stu);
+            doc.setCurriculumId(newCur);
+            doc.setDocumentId(document);
+            doc.setCreatedDate(Calendar.getInstance().getTime());
+            stu.getDocumentStudentEntityList().add(doc);
 
             List<MarksEntity> marks = stu.getMarksEntityList();
             for (MarksEntity mark : marks) {
