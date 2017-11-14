@@ -65,6 +65,11 @@
                                 <tbody></tbody>
                             </table>
                         </div>
+                        <div class="col-md-12">
+                            <textarea name="content" id="editor">
+    <p>Here goes the initial content of the editor.</p>
+</textarea>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -143,7 +148,9 @@
     }
 
     $(document).ready(function () {
+        CKEDITOR.config.extraPlugins = 'justify';
         $('#table').DataTable();
+        $('#editor').ckeditor();
     });
 
     function Add() {
@@ -256,7 +263,7 @@
                 $.ajax({
                     type: "POST",
                     url: "/email/send",
-                    data: {"params": JSON.stringify(array), "token": token, "username": username, "name": name},
+                    data: {"params": JSON.stringify(array), "token": token, "username": username, "name": name, "editor": $('#editor').val()},
                     success: function (result) {
                         if (result.success) {
                             swal('', 'Đã gửi thành công', 'success');
