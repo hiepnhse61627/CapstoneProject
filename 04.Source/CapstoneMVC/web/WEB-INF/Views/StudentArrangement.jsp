@@ -35,6 +35,25 @@
         <div class="b-body">
             <div class="form-group">
                 <div class="row">
+                    <div class="my-content">
+                        <div class="my-input-group">
+                            <div class="left-content m-r-5">
+                                <label class="p-t-8">Buổi học:</label>
+                            </div>
+                            <div class="right-content width-30 width-m-70">
+                                <select id="cb-shift-type" class="select form-control">
+                                    <option value="All">All</option>
+                                    <option value="Sáng">Sáng</option>
+                                    <option value="Chiều">Chiều</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
                     <div class="col-md-12">
                         <table id="table">
                             <thead>
@@ -208,7 +227,7 @@
             anControl.off('keyup search input').on('keyup search input', function () {
                 var $$this = $this;
 
-                if ((anControl.val().length == 0 || anControl.val().length >= 3) && (sPreviousSearch === null || sPreviousSearch != anControl.val())) {
+                if ((anControl.val().length == 0 || anControl.val().length >= 2) && (sPreviousSearch === null || sPreviousSearch != anControl.val())) {
                     window.clearTimeout(oTimerId);
                     sPreviousSearch = anControl.val();
                     oTimerId = window.setTimeout(function () {
@@ -225,6 +244,9 @@
 
     $(document).ready(function () {
         $('.select').select2();
+        $('#cb-shift-type').on('change', function() {
+            RefreshTable();
+        });
         CreateStudentArrangementTable();
     });
 
@@ -244,7 +266,7 @@
             "iDisplayLength": '25',
             "sAjaxSource": "/studentArrangement/loadTable",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "type", "value": $("#type").val()})
+                aoData.push({"name": "shiftType", "value": $("#cb-shift-type").val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "Mã môn, Tên môn, MSSV, TênSv",

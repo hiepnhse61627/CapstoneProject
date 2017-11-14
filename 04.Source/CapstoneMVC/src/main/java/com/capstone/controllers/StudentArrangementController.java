@@ -73,7 +73,8 @@ public class StudentArrangementController {
 
         int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
         int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
-        String sSearch = params.get("sSearch");
+        String sSearch = params.get("sSearch").trim();
+        String shiftType = params.get("shiftType").trim();
 
         try {
             List<List<String>> studentList = (List<List<String>>) request.getSession().getAttribute("studentArrangementList");
@@ -85,6 +86,10 @@ public class StudentArrangementController {
                     || Ultilities.containsIgnoreCase(s.get(1), sSearch)
                     || Ultilities.containsIgnoreCase(s.get(2), sSearch)
                     || Ultilities.containsIgnoreCase(s.get(3), sSearch)).collect(Collectors.toList());
+            if (!shiftType.equalsIgnoreCase("All")) {
+                searchList = searchList.stream().filter(s ->
+                    Ultilities.containsIgnoreCase(s.get(5), shiftType)).collect(Collectors.toList());
+            }
 
             List<List<String>> result = searchList.stream().skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
             JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
@@ -249,10 +254,10 @@ public class StudentArrangementController {
                         dataRow.add(student.getRollNumber());
                         dataRow.add(student.getFullName());
                         dataRow.add(classNumber + "");
-                        dataRow.add(shift);
+                        dataRow.add(shift.equals("AM") ? "Sáng" : "Chiều");
                         result.add(dataRow);
 
-                        count++;
+                        ++count;
                     }
 
                     for (StudentEntity student : list.relearnList) {
@@ -267,10 +272,10 @@ public class StudentArrangementController {
                         dataRow.add(student.getRollNumber());
                         dataRow.add(student.getFullName());
                         dataRow.add(classNumber + "");
-                        dataRow.add(shift);
+                        dataRow.add(shift.equals("AM") ? "Sáng" : "Chiều");
                         result.add(dataRow);
 
-                        count++;
+                        ++count;
                     }
                 }
             }
