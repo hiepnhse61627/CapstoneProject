@@ -45,7 +45,7 @@ public class StudentEntity implements Serializable {
     private String shift;
     @Column(name = "PayRollClass", length = 50)
     private String payRollClass;
-    @OneToMany(mappedBy = "studentId")
+    @OneToMany(mappedBy = "studentId", fetch = FetchType.EAGER)
     private List<DocumentStudentEntity> documentStudentEntityList;
     @OneToMany(mappedBy = "studentId")
     private List<OldRollNumberEntity> oldRollNumberEntityList;
