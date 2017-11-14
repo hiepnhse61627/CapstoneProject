@@ -1,20 +1,19 @@
 package com.capstone.controllers;
 
-import com.capstone.entities.*;
-import com.capstone.models.ReadAndSaveFileToServer;
+import com.capstone.services.OAuth2Authenticator;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.sun.mail.imap.IMAPStore;
+import com.sun.mail.smtp.SMTPTransport;
+import com.sun.mail.util.BASE64EncoderStream;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -25,14 +24,11 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.io.File;
-import java.io.FileInputStream;
+import javax.xml.bind.DatatypeConverter;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/email")
@@ -40,13 +36,6 @@ public class SendEmailController {
 
     private final String xlsExcelExtension = "xls";
     private final String xlsxExcelExtension = "xlsx";
-
-    private final String smtpServer = "smtp.gmail.com";
-    private final String userAccount = "fptsendtestemail@gmail.com"; // Sender Account.
-    private final String password = "namlai120"; // Password -> Application Specific Password.
-    private final String SOCKET_FACTORY = "javax.net.ssl.SSLSocketFactory";
-    private final String smtpPort = "587";
-    private final String PORT = "465";
 
     private String status = "";
     private boolean run = true;
@@ -100,7 +89,8 @@ public class SendEmailController {
                         Cell cell = row.getCell(i);
                         String str;
                         if (cell.getCellType() == Cell.CELL_TYPE_BLANK) str = "N/A";
-                        else if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) str = String.valueOf(cell.getNumericCellValue());
+                        else if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC)
+                            str = String.valueOf(cell.getNumericCellValue());
                         else str = cell.getStringCellValue();
                         tmp.add(str);
                     }
@@ -109,6 +99,8 @@ public class SendEmailController {
                     break;
                 }
             }
+
+            data = data.stream().filter(c -> !c.get(1).equals("N/A")).collect(Collectors.toList());
 
             JsonArray array = (JsonArray) new Gson().toJsonTree(data);
 
@@ -146,7 +138,7 @@ public class SendEmailController {
 
     @RequestMapping("/send")
     @ResponseBody
-    public Callable<JsonObject> SendEmail(@RequestParam Map<String, String> params) {
+    public Callable<JsonObject> SendEmail(@RequestParam Map<String, String> params, @RequestParam String token, @RequestParam String username, @RequestParam String name) {
         run = true;
         status = "";
 
@@ -155,26 +147,49 @@ public class SendEmailController {
 
             try {
                 Gson gson = new Gson();
-                List<List<String>> list = gson.fromJson(params.get("params"), new TypeToken<List<List<String>>>() {}.getType());
+                List<List<String>> list = gson.fromJson(params.get("params"), new TypeToken<List<List<String>>>() {
+                }.getType());
 
-                Properties props = new Properties();
-                props.put("mail.smtp.host", smtpServer);
-                props.put("mail.smtp.user", userAccount);
-                props.put("mail.smtp.password", password);
-                props.put("mail.smtp.port", smtpPort);
-                props.put("mail.smtp.auth", true);
-                props.put("mail.smtp.starttls.enable", "true");
-                props.put("mail.smtp.debug", "false");
-                props.put("mail.smtp.socketFactory.port", PORT);
-                props.put("mail.smtp.socketFactory.class", SOCKET_FACTORY);
-                props.put("mail.smtp.socketFactory.fallback", "false");
+//                Properties props = new Properties();
 
-                Session session = Session.getInstance(props,
-                        new Authenticator() {
-                            protected PasswordAuthentication getPasswordAuthentication() {
-                                return new PasswordAuthentication(userAccount, password);
-                            }
-                        });
+                String server = "smtp.gmail.com";
+//                String userAccount = "fptsendtestemail@gmail.com"; // Sender Account.
+//               String password = "namlai120"; // Password -> Application Specific Password.
+
+//                props.put("mail.smtp.host", "smtp.gmail.com");
+//                props.put("mail.smtp.user", userAccount);
+//                props.put("mail.smtp.password", token);
+//                props.put("mail.smtp.port", "587");
+//                props.put("mail.smtp.auth", true);
+//                props.put("mail.smtp.starttls.enable", "true");
+//                props.put("mail.smtp.auth.mechanisms", "XOAUTH2");
+//                props.put("mail.smtp.debug", "false");
+//                props.put("mail.smtp.socketFactory.port", "465");
+//                props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+//                props.put("mail.smtp.socketFactory.fallback", "false");
+
+
+//                Properties props = new Properties();
+//                props.put("mail.imaps.sasl.enable", "true");
+//                props.put("mail.imaps.sasl.mechanisms", "XOAUTH2");
+//                props.put(OAuth2SaslClientFactory., token);
+//                Session session = Session.getInstance(props);
+
+//                URLName unusedUrlName = null;
+//                IMAPSSLStore store = new IMAPSSLStore(session, unusedUrlName);
+//                String emptyPassword = "";
+//                store.connect(host, port, userEmail, emptyPassword);
+
+                OAuth2Authenticator.initialize();
+//                Store imapStore = OAuth2Authenticator.connectToImap("imap.gmail.com", 993, username, token, true);
+                SMTPTransport smtpTransport = OAuth2Authenticator.connectToSmtp("smtp.gmail.com", 587, username, token, true);
+
+//                Session session = Session.getInstance(props,
+//                        new Authenticator() {
+//                            protected PasswordAuthentication getPasswordAuthentication() {
+//                                return new PasswordAuthentication(userAccount, password);
+//                            }
+//                        });
 
                 int i = 1;
                 for (List<String> student : list) {
@@ -183,9 +198,10 @@ public class SendEmailController {
                         break;
                     }
 
+                    Session session = OAuth2Authenticator.getSession();
                     MimeMessage mimeMessage = new MimeMessage(session);
                     Address toAddress = new InternetAddress(student.get(2));
-                    Address fromAddress = new InternetAddress(userAccount, "FPT Automatic Email System!");
+                    Address fromAddress = new InternetAddress(username, name, "utf-8");
                     String msg = "<div>" +
                             "<h3>Thông tin sinh viên</h3>" +
                             "<p>Họ tên: " + student.get(0) + "</p>" +
@@ -201,9 +217,15 @@ public class SendEmailController {
                     mimeMessage.setFrom(fromAddress);
                     mimeMessage.setRecipient(Message.RecipientType.TO, toAddress);
                     mimeMessage.setSubject("Thông báo!", "utf-8");
-                    Transport transport = session.getTransport("smtp");
-                    transport.connect(smtpServer, userAccount, password);
-                    transport.sendMessage(mimeMessage, mimeMessage.getAllRecipients());
+//                    Transport transport = session.getTransport("imap");
+//                    transport.connect(server, username , token);
+//                    transport.sendMessage(mimeMessage, mimeMessage.getAllRecipients());
+//                    String plainTextToken = "user=" + username + "^Aauth=Bearer " + token;
+//                    System.out.println("plaintext: " + plainTextToken);
+//                    byte[] authToken = plainTextToken.getBytes();
+//                    String encodedToken = DatatypeConverter.printBase64Binary(authToken);
+//                    smtpTransport.issueCommand("AUTH XOAUTH2 " + plainTextToken, 235);
+                    smtpTransport.sendMessage(mimeMessage, mimeMessage.getAllRecipients());
 
                     status = "Đã gửi cho " + i++ + " trên " + list.size() + " sinh viên";
                     System.out.println(status);

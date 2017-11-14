@@ -1,8 +1,8 @@
 
 function CreateEmptyDataTable(id) {
     var table = $(id).dataTable({
-        "sScrollX": "100%",
-        "bScrollCollapse": true,
+        // "sScrollX": "100%",
+        // "bScrollCollapse": true,
         "bSort": false,
         "oLanguage": {
             "sSearchPlaceholder": "",

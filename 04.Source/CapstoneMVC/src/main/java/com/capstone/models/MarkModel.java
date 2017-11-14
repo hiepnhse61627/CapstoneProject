@@ -12,9 +12,20 @@ public class MarkModel {
     private String status;
     private Date startDate;
     private Date endDate;
+    private boolean active;
     private double averageMark;
     private int repeatingNumber;
     private int credits;
+
+    public MarkModel() {
+    }
+
+    public MarkModel(int markId, String semester, boolean active, double averageMark) {
+        this.markId = markId;
+        this.semester = semester;
+        this.active = active;
+        this.averageMark = averageMark;
+    }
 
     public int getMarkId() {
         return markId;
@@ -22,6 +33,14 @@ public class MarkModel {
 
     public void setMarkId(int markId) {
         this.markId = markId;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
     }
 
     public String getSubjectName() {

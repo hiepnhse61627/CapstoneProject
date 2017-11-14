@@ -86,23 +86,29 @@
                                     </div>
                                     <div class="col-md-12">
                                         <div class="form-group">
-                                            <button type="button" class="btn btn-success" onclick="Change()">Chuyển ngành</button>
+                                            <button type="button" class="btn btn-success" onclick="Change()">Chuyển
+                                                ngành
+                                            </button>
                                             <a href="/subcurriculum" class="btn btn-google">Tạo khung chương trình</a>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-3 text-center">
+                                    <div class="col-md-12 text-center">
                                         <p><b>Các môn chung</b></p>
-                                        <table id="yes" class="table"></table>
+                                        <div id="current"></div>
                                     </div>
-                                    <div class="col-md-3 text-center">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 text-center">
                                         <p><b>Các môn không chung</b></p>
-                                        <table id="no" class="table"></table>
+                                        <div id="no"></div>
                                     </div>
-                                    <div class="col-md-3 text-center">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12 text-center">
                                         <p><b>Các môn nằm ngoài cả 2 khung</b></p>
-                                        <table id="other" class="table"></table>
+                                        <div id="other"></div>
                                     </div>
                                 </div>
                             </div>
@@ -143,13 +149,13 @@
         var newId = $('#curriculum').val();
 
         var data = [];
-        $.each($("input[name='current']:not(:checked)"), function() {
+        $.each($("input[name='current']:not(:checked)"), function () {
             data.push($(this).val());
         });
-        $.each($("input[name='newcurrent']:not(:checked)"), function() {
+        $.each($("input[name='newcurrent']:not(:checked)"), function () {
             data.push($(this).val());
         });
-        $.each($("input[name='others']:not(:checked)"), function() {
+        $.each($("input[name='others']:not(:checked)"), function () {
             data.push($(this).val());
         });
 
@@ -173,21 +179,24 @@
         $.ajax({
             type: "GET",
             url: "/managerrole/getcurrent",
-            data: {"curId": $('#curid').val(), "newId": $('#curriculum').val()},
+            data: { "curId": $('#curid').val(), "newId": $('#curriculum').val(), "stuId": $('#select').val() },
             success: function (result) {
                 var data = result.data;
+                console.log(data);
                 var html = "";
-                for (var i = 0; i < data.length; i++) {
-                    html += "<tr>";
-                    for (var j = 0; j < data[i].length; j++) {
-                        html += "<td>";
-                        html += data[i][j];
-                        html += "</td>";
-                    }
-                    html += "<td><input name='current' type='checkbox' value='" + data[i][0] +"' checked/></td>";
-                    html += "</tr>";
-                }
-                $('#yes').html(html);
+                $.each(data, function (index, value) {
+                    html += "<div class='col-md-3'>";
+                    html += value.subjectCode;
+                    html += "</div>";
+                    html += "<div class='col-md-9'>";
+                    $.each(value.data, function (index, value2) {
+                        html += "<div class='col-md-3'>";
+                        html += value2.semester + " - " + value2.averageMark + " - " + "<input name='current' type='checkbox' value='" + value2.markId + "' checked/>";
+                        html += "</div>";
+                    });
+                    html += "</div>";
+                });
+                $('#current').html(html);
                 $("input[type='checkbox']").bootstrapSwitch();
             }
         });
@@ -200,17 +209,20 @@
             data: {"stuId": $('#select').val(), "curId": $('#curid').val(), "newId": $('#curriculum').val()},
             success: function (result) {
                 var data = result.data;
+                console.log(data);
                 var html = "";
-                for (var i = 0; i < data.length; i++) {
-                    html += "<tr>";
-                    for (var j = 0; j < data[i].length; j++) {
-                        html += "<td>";
-                        html += data[i][j];
-                        html += "</td>";
-                    }
-                    html += "<td><input name='others' type='checkbox' value='" + data[i][0] +"'/></td>";
-                    html += "</tr>";
-                }
+                $.each(data, function (index, value) {
+                    html += "<div class='col-md-3'>";
+                    html += value.subjectCode;
+                    html += "</div>";
+                    html += "<div class='col-md-9'>";
+                    $.each(value.data, function (index, value2) {
+                        html += "<div class='col-md-3'>";
+                        html += value2.semester + " - " + value2.averageMark + " - " + "<input name='others' type='checkbox' value='" + value2.markId + "' checked/>";
+                        html += "</div>";
+                    });
+                    html += "</div>";
+                });
                 $('#other').html(html);
                 $("input[type='checkbox']").bootstrapSwitch();
             }
@@ -221,21 +233,23 @@
         $.ajax({
             type: "GET",
             url: "/managerrole/getnew",
-            data: {"curId": $('#curid').val(), "newId": $('#curriculum').val()},
+            data: {"curId": $('#curid').val(), "newId": $('#curriculum').val(), "stuId": $('#select').val() },
             success: function (result) {
-                console.log(result.data);
                 var data = result.data;
+                console.log(data);
                 var html = "";
-                for (var i = 0; i < data.length; i++) {
-                    html += "<tr>";
-                    for (var j = 0; j < data[i].length; j++) {
-                        html += "<td>";
-                        html += data[i][j];
-                        html += "</td>";
-                    }
-                    html += "<td><input name='newcurrent' type='checkbox' value='" + data[i][0] +"'/></td>";
-                    html += "</tr>";
-                }
+                $.each(data, function (index, value) {
+                    html += "<div class='col-md-3'>";
+                    html += value.subjectCode;
+                    html += "</div>";
+                    html += "<div class='col-md-9'>";
+                    $.each(value.data, function (index, value2) {
+                        html += "<div class='col-md-3'>";
+                        html += value2.semester + " - " + value2.averageMark + " - " + "<input name='newcurrent' type='checkbox' value='" + value2.markId + "' checked/>";
+                        html += "</div>";
+                    });
+                    html += "</div>";
+                });
                 $('#no').html(html);
                 $("input[type='checkbox']").bootstrapSwitch();
             }
