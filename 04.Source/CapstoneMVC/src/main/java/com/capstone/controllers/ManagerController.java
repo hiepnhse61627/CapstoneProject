@@ -534,12 +534,13 @@ public class ManagerController {
             for (MarksEntity mark : marks) {
                 if (curList.stream().anyMatch(c -> Integer.parseInt(c) == mark.getId())) {
                     mark.setIsActivated(false);
+                    System.out.println(mark.getId() + " has been disabled!");
                 } else {
                     mark.setIsActivated(true);
                 }
             }
 
-//            studentService.saveStudent(stu);
+            studentService.saveStudent(stu);
 
             result.addProperty("success", true);
         } catch (Exception e) {
