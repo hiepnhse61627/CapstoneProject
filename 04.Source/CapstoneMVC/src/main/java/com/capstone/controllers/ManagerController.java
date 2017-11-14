@@ -477,12 +477,13 @@ public class ManagerController {
                         .collect(Collectors.toList())))
                 .collect(Collectors.toList());
 
+        // thsy thế
         for (SubjectEntity sub : list) {
             List<SubjectEntity> replaces = sub.getSubjectEntityList();
             if (!replaces.isEmpty()) {
                 List<ChangeCurriculumModel> l = replaces
                         .stream()
-                        .map(c -> new ChangeCurriculumModel(c.getId(), filterMarks
+                        .map(c -> new ChangeCurriculumModel(c.getId() + " (thay thế)", filterMarks
                                 .stream()
                                 .filter(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getId()))
                                 .map(a -> new MarkModel(a.getId(), a.getSemesterId().getSemester(), a.getIsActivated(), a.getAverageMark()))
@@ -497,7 +498,7 @@ public class ManagerController {
                     if (!replaces3.isEmpty()) {
                         List<ChangeCurriculumModel> n = replaces3
                                 .stream()
-                                .map(c -> new ChangeCurriculumModel(c.getId(), filterMarks
+                                .map(c -> new ChangeCurriculumModel(c.getId()  + " (thay thế)", filterMarks
                                         .stream()
                                         .filter(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getId()))
                                         .map(a -> new MarkModel(a.getId(), a.getSemesterId().getSemester(), a.getIsActivated(), a.getAverageMark()))
