@@ -18,6 +18,11 @@ public class MarksServiceImpl implements IMarksService {
     }
 
     @Override
+    public MarksEntity getMarkByAllFields(int studentId, String subjectCode, int semesterId, double mark, String status, int markComponentId) {
+        return marksEntityJpaController.getMarkByAllFields(studentId, subjectCode, semesterId, mark, status, markComponentId);
+    }
+
+    @Override
     public void createMark(MarksEntity entity) {
         try {
             marksEntityJpaController.create(entity);

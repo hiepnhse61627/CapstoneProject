@@ -1,0 +1,179 @@
+package com.capstone.controllers;
+
+import com.capstone.exporters.ExportStatusReport;
+import com.capstone.exporters.IExportObject;
+import com.capstone.models.Logger;
+import com.capstone.services.IRealSemesterService;
+import com.capstone.services.RealSemesterServiceImpl;
+import com.google.gson.JsonObject;
+import org.apache.commons.io.IOUtils;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
+@Controller
+@RequestMapping("/managerrole")
+public class ExportCloseSemesterController {
+    //    private final String mimeType = "application/octet-stream";
+//    private final String headerKey = "Content-Disposition";
+    private IExportObject exportObject;
+
+//    @RequestMapping(value = "/pauseexportStudentDetail")
+//    @ResponseBody
+//    public JsonObject Stop() {
+//        ExportStatusReport.StopExporting = true;
+//        JsonObject obj = new JsonObject();
+//        obj.addProperty("success", true);
+//        return obj;
+//	}
+
+    private OutputStream Writefile(String path, Map<String, String> params) throws Exception {
+        IRealSemesterService service = new RealSemesterServiceImpl();
+        String semester = service.findSemesterById(Integer.parseInt(params.get("semesterId"))).getSemester();
+        String realPath = path + "CloseSemester/" + semester + "/";
+        File dir = new File(realPath);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        String fileName = exportObject.getFileName();
+        File file = new File(realPath + fileName);
+        if (file.exists()) {
+            file.delete();
+        }
+        OutputStream os = new FileOutputStream(file);
+        exportObject.writeData(os, params);
+        return os;
+    }
+
+    @RequestMapping("/get/{semester}")
+    public void GetFolder(HttpServletRequest request, HttpServletResponse response, @PathVariable("semester") String semester) throws Exception {
+//        String semester = service.findSemesterById(Integer.parseInt(params.get("semesterId"))).getSemester();
+        String realPath = request.getServletContext().getRealPath("/") + "CloseSemester/" + semester + "/";
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.addHeader("Content-Disposition", "attachment; filename=\"" + semester +".zip\"");
+        ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
+
+        //simple file list, just for tests
+        File file = new File(realPath);
+        if (file.exists() && file.isDirectory()) {
+            File[] files = file.listFiles();
+
+            //packing files
+            for (File f : files) {
+                //new zip entry and copying inputstream with f to zipOutputStream, after all closing streams
+                zipOutputStream.putNextEntry(new ZipEntry(f.getName()));
+                FileInputStream fileInputStream = new FileInputStream(f);
+                IOUtils.copy(fileInputStream, zipOutputStream);
+                fileInputStream.close();
+                zipOutputStream.closeEntry();
+            }
+        }
+
+        zipOutputStream.close();
+    }
+
+    @RequestMapping(value = "/export")
+    @ResponseBody
+    public JsonObject exportFile(@RequestParam String semesterId, HttpServletRequest servlet) {
+//        ExportStatusReport.StatusExportStudentDetailRunning = true;
+//        ExportStatusReport.StatusStudentDetailExport = "";
+//        ExportStatusReport.StopExporting = false;
+
+        JsonObject obj = new JsonObject();
+        Thread t = new Thread(() -> {
+
+            String path = servlet.getRealPath("/");
+            OutputStream os = null;
+
+            for (int i = 1; i <= 2; i++) {
+                try {
+                    exportObject = createExportImplementation(i);
+
+                    if (i == 1) {
+                        Map<String, String> params = new HashMap<>();
+                        params.put("semesterId", semesterId);
+                        os = Writefile(path, params);
+                    }
+                    else if (i == 2) {
+                        Map<String, String> params = new HashMap<>();
+                        params.put("semesterId", semesterId);
+                        params.put("studentId", "46203");
+                        os = Writefile(path, params);
+                    } else if (i == 3) {
+
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    try {
+                        os.flush();
+                        os.close();
+                        System.out.println("Đã xuất " + (i++) + " trên 6 file!");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        t.start();
+
+        obj.addProperty("msg", "Thread " + t.getId() + " has started");
+
+        return obj;
+    }
+
+//    @RequestMapping(value = "/getStatusExport")
+//    @ResponseBody
+//    public JsonObject getStatus() {
+//        JsonObject data = new JsonObject();
+//        data.addProperty("running",  ExportStatusReport.StatusExportStudentDetailRunning);
+//        data.addProperty("status",  ExportStatusReport.StatusStudentDetailExport);
+//        return data;
+//    }
+
+    /**
+     * Implement Export file
+     */
+    private IExportObject createExportImplementation(int objectType) {
+        final String[] CLASSNAME_EXPORTER = {
+                "",
+                "com.capstone.exporters.ExportStudentsFailImpl", // 1 = Export students fail
+                "com.capstone.exporters.ExportStudentFailedAndNextSubjectImpl", // 2 = export failed subject of each student and next subject
+                "com.capstone.exporters.ExportStudentFailedPrerequisiteImpl", // 3 = Export student fail prerequisite
+                "com.capstone.exporters.ExportGraduatedStudentsImpl", // 4 = Export graduated student
+                "com.capstone.exporters.ExportPDFGraduatedStudentsImpl", // 5 = Export PDF graduated student
+                "com.capstone.exporters.ExportCurriculumImpl", // 6 = Export curriculum
+                "com.capstone.exporters.ExportStudentListImpl", // 7 = Export students
+                "com.capstone.exporters.ExportPercentFailImpl", // 8 = Export percent fail
+                "com.capstone.exporters.ExportGoodStudentsImpl", // 9 = Export good student
+                "com.capstone.exporters.ExportFailStatisticsImpl" // 10 = Export fail statistics
+        };
+
+        try {
+            Class exportClass = Class.forName(CLASSNAME_EXPORTER[objectType]);
+            return (IExportObject) exportClass.newInstance();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+}

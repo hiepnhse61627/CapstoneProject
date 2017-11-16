@@ -460,6 +460,26 @@ public class UploadController {
         return curriculum;
     }
 
+    private RealSemesterEntity findOrCreateSemester(List<RealSemesterEntity> list, String semesterName) {
+        RealSemesterEntity semester = null;
+
+        for (RealSemesterEntity p : list) {
+            if (p.getSemester().equals(semesterName)) {
+                semester = p;
+                break;
+            }
+        }
+
+        if (semester == null) {
+            semester = new RealSemesterEntity();
+            semester.setSemester(semesterName);
+            realSemesterService.createRealSemester(semester);
+            list.add(semester);
+        }
+
+        return semester;
+    }
+
     // Old file
 //    private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile) {
 //        IProgramService programService = new ProgramServiceImpl();
@@ -993,6 +1013,186 @@ public class UploadController {
         jsonObject.addProperty("currentLine", this.currentLine);
         jsonObject.addProperty("totalExistMarks", marksService.getTotalExistMarks());
         jsonObject.addProperty("successSavedMark", marksService.getSuccessSavedMark());
+        return jsonObject;
+    }
+
+    @RequestMapping(value = "/uploadUpdatedMarks", method = RequestMethod.POST)
+    @ResponseBody
+    public Callable<JsonObject> uploadUpdatedMarks(@RequestParam("file") MultipartFile file) throws IOException {
+        Callable<JsonObject> callable = () -> {
+            this.totalLine = 0;
+            this.currentLine = 0;
+            JsonObject jsonObject = updateMarkFile(file, null, true);
+//            if (jsonObject.get("success").getAsBoolean()) {
+//                ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
+//                read.saveFile(context, file, marksFolder);
+//            }
+
+            return jsonObject;
+        };
+
+        return callable;
+    }
+
+    private JsonObject updateMarkFile(MultipartFile file, File file2, boolean isNewFile) {
+        JsonObject jsonObject = new JsonObject();
+
+        try {
+            InputStream is = isNewFile ? file.getInputStream() : new FileInputStream(file2);
+
+            String originalFileName = isNewFile ? file.getOriginalFilename() : file2.getName();
+            String extension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1, originalFileName.length());
+
+            Workbook workbook = null;
+            Sheet spreadsheet = null;
+            Row row = null;
+            if (extension.equals(xlsExcelExtension)) {
+                workbook = new HSSFWorkbook(is);
+                spreadsheet = workbook.getSheetAt(0);
+            } else if (extension.equals(xlsxExcelExtension)) {
+                workbook = new XSSFWorkbook(is);
+                spreadsheet = workbook.getSheetAt(0);
+            } else {
+                jsonObject.addProperty("success", false);
+                jsonObject.addProperty("message", "Chỉ chấp nhận file excel");
+                return jsonObject;
+            }
+
+            MarkComponentEntity markComponent = markComponentService.getMarkComponentByName(
+                    Enums.MarkComponent.AVERAGE.getValue());
+            List<RealSemesterEntity> semesterList = realSemesterService.getAllSemester();
+
+            int excelDataIndexRow = 1;
+
+            int rollNumberIndex = 0;
+            int subjectCodeIndex = 2;
+            int oldSemesterIndex = 3;
+            int newSemesterIndex = 4;
+            int oldMarkIndex = 5;
+            int newMarkIndex = 6;
+            int oldStatusIndex = 7;
+            int newStatusIndex = 8;
+
+            List<UpdatedMarkObject> updateList = new ArrayList<>();
+            for (int rowIndex = excelDataIndexRow; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+                if (row != null) {
+                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    Cell subjectCodeCell = row.getCell(subjectCodeIndex);
+                    Cell oldSemesterCell = row.getCell(oldSemesterIndex);
+                    Cell newSemesterCell = row.getCell(newSemesterIndex);
+                    Cell oldMarkCell = row.getCell(oldMarkIndex);
+                    Cell newMarkCell = row.getCell(newMarkIndex);
+                    Cell oldStatusCell = row.getCell(oldStatusIndex);
+                    Cell newStatusCell = row.getCell(newStatusIndex);
+
+                    String rollNumber = null;
+                    if (rollNumberCell != null) {
+                        rollNumber = rollNumberCell.getCellType() == Cell.CELL_TYPE_STRING ?
+                                rollNumberCell.getStringCellValue().trim() : (rollNumberCell.getNumericCellValue() == 0 ?
+                                "" : Integer.toString((int) rollNumberCell.getNumericCellValue()));
+                    }
+
+                    String subjectCode = null;
+                    if (subjectCodeCell != null) {
+                        subjectCode = subjectCodeCell.getStringCellValue().trim();
+                    }
+
+                    String oldSemester = null;
+                    if (oldSemesterCell != null) {
+                        oldSemester = oldSemesterCell.getStringCellValue().trim();
+                    }
+
+                    String newSemester = null;
+                    if (newSemesterCell != null) {
+                        newSemester = newSemesterCell.getStringCellValue().trim();
+                    }
+
+                    Double oldMark = null;
+                    if (oldMarkCell != null) {
+                        oldMark = oldMarkCell.getNumericCellValue();
+                    }
+
+                    Double newMark = null;
+                    if (newMarkCell != null) {
+                        newMark = newMarkCell.getNumericCellValue();
+                    }
+
+                    String oldStatus = null;
+                    if (oldStatusCell != null) {
+                        oldStatus = oldStatusCell.getStringCellValue().trim();
+                    }
+
+                    String newStatus = null;
+                    if (newStatusCell != null) {
+                        newStatus = newStatusCell.getStringCellValue().trim();
+                    }
+
+                    if (rollNumber != null && subjectCode != null && oldSemester != null && oldMark != null && oldStatus != null) {
+                        if (newSemester != null && newMark != null && newStatus != null) {
+                            UpdatedMarkObject markObj = new UpdatedMarkObject();
+                            markObj.setRollNumber(rollNumber);
+                            markObj.setSubjectCode(subjectCode);
+                            markObj.setOldSemester(oldSemester);
+                            markObj.setNewSemester(newSemester);
+                            markObj.setOldMark(oldMark);
+                            markObj.setNewMark(newMark);
+                            markObj.setOldStatus(oldStatus);
+                            markObj.setNewStatus(newStatus);
+
+                            updateList.add(markObj);
+                        }
+                    }
+                }
+            }
+
+            this.totalLine = updateList.size();
+
+            for (UpdatedMarkObject markObj : updateList) {
+                StudentEntity student = studentService.findStudentByRollNumber(markObj.getRollNumber());
+                RealSemesterEntity oldSemesterEntity = findOrCreateSemester(semesterList, markObj.getOldSemester());
+                MarksEntity marksEntity = marksService.getMarkByAllFields(student.getId(),
+                        markObj.getSubjectCode(), oldSemesterEntity.getId(), markObj.getOldMark(),
+                        markObj.getOldStatus(), markComponent.getId());
+                if (marksEntity != null) {
+                    if (!markObj.getOldSemester().equalsIgnoreCase(markObj.getNewSemester())) {
+                        RealSemesterEntity newSemesterEntity = findOrCreateSemester(semesterList, markObj.getNewSemester());
+                        marksEntity.setSemesterId(newSemesterEntity);
+
+                        CourseEntity courseEntity = courseService.findCourseBySemesterAndSubjectCode(markObj.getNewSemester(), markObj.getSubjectCode());
+                        if (courseEntity == null) {
+                            courseEntity = new CourseEntity();
+                            courseEntity.setSubjectCode(markObj.getSubjectCode());
+                            courseEntity.setSemester(markObj.getNewSemester());
+
+                            courseService.createCourse(courseEntity);
+                        }
+                        marksEntity.setCourseId(courseEntity);
+                    }
+
+                    if (markObj.getOldMark() != markObj.getNewMark()) {
+                        marksEntity.setAverageMark(markObj.getNewMark());
+                    }
+
+                    if (!markObj.getOldStatus().equalsIgnoreCase(markObj.getNewStatus())) {
+                        marksEntity.setStatus(markObj.getNewStatus());
+                    }
+
+                    marksService.updateMark(marksEntity);
+                }
+                ++this.currentLine;
+                System.out.println(currentLine + " - " + totalLine);
+            }
+
+            workbook.close();
+            is.close();
+            jsonObject.addProperty("success", true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", e.getMessage());
+        }
+
         return jsonObject;
     }
 

@@ -59,6 +59,24 @@
                 <button type="button" onclick="Add()" class="btn btn-success">Import</button>
                 <button type="button" onclick="asynctest()">async</button>
             </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="title">
+                        <h4>Cập nhật điểm:</h4>
+                    </div>
+                    <div class="my-content">
+                        <div class="col-md-12">
+                            <label for="file-update" hidden></label>
+                            <input type="file" accept=".xlsx, .xls" id="file-update" name="file"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <button type="button" onclick="UpdateMarks()" class="btn btn-success">Update</button>
+            </div>
         </div>
     </div>
 </section>
@@ -308,6 +326,44 @@
                     setTimeout("updateSuccessSavedMarks(isrunning)", 50);
                 }
             }
+        });
+    }
+
+    function UpdateMarks() {
+        var form = new FormData();
+        form.append('file', $('#file-update')[0].files[0]);
+
+        swal({
+            title: 'Đang xử lý',
+            html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>' +
+            '<div class="form-group" id="progress"></div>',
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                isrunning = true;
+                $.ajax({
+                    type: 'POST',
+                    url: '/uploadUpdatedMarks',
+                    processData: false,
+                    contentType: false,
+                    data: form,
+                    success: function (result) {
+                        isrunning = false;
+                        if (result.success) {
+                            swal({
+                                title: 'Thành công',
+                                text: 'Đã cập nhật danh sách điểm',
+                                type: 'success'
+                            }).then(function () {
+                                location.reload();
+                            });
+                        } else {
+                            swal('Đã xảy ra lỗi', result.message, 'error');
+                        }
+                    }
+                });
+            },
+            allowOutsideClick: false
         });
     }
 </script>
