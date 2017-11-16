@@ -6,6 +6,7 @@ import java.util.List;
 
 public interface IMarksService {
     MarksEntity getMarkById(int id);
+    MarksEntity getMarkByAllFields(int studentId, String subjectCode, int semesterId, double mark, String status, int markComponentId);
     void createMark(MarksEntity entity);
     void createMarks(List<MarksEntity> marksEntities);
     void updateMark(MarksEntity entity) throws Exception;
