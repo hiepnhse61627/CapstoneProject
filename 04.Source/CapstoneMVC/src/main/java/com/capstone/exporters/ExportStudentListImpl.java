@@ -11,6 +11,10 @@ import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.persistence.TypedQuery;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,7 +33,7 @@ public class ExportStudentListImpl implements IExportObject {
 
     @Override
     public void writeData(OutputStream os, Map<String, String> params) throws Exception {
-        ICurriculumService curriculumService = new CurriculumServiceImpl();
+//        ICurriculumService curriculumService = new CurriculumServiceImpl();
 
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream is = classLoader.getResourceAsStream(EXCEL_TEMPL);
@@ -42,17 +46,25 @@ public class ExportStudentListImpl implements IExportObject {
         SXSSFSheet streamingSheet = streamingWorkbook.getSheetAt(0);
         streamingSheet.setRandomAccessWindowSize(100);
 
-        writeDataToTable(streamingWorkbook, streamingSheet);
+        writeDataToTable(streamingWorkbook, streamingSheet, params);
 
         streamingWorkbook.write(os);
     }
 
-    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet) throws Exception {
+    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, Map<String, String> params) throws Exception {
         // start data table row
         IStudentService studentService = new StudentServiceImpl();
         IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
 
         List<StudentEntity> studentList = studentService.findAllStudents();
+        if (params.get("semesterId") != null) {
+            EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = fac.createEntityManager();
+            TypedQuery<StudentEntity> students = em.createQuery("SELECT distinct s FROM StudentEntity s JOIN s.marksEntityList d WHERE d.semesterId.id = :sem", StudentEntity.class);
+            students.setParameter("sem", Integer.parseInt(params.get("semesterId")));
+            studentList = students.getResultList();
+        }
+
         List<DocumentStudentEntity> docStudentList = documentStudentService.getAllLatestDocumentStudent();
 
         SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy");

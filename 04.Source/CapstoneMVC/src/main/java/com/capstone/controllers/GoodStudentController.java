@@ -76,7 +76,7 @@ public class GoodStudentController {
         EntityManager em = emf.createEntityManager();
 
         int semesterId = Integer.parseInt(params.get("semesterId"));
-        String sSearch = params.get("sSearch").trim();
+//        String sSearch = params.get("sSearch").trim();
 
         List<RealSemesterEntity> semesterList = semesterService.getAllSemester();
         semesterList = Ultilities.SortSemesters(semesterList);
@@ -88,7 +88,7 @@ public class GoodStudentController {
         Map<Integer, Map<Integer, List<GoodStudentMarkModel>>> studentList = new HashMap<>();
         Map<Integer, List<DocumentStudentEntity>> docStudentMap = new HashMap<>();
 
-        String queryStr = "SELECT m.StudentId, m.SemesterId, smc.SubjectId, sub.Credits," +
+        String queryStr = "SELECT m.StudentId, m.SemesterId, smc.SubjectId, sc.SubjectCredits," +
                 " m.AverageMark, m.Status, sc.TermNumber, ds.CurriculumId" +
                 " FROM Marks m" +
                 " INNER JOIN Student s ON m.StudentId = s.Id" +

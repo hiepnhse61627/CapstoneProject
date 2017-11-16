@@ -40,15 +40,19 @@
                         <c:forEach var="semester" items="${semesters}" varStatus="count">
                             <tr>
                                 <td class="text-center">${count.count}</td>
-                                <td class="text-center">${semester.semester}</td>
+                                <td class="text-center">${semester.entity.semester}</td>
                                 <td class="text-center">
-                                    <input type="checkbox" data-on-text="Mở" data-off-text="Đóng" value="${semester.id}"
-                                            <c:if test="${semester.active eq true}">
+                                    <input type="checkbox" data-on-text="Mở" data-off-text="Đóng" value="${semester.entity.id}"
+                                            <c:if test="${semester.entity.active eq true}">
                                                 checked
                                             </c:if>
                                     />
                                 </td>
-                                <td class="text-center"></td>
+                                <td class="text-center">
+                                    <c:if test="${not empty semester.link}">
+                                        <a href="${semester.link}">Download Link</a>
+                                    </c:if>
+                                </td>
                             </tr>
                         </c:forEach>
                         </tbody>
