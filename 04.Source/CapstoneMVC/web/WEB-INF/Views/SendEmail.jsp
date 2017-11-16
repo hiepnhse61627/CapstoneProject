@@ -4,10 +4,32 @@
 
 <link rel="stylesheet" href="/Resources/plugins/dist/css/upload-page.css">
 
+<style>
+    .min-width-50px {
+        min-width: 50px;
+    }
+
+    .min-width-75px {
+        min-width: 75px;
+    }
+
+    .min-width-100px {
+        min-width: 100px;
+    }
+</style>
+
 <section class="content">
     <div class="box">
         <div class="b-header">
-            <h1>Gửi email cho sinh viên</h1>
+            <div class="row">
+                <div class="col-md-9 title">
+                    <h1>Gửi email cho sinh viên</h1>
+                </div>
+                <div class="col-md-3 text-right">
+                    <button class="btn btn-success" type="button" onclick="Authenticate()">Gửi email</button>
+                    <input class="btn btn-warning" type="button" value="Nhập dữ liệu" onclick="ShowImportModal()"/>
+                </div>
+            </div>
             <hr>
         </div>
 
@@ -15,55 +37,71 @@
             <div class="form-group">
                 <div class="row">
                     <div class="title">
-                        <h4>Chọn file:</h4>
+                        <h4>Danh sách kế hoạch học tập</h4>
                     </div>
                     <div class="my-content">
                         <div class="col-md-12">
-                            <label for="file" hidden></label>
-                            <input type="file" accept=".xlsx, .xls" id="file" name="file"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group">
-                <button type="button" onclick="Add()" class="btn btn-success">Nhập danh sách</button>
-            </div>
-
-            <div class="form-group">
-                <div class="row">
-                    <div class="title">
-                        <h4>Danh sách sinh viên được gửi</h4>
-                    </div>
-                    <div class="my-content">
-                        <div class="col-md-12">
-                            <button type="button" class="btn btn-warning" onclick="SelectAll()">Chọn tất cả</button>
-                            <button type="button" class="btn btn-warning" onclick="SelectOnlyFail()">Chỉ chọn sv có rớt
-                                môn
+                            <button type="button" class="btn btn-default m-r-2" onclick="SelectAll()">Chọn tất cả</button>
+                            <button type="button" class="btn btn-default" onclick="SelectOnlyFail()">
+                                Chọn sinh viên có môn nợ
                             </button>
                             <%--<button type="button" class="btn btn-success pull-right" onclick="Send()">Gửi</button>--%>
                             <%--<a href="https://accounts.google.com/o/oauth2/auth?client_id=154261814473-m5o6qqmt4768ij676ore7280qbpgf03u.apps.googleusercontent.com&redirect_uri=http://localhost:8080/auth/google&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto" class="btn btn-block btn-social btn-google btn-flat">--%>
                             <%--<i class="fa fa-google-plus"></i> Đăng nhập bằng Google+--%>
                             <%--</a>--%>
-                            <button type="button" onclick="Authenticate()">test</button>
+
                         </div>
-                        <div class="col-md-12">
-                            <table id="table">
-                                <thead>
-                                <tr>
-                                    <th>Chọn</th>
-                                    <th>MSSV</th>
-                                    <th>Họ tên</th>
-                                    <th>Email</th>
-                                    <th>tín chỉ tích lũySV</th>
-                                    <th>môn nợ</th>
-                                    <th>môn tiếp theo</th>
-                                    <th>môn đang học trong kỳ</th>
-                                    <th>môn chậm tiến độ</th>
-                                    <th>Danh sách môn học dự kiến tiếp theo</th>
-                                </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-12">
+                        <table id="table">
+                            <thead>
+                            <tr>
+                                <th>Chọn</th>
+                                <th>MSSV</th>
+                                <th>Họ tên</th>
+                                <th>Email</th>
+                                <th>Tín chỉ tích lũy</th>
+                                <th>Môn nợ</th>
+                                <th>Môn tiếp theo</th>
+                                <th>Môn đang học trong kỳ</th>
+                                <th>Môn chậm tiến độ</th>
+                                <th>Danh sách môn học dự kiến tiếp theo</th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<div id="importModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Nhập dữ liệu</h4>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="row">
+                        <div class="title">
+                            <h4>Chọn file:</h4>
+                        </div>
+                        <div class="my-content">
+                            <div class="col-md-12">
+                                <label for="file" hidden></label>
+                                <input type="file" accept=".xlsx, .xls" id="file" name="file" />
+                            </div>
                         </div>
                         <div class="col-md-12">
                             <textarea name="content" id="editor">
@@ -72,10 +110,22 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="form-group">
+                    Bấm vào <a class="link" href="/Resources/FileTemplates/SubjectList_Upload_Template.xls">Template</a> để tải
+                    về bản mẫu
+                </div>
+                <div class="form-group">
+                    <button type="button" onclick="Add()" class="btn btn-success">Import</button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
         </div>
+
     </div>
-</section>
+</div>
 
 <script>
     var table = null;
@@ -148,6 +198,8 @@
     }
 
     $(document).ready(function () {
+        CreateEmptyDataTable("#table");
+        $('#table').wrap("<div class='table-scroll'></div>");
         CKEDITOR.config.extraPlugins = 'justify';
         $('#table').DataTable();
         $('#editor').ckeditor();
@@ -174,38 +226,66 @@
                         isRunning = false;
                         if (result.success) {
                             array = result.data;
-                            $('#table').DataTable().destroy();
-                            table = $('#table').DataTable({
+                            $('#table').dataTable().fnDestroy();
+                            table = $('#table').dataTable({
+                                "bFilter": true,
+                                "bRetrieve": true,
+                                "bScrollCollapse": true,
+                                "bProcessing": true,
+                                "bSort": false,
                                 "data": array,
-                                "deferRender": false,
-                                "scrollY": 600,
-                                "scrollX": true,
-                                "scrollCollapse": true,
-                                "scroller": true,
-                                "columnDefs": [
-                                    {
-                                        "targets": [1, 2, 3, 4, 6, 7, 8],
-                                        "sortable": false,
-                                        "class": "text-center",
-                                    },
-                                    {
-                                        "targets": [0],
-                                        "render": function (data, type, row) {
-                                            return "<input name='send' type='checkbox'/>";
-                                        },
-                                        "sortable": false,
-                                    },
-                                    {
-                                        "targets": [5],
-                                        "render": function (data, type, row) {
-                                            return data + "<input type='hidden' name='data' value='" + data + "'/>";
-                                        },
-                                        "sortable": false,
+                                "oLanguage": {
+                                    "sSearchPlaceholder": "",
+                                    "sSearch": "Tìm kiếm:",
+                                    "sZeroRecords": "Không có dữ liệu phù hợp",
+                                    "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
+                                    "sEmptyTable": "Không có dữ liệu",
+                                    "sInfoFiltered": " - lọc ra từ _MAX_ dòng",
+                                    "sLengthMenu": "Hiển thị _MENU_ dòng",
+                                    "sProcessing": "Đang xử lý...",
+                                    "oPaginate": {
+                                        "sNext": "<i class='fa fa-chevron-right'></i>",
+                                        "sPrevious": "<i class='fa fa-chevron-left'></i>"
                                     }
+
+                                },
+                                "aoColumnDefs": [
+                                    {
+                                        "aTargets": [0, 1, 4, 5, 6, 7, 8, 9],
+                                        "bSortable": false,
+                                        "sClass": "text-center",
+                                    },
+                                    {"aTargets": [0], "sClass": "min-width-50px",},
+                                    {"aTargets": [1], "sClass": "min-width-50px",},
+                                    {"aTargets": [2], "sClass": "min-width-100px",},
+                                    {"aTargets": [3], "sClass": "min-width-100px",},
+                                    {"aTargets": [4], "sClass": "min-width-75px",},
+                                    {"aTargets": [5], "sClass": "min-width-100px",},
+                                    {"aTargets": [6], "sClass": "min-width-100px",},
+                                    {"aTargets": [7], "sClass": "min-width-100px",},
+                                    {"aTargets": [8], "sClass": "min-width-100px",},
+                                    {"aTargets": [9], "sClass": "min-width-100px",},
+                                    {
+                                        "aTargets": [0],
+                                        "mRender": function (data, type, row) {
+                                            var htmlClass = "";
+                                            if (row[5] != "N/A") {
+                                                htmlClass = "class='fail'";
+                                            }
+
+                                            return "<input " + htmlClass +" name='send' type='checkbox'/>";
+                                        },
+                                    },
+                                    {
+                                        "aTargets": [5, 6, 7, 8, 9],
+                                        "mRender": function (data, type, row) {
+                                            return FormatText(data);
+                                        }
+                                    },
                                 ],
-//                                "search": true,
-//                                "filter": false,
+                                "bAutoWidth": false,
                             });
+                            $('#table').wrap("<div class='table-scroll'></div>");
                             swal.close();
                         } else {
                             swal('Đã xảy ra lỗi!', result.message, 'error');
@@ -217,31 +297,21 @@
         });
     }
 
-    var select = true;
-
+    var selectAll = true;
     function SelectAll() {
-        if (select) {
-            $("input[name='send']", table.rows({search: 'applied'}).nodes()).prop('checked', true);
-            select = false;
-        } else {
-            $("input[name='send']", table.rows({search: 'applied'}).nodes()).prop('checked', false);
-            select = true;
-        }
+        $("input[type='checkbox']", table.fnGetNodes()).prop('checked', this.selectAll);
+        this.selectAll = !this.selectAll;
     }
 
     function SelectOnlyFail() {
-        $.each($("input[name='data']", table.rows({search: 'applied'}).nodes()), function () {
-            var data = $(this).val();
-//            console.log(data);
-            if (data != 'N/A') {
-                $(this).closest("tr").find("input[name='send']").prop('checked', true);
-            }
-        });
+        $("input[type='checkbox']", table.fnGetNodes()).prop('checked', false);
+        $("input.fail:checkbox[name='send']", table.fnGetNodes()).prop('checked', true);
+        this.selectAll = true;
     }
 
     function Send(token, username, name) {
         var array = [];
-        $.each($("input[name='send']:checked", table.rows({search: 'applied'}).nodes()), function () {
+        $.each($("input[name='send']:checked", table.fnGetNodes()), function () {
             var values = [];
             $.each($(this).closest("tr").find("td"), function (i) {
                 if (i > 0) {
@@ -250,7 +320,6 @@
             });
             array.push(values);
         });
-//        console.log(array);
 
         swal({
             title: 'Đang xử lý',
@@ -302,5 +371,20 @@
                 }
             }
         });
+    }
+
+    function FormatText(str) {
+        var data = str.split(",");
+        var result = data[0];
+        for (var i = 1; i < data.length; ++i) {
+            if (data[i] != '') {
+                result += ", " + data[i];
+            }
+        }
+        return result;
+    }
+
+    function ShowImportModal() {
+        $('#importModal').modal('toggle');
     }
 </script>

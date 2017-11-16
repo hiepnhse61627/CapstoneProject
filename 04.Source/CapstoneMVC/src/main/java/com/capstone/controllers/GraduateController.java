@@ -139,7 +139,7 @@ public class GraduateController {
             for (MarksEntity marksEntity : distinctMarks) {
                 studentCredits += subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) != null
                         ? subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) : 0;
-                if (subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) != null && student.getId() == 46209) {
+                if (subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) != null && student.getId() == 58632) {
                     System.out.println(marksEntity.getSubjectMarkComponentId().getSubjectId().getId() + "_" + subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) + "_" + studentCredits);
                 }
             }

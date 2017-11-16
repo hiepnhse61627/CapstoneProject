@@ -178,10 +178,11 @@ public class UploadController {
             int oldProgramIndex = 6;
             int curriculumIndex1 = 13; // du bi
             int curriculumIndex2 = 14; // chuyen nganh
-            int curriculumIndex3 = 15; // chuyen nganh hep
-            int termNoIndex = 16; // hoc ky hien tai
-            int statusIndex = 19; // trang thai cua sinh vien
-            int emailIndex = 28;
+            int curriculumIndex3 = 15; // OJT
+            int curriculumIndex4 = 16; // chuyen nganh hep
+            int termNoIndex = 17; // hoc ky hien tai
+            int statusIndex = 20; // trang thai cua sinh vien
+            int emailIndex = 29;
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
             for (int rowIndex = excelDataIndexRow; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
@@ -198,6 +199,7 @@ public class UploadController {
                     Cell curriculumCell1 = row.getCell(curriculumIndex1);
                     Cell curriculumCell2 = row.getCell(curriculumIndex2);
                     Cell curriculumCell3 = row.getCell(curriculumIndex3);
+                    Cell curriculumCell4 = row.getCell(curriculumIndex4);
                     Cell termNoCell = row.getCell(termNoIndex);
                     Cell statusCell = row.getCell(statusIndex);
                     Cell emailCell = row.getCell(emailIndex);
@@ -252,9 +254,23 @@ public class UploadController {
                     // start save document student
                     DocumentEntity documentEntity = documentService.getAllDocuments().get(0);
                     List<DocumentStudentEntity> documentStudentEntityList = new ArrayList<>();
+
+                    if (curriculumCell4 != null) {
+                        if (!curriculumCell4.getStringCellValue().isEmpty()) {
+                            System.out.println(curriculumCell4.getStringCellValue().trim());
+                            CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCell4.getStringCellValue().trim());
+                            DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
+                            documentStudentEntity.setStudentId(studentEntity);
+                            documentStudentEntity.setDocumentId(documentEntity);
+                            documentStudentEntity.setCurriculumId(curriculumEntity);
+
+                            documentStudentEntityList.add(documentStudentEntity);
+                        }
+                    }
+
                     if (curriculumCell3 != null) {
                         if (!curriculumCell3.getStringCellValue().isEmpty()) {
-                            System.out.println(curriculumCell3.getStringCellValue());
+                            System.out.println(curriculumCell3.getStringCellValue().trim());
                             CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCell3.getStringCellValue().trim());
                             DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
                             documentStudentEntity.setStudentId(studentEntity);
@@ -267,7 +283,6 @@ public class UploadController {
 
                     if (curriculumCell2 != null) {
                         if (!curriculumCell2.getStringCellValue().isEmpty()) {
-                            System.out.println(curriculumCell2.getStringCellValue());
                             System.out.println(curriculumCell2.getStringCellValue().trim());
                             CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCell2.getStringCellValue().trim());
                             DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
@@ -281,7 +296,7 @@ public class UploadController {
 
                     if (curriculumCell1 != null) {
                         if (!curriculumCell1.getStringCellValue().isEmpty()) {
-                            System.out.println(curriculumCell1.getStringCellValue());
+                            System.out.println(curriculumCell1.getStringCellValue().trim());
                             CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCell1.getStringCellValue().trim());
                             DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
                             documentStudentEntity.setStudentId(studentEntity);
@@ -362,7 +377,7 @@ public class UploadController {
             int excelDataIndexRow = 1;
 
             int rollNumberIndex = 0;
-            int payRollClassIndex = 17;
+            int payRollClassIndex = 18;
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
             for (int rowIndex = excelDataIndexRow; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
@@ -380,7 +395,7 @@ public class UploadController {
                                 if (!payRollClass.isEmpty() && payRollClass.matches("^[a-zA-Z]+\\d+$")) {
                                     student.setPayRollClass(payRollClass);
                                     Integer classNumber = Integer.parseInt(payRollClass.replaceAll("[^0-9]", ""));
-                                    student.setShift(classNumber % 2 == 0 ? "AM" : "PM");
+                                    student.setShift(classNumber % 2 == 0 ? "PM" : "AM");
                                 }
                             }
                         }
