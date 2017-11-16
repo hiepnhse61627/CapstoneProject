@@ -29,22 +29,26 @@
                 <div class="col-md-12">
                     <table id="tbl-semester">
                         <thead>
-                        <th>STT</th>
-                        <th>Học kỳ</th>
-                        <th>Đóng mở</th>
+                        <tr>
+                            <th>STT</th>
+                            <th>Học kỳ</th>
+                            <th>Đóng mở</th>
+                            <th>Xem thư mục</th>
+                        </tr>
                         </thead>
                         <tbody>
                         <c:forEach var="semester" items="${semesters}" varStatus="count">
                             <tr>
-                                <td>${count.count}</td>
-                                <td>${semester.semester}</td>
-                                <td>
+                                <td class="text-center">${count.count}</td>
+                                <td class="text-center">${semester.semester}</td>
+                                <td class="text-center">
                                     <input type="checkbox" data-on-text="Mở" data-off-text="Đóng" value="${semester.id}"
                                             <c:if test="${semester.active eq true}">
                                                 checked
                                             </c:if>
                                     />
                                 </td>
+                                <td class="text-center"></td>
                             </tr>
                         </c:forEach>
                         </tbody>
@@ -100,6 +104,16 @@
                     console.log(result);
                 }
             });
+            if ($(this).is(':checked') == false) {
+                $.ajax({
+                    type: "GET",
+                    url: "/managerrole/export",
+                    data: { "semesterId": $(this).val()},
+                    success: function (result) {
+                        console.log(result);
+                    }
+                });
+            }
         });
         $("#tbl-semester").DataTable();
     });
