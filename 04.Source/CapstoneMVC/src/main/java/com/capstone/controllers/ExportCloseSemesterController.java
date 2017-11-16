@@ -17,6 +17,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileLock;
+import java.nio.channels.OverlappingFileLockException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,7 +33,6 @@ import java.util.zip.ZipOutputStream;
 public class ExportCloseSemesterController {
     //    private final String mimeType = "application/octet-stream";
 //    private final String headerKey = "Content-Disposition";
-    private IExportObject exportObject;
 
 //    @RequestMapping(value = "/pauseexportStudentDetail")
 //    @ResponseBody
@@ -41,7 +43,7 @@ public class ExportCloseSemesterController {
 //        return obj;
 //	}
 
-    private OutputStream Writefile(String path, Map<String, String> params) throws Exception {
+    private OutputStream Writefile(String path, Map<String, String> params, IExportObject exportObject) throws Exception {
         IRealSemesterService service = new RealSemesterServiceImpl();
         String semester = service.findSemesterById(Integer.parseInt(params.get("semesterId"))).getSemester();
         String realPath = path + "CloseSemester/" + semester + "/";
@@ -97,37 +99,58 @@ public class ExportCloseSemesterController {
         Thread t = new Thread(() -> {
 
             String path = servlet.getRealPath("/");
+
+            IRealSemesterService service = new RealSemesterServiceImpl();
+            String semName = service.findSemesterById(Integer.parseInt(semesterId)).getSemester();
+
             OutputStream os = null;
 
-            for (int i = 1; i <= 2; i++) {
+            for (int i = 1; i <= 10; i++) {
                 try {
-                    exportObject = createExportImplementation(i);
+                    IExportObject exportObject = createExportImplementation(i);
 
                     if (i == 1) {
                         Map<String, String> params = new HashMap<>();
                         params.put("semesterId", semesterId);
-                        os = Writefile(path, params);
-                    }
-                    else if (i == 2) {
+                        os = Writefile(path, params, exportObject);
+                    } else if (i == 2) {
                         Map<String, String> params = new HashMap<>();
                         params.put("semesterId", semesterId);
                         params.put("studentId", "46203");
-                        os = Writefile(path, params);
-                    } else if (i == 3) {
-
+                        os = Writefile(path, params, exportObject);
+                    } else if (i == 4) {
+                        Map<String, String> params = new HashMap<>();
+                        params.put("type", "Graduate");
+                        params.put("semesterId", semesterId);
+                        params.put("programId", "-1");
+                        os = Writefile(path, params, exportObject);
+                    } else if (i == 7) {
+                        Map<String, String> params = new HashMap<>();
+                        params.put("semesterId", semesterId);
+                        os = Writefile(path, params, exportObject);
+                    } else if (i == 9) {
+                        Map<String, String> params = new HashMap<>();
+                        params.put("semesterId", semesterId);
+                        os = Writefile(path, params, exportObject);
+                    } else if (i == 10) {
+                        Map<String, String> params = new HashMap<>();
+                        params.put("semesterId", semName);
+                        os = Writefile(path, params, exportObject);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+                    System.out.println("Error at" + i);
                 } finally {
                     try {
                         os.flush();
                         os.close();
-                        System.out.println("Đã xuất " + (i++) + " trên 6 file!");
+                        System.out.println("Exported " + (i++) + " file!");
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
             }
+            System.out.println("Exported All");
         });
         t.start();
 

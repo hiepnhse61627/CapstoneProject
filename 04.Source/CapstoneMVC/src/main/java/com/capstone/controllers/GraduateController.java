@@ -103,7 +103,12 @@ public class GraduateController {
         List<RealSemesterEntity> semesters = getToCurrentSemester(semesterId);
         Set<Integer> semesterIds = semesters.stream().map(s -> s.getId()).collect(Collectors.toSet());
 
-        List<StudentEntity> studentEntityList = studentService.findStudentByProgramId(programId);
+        List<StudentEntity> studentEntityList;
+        if (programId < 0) {
+            studentEntityList = studentService.findAllStudents();
+        } else {
+            studentEntityList = studentService.findStudentByProgramId(programId);
+        }
         studentEntityList = studentEntityList.stream().filter(s -> s.getTerm() == 9).collect(Collectors.toList());
 
         for (StudentEntity student : studentEntityList) {
@@ -265,7 +270,12 @@ public class GraduateController {
         IStudentService studentService = new StudentServiceImpl();
         IMarksService marksService = new MarksServiceImpl();
 
-        List<StudentEntity> students = studentService.getStudentByProgram(programId);
+        List<StudentEntity> students;
+        if (programId < 0) {
+            students = studentService.findAllStudents();
+        } else {
+            students = studentService.getStudentByProgram(programId);
+        }
 
         if (type.equals("Graduate")) {
             students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
