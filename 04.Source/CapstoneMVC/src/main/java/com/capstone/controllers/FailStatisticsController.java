@@ -191,6 +191,7 @@ public class FailStatisticsController {
      * @DateCreated 28/10/2017
      **/
     private List<MarksEntity> listPassedInCurrentSemester(String semester) {
+        System.out.println(semester);
         List<MarksEntity> noneDuplicateList = new ArrayList<>();
         RealSemesterEntity currentSemester = realSemesterService.findSemesterByName(semester);
         List<Integer> semesterIds = new ArrayList<>();

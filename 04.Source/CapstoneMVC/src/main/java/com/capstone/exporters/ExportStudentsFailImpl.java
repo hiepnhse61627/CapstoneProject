@@ -31,8 +31,8 @@ public class ExportStudentsFailImpl implements IExportObject {
         InputStream is = classLoader.getResourceAsStream(STUDENTS_FAIL_EXCEL_TEMPL);
 
         String semesterId = params.get("semesterId");
-        String subjectId = params.get("subjectId");
-        String sSearch = params.get("sSearch");
+        String subjectId = params.get("subjectId") == null ? "0" : params.get("subjectId");
+        String sSearch = params.get("sSearch") == null ? "" : params.get("sSearch");
 
         StudentController stdController = new StudentController();
         List<MarksEntity> dataList = stdController.GetStudentsList(semesterId, subjectId, sSearch);
