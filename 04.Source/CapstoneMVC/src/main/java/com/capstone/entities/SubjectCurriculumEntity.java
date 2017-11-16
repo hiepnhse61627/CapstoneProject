@@ -40,6 +40,8 @@ public class SubjectCurriculumEntity implements Serializable {
     private Integer termNumber;
     @Column(name = "SubjectCredits")
     private Integer subjectCredits;
+    @Column(name = "Required")
+    private boolean required;
     @JoinColumn(name = "CurriculumId", referencedColumnName = "Id")
     @ManyToOne
     private CurriculumEntity curriculumId;
@@ -100,6 +102,14 @@ public class SubjectCurriculumEntity implements Serializable {
 
     public void setSubjectId(SubjectEntity subjectId) {
         this.subjectId = subjectId;
+    }
+
+    public boolean isRequired() {
+        return required;
+    }
+
+    public void setRequired(boolean required) {
+        this.required = required;
     }
 
     @Override

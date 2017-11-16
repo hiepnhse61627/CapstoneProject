@@ -41,7 +41,7 @@ public class SubjectEntity implements Serializable {
     private List<SubjectEntity> subjectEntityList1;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
     private PrequisiteEntity prequisiteEntity;
-    @OneToMany(mappedBy = "subjectId", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "subjectId")
     private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
     @OneToMany(mappedBy = "subjectId")
     private List<SubjectMarkComponentEntity> subjectMarkComponentEntityList;

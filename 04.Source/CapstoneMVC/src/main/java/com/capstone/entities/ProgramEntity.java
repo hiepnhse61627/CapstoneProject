@@ -5,6 +5,8 @@
  */
 package com.capstone.entities;
 
+import org.eclipse.persistence.annotations.CascadeOnDelete;
+
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Basic;
@@ -46,6 +48,10 @@ public class ProgramEntity implements Serializable {
     private Integer capstone;
     @Column(name = "Graduate")
     private Integer graduate;
+    @Column(name = "GraduateCredits")
+    private Integer graduateCredits;
+    @Column(name = "SpecializedCredits")
+    private Integer specializedCredits;
     @OneToMany(mappedBy = "programId")
     private List<OldRollNumberEntity> oldRollNumberEntityList;
     @OneToMany(mappedBy = "programId")
@@ -111,6 +117,22 @@ public class ProgramEntity implements Serializable {
 
     public void setGraduate(Integer graduate) {
         this.graduate = graduate;
+    }
+
+    public Integer getGraduateCredits() {
+        return graduateCredits;
+    }
+
+    public void setGraduateCredits(Integer graduateCredits) {
+        this.graduateCredits = graduateCredits;
+    }
+
+    public Integer getSpecializedCredits() {
+        return specializedCredits;
+    }
+
+    public void setSpecializedCredits(Integer specializedCredits) {
+        this.specializedCredits = specializedCredits;
     }
 
     public List<OldRollNumberEntity> getOldRollNumberEntityList() {

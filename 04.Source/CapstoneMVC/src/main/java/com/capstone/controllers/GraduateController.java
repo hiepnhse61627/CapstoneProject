@@ -132,32 +132,33 @@ public class GraduateController {
             // calculate student credits
             int studentCredits = 0;
             for (MarksEntity marksEntity : distinctMarks) {
-                studentCredits += subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) != null
-                        ? subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) : 0;
+                SubjectEntity subject = marksEntity.getSubjectMarkComponentId().getSubjectId();
+                studentCredits += subjectsCredits.get(subject) != null && !subject.getId().contains("OJ") ? subjectsCredits.get(subject) : 0;
                 if (subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) != null && student.getId() == 58632) {
                     System.out.println(marksEntity.getSubjectMarkComponentId().getSubjectId().getId() + "_" + subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) + "_" + studentCredits);
                 }
             }
 
-            int percent = student.getProgramId().getGraduate();
+//            int percent = student.getProgramId().getGraduate();
+            int specializedCredits = student.getProgramId().getSpecializedCredits();
             if (isGraduate) {
-                if (studentCredits >= ((creditsInCurriculum * percent * 1.0) / 100)) {
+                if (studentCredits >= specializedCredits) {
                     List<String> t = new ArrayList<>();
                     t.add(student.getRollNumber());
                     t.add(student.getFullName());
                     t.add(String.valueOf(studentCredits));
 //                    t.add(String.valueOf(studentCredits > creditsInCurriculum ? (studentCredits - creditsInCurriculum) : 0));
-                    t.add(String.valueOf(creditsInCurriculum));
+                    t.add(String.valueOf(specializedCredits));
                     data.add(t);
                 }
             } else {
-                if (studentCredits < ((creditsInCurriculum * percent * 1.0) / 100)) {
+                if (studentCredits < specializedCredits) {
                     List<String> t = new ArrayList<>();
                     t.add(student.getRollNumber());
                     t.add(student.getFullName());
                     t.add(String.valueOf(studentCredits));
 //                    t.add(String.valueOf(studentCredits > creditsInCurriculum ? (studentCredits - creditsInCurriculum) : 0));
-                    t.add(String.valueOf(creditsInCurriculum));
+                    t.add(String.valueOf(specializedCredits));
                     data.add(t);
                 }
             }
@@ -218,7 +219,7 @@ public class GraduateController {
         return listResult;
     }
 
-    private Map<SubjectEntity, Integer> processCreditsForSubject(List<DocumentStudentEntity> documentStudentEntityList) {
+    public Map<SubjectEntity, Integer> processCreditsForSubject(List<DocumentStudentEntity> documentStudentEntityList) {
         Map<SubjectEntity, Integer> map = new HashMap<>();
         if (documentStudentEntityList != null && !documentStudentEntityList.isEmpty()) {
             for (DocumentStudentEntity documentStudentEntity : documentStudentEntityList) {

@@ -374,14 +374,16 @@
     }
 
     function FormatText(str) {
-        var data = str.split(",");
-        var result = data[0];
-        for (var i = 1; i < data.length; ++i) {
-            if (data[i] != '') {
-                result += ", " + data[i];
+        if (str.indexOf(",") !== -1) {
+            var data = str.split(",");
+            var result = data[0];
+            for (var i = 1; i < data.length; ++i) {
+                if (data[i] != '') {
+                    result += ", " + data[i];
+                }
             }
         }
-        return result;
+        return str;
     }
 
     function ShowImportModal() {

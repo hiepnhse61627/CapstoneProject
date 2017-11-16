@@ -95,8 +95,6 @@ public class SendEmailController {
                         tmp.add(str);
                     }
                     data.add(tmp);
-                } else {
-                    break;
                 }
             }
 

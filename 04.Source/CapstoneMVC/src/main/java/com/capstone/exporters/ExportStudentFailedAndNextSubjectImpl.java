@@ -1,7 +1,9 @@
 package com.capstone.exporters;
 
+import com.capstone.controllers.GraduateController;
 import com.capstone.controllers.StudentDetail;
 import com.capstone.entities.*;
+import com.capstone.enums.SubjectTypeEnum;
 import com.capstone.models.Suggestion;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
@@ -97,12 +99,29 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 Cell tinchi = row.createCell(3);
                 tinchi.setCellStyle(cellStyle);
 
-                List<MarksEntity> marksCredits = student.getMarksEntityList();
+                List<SubjectCurriculumEntity> subjects = new ArrayList<>();
+                List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+                for (DocumentStudentEntity doc : docs) {
+                    if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
+                        List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                        for (SubjectCurriculumEntity s : list) {
+                            if (!subjects.contains(s)) {
+                                subjects.add(s);
+                            }
+                        }
+                    }
+                }
+                subjects = subjects.stream().distinct().collect(Collectors.toList());
                 int credits = 0;
-                for (MarksEntity mark : marksCredits) {
-                    if (mark.getIsActivated() && (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt"))) {
-//                        Integer tmp = mark.getSubjectMarkComponentId().getSubjectId().getCredits();
-//                        credits += (tmp == null ? 0 : tmp);
+                List<MarksEntity> marksCredits = student.getMarksEntityList();
+                List<String> dacong = new ArrayList<>();
+                for (SubjectCurriculumEntity s : subjects) {
+                    if (marksCredits.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(s.getSubjectId().getId()))) {
+                        if  (!dacong.contains(s.getSubjectId().getId())) {
+                            Integer tmp = s.getSubjectCredits();
+                            credits += (tmp == null ? 0 : tmp);
+                            dacong.add(s.getSubjectId().getId());
+                        }
                     }
                 }
                 tinchi.setCellValue(credits);
@@ -129,8 +148,8 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 List<List<String>> nextSubjects = processNextSubject(student, semester);
                 if (nextSubjects != null && !nextSubjects.isEmpty()) {
                     String next = "";
-                    for (List<String> subjects : nextSubjects) {
-                        String subjectId = subjects.get(0);
+                    for (List<String> subjects2 : nextSubjects) {
+                        String subjectId = subjects2.get(0);
                         next += subjectId;
                         next += ",";
                     }
@@ -152,8 +171,8 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 List<List<String>> currentSubject = processCurrentSubject(student.getId(), semester);
                 if (currentSubject != null && !currentSubject.isEmpty()) {
                     String next = "";
-                    for (List<String> subjects : currentSubject) {
-                        String subjectId = subjects.get(0);
+                    for (List<String> subjects2 : currentSubject) {
+                        String subjectId = subjects2.get(0);
                         next += subjectId;
                         next += ",";
                     }
@@ -175,8 +194,8 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 List<List<String>> slowSubject = processNotStart(student.getId(), semester);
                 if (slowSubject != null && !slowSubject.isEmpty()) {
                     String next = "";
-                    for (List<String> subjects : slowSubject) {
-                        String subjectId = subjects.get(0);
+                    for (List<String> subjects2 : slowSubject) {
+                        String subjectId = subjects2.get(0);
                         next += subjectId;
                         next += ",";
                     }
@@ -198,8 +217,8 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 List<List<String>> suggestSubjects = processSuggestion(student.getId(), semester);
                 if (suggestSubjects != null && !suggestSubjects.isEmpty()) {
                     String next = "";
-                    for (List<String> subjects : suggestSubjects) {
-                        String subjectId = subjects.get(0);
+                    for (List<String> subjects2 : suggestSubjects) {
+                        String subjectId = subjects2.get(0);
                         next += subjectId;
                         next += ",";
                     }
