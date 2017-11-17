@@ -134,20 +134,19 @@ public class GraduateController {
                     distinctMarks.add(mark);
                 }
             }
-            // calculate student credits
+            // calculate student credits if SYB was passed
             int studentCredits = 0;
+            int passedFlag = 0;
             for (MarksEntity marksEntity : distinctMarks) {
                 SubjectEntity subject = marksEntity.getSubjectMarkComponentId().getSubjectId();
+                passedFlag += subjectsCredits.get(subject) != null && subjectsCredits.get(subject) == 0 ? 1 : 0;
                 studentCredits += subjectsCredits.get(subject) != null && !subject.getId().contains("OJ") ? subjectsCredits.get(subject) : 0;
-                if (subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) != null && student.getId() == 58632) {
-                    System.out.println(marksEntity.getSubjectMarkComponentId().getSubjectId().getId() + "_" + subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) + "_" + studentCredits);
-                }
             }
 
 //            int percent = student.getProgramId().getGraduate();
             int specializedCredits = student.getProgramId().getSpecializedCredits();
             if (isGraduate) {
-                if (studentCredits >= specializedCredits) {
+                if ((studentCredits >= specializedCredits) && (passedFlag != 0)) {
                     List<String> t = new ArrayList<>();
                     t.add(student.getRollNumber());
                     t.add(student.getFullName());
@@ -157,7 +156,7 @@ public class GraduateController {
                     data.add(t);
                 }
             } else {
-                if (studentCredits < specializedCredits) {
+                if ((studentCredits < specializedCredits) || (passedFlag == 0)) {
                     List<String> t = new ArrayList<>();
                     t.add(student.getRollNumber());
                     t.add(student.getFullName());
