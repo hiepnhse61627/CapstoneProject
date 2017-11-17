@@ -154,6 +154,7 @@ public class GraduateController {
                     t.add(String.valueOf(studentCredits));
 //                    t.add(String.valueOf(studentCredits > creditsInCurriculum ? (studentCredits - creditsInCurriculum) : 0));
                     t.add(String.valueOf(specializedCredits));
+                    t.add(String.valueOf(student.getId()));
                     data.add(t);
                 }
             } else {
@@ -164,6 +165,7 @@ public class GraduateController {
                     t.add(String.valueOf(studentCredits));
 //                    t.add(String.valueOf(studentCredits > creditsInCurriculum ? (studentCredits - creditsInCurriculum) : 0));
                     t.add(String.valueOf(specializedCredits));
+                    t.add(String.valueOf(student.getId()));
                     data.add(t);
                 }
             }
@@ -435,6 +437,7 @@ public class GraduateController {
                     t.add(String.valueOf(tongtinchi));
 //                    t.add(String.valueOf((tongtinchi > required) ? (tongtinchi - required) : 0));.
                     t.add(String.valueOf(Math.round((required * percent * 1.0) / 100)));
+                    t.add(String.valueOf(student.getId()));
                     data.add(t);
                 }
             } else {
@@ -445,6 +448,7 @@ public class GraduateController {
                     t.add(String.valueOf(tongtinchi));
 //                    t.add(String.valueOf((tongtinchi > required) ? (tongtinchi - required) : 0));
                     t.add(String.valueOf(Math.round((required * percent * 1.0) / 100)));
+                    t.add(String.valueOf(student.getId()));
                     data.add(t);
                 }
             }
