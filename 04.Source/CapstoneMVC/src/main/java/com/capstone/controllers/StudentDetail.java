@@ -423,23 +423,24 @@ public class StudentDetail {
 //                                     check prequisite
                             List<String> processedData = new ArrayList<>();
                             SubjectEntity entity = cur.getSubjectId();
-                            String preSubs = entity == null ? "" : entity.getPrequisiteEntity().getPrequisiteSubs();
-                            String[] rows = preSubs == null ? (entity.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : entity.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
-                            for (String row : rows) {
-                                row = row.replaceAll("\\(", "").replaceAll("\\)", "");
-                                String[] cells = row.split(",");
-                                for (String cell : cells) {
-                                    cell = cell.trim();
-                                    SubjectEntity c = subjectService.findSubjectById(cell);
-                                    if (c != null) processedData.add(cell);
+                            if (entity != null && entity.getPrequisiteEntity() != null) {
+                                String preSubs = entity.getPrequisiteEntity().getPrequisiteSubs();
+                                String[] rows = preSubs == null ? (entity.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : entity.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
+                                for (String row : rows) {
+                                    row = row.replaceAll("\\(", "").replaceAll("\\)", "");
+                                    String[] cells = row.split(",");
+                                    for (String cell : cells) {
+                                        cell = cell.trim();
+                                        SubjectEntity c = subjectService.findSubjectById(cell);
+                                        if (c != null) processedData.add(cell);
+                                    }
                                 }
-                            }
-                            if (!entity.getSubjectEntityList().isEmpty()) {
-                                for (SubjectEntity replaces : entity.getSubjectEntityList()) {
-                                    processedData.add(replaces.getId());
+                                if (!entity.getSubjectEntityList().isEmpty()) {
+                                    for (SubjectEntity replaces : entity.getSubjectEntityList()) {
+                                        processedData.add(replaces.getId());
+                                    }
                                 }
-                            }
-                            if (!processedData.isEmpty()) {
+                                if (!processedData.isEmpty()) {
 //                                String str = "SELECT p FROM MarksEntity p WHERE p.isActivated = true and p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList AND p.semesterId.semester IN :sem";
 //                                TypedQuery<MarksEntity> prequisiteQuery;
 //                                prequisiteQuery = em.createQuery(str, MarksEntity.class);
@@ -448,11 +449,12 @@ public class StudentDetail {
 //                                prequisiteQuery.setParameter("sem", t);
 
 //                                List<MarksEntity> list2 = prequisiteQuery.getResultList();
-                                List<MarksEntity> list2 = marks
-                                        .stream()
-                                        .filter(c -> processedData.stream().anyMatch(b -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(b)))
-                                        .collect(Collectors.toList());
-                                failed = Ultilities.HasFailedPrequisitesOfOneStudent(list2, cur.getSubjectId().getPrequisiteEntity());
+                                    List<MarksEntity> list2 = marks
+                                            .stream()
+                                            .filter(c -> processedData.stream().anyMatch(b -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(b)))
+                                            .collect(Collectors.toList());
+                                    failed = Ultilities.HasFailedPrequisitesOfOneStudent(list2, cur.getSubjectId().getPrequisiteEntity());
+                                }
                             }
                         }
 
@@ -678,23 +680,24 @@ public class StudentDetail {
 //                                     check prequisite
                     List<String> processedData = new ArrayList<>();
                     SubjectEntity entity = cur.getSubjectId();
-                    String preSubs = entity == null ? "" : entity.getPrequisiteEntity().getPrequisiteSubs();
-                    String[] rows = preSubs == null ? (entity.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : entity.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
-                    for (String row : rows) {
-                        row = row.replaceAll("\\(", "").replaceAll("\\)", "");
-                        String[] cells = row.split(",");
-                        for (String cell : cells) {
-                            cell = cell.trim();
-                            SubjectEntity c = subjectService.findSubjectById(cell);
-                            if (c != null) processedData.add(cell);
+                    if (entity != null && entity.getPrequisiteEntity() != null) {
+                        String preSubs = entity.getPrequisiteEntity().getPrequisiteSubs();
+                        String[] rows = preSubs == null ? (entity.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : entity.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
+                        for (String row : rows) {
+                            row = row.replaceAll("\\(", "").replaceAll("\\)", "");
+                            String[] cells = row.split(",");
+                            for (String cell : cells) {
+                                cell = cell.trim();
+                                SubjectEntity c = subjectService.findSubjectById(cell);
+                                if (c != null) processedData.add(cell);
+                            }
                         }
-                    }
-                    if (!entity.getSubjectEntityList().isEmpty()) {
-                        for (SubjectEntity replaces : entity.getSubjectEntityList()) {
-                            processedData.add(replaces.getId());
+                        if (!entity.getSubjectEntityList().isEmpty()) {
+                            for (SubjectEntity replaces : entity.getSubjectEntityList()) {
+                                processedData.add(replaces.getId());
+                            }
                         }
-                    }
-                    if (!processedData.isEmpty()) {
+                        if (!processedData.isEmpty()) {
 //                        String str = "SELECT p FROM MarksEntity p WHERE p.isActivated = true and p.studentId.id = :id and p.subjectMarkComponentId.subjectId.id IN :sList AND p.semesterId.semester IN :sem";
 //                        TypedQuery<MarksEntity> prequisiteQuery;
 //                        prequisiteQuery = em.createQuery(str, MarksEntity.class);
@@ -702,33 +705,34 @@ public class StudentDetail {
 //                        prequisiteQuery.setParameter("id", stuId);
 //                        prequisiteQuery.setParameter("sem", t);
 
-                        List<MarksEntity> list29 =  list
-                                .stream()
-                                .filter(c -> processedData.stream().anyMatch(b -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(b)))
-                                .collect(Collectors.toList());
-                        failed = Ultilities.HasFailedPrequisitesOfOneStudent(list29, cur.getSubjectId().getPrequisiteEntity());
-                    }
+                            List<MarksEntity> list29 =  list
+                                    .stream()
+                                    .filter(c -> processedData.stream().anyMatch(b -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(b)))
+                                    .collect(Collectors.toList());
+                            failed = Ultilities.HasFailedPrequisitesOfOneStudent(list29, cur.getSubjectId().getPrequisiteEntity());
+                        }
 
-                    if (failed) {
+                        if (failed) {
 //                        failedPrequisiteList.add(cur.getSubjectId());
-                        iteratorPre1quisite.remove();
-                    } else {
-                        List<SubjectEntity> replacers = cur.getSubjectId().getSubjectEntityList();
-                        for (SubjectEntity s : replacers) {
+                            iteratorPre1quisite.remove();
+                        } else {
+                            List<SubjectEntity> replacers = cur.getSubjectId().getSubjectEntityList();
+                            for (SubjectEntity s : replacers) {
 //                            TypedQuery<MarksEntity> queryCheckPass = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true AND a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id = :sub AND (LOWER(a.status) LIKE '%pass%' OR LOWER(a.status) LIKE 'exempt') AND a.semesterId.semester IN :sem", MarksEntity.class);
 //                            queryCheckPass.setParameter("id", stuId);
 //                            queryCheckPass.setParameter("sub", s.getId());
 //                            queryCheckPass.setParameter("sem", t);
 
-                            List<MarksEntity> rep = list
-                                    .stream()
-                                    .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(s.getId()))
-                                    .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))
-                                    .collect(Collectors.toList());
+                                List<MarksEntity> rep = list
+                                        .stream()
+                                        .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(s.getId()))
+                                        .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))
+                                        .collect(Collectors.toList());
 
-                            if (!rep.isEmpty()) {
-                                iteratorPre1quisite.remove();
-                                break;
+                                if (!rep.isEmpty()) {
+                                    iteratorPre1quisite.remove();
+                                    break;
+                                }
                             }
                         }
                     }
