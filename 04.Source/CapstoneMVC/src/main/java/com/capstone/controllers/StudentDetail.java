@@ -230,7 +230,8 @@ public class StudentDetail {
 
 //        List<MarksEntity> list = marksService.getMarksByStudentIdAndStatusAndSemester(stuId, "studying", t);
         List<MarksEntity> list = marksService.getStudentMarksById(stuId);
-        list = Global.TransformMarksList(list);
+        List<MarksEntity> sortedList = Global.TransformMarksList(list);
+        List<MarksEntity> filterList = sortedList.stream().filter(c -> c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList());
 
         // Check students score if exist remove
 //        if (!list.isEmpty()) {
@@ -262,7 +263,7 @@ public class StudentDetail {
 //        }
 
         List<List<String>> displayList = new ArrayList<>();
-        for (MarksEntity sc : list) {
+        for (MarksEntity sc : filterList) {
             List<String> row = new ArrayList<>();
             row.add(sc.getSubjectMarkComponentId().getSubjectId().getId());
             row.add(sc.getSubjectMarkComponentId().getSubjectId().getName());

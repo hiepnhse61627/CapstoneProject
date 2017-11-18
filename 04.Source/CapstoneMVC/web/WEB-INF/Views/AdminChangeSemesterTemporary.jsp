@@ -52,7 +52,7 @@
         $('input[type="radio"]').click(function () {
             if ($(this).is(':checked')) {
                 $.ajax({
-                    type: "GET",
+                    type: "POST",
                     url: "/admin/changesemster",
                     data: {"semesterId": $(this).val() },
                     success: function (result) {
