@@ -2,13 +2,12 @@ package com.capstone.controllers;
 
 import com.capstone.entities.CredentialsEntity;
 import com.capstone.entities.MarksEntity;
+import com.capstone.entities.RealSemesterEntity;
 import com.capstone.models.CustomCredentialsEntity;
 import com.capstone.models.CustomUser;
+import com.capstone.models.Global;
 import com.capstone.models.Ultilities;
-import com.capstone.services.CredentialsServiceImpl;
-import com.capstone.services.ICredentialsService;
-import com.capstone.services.IMarksService;
-import com.capstone.services.MarksServiceImpl;
+import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -39,6 +38,14 @@ public class AdminController {
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("AdminHomePage");
         view.addObject("title", "Tài khoản");
+        return view;
+    }
+
+    @RequestMapping("/change")
+    public ModelAndView ChangeSemester() {
+        ModelAndView view = new ModelAndView("AdminChangeSemesterTemporary");
+        view.addObject("title", "Set semester");
+        view.addObject("semesters", Global.getSortedList());
         return view;
     }
 
@@ -92,6 +99,23 @@ public class AdminController {
 
             data.addProperty("success", true);
             data.add("data", result);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return data;
+    }
+
+    @RequestMapping(value = "/changesemster", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject SetTemporarySemester(@RequestParam int semesterId) {
+        JsonObject data = new JsonObject();
+
+        try {
+            IRealSemesterService service = new RealSemesterServiceImpl();
+            RealSemesterEntity tem = service.findSemesterById(semesterId);
+            Global.setTemporarySemester(tem);
+            data.addProperty("success", true);
         } catch (Exception e) {
             e.printStackTrace();
         }

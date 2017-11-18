@@ -41,7 +41,7 @@
 
 
         <!-- Admin -->
-        <intercept-url pattern="/admin/**" access="hasAnyRole('ROLE_ADMIN')"/>
+        <!--<intercept-url pattern="/admin/**" access="hasAnyRole('ROLE_ADMIN')"/>-->
 
         <!-- All other links -->
         <intercept-url pattern="/**" access="hasAnyRole('ROLE_STAFF', 'ROLE_ADMIN', 'ROLE_MANAGER')"/>

@@ -52,24 +52,24 @@
                 </div>
             </div>
 
-            <div class="form-group">
-                <div class="row">
-                    <div class="my-content">
-                        <div class="my-input-group">
-                            <div class="left-content m-r-5">
-                                <label class="p-t-8">Chọn kì</label>
-                            </div>
-                            <div class="right-content width-30 width-m-70">
-                                <select id="semester" class="select">
-                                    <c:forEach var="sem" items="${semesters}">
-                                        <option value="${sem.semester}">${sem.semester}</option>
-                                    </c:forEach>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <%--<div class="form-group">--%>
+                <%--<div class="row">--%>
+                    <%--<div class="my-content">--%>
+                        <%--<div class="my-input-group">--%>
+                            <%--<div class="left-content m-r-5">--%>
+                                <%--<label class="p-t-8">Chọn kì</label>--%>
+                            <%--</div>--%>
+                            <%--<div class="right-content width-30 width-m-70">--%>
+                                <%--<select id="semester" class="select">--%>
+                                    <%--<c:forEach var="sem" items="${semesters}">--%>
+                                        <%--<option value="${sem.semester}">${sem.semester}</option>--%>
+                                    <%--</c:forEach>--%>
+                                <%--</select>--%>
+                            <%--</div>--%>
+                        <%--</div>--%>
+                    <%--</div>--%>
+                <%--</div>--%>
+            <%--</div>--%>
 
             <div class="form-group">
                 <div class="row">
@@ -377,8 +377,8 @@
             "bSort": false,
             "sAjaxSource": "/getStudentDetail",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#cb-student').val()}),
-                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
+//                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -417,8 +417,8 @@
             "bSort": false,
             "sAjaxSource": "/getStudentNextCourse",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#cb-student').val()}),
-                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
+//                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -456,8 +456,8 @@
             "bSort": false,
             "sAjaxSource": "/getStudentNotNextCourse",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#cb-student').val()}),
-                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
+//                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -505,8 +505,8 @@
             "bSort": false,
             "sAjaxSource": "/getStudentCurrentCourse",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#cb-student').val()}),
-                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
+//                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -554,8 +554,8 @@
             "bSort": false,
             "sAjaxSource": "/getStudentNextCourseSuggestion",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#cb-student').val()}),
-                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
+//                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -603,8 +603,8 @@
             "bSort": false,
             "sAjaxSource": "/getStudentNotStart",
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "stuId", "value": $('#cb-student').val()}),
-                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
+                aoData.push({"name": "stuId", "value": $('#cb-student').val()})
+//                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -652,7 +652,7 @@
     function ExportExcelForOneStudent() {
         $("input[name='objectType']").val(2);
         $("input[name='studentId']").val($('#cb-student').val());
-        $("input[name='semesterId']").val($('#semester').val())
+//        $("input[name='semesterId']").val($('#semester').val())
         $("#export-excel").submit();
 
         Call();

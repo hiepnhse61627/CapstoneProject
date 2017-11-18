@@ -38,9 +38,9 @@ public class StudentDetail {
         ModelAndView view = new ModelAndView("StudentDetail");
         view.addObject("title", "Danh sách sinh viên nợ môn");
         IRealSemesterService service = new RealSemesterServiceImpl();
-        List<RealSemesterEntity> list = service.getAllSemester();
-        sortedSemester = Ultilities.SortSemesters(list);
-        view.addObject("semesters", sortedSemester);
+//        List<RealSemesterEntity> list = service.getAllSemester();
+//        sortedSemester = Ultilities.SortSemesters(list);
+//        view.addObject("semesters", sortedSemester);
         return view;
     }
 
@@ -100,7 +100,7 @@ public class StudentDetail {
         JsonObject data = new JsonObject();
 
         int studentId = Integer.parseInt(params.get("stuId"));
-        String semester = params.get("semesterId");
+        String semester = Global.getTemporarySemester().getSemester();
 
         try {
             List<List<String>> set2 = processFailed(studentId, semester);
@@ -196,7 +196,7 @@ public class StudentDetail {
         JsonObject jsonObject = new JsonObject();
 
         int stuId = Integer.parseInt(params.get("stuId"));
-        String semester = params.get("semesterId");
+        String semester = Global.getTemporarySemester().getSemester();
 
         try {
             List<List<String>> result = processCurrent(stuId, semester);
@@ -228,7 +228,9 @@ public class StudentDetail {
 //        EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
 //        EntityManager em = emf.createEntityManager();
 
-        List<MarksEntity> list = marksService.getMarksByStudentIdAndStatusAndSemester(stuId, "studying", t);
+//        List<MarksEntity> list = marksService.getMarksByStudentIdAndStatusAndSemester(stuId, "studying", t);
+        List<MarksEntity> list = marksService.getStudentMarksById(stuId);
+        list = Global.TransformMarksList(list);
 
         // Check students score if exist remove
 //        if (!list.isEmpty()) {
@@ -279,7 +281,7 @@ public class StudentDetail {
         JsonObject jsonObject = new JsonObject();
 
         int stuId = Integer.parseInt(params.get("stuId"));
-        String semester = params.get("semesterId");
+        String semester = Global.getTemporarySemester().getSemester();
 
         try {
             List<List<String>> result = processNext(stuId, semester, false, false);
@@ -306,7 +308,7 @@ public class StudentDetail {
         JsonObject jsonObject = new JsonObject();
 
         int stuId = Integer.parseInt(params.get("stuId"));
-        String semester = params.get("semesterId");
+        String semester = Global.getTemporarySemester().getSemester();
 
         try {
             List<List<String>> result = processNext(stuId, semester, true, true);
@@ -368,7 +370,7 @@ public class StudentDetail {
                 if (doc.getCurriculumId() != null) {
                     List<SubjectCurriculumEntity> cursubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
                     for (SubjectCurriculumEntity s : cursubs) {
-                        if (s.getTermNumber() == (student.getTerm() + 1)) {
+                        if (s.getTermNumber() == (student.getTerm() + 1 - Global.SemesterGap())) {
                             if (!list.contains(s)) list.add(s);
                         }
                     }
@@ -502,7 +504,7 @@ public class StudentDetail {
         JsonObject data = new JsonObject();
 
         int stuId = Integer.parseInt(params.get("stuId"));
-        String semester = params.get("semesterId");
+        String semester = Global.getTemporarySemester().getSemester();
 
         try {
             Suggestion suggestion = processSuggestion(stuId, semester);
@@ -982,7 +984,7 @@ public class StudentDetail {
         JsonObject jsonObject = new JsonObject();
 
         int stuId = Integer.parseInt(params.get("stuId"));
-        String semester = params.get("semesterId");
+        String semester = Global.getTemporarySemester().getSemester();
 
         try {
             List<List<String>> result = processNotStart(stuId, semester);
