@@ -54,6 +54,7 @@ public class Global {
     public static List<MarksEntity> TransformMarksList(List<MarksEntity> list) {
         List<MarksEntity> removeMarks = list
                 .stream()
+                .filter(c -> c.getIsActivated() == true)
                 .filter(c -> sortedList.indexOf(c.getSemesterId()) <= sortedList.indexOf(temporarySemester))
                 .collect(Collectors.toList());
         for (MarksEntity mark : removeMarks) {

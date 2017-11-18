@@ -46,6 +46,7 @@ public class AdminController {
         ModelAndView view = new ModelAndView("AdminChangeSemesterTemporary");
         view.addObject("title", "Set semester");
         view.addObject("semesters", Global.getSortedList());
+        view.addObject("temporarySemester", Global.getTemporarySemester().getId());
         return view;
     }
 

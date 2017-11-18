@@ -27,11 +27,11 @@
                         <tbody>
                         <c:forEach var="semester" items="${semesters}" varStatus="count">
                             <tr>
-                                <t>${count.count}</t>
+                                <td>${count.count}</td>
                                 <td>${semester.semester}</td>
                                 <td>
                                     <input type="radio" name="radio" value="${semester.id}"
-                                            <c:if test="${count.last}" var="last">
+                                            <c:if test="${semester.id eq temporarySemester}">
                                                 checked
                                             </c:if>
                                     /> Set tạm thời
