@@ -423,7 +423,7 @@ public class StudentDetail {
 //                                     check prequisite
                             List<String> processedData = new ArrayList<>();
                             SubjectEntity entity = cur.getSubjectId();
-                            String preSubs = entity.getPrequisiteEntity().getPrequisiteSubs();
+                            String preSubs = entity == null ? "" : entity.getPrequisiteEntity().getPrequisiteSubs();
                             String[] rows = preSubs == null ? (entity.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : entity.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
                             for (String row : rows) {
                                 row = row.replaceAll("\\(", "").replaceAll("\\)", "");
@@ -678,7 +678,7 @@ public class StudentDetail {
 //                                     check prequisite
                     List<String> processedData = new ArrayList<>();
                     SubjectEntity entity = cur.getSubjectId();
-                    String preSubs = entity.getPrequisiteEntity().getPrequisiteSubs();
+                    String preSubs = entity == null ? "" : entity.getPrequisiteEntity().getPrequisiteSubs();
                     String[] rows = preSubs == null ? (entity.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : entity.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
                     for (String row : rows) {
                         row = row.replaceAll("\\(", "").replaceAll("\\)", "");
@@ -871,7 +871,7 @@ public class StudentDetail {
             }
 
             if (failed) {
-                iterator.remove();
+                iterator2.remove();
             } else {
                 boolean hasRemoved = false;
 //                MarksEntity mark = iterator2.next();
@@ -916,7 +916,7 @@ public class StudentDetail {
                             if (!result.isEmpty()) {
                                 if (!hasRemoved) {
                                     hasRemoved = true;
-                                    iterator.remove();
+                                    iterator2.remove();
                                     break;
                                 }
                             }
