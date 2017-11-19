@@ -76,6 +76,11 @@ public class MarksServiceImpl implements IMarksService {
     }
 
     @Override
+    public List<Object[]> getLastestPassFailMarksAndCredits(int studentId) {
+        return marksEntityJpaController.getLastestPassFailMarksAndCredits(studentId);
+    }
+
+    @Override
     public List<MarksEntity> getStudentMarksById(int stuId) {
         return marksEntityJpaController.getAllMarksByStudent(stuId);
     }
@@ -123,6 +128,11 @@ public class MarksServiceImpl implements IMarksService {
     @Override
     public List<MarksEntity> getMarkByConditions(int semesterId, List<String> subjects, int studentId) {
         return marksEntityJpaController.getMarksByConditions(semesterId, subjects, studentId);
+    }
+
+    @Override
+    public List<MarksEntity> getLastestMarksByStudentId(int studentId) {
+        return marksEntityJpaController.getLastestMarksByStudentId(studentId);
     }
 
 

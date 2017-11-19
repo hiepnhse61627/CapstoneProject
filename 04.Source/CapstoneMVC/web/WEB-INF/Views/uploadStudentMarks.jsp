@@ -321,7 +321,8 @@
             contentType: false,
             success: function (result) {
                 $('#progress').html("<div>(" + result.currentLine + "/" + result.totalLine + ")</div>" +
-                    "<div>(" + result.successSavedMark + "/" + result.totalExistMarks + ")</div>");
+                    "<div>(" + result.successSavedMark + "/" + result.totalExistMarks + ")</div>" +
+                    "<div>(" + result.updateStudentCurrentLine + "/" + result.updateStudentTotalLine + ")</div>");
                 if (running) {
                     setTimeout("updateSuccessSavedMarks(isrunning)", 50);
                 }

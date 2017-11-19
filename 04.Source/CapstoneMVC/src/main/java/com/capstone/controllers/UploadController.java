@@ -43,6 +43,8 @@ public class UploadController {
     private final String marksFolder = "Marks-StudentMarks";
     private int totalLine;
     private int currentLine;
+    private int totalLine1;
+    private int currentLine1;
     private int startRowNumber = -1;
     private int endRowNumber = -1;
 
@@ -744,6 +746,8 @@ public class UploadController {
         Callable<JsonObject> callable = () -> {
             this.totalLine = 0;
             this.currentLine = 0;
+            this.totalLine1 = 0;
+            this.currentLine1 = 0;
             startRowNumber = startRow;
             endRowNumber = endRow;
             JsonObject jsonObject = readMarkFile(file, null, true);
@@ -785,7 +789,7 @@ public class UploadController {
             int statusIndex = 5;
 
             this.currentLine = 0;
-            String markComponentName = "AVERAGE";
+            String markComponentName = Enums.MarkComponent.AVERAGE.getValue();
             Map<StudentEntity, List<ImportedMarkObject>> studentMarksMap = new HashMap<>();
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
                 if (!isCancel) {
@@ -985,6 +989,7 @@ public class UploadController {
                 }
             }
             marksService.createMarks(marksEntities);
+            UpdateStudentCredits(studentMarksMap.keySet());
 
             if (!isCancel) {
                 jsonObject.addProperty("success", true);
@@ -1005,12 +1010,55 @@ public class UploadController {
         return jsonObject;
     }
 
+    private void UpdateStudentCredits(Collection<StudentEntity> studentList) {
+        this.totalLine1 = studentList.size();
+
+        for (StudentEntity student : studentList) {
+            // Object[]: SubjectId, SubjectCredits, Mark, MarkStatus
+            List<Object[]> markList = marksService.getLastestPassFailMarksAndCredits(student.getId());
+            int totalPassCredits = 0;
+            int totalPassFailCredits = 0;
+            double passFailAverageMark = 0;
+
+            double sumPassFailMark = 0;
+            double sumPassFailCredits = 0;
+
+            for (Object[] m : markList) {
+                String subjectCode = m[0].toString();
+                int subjectCredits = (int) m[1];
+                double mark = (double) m[2];
+                String status = m[3].toString();
+
+                if (!status.equals(Enums.MarkStatus.FAIL.getValue())) {
+                    totalPassCredits += subjectCredits;
+                }
+                totalPassFailCredits += subjectCredits;
+
+                if (!Ultilities.containsIgnoreCase(subjectCode, "LAB")
+                        && !Ultilities.containsIgnoreCase(subjectCode, "SYB")) {
+                    sumPassFailMark += mark * subjectCredits;
+                    sumPassFailCredits += subjectCredits;
+                }
+            }
+            passFailAverageMark = Math.round(sumPassFailMark / sumPassFailCredits * 10.0) / 10.0;
+
+            student.setPassCredits(totalPassCredits);
+            student.setPassFailCredits(totalPassFailCredits);
+            student.setPassFailAverageMark(passFailAverageMark);
+
+            studentService.updateStudent(student);
+            ++this.currentLine1;
+        }
+    }
+
     @RequestMapping("/marks/getStatus")
     @ResponseBody
     public JsonObject GetLineStatus() {
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("totalLine", this.totalLine);
         jsonObject.addProperty("currentLine", this.currentLine);
+        jsonObject.addProperty("updateStudentTotalLine", this.totalLine1);
+        jsonObject.addProperty("updateStudentCurrentLine", this.currentLine1);
         jsonObject.addProperty("totalExistMarks", marksService.getTotalExistMarks());
         jsonObject.addProperty("successSavedMark", marksService.getSuccessSavedMark());
         return jsonObject;

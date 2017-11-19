@@ -45,6 +45,12 @@ public class StudentEntity implements Serializable {
     private String shift;
     @Column(name = "PayRollClass", length = 50)
     private String payRollClass;
+    @Column(name = "PassFailCredits")
+    private Integer passFailCredits;
+    @Column(name = "PassCredits")
+    private Integer passCredits;
+    @Column(name = "PassFailAverageMark", precision = 53)
+    private Double passFailAverageMark;
     @OneToMany(mappedBy = "studentId", fetch = FetchType.EAGER)
     private List<DocumentStudentEntity> documentStudentEntityList;
     @OneToMany(mappedBy = "studentId")
@@ -139,6 +145,30 @@ public class StudentEntity implements Serializable {
 
     public void setPayRollClass(String payRollClass) {
         this.payRollClass = payRollClass;
+    }
+
+    public Integer getPassFailCredits() {
+        return passFailCredits;
+    }
+
+    public void setPassFailCredits(Integer passFailCredits) {
+        this.passFailCredits = passFailCredits;
+    }
+
+    public Integer getPassCredits() {
+        return passCredits;
+    }
+
+    public void setPassCredits(Integer passCredits) {
+        this.passCredits = passCredits;
+    }
+
+    public Double getPassFailAverageMark() {
+        return passFailAverageMark;
+    }
+
+    public void setPassFailAverageMark(Double passFailAverageMark) {
+        this.passFailAverageMark = passFailAverageMark;
     }
 
     public List<DocumentStudentEntity> getDocumentStudentEntityList() {
