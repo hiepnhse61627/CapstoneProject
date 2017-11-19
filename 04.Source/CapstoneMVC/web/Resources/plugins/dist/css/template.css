@@ -208,6 +208,7 @@ a {
     width: 100%;
     padding: 0px 15px;
     margin-bottom: 10px;
+    display: inline-block;
 }
 
 .form-group .title > h4 {

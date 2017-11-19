@@ -117,58 +117,12 @@
         float: left;
     }
 
+    .btn-icon {
+        padding: 2px 0px;
+        font-size: 14px;
+    }
+
 </style>
-
-<div id="studentDetailModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Thông tin sinh viên</h4>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label for="subjectId">MSSV:</label>
-                            <input disabled id="subjectId" type="text" class="form-control"/>
-                        </div>
-                        <div class="form-group">
-                            <label for="subjectName">Full Name:</label>
-                            <input id="subjectName" type="text" class="form-control"/>
-                        </div>
-                        <div class="form-group">
-                            <label for="prerequisiteSubs">Giới Tính:</label>
-                            <input id="prerequisiteSubs" type="text" class="form-control"/>
-                        </div>
-                        <div class="form-group">
-                            <label for="credits">Ngành học:</label>
-                            <input id="credits" type="text" maxlength="2" class="form-control"/>
-                        </div>
-                        <div class="form-group">
-                            <label for="replacementSubject">Ngày sinh:</label>
-                            <input id="replacementSubject" type="text" class="form-control"/>
-                        </div>
-                        <div class="form-group">
-                            <label for="failMark">Khóa ngành</label>
-                            <input id="failMark" type="text" class="form-control"/>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button id="btnSubmit" type="button" class="btn btn-primary" onclick="return confirmChange($('#subjectId').val(),$('#subjectName').val()
-                ,$('#prerequisiteSubs').val(),$('#credits').val(),$('#replacementSubject').val(),
-                $('#effectionSemester').val(),$('#failMark').val())">Thay đổi thông tin
-                </button>
-            </div>
-        </div>
-
-    </div>
-</div>
 
 <section class="content">
     <div class="box">
@@ -192,10 +146,16 @@
             <div class="form-group">
                 <div class="row">
                     <div class="title">
-                        <h4>Thông tin chi tiết</h4>
-                        <i>
-                            <button id="onOff" onclick="return onEdit()">Edit</button>
-                        </i>
+                        <h4 class="text-left m-r-10 m-t-5">Thông tin chi tiết</h4>
+                        <button class="btn btn-primary text-left" id="btnEdit" onclick="onEdit()">
+                            <i class="glyphicon glyphicon-pencil btn-icon"></i>
+                        </button>
+                        <button class="btn btn-success text-left m-r-5" id="btnSubmit" onclick="EditStudent()" style="display: none">
+                            <i class="fa fa-check btn-icon"></i>
+                        </button>
+                        <button class="btn btn-danger text-left" id="btnCancel" onclick="onCancel()" style="display: none">
+                            <i class="fa fa-times btn-icon"></i>
+                        </button>
                     </div>
                     <div class="my-content">
                         <div class="row m-0">
@@ -327,16 +287,16 @@
 
 
 <script>
-
-    function confirmChange(rollNumber, fullName, gender, dob, program, curriculum) {
-
-        if (confirm("Xác nhận thay đổi thông tin cho sinh viên " + fullName + "?")) {
-            EditStudent(rollNumber, fullName, gender, dob, program, curriculum);
-        }
-    }
+    var oldFullName;
+    var oldGender;
+    var oldDoB;
 
     $(document).ready(function () {
         LoadMarkList();
+
+        oldFullName = '${student.fullName}';
+        oldGender = '${gender}';
+        oldDoB = '${dateOfBirth}';
     });
 
     function LoadMarkList() {
@@ -428,49 +388,67 @@
         });
     }
 
-    function EditStudent(rollNumber, fullName, gender, dob, program, curriculum) {
-
-        $.ajax({
-            type: "POST",
-            url: "/student/edit",
-            data: {
-                "sRollNumber": rollNumber,
-                "sFullName": fullName,
-                "sGender": gender,
-                "sDOB": dob,
-                "sProgram": program,
-                "sCurriculum": curriculum,
-            },
-            success: function (result) {
-                if (result.success) {
-                    swal({
-                        title: 'Thành công',
-                        text: "Đã cập nhật môn học!",
-                        type: 'success'
-                    }).then(function () {
-                        LoadMarkList();
-                        document.getElementById('studentName').disabled = true;
-                        document.getElementById('onOff').style.display = 'block';
-                        document.getElementById('dateOfBirth').disabled = true;
-                        document.getElementById('gender').disabled = true;
-                        document.getElementById('change').style.display = 'none';
-                    });
-                    $("#subjectDetailModal").modal('toggle');
-                } else {
-                    swal('', result.message, 'error');
+    function EditStudent() {
+        swal({
+            title: 'Xác nhận cập nhật sinh viên?',
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Tiếp tục',
+            cancelButtonText: 'Đóng'
+        }).then(function () {
+            $.ajax({
+                type: "POST",
+                url: "/student/edit",
+                data: {
+                    "sRollNumber": $('#rollNumber').val(),
+                    "sFullName": $('#studentName').val(),
+                    "sGender": $('#gender').val(),
+                    "sDOB": $('#dateOfBirth').val(),
+                    "sProgram": $('#program').val(),
+                    "sCurriculum": $('#curriculum').val(),
+                },
+                success: function (result) {
+                    if (result.success) {
+                        swal({
+                            title: 'Thành công',
+                            text: "Đã cập nhật sinh viên!",
+                            type: 'success'
+                        }).then(function () {
+                            oldFullName = $('#studentName').val();
+                            oldGender = $('#gender').val();
+                            oldDoB = $('#dateOfBirth').val();
+                            onCancel();
+                        });
+                    } else {
+                        swal('', result.message, 'error');
+                    }
                 }
-            }
+            });
         });
-
-
     }
 
     function onEdit() {
-        document.getElementById('studentName').disabled = false;
-        document.getElementById('onOff').style.display = 'none';
-        document.getElementById('dateOfBirth').disabled = false;
-        document.getElementById('gender').disabled = false;
-        document.getElementById('change').style.display = 'block';
+        $('#btnEdit').hide();
+        $('#btnSubmit').show();
+        $('#btnCancel').show();
+        $('#studentName').prop("disabled", false);
+        $('#dateOfBirth').prop("disabled", false);
+        $('#gender').prop("disabled", false);
+    }
+
+    function onCancel() {
+        $('#btnEdit').show();
+        $('#btnSubmit').hide();
+        $('#btnCancel').hide();
+        $('#studentName').prop("disabled", true);
+        $('#dateOfBirth').prop("disabled", true);
+        $('#gender').prop("disabled", true);
+
+        $('#studentName').val(oldFullName);
+        $('#dateOfBirth').val(oldDoB);
+        $('#gender').val(oldGender);
     }
 
 </script>
