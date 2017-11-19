@@ -11,6 +11,7 @@ import org.apache.commons.lang3.reflect.Typed;
 import javax.persistence.*;
 import javax.persistence.criteria.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.bouncycastle.asn1.x500.style.RFC4519Style.o;
 
@@ -689,17 +690,84 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         return result;
     }
 
-    private class AverageSubject_StudentData {
-        public int curriculumId;
-        public List<String> subjectList;
+    public List<Object[]> getLastestPassFailMarksAndCredits(int studentId) {
+        List<Object[]> result =  new ArrayList<>();
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+            List<MarksEntity> markList = this.getLastestMarksByStudentId(studentId);
+            markList = markList.stream().filter(m ->
+                    m.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
+                    || m.getStatus().equalsIgnoreCase(Enums.MarkStatus.IS_EXEMPT.getValue())
+                    || m.getStatus().equalsIgnoreCase(Enums.MarkStatus.FAIL.getValue()))
+                    .collect(Collectors.toList());
+
+            if (!markList.isEmpty()) {
+                List<Integer> markIds = markList.stream().map(m -> m.getId()).collect(Collectors.toList());
+
+                String queryStr = "SELECT sc.SubjectId, sc.SubjectCredits, m.AverageMark, m.Status" +
+                        " FROM Marks m" +
+                        " INNER JOIN Subject_MarkComponent smc ON m.SubjectMarkComponentId = smc.Id" +
+                        " INNER JOIN MarkComponent mc ON smc.MarkComponentId = mc.Id" +
+                        " INNER JOIN Subject sub ON smc.SubjectId = sub.Id" +
+                        " INNER JOIN Document_Student ds ON m.StudentId = ds.StudentId" +
+                        " INNER JOIN Curriculum c ON ds.CurriculumId = c.Id" +
+                        " INNER JOIN Subject_Curriculum sc ON sc.CurriculumId = c.Id" +
+                        " AND sc.SubjectId = sub.Id" +
+                        " AND m.IsActivated = 1" +
+                        " AND m.StudentId = ?" +
+                        " AND mc.Name = ?" +
+                        " AND ds.CurriculumId IS NOT NULL" +
+                        " AND m.Id IN (" + Ultilities.parseIntegerListToString(markIds) + ")";
+                Query query = em.createNativeQuery(queryStr);
+                query.setParameter(1, studentId);
+                query.setParameter(2, Enums.MarkComponent.AVERAGE.getValue());
+
+                result = query.getResultList();
+            }
+
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
     }
 
-    private class GraduatedStudent_StudentData {
-        public String rollNumber;
-        public String fullName;
-        public int totalCredits;
-        public int totalSpecializedCredits;
+    public List<MarksEntity> getLastestMarksByStudentId(int studentId) {
+        List<MarksEntity> result = null;
+        EntityManager em = null;
+
+        try {
+            List<MarksEntity> markList = this.getAllMarksByStudent(studentId);
+            markList = Ultilities.SortSemestersByMarks(markList);
+
+            result = new ArrayList<>();
+            for (MarksEntity curMark : markList) {
+                boolean duppicate = false;
+                for (MarksEntity mark : result) {
+                    if (curMark.getSubjectMarkComponentId().getId() == mark.getSubjectMarkComponentId().getId()) {
+                        mark = curMark;
+                        duppicate = true;
+                        break;
+                    }
+                }
+                if (!duppicate) {
+                    result.add(curMark);
+                }
+            }
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
     }
+
+
 
     public List<MarksEntity> getMarksByConditions(int semesterId, List<String> subjects, int studentId) {
         if (realSemesters == null) {
@@ -732,5 +800,19 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         marks = query.getResultList();
 
         return marks;
+    }
+
+
+
+    private class AverageSubject_StudentData {
+        public int curriculumId;
+        public List<String> subjectList;
+    }
+
+    private class GraduatedStudent_StudentData {
+        public String rollNumber;
+        public String fullName;
+        public int totalCredits;
+        public int totalSpecializedCredits;
     }
 }
