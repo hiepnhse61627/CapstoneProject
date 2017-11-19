@@ -70,6 +70,11 @@ public class SubjectServiceImpl implements ISubjectService {
     }
 
     @Override
+    public void cleanReplacers() {
+        controller.cleanReplacers();
+    }
+
+    @Override
     public List<SubjectEntity> getSubjectsByMarkStatus(String[] statuses) {
         return controller.getSubjectsByMarkStatus(statuses);
     }

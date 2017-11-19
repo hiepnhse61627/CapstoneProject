@@ -288,20 +288,24 @@ public class SubjectController {
                 while (rowIterator.hasNext()) {
                     Row row = rowIterator.next();
                     Iterator<Cell> cellIterator = row.cellIterator();
-                    SubjectEntity en = new SubjectEntity();
-                    en.setIsSpecialized(false);
                     ReplacementSubject re = new ReplacementSubject();
-                    PrequisiteEntity prequisiteEntity = null;
+
+                    SubjectEntity en = null;
+//                    PrequisiteEntity prequisiteEntity = null;
+
                     while (cellIterator.hasNext()) {
                         Cell cell = cellIterator.next();
                         if (row.getRowNum() > 3) { //To filter column headings
 //                            System.out.println(row.getRowNum());
                             if (cell.getColumnIndex() == 0) { // Subject code
-                                en.setId(cell.getStringCellValue().trim());
-
-                                prequisiteEntity = new PrequisiteEntity();
-                                prequisiteEntity.setSubjectId(en.getId());
-
+                                en = subjectService.findSubjectById(cell.getStringCellValue().trim());
+                                if (en == null) {
+                                    en = new SubjectEntity();
+                                    en.setId(cell.getStringCellValue().trim());
+                                    en.setPrequisiteEntity(new PrequisiteEntity());
+                                    en.getPrequisiteEntity().setSubjectId(en.getId());
+                                }
+                                en.setIsSpecialized(false);
                                 re.setSubCode(en.getId());
                             } else if (cell.getColumnIndex() == 1) { // Abbreviation
                                 en.setAbbreviation(cell.getStringCellValue().trim());
@@ -309,44 +313,40 @@ public class SubjectController {
                                 en.setName(cell.getStringCellValue().trim());
                             } else if (cell.getColumnIndex() == 4) { // Prerequisite
                                 String prequisite = cell.getStringCellValue().trim();
-                                if (prequisiteEntity != null && prequisite != null && !prequisite.isEmpty()) {
-                                    prequisiteEntity.setPrequisiteSubs(prequisite);
+                                if (!prequisite.isEmpty()) {
+                                    en.getPrequisiteEntity().setPrequisiteSubs(prequisite);
                                 }
-                                en.setPrequisiteEntity(prequisiteEntity);
                             } else if (cell.getColumnIndex() == 5) {
                                 if (cell.getCellType() != Cell.CELL_TYPE_BLANK && cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
                                     double mark = cell.getNumericCellValue();
-                                    if (prequisiteEntity != null) {
-                                        prequisiteEntity.setFailMark((int) mark);
-                                    }
+                                    en.getPrequisiteEntity().setFailMark((int) mark);
                                 }
                             } else if (cell.getColumnIndex() == 6) {
                                 String replacers = cell.getStringCellValue().trim();
                                 re.setReplaceCode(replacers);
                             } else if (cell.getColumnIndex() == 7) {
                                 String semester = cell.getStringCellValue().trim();
-                                if (prequisiteEntity != null && semester != null && !semester.isEmpty()) {
-                                    prequisiteEntity.setEffectionSemester(semester);
+                                if (!semester.isEmpty()) {
+                                    en.getPrequisiteEntity().setEffectionSemester(semester);
                                 }
                             } else if (cell.getColumnIndex() == 8) {
                                 String presub = cell.getStringCellValue().trim();
-                                if (prequisiteEntity != null && presub != null && !presub.isEmpty()) {
-                                    prequisiteEntity.setNewPrequisiteSubs(presub);
+                                if (presub != null && !presub.isEmpty()) {
+                                    en.getPrequisiteEntity().setNewPrequisiteSubs(presub);
                                 }
                             } else if (cell.getColumnIndex() == 9) {
                                 if (cell.getCellType() != Cell.CELL_TYPE_BLANK && cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
                                     double newmark = cell.getNumericCellValue();
-                                    if (prequisiteEntity != null) {
-                                        prequisiteEntity.setNewFailMark((int) newmark);
-                                    }
+                                    en.getPrequisiteEntity().setNewFailMark((int) newmark);
                                 }
-
                             }
                         }
                     }
-                    if (prequisiteEntity != null) en.setPrequisiteEntity(prequisiteEntity);
 
-                    if (en.getName() != null && !en.getName().isEmpty() && !columndata.stream().anyMatch(c -> c.getId().equals(en.getId()))) {
+//                    if (prequisiteEntity != null) en.setPrequisiteEntity(prequisiteEntity);
+
+                    SubjectEntity finalEn = en;
+                    if (finalEn != null && finalEn.getName() != null && !finalEn.getName().isEmpty() && !columndata.stream().anyMatch(c -> c.getId().equals(finalEn.getId()))) {
                         columndata.add(en);
                         replace.add(re);
                     }
@@ -356,6 +356,8 @@ public class SubjectController {
             is.close();
 
             subjectService.insertSubjectList(columndata);
+
+            subjectService.cleanReplacers();
             subjectService.insertReplacementList(replace);
         } catch (Exception e) {
             e.printStackTrace();
@@ -367,7 +369,6 @@ public class SubjectController {
         obj.addProperty("success", true);
         return obj;
     }
-
 
 
     @RequestMapping(value = "/subject/create")

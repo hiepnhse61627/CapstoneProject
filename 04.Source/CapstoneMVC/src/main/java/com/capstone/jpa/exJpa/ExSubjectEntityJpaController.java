@@ -245,8 +245,10 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         manager.getTransaction().begin();
 
         for (SubjectEntity en : list) {
-            if (manager.find(SubjectEntity.class, en.getId()) == null) {
+            if (en.getId() == null) {
                 manager.persist(en);
+            } else {
+                manager.merge(en);
             }
             ++this.currentLine;
         }
@@ -390,5 +392,16 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         }
 
         return null;
+    }
+    public void cleanReplacers() {
+        try {
+            EntityManager em = getEntityManager();
+            em.getTransaction().begin();
+            Query query = em.createNativeQuery("DELETE FROM Replacement_Subject");
+            query.executeUpdate();
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

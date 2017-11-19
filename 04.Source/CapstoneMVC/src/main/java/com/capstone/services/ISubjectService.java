@@ -19,5 +19,6 @@ public interface ISubjectService {
     int getCurrentLine();
     int getTotalLine();
     int countStudentCredits(int studentId);
+    void cleanReplacers();
     List<SubjectEntity> getSubjectsByMarkStatus(String[] statuses);
 }
