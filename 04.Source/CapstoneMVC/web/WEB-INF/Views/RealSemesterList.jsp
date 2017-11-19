@@ -49,8 +49,11 @@
                                     />
                                 </td>
                                 <td class="text-center">
-                                    <c:if test="${not empty semester.link}">
+                                    <c:if test="${semester.finished}">
                                         <a href="${semester.link}">Download Link</a>
+                                    </c:if>
+                                    <c:if test="${not semester.finished}">
+                                        ${semester.link}
                                     </c:if>
                                 </td>
                             </tr>

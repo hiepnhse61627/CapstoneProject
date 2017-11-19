@@ -2,6 +2,7 @@ package com.capstone.controllers;
 
 import com.capstone.exporters.ExportStatusReport;
 import com.capstone.exporters.IExportObject;
+import com.capstone.models.Jobs;
 import com.capstone.models.Logger;
 import com.capstone.services.IRealSemesterService;
 import com.capstone.services.RealSemesterServiceImpl;
@@ -113,6 +114,8 @@ public class ExportCloseSemesterController {
             IRealSemesterService service = new RealSemesterServiceImpl();
             String semName = service.findSemesterById(Integer.parseInt(semesterId)).getSemester();
 
+            Jobs.addJob(semName, "0");
+
             OutputStream os = null;
 
             for (int i = 1; i <= 10; i++) {
@@ -162,6 +165,8 @@ public class ExportCloseSemesterController {
                     }
                 }
             }
+
+            Jobs.addJob(semName, "1");
             System.out.println("Exported All");
         });
         t.start();

@@ -2,6 +2,8 @@ package com.capstone.controllers;
 
 import com.capstone.entities.RealSemesterEntity;
 import com.capstone.models.CustomRealSemesterEntity;
+import com.capstone.models.Jobs;
+import com.capstone.models.Logger;
 import com.capstone.services.IRealSemesterService;
 import com.capstone.services.RealSemesterServiceImpl;
 import com.google.gson.JsonObject;
@@ -34,17 +36,33 @@ public class RealSemesterController {
         for (RealSemesterEntity r : real) {
             CustomRealSemesterEntity custom = new CustomRealSemesterEntity();
             custom.setEntity(r);
-            try {
-                String realPath = request.getServletContext().getRealPath("/") + "CloseSemester/" + r.getSemester() + "/";
-                File file = new File(realPath);
-                if (file.exists() && file.isDirectory()) {
-                    custom.setLink("/managerrole/get/" + r.getSemester());
-                } else {
-                    custom.setLink("");
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
+
+            String loggerLocation = Logger.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+            String path = loggerLocation.substring(0, loggerLocation.indexOf("WEB-INF")) + "CloseSemester/";
+            String realPath = path + r.getSemester() + "/";
+            File dir = new File(realPath);
+
+            if (r.getSemester().equals("SUMMER2017")){
+                System.out.println("");
             }
+
+            if (Jobs.getJob(r.getSemester()) == null && !dir.exists()) {
+                custom.setLink("");
+                custom.setFinished(false);
+            } else if (Jobs.getJob(r.getSemester()) != null && Jobs.getJob(r.getSemester()).equals("0")) {
+                custom.setLink("Đang xử lý, xin đợi giây lát");
+                custom.setFinished(false);
+            } else if (Jobs.getJob(r.getSemester()) != null && Jobs.getJob(r.getSemester()).equals("1")) {
+                custom.setLink("/managerrole/get/" + r.getSemester());
+                custom.setFinished(true);
+            } else if (dir.exists()) {
+                custom.setLink("/managerrole/get/" + r.getSemester());
+                custom.setFinished(true);
+            } else {
+                custom.setLink("");
+                custom.setFinished(false);
+            }
+
             r2.add(custom);
         }
         view.addObject("semesters", r2);
@@ -55,18 +73,22 @@ public class RealSemesterController {
     @ResponseBody
     public JsonObject TurnOnOff(@RequestParam int semesterId, @RequestParam boolean onoff) {
         JsonObject obj = new JsonObject();
-        try {
-            IRealSemesterService service = new RealSemesterServiceImpl();
-            RealSemesterEntity semester = service.findSemesterById(semesterId);
-            semester.setActive(onoff);
-            service.update(semester);
-            obj.addProperty("success", true);
-        } catch (Exception e) {
-            e.printStackTrace();
-            obj.addProperty("success", false);
-            obj.addProperty("msg", e.getMessage());
-        }
-
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    IRealSemesterService service = new RealSemesterServiceImpl();
+                    RealSemesterEntity semester = service.findSemesterById(semesterId);
+                    semester.setActive(onoff);
+                    service.update(semester);
+                    System.out.println("Turned off " + semester.getSemester());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        t.start();
+        obj.addProperty("thread", t.getId());
         return obj;
     }
 
