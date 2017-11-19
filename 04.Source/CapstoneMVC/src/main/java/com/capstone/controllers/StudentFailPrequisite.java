@@ -4,6 +4,7 @@ import com.capstone.entities.MarksEntity;
 import com.capstone.entities.PrequisiteEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.models.FailPrequisiteModel;
+import com.capstone.models.Global;
 import com.capstone.models.Ultilities;
 import com.capstone.services.ISubjectService;
 import com.capstone.services.SubjectServiceImpl;
@@ -197,6 +198,8 @@ public class StudentFailPrequisite {
         prequisiteQuery.setParameter("sList", processedData);
 
         List<MarksEntity> list = prequisiteQuery.getResultList();
+        list = Global.TransformMarksList(list);
+
         Ultilities.FilterStudentPassedSubFailPrequisite(list, prequisites).forEach(c -> {
             if (!result.contains(c)) {
                 result.add(c);

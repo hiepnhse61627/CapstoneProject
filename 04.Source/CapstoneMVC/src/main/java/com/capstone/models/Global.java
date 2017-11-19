@@ -52,14 +52,17 @@ public class Global {
     }
 
     public static List<MarksEntity> TransformMarksList(List<MarksEntity> list) {
-        List<MarksEntity> removeMarks = list
+        List<MarksEntity> removeMarks;
+        removeMarks = list
                 .stream()
                 .filter(c -> c.getIsActivated() == true)
                 .filter(c -> sortedList.indexOf(c.getSemesterId()) <= sortedList.indexOf(temporarySemester))
                 .collect(Collectors.toList());
-        for (MarksEntity mark : removeMarks) {
-            if (mark.getSemesterId() != null && mark.getSemesterId().getId() == temporarySemester.getId()) {
-                mark.setStatus("Studying");
+        if (currentSemester.getId().intValue() != temporarySemester.getId().intValue()) {
+            for (MarksEntity mark : removeMarks) {
+                if (mark.getSemesterId() != null && mark.getSemesterId().getId() == temporarySemester.getId()) {
+                    mark.setStatus("Studying");
+                }
             }
         }
 

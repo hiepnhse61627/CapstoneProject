@@ -466,7 +466,8 @@ public class ManagerController {
         IStudentService studentService = new StudentServiceImpl();
         StudentEntity student = studentService.findStudentById(stuId);
         List<MarksEntity> marks = student.getMarksEntityList();
-        List<MarksEntity> filterMarks = marks.stream().filter(a -> a.getStatus().toLowerCase().contains("pass") || a.getStatus().toLowerCase().contains("exempt")).collect(Collectors.toList());
+//        List<MarksEntity> filterMarks = marks.stream().filter(a -> a.getStatus().toLowerCase().contains("pass") || a.getStatus().toLowerCase().contains("exempt")).collect(Collectors.toList());
+        List<MarksEntity> filterMarks = marks;
 
         List<ChangeCurriculumModel> model = list
                 .stream()

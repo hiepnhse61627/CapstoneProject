@@ -3,6 +3,7 @@ package com.capstone.controllers;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.RealSemesterEntity;
 import com.capstone.models.FailPrequisiteModel;
+import com.capstone.models.Global;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import com.google.common.collect.HashBasedTable;
@@ -91,6 +92,7 @@ public class PercentFailController {
             }
 
             List<MarksEntity> list = query.getResultList();
+            list = Global.TransformMarksList(list);
 
             if (!list.isEmpty()) {
                 Table<Integer, String, List<MarksEntity>> filtered = FillterPassFailList(list);
