@@ -1070,6 +1070,8 @@ public class UploadController {
         Callable<JsonObject> callable = () -> {
             this.totalLine = 0;
             this.currentLine = 0;
+            this.totalLine1 = 0;
+            this.currentLine1 = 0;
             JsonObject jsonObject = updateMarkFile(file, null, true);
 //            if (jsonObject.get("success").getAsBoolean()) {
 //                ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
@@ -1196,8 +1198,10 @@ public class UploadController {
 
             this.totalLine = updateList.size();
 
+            Set<StudentEntity> studentSet = new HashSet<>();
             for (UpdatedMarkObject markObj : updateList) {
                 StudentEntity student = studentService.findStudentByRollNumber(markObj.getRollNumber());
+                studentSet.add(student);
                 RealSemesterEntity oldSemesterEntity = findOrCreateSemester(semesterList, markObj.getOldSemester());
                 MarksEntity marksEntity = marksService.getMarkByAllFields(student.getId(),
                         markObj.getSubjectCode(), oldSemesterEntity.getId(), markObj.getOldMark(),
@@ -1231,6 +1235,7 @@ public class UploadController {
                 ++this.currentLine;
                 System.out.println(currentLine + " - " + totalLine);
             }
+            this.UpdateStudentCredits(studentSet);
 
             workbook.close();
             is.close();

@@ -23,12 +23,10 @@
                 <div class="col-md-3 text-right">
                     <button type="button" class="btn btn-warning btn-with-icon" onclick="ExportExcelForOneStudent()">
                         <i class="glyphicon glyphicon-open"></i>
-                        <%--<i class="fa fa-upload"></i>--%>
                         <div>Xuất dữ liêu cho sinh viên đang được chọn</div>
                     </button>
                     <button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
                         <i class="glyphicon glyphicon-open"></i>
-                        <%--<i class="fa fa-upload"></i>--%>
                         <div>XUẤT DỮ LIỆU</div>
                     </button>
                 </div>

@@ -102,9 +102,9 @@ public class GoodStudentController {
                 " INNER JOIN Program p ON c.ProgramId = p.Id" +
                 " INNER JOIN Subject_Curriculum sc ON c.Id = sc.CurriculumId" +
                 " AND smc.MarkComponentId = ? AND sub.Id = sc.SubjectId" +
-                " AND m.IsActivated = 1" +
+                " AND c.ProgramId = s.ProgramId AND p.Name != 'PC'" +
                 " AND ds.CurriculumId IS NOT NULL" +
-                " AND p.Name != 'PC'" +
+                " AND m.IsActivated = 1" +
                 ((semesterId != 0) ? " AND m.SemesterId = ?" : "");
         Query query = em.createNativeQuery(queryStr);
         query.setParameter(1, markComponent.getId());
@@ -146,9 +146,9 @@ public class GoodStudentController {
                     " INNER JOIN Student s ON ds.StudentId = s.Id" +
                     " INNER JOIN Curriculum c ON ds.CurriculumId = c.Id" +
                     " INNER JOIN Program p ON c.ProgramId = p.Id" +
+                    " AND c.ProgramId = s.ProgramId AND p.Name != 'PC'" +
                     " AND ds.StudentId IN " + idStr +
-                    " AND ds.CurriculumId IS NOT NULL" +
-                    " AND p.Name != 'PC'";
+                    " AND ds.CurriculumId IS NOT NULL";
             Query queryDocStudent = em.createNativeQuery(queryStr, DocumentStudentEntity.class);
             List<DocumentStudentEntity> docStudentList = queryDocStudent.getResultList();
 
