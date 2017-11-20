@@ -146,6 +146,10 @@ public class GraduateController {
                     }
                 }
                 studentCredits += subjectsCredits.get(subject) != null && subject.getType() != SubjectTypeEnum.OJT.getId() ? subjectsCredits.get(subject) : 0;
+
+                if (subjectsCredits.get(subject) != null && student.getId() == 69667) {
+                    System.out.println(subject.getId() + "_" + subjectsCredits.get(subject) + "_" + studentCredits);
+                }
             }
 
             int specializedCredits = student.getProgramId().getSpecializedCredits();

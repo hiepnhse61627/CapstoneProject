@@ -41,6 +41,8 @@ public class MarksEntity implements Serializable {
     private String status;
     @Column(name = "IsActivated")
     private Boolean isActivated;
+    @Column(name = "IsEnabled")
+    private Boolean isEnabled;
     @JoinColumn(name = "CourseId", referencedColumnName = "Id")
     @ManyToOne
     private CourseEntity courseId;
@@ -91,6 +93,14 @@ public class MarksEntity implements Serializable {
 
     public void setIsActivated(Boolean isActivated) {
         this.isActivated = isActivated;
+    }
+
+    public Boolean getEnabled() {
+        return isEnabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        isEnabled = enabled;
     }
 
     public CourseEntity getCourseId() {

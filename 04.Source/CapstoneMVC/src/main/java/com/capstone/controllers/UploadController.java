@@ -787,6 +787,7 @@ public class UploadController {
             int subjectCodeIndex = 2;
             int averageMarkIndex = 4;
             int statusIndex = 5;
+            int enabledIndex = 6;
 
             this.currentLine = 0;
             String markComponentName = Enums.MarkComponent.AVERAGE.getValue();
@@ -807,14 +808,15 @@ public class UploadController {
                     if (rollNumberCell != null) {
                         StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumberCell.getStringCellValue().trim());
                         if (studentEntity != null) {
+                            Cell semesterNameCell = row.getCell(semesterNameIndex);
+                            Cell subjectCodeCell = row.getCell(subjectCodeIndex);
+                            Cell averageMarkCell = row.getCell(averageMarkIndex);
+                            Cell statusCell = row.getCell(statusIndex);
+                            Cell enabledCell = row.getCell(enabledIndex);
+
                             if (studentMarksMap.get(studentEntity) != null) {
                                 ImportedMarkObject importedMarkObject = new ImportedMarkObject();
                                 importedMarkObject.setStudentEntity(studentEntity);
-
-                                Cell semesterNameCell = row.getCell(semesterNameIndex);
-                                Cell subjectCodeCell = row.getCell(subjectCodeIndex);
-                                Cell averageMarkCell = row.getCell(averageMarkIndex);
-                                Cell statusCell = row.getCell(statusIndex);
 
                                 String semesterName = "";
                                 if (semesterNameCell != null) {
@@ -838,6 +840,10 @@ public class UploadController {
 
                                 if (statusCell != null) {
                                     importedMarkObject.setStatus(statusCell.getStringCellValue());
+                                }
+
+                                if (enabledCell != null) {
+                                    importedMarkObject.setEnabled(enabledCell.getBooleanCellValue());
                                 }
 
                                 studentMarksMap.get(studentEntity).add(importedMarkObject);
@@ -845,11 +851,6 @@ public class UploadController {
                                 ImportedMarkObject importedMarkObject = new ImportedMarkObject();
                                 importedMarkObject.setStudentEntity(studentEntity);
 
-                                Cell semesterNameCell = row.getCell(semesterNameIndex);
-                                Cell subjectCodeCell = row.getCell(subjectCodeIndex);
-                                Cell averageMarkCell = row.getCell(averageMarkIndex);
-                                Cell statusCell = row.getCell(statusIndex);
-
                                 String semesterName = "";
                                 if (semesterNameCell != null) {
                                     semesterName = semesterNameCell.getStringCellValue().trim().toUpperCase().replaceAll(" ", "");
@@ -873,6 +874,11 @@ public class UploadController {
                                 if (statusCell != null) {
                                     importedMarkObject.setStatus(statusCell.getStringCellValue());
                                 }
+
+                                if (enabledCell != null) {
+                                    importedMarkObject.setEnabled(enabledCell.getBooleanCellValue());
+                                }
+
                                 List<ImportedMarkObject> listImported = new ArrayList<>();
                                 listImported.add(importedMarkObject);
 
@@ -940,6 +946,8 @@ public class UploadController {
                     marksEntity.setAverageMark(object.getAverageMark());
                     // set status
                     marksEntity.setStatus(object.getStatus());
+                    // set enabled
+                    marksEntity.setEnabled(object.getEnabled());
                     // set isActivated
                     marksEntity.setIsActivated(true);
                     // set semester
@@ -1030,6 +1038,7 @@ public class UploadController {
             int subjectCodeIndex = 2;
             int averageMarkIndex = 4;
             int statusIndex = 5;
+            int enabledIndex = 6;
 
             this.currentLine = 0;
             String markComponentName = Enums.MarkComponent.AVERAGE.getValue();
@@ -1048,6 +1057,7 @@ public class UploadController {
                         Cell subjectCodeCell = row.getCell(subjectCodeIndex);
                         Cell averageMarkCell = row.getCell(averageMarkIndex);
                         Cell statusCell = row.getCell(statusIndex);
+                        Cell enabledCell = row.getCell(enabledIndex);
 
                         // set semester
                         if (semesterNameCell != null) {
@@ -1116,6 +1126,11 @@ public class UploadController {
 
                         // set isActivated
                         mark.setIsActivated(true);
+
+                        // set Enabled
+                        if (enabledCell != null) {
+                            mark.setEnabled(enabledCell.getBooleanCellValue());
+                        }
 
                         // add to list mark entities
                         marksEntities.add(mark);
