@@ -40,7 +40,6 @@ public class StudentList {
         view.addObject("title", "Thông tin sinh viên");
 
         StudentEntity student = studentService.findStudentById(studentId);
-//        DocumentStudentEntity docStudent = documentStudentService.getLastestDocumentStudentById(studentId);
 
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         view.addObject("student", student);
@@ -109,11 +108,8 @@ public class StudentList {
             EntityManager em = emf.createEntityManager();
 
             List<RealSemesterEntity> sortedSemesters = Ultilities.SortSemesters(semesterService.getAllSemester());
-            Map<String, Integer> semesterPositionMap = new HashMap<>();
-            for (int i = 0; i < sortedSemesters.size(); ++i) {
-                semesterPositionMap.put(sortedSemesters.get(i).getSemester(), i);
-            }
 
+            // Get all marks exist in student subject curriculum
             String queryStr = "SELECT m.id, sub.id, sub.name, m.semesterId.semester, sc.subjectCredits, m.averageMark, m.status, sc.termNumber" +
                     " FROM MarksEntity m" +
                     " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id" +
@@ -166,7 +162,6 @@ public class StudentList {
 //                    curMarkList = curMarkList.stream().filter(Ultilities.distinctByKey(c -> c.getSubject() + "_" + c.getSemester())).collect(Collectors.toList());
 
                     markIdList.add((Integer) row[0]);
-                    System.out.print("," + (Integer) row[0]);
                 }
 
                 Collections.sort(result, new Comparator<StudentDetailModel>() {
@@ -176,6 +171,7 @@ public class StudentList {
                     }
                 });
 
+                // Get other marks that not exist in student subject curriculum
                 queryStr = "SELECT m.id, sub.id, sub.name, m.semesterId.semester, sc.subjectCredits, m.averageMark, m.status" +
                         " FROM MarksEntity m" +
                         " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id" +
@@ -183,6 +179,7 @@ public class StudentList {
                         " INNER JOIN MarkComponentEntity mc ON smc.markComponentId.id = mc.id" +
                         " INNER JOIN DocumentStudentEntity ds ON ds.studentId.id = m.studentId.id" +
                         " INNER JOIN SubjectCurriculumEntity sc ON ds.curriculumId.id = sc.curriculumId.id" +
+                        " AND sc.subjectId.id = sub.id" +
                         " AND mc.name LIKE :markComponentName" +
                         " AND m.studentId.id = :studentId" +
                         " AND m.id NOT IN :sList" +
@@ -215,17 +212,18 @@ public class StudentList {
                     studentDetailModel.markList = markList;
                     result.add(studentDetailModel);
                 }
+            }
 
-                for (StudentDetailModel studentDetailModel : result) {
-                    studentDetailModel.markList.sort(new Comparator<MarkModel>() {
-                        @Override
-                        public int compare(MarkModel o1, MarkModel o2) {
-                            return o1.getSubjectName().compareTo(o2.getSubjectName());
-                        }
-                    }.thenComparingInt(m -> {
-                        return semesterPositionMap.get(m.getSemester());
-                    }));
-                }
+            // Sort data
+            for (StudentDetailModel studentDetailModel : result) {
+                studentDetailModel.markList.sort(new Comparator<MarkModel>() {
+                    @Override
+                    public int compare(MarkModel o1, MarkModel o2) {
+                        return o1.getSubjectName().compareTo(o2.getSubjectName());
+                    }
+                }.thenComparingInt(m -> {
+                    return sortedSemesters.indexOf(m.getSemester());
+                }));
             }
 
             JsonArray detailList = (JsonArray) new Gson().toJsonTree(result);
@@ -263,32 +261,33 @@ public class StudentList {
             TypedQuery<Integer> queryCounting = em.createQuery(queryStr, Integer.class);
             iTotalRecords = ((Number) queryCounting.getSingleResult()).intValue();
 
+            // Đếm số lượng sv sau khi filter
+            if (!sSearch.isEmpty()) {
+                queryStr = "SELECT COUNT(s) FROM StudentEntity s" +
+                        " WHERE s.rollNumber LIKE :rollNumber OR s.fullName LIKE :fullName";
+                queryCounting = em.createQuery(queryStr, Integer.class);
+                queryCounting.setParameter("rollNumber", "%" + sSearch + "%");
+                queryCounting.setParameter("fullName", "%" + sSearch + "%");
+                iTotalDisplayRecords = ((Number) queryCounting.getSingleResult()).intValue();
+            } else {
+                iTotalDisplayRecords = iTotalRecords;
+            }
+
             // Query danh sách sv
-            queryStr = "SELECT s FROM StudentEntity s";
-            if (!sSearch.isEmpty()) {
-                queryStr += " WHERE s.rollNumber LIKE :sRollNum OR s.fullName LIKE :sName";
-            }
-
+            queryStr = "SELECT s FROM StudentEntity s" +
+                    (!sSearch.isEmpty() ? " WHERE s.rollNumber LIKE :rollNumber OR s.fullName LIKE :fullName" : "");
             TypedQuery<StudentEntity> query = em.createQuery(queryStr, StudentEntity.class);
-
+            query.setFirstResult(iDisplayStart);
+            query.setMaxResults(iDisplayLength);
             if (!sSearch.isEmpty()) {
-                query.setParameter("sRollNum", "%" + sSearch + "%");
-                query.setParameter("sName", "%" + sSearch + "%");
+                query.setParameter("rollNumber", "%" + sSearch + "%");
+                query.setParameter("fullName", "%" + sSearch + "%");
             }
-
             List<StudentEntity> studentList = query.getResultList();
-            iTotalDisplayRecords = studentList.size();
+
             List<List<String>> result = new ArrayList<>();
-            studentList = studentList.stream().skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
-
-            List<Integer> studentIdList = studentList.stream().map(s -> s.getId()).collect(Collectors.toList());
-            List<DocumentStudentEntity> docStudentList = new ArrayList<>();
-            if (studentIdList.size() != 0) {
-                docStudentList = documentStudentService.getDocumentStudentByIdList(studentIdList);
-            }
-
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             DocumentStudentEntity ds = null;
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             for (StudentEntity std : studentList) {
                 List<String> dataList = new ArrayList<String>();
                 ds = null;
@@ -353,7 +352,6 @@ public class StudentList {
                 MarkModel data = new MarkModel();
                 data.setSemester(m.getSemesterId().getSemester());
                 data.setSubject(m.getSubjectMarkComponentId() != null ? m.getSubjectMarkComponentId().getSubjectId().getId() : "N/A");
-//                data.setClass1(m.getCourseId().getClass1());
                 data.setStatus(m.getStatus());
                 data.setAverageMark(m.getAverageMark());
 
@@ -373,50 +371,6 @@ public class StudentList {
 
         return jsonObj;
     }
-
-    @RequestMapping(value = "/studentList/gettotal")
-    @ResponseBody
-    public JsonObject LoadStudentListAll(@RequestParam int id) {
-        JsonObject jsonObj = new JsonObject();
-
-        try {
-            IStudentService studentService = new StudentServiceImpl();
-
-            StudentEntity student = studentService.findStudentById(id);
-//            List<SubjectCurriculumEntity> subs = new ArrayList<>();
-//            for (DocumentStudentEntity doc : student.getDocumentStudentEntityList()) {
-//                if (doc.getCurriculumId() != null) {
-//                    CurriculumEntity cur = doc.getCurriculumId();
-//                    subs.addAll(cur.getSubjectCurriculumEntityList());
-//                }
-//            }
-//            int tongtinchi = subs.stream()
-//                    .filter(Ultilities.distinctByKey(c -> c.getSubjectId().getId()))
-//                    .filter(c -> student.getMarksEntityList().stream().anyMatch(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getSubjectId().getId())))
-//                    .mapToInt(c -> c.getSubjectCredits())
-//                    .sum();
-//            double dtb = student.getMarksEntityList().stream()
-//                    .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))
-//                    .sorted(Comparator.comparingDouble(c -> {
-//                        MarksEntity mark = (MarksEntity)c;
-//                        return mark.getAverageMark();
-//                    }).reversed())
-//                    .mapToDouble(c -> c.getAverageMark())
-//                    .average()
-//                    .getAsDouble();
-
-            jsonObj.addProperty("success", true);
-            jsonObj.addProperty("tinchi", String.valueOf(student.getPassCredits() + "/" + student.getPassFailCredits()));
-            jsonObj.addProperty("dtb", String.valueOf(student.getPassFailAverageMark()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            jsonObj.addProperty("success", false);
-            jsonObj.addProperty("msg", e.getMessage());
-        }
-
-        return jsonObj;
-    }
-
 
     private class StudentDetailModel {
         public int term;

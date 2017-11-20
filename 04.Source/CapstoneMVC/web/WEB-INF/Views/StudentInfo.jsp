@@ -1,6 +1,22 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+<c:set var="passCredits" property="${student.passCredits}" />
+<c:set var="passFailCredits" property="${student.passFailCredits}" />
+<c:set var="passFailAverageMark" property="${student.passFailAverageMark}" />
+
+<c:if test="${empty passCredits}">
+    <c:set var="passCredits" value="0"/>
+</c:if>
+
+<c:if test="${empty passFailCredits}">
+    <c:set var="passFailCredits" value="0"/>
+</c:if>
+
+<c:if test="${empty passFailAverageMark}">
+    <c:set var="passFailAverageMark" value="0"/>
+</c:if>
+
 <style>
     .form-group .my-content .my-input-group .right-content {
         width: 76%;
@@ -122,6 +138,11 @@
         font-size: 14px;
     }
 
+    .bottom-info-text {
+        color: #444444;
+        font-weight: 600;
+    }
+
 </style>
 
 <section class="content">
@@ -160,7 +181,7 @@
                     <div class="my-content">
                         <div class="row m-0">
                             <div class="my-input-group width-40 p-l-30 text-left">
-                                <div class="left-content" style="width: 80px">
+                                <div class="left-content" style="width: 85px">
                                     <label class="p-t-8">Tên:</label>
                                 </div>
                                 <div class="right-content">
@@ -170,7 +191,7 @@
                             </div>
 
                             <div class="my-input-group width-40 p-l-30 text-left">
-                                <div class="left-content" style="width: 80px">
+                                <div class="left-content" style="width: 85px">
                                     <label class="p-t-8">Giới tính:</label>
                                 </div>
                                 <div class="right-content">
@@ -182,7 +203,7 @@
 
                         <div class="row m-0">
                             <div class="my-input-group width-40 p-l-30 text-left">
-                                <div class="left-content" style="width: 80px">
+                                <div class="left-content" style="width: 85px">
                                     <label class="p-t-8">MSSV:</label>
                                 </div>
                                 <div class="right-content">
@@ -192,7 +213,7 @@
                             </div>
 
                             <div class="my-input-group width-40 p-l-30 text-left">
-                                <div class="left-content" style="width: 80px">
+                                <div class="left-content" style="width: 85px">
                                     <label class="p-t-8">Ngày sinh:</label>
                                 </div>
                                 <div class="right-content">
@@ -204,7 +225,7 @@
 
                         <div class="row m-0">
                             <div class="my-input-group width-40 p-l-30 text-left">
-                                <div class="left-content" style="width: 80px">
+                                <div class="left-content" style="width: 85px">
                                     <label class="p-t-8">Ngành học:</label>
                                 </div>
                                 <div class="right-content">
@@ -214,7 +235,7 @@
                             </div>
 
                             <div class="my-input-group width-40 p-l-30 text-left">
-                                <div class="left-content" style="width: 80px">
+                                <div class="left-content" style="width: 85px">
                                     <label class="p-t-8">Khóa ngành:</label>
                                 </div>
                                 <div class="right-content">
@@ -353,39 +374,25 @@
         }
 
         html += "<div class='term-wrapper'>";
-        html += "<div class='term'><span>Tổng tín chỉ và điểm trung bình</span></div>";
+        html += "<div class='term'><span>Thông tin</span></div>";
+
         html += "<div class='marks'>";
         html += "<div class='mark'>"
-        html += "<div class='small-col'><span></span></div>";
-        html += "<div class='large-col text-left'><span></span></div>";
-        html += "<div class='medium-col'><span></span></div>";
-        html += "<div class='small-col'><span id='total'></span></div>";
-        html += "<div class='small-col'><span id='average'></span></div>";
-        html += "<div class='medium-col'><span></span></div>";
-        html += "</div>";
-        html += "</div></div>"
+//        html += "<div class='small-col'><span></span></div>";
+//        html += "<div class='large-col text-left'><span></span></div>";
+//        html += "<div class='medium-col'><span></span></div>";
+//        html += "<div class='small-col'><span id='total'></span></div>";
+//        html += "<div class='small-col'><span id='average'></span></div>";
+//        html += "<div class='medium-col'><span></span></div>";
+        html += "<div class='width-5'></div>"
+        html += "<div class='width-29'><span class='bottom-info-text'>Số tín chỉ tích lũy: </span>${passCredits}</div>";
+        html += "<div class='width-29'><span class='bottom-info-text'>Tổng tín chỉ tích lũy: </span>${passFailCredits}</div>";
+        html += "<div class='width-29'><span class='bottom-info-text'>Điểm trung bình: </span>${passFailAverageMark}</div>";
+        html += "</div></div>";
+
+        html += "</div>"
 
         $('.mark-detail-content').html(html);
-
-        GetTotal();
-    }
-
-    function GetTotal() {
-        $.ajax({
-            type: "POST",
-            url: "/studentList/gettotal",
-            data: {
-                "id": ${student.id}
-            },
-            success: function (result) {
-                if (result.success) {
-                    $('#total').html("<b>" + result.tinchi + "</b>");
-                    $('#average').html("<b>" + result.dtb + "</b>");
-                } else {
-                    swal('', result.message, 'error');
-                }
-            }
-        });
     }
 
     function EditStudent() {
