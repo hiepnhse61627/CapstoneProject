@@ -1010,6 +1010,131 @@ public class UploadController {
         return jsonObject;
     }
 
+    public JsonObject importStudyingStudent(@RequestParam("file") MultipartFile file) {
+        JsonObject jsonObject = new JsonObject();
+        List<MarksEntity> marksEntities = new ArrayList<MarksEntity>();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+            int excelDataIndex = startRowNumber < 0 ? 0 : startRowNumber;
+            int lastRow = endRowNumber < 1 ? spreadsheet.getLastRowNum() : endRowNumber;
+            this.totalLine = lastRow - startRowNumber + 1;
+
+            int semesterNameIndex = 0;
+            int rollNumberIndex = 1;
+            int subjectCodeIndex = 2;
+            int averageMarkIndex = 4;
+            int statusIndex = 5;
+
+            this.currentLine = 0;
+            String markComponentName = Enums.MarkComponent.AVERAGE.getValue();
+            for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+
+                Cell rollNumberCell = row.getCell(rollNumberIndex);
+                if (rollNumberCell != null) {
+                    StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumberCell.getStringCellValue().trim());
+                    if (studentEntity != null) {
+                        MarksEntity mark = new MarksEntity();
+                        // set Student
+                        mark.setStudentId(studentEntity);
+
+                        Cell semesterNameCell = row.getCell(semesterNameIndex);
+                        Cell subjectCodeCell = row.getCell(subjectCodeIndex);
+                        Cell averageMarkCell = row.getCell(averageMarkIndex);
+                        Cell statusCell = row.getCell(statusIndex);
+
+                        // set semester
+                        if (semesterNameCell != null) {
+                            String semesterName = semesterNameCell.getStringCellValue().trim().toUpperCase().replaceAll(" ", "");
+                            RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(semesterName);
+                            if (realSemesterEntity != null) {
+                                mark.setSemesterId(realSemesterEntity);
+                            } else {
+                                // create new semester
+                                realSemesterEntity = new RealSemesterEntity();
+                                realSemesterEntity.setSemester(semesterName);
+                                realSemesterEntity = realSemesterService.createRealSemester(realSemesterEntity);
+                                mark.setSemesterId(realSemesterEntity);
+                            }
+                        }
+
+                        // set subject mark component
+                        if (subjectCodeCell != null) {
+                            String subjectCode = subjectCodeCell.getStringCellValue().trim().toUpperCase();
+                            // find subject code
+                            SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
+                            if (subjectEntity != null) {
+                                MarkComponentEntity markComponentEntity = markComponentService.getMarkComponentByName(markComponentName);
+                                String subjectMarkComponentName = subjectEntity.getId() + "_" + markComponentName;
+                                SubjectMarkComponentEntity subjectMarkComponentEntity =
+                                        subjectMarkComponentService.findSubjectMarkComponentByNameAndSubjectCd(markComponentName, subjectEntity.getId());
+                                if (subjectMarkComponentEntity != null) {
+                                    mark.setSubjectMarkComponentId(subjectMarkComponentEntity);
+                                } else {
+                                    subjectMarkComponentEntity = new SubjectMarkComponentEntity();
+                                    subjectMarkComponentEntity.setMarkComponentId(markComponentEntity);
+                                    subjectMarkComponentEntity.setName(subjectMarkComponentName);
+                                    subjectMarkComponentEntity.setPercentWeight(0.0);
+                                    subjectMarkComponentEntity.setSubjectId(subjectEntity);
+                                    subjectMarkComponentEntity = subjectMarkComponentService.createSubjectMarkComponent(subjectMarkComponentEntity);
+                                    mark.setSubjectMarkComponentId(subjectMarkComponentEntity);
+                                }
+                            }
+                        }
+
+                        // set course
+                        if (semesterNameCell != null && subjectCodeCell != null) {
+                            String semesterName = semesterNameCell.getStringCellValue().trim().toUpperCase().replaceAll(" ", "");
+                            String subjectCode = subjectCodeCell.getStringCellValue().trim().toUpperCase();
+                            CourseEntity courseEntity = courseService.findCourseBySemesterAndSubjectCode(semesterName, subjectCode);
+                            if (courseEntity != null) {
+                                mark.setCourseId(courseEntity);
+                            } else {
+                                courseEntity = new CourseEntity();
+                                courseEntity.setSemester(semesterName);
+                                courseEntity.setSubjectCode(subjectCode);
+                                courseEntity = courseService.createCourse(courseEntity);
+                                mark.setCourseId(courseEntity);
+                            }
+                        }
+
+                        // set average Mark
+                        if (averageMarkCell != null) {
+                            mark.setAverageMark(averageMarkCell.getNumericCellValue());
+                        }
+
+                        // set status
+                        if (statusCell != null) {
+                            mark.setStatus(statusCell.getStringCellValue());
+                        }
+
+                        // set isActivated
+                        mark.setIsActivated(true);
+
+                        // add to list mark entities
+                        marksEntities.add(mark);
+                    }
+                }
+            }
+            marksService.createMarks(marksEntities);
+        } catch(Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+        jsonObject.addProperty("success", true);
+        jsonObject.addProperty("message", "Import sinh viên đang học thành công !");
+        return jsonObject;
+    }
+
     private void UpdateStudentCredits(Collection<StudentEntity> studentList) {
         this.totalLine1 = studentList.size();
 
