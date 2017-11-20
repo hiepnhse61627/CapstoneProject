@@ -114,8 +114,6 @@ public class GraduateController {
         for (StudentEntity student : studentEntityList) {
             List<DocumentStudentEntity> documentStudentEntityList = student.getDocumentStudentEntityList();
             Map<SubjectEntity, Integer> subjectsCredits = processCreditsForSubject(documentStudentEntityList);
-            // calculate credits in curriculum
-            int creditsInCurriculum = countCreditsInCurriculumn(documentStudentEntityList);
             // get mark list from student
             List<MarksEntity> marksEntityList = student.getMarksEntityList();
             // filter passed marks
@@ -136,17 +134,23 @@ public class GraduateController {
             }
             // calculate student credits if SYB was passed
             int studentCredits = 0;
-            int passedFlag = 0;
+            boolean passedFlag = false; // flag shows that a student have a subject that has 0 credits and not passed
+            if (!subjectsCredits.containsValue(0)) {
+                passedFlag = true;
+            }
             for (MarksEntity marksEntity : distinctMarks) {
                 SubjectEntity subject = marksEntity.getSubjectMarkComponentId().getSubjectId();
-                passedFlag += subjectsCredits.get(subject) != null && subjectsCredits.get(subject) == 0 ? 1 : 0;
-                studentCredits += subjectsCredits.get(subject) != null && !subject.getId().contains("OJ") ? subjectsCredits.get(subject) : 0;
+                if (!passedFlag) {
+                    if ((subjectsCredits.get(subject) != null) && (subjectsCredits.get(subject) == 0)) {
+                        passedFlag = true; // passed
+                    }
+                }
+                studentCredits += subjectsCredits.get(subject) != null && subject.getType() != SubjectTypeEnum.OJT.getId() ? subjectsCredits.get(subject) : 0;
             }
 
-//            int percent = student.getProgramId().getGraduate();
             int specializedCredits = student.getProgramId().getSpecializedCredits();
             if (isGraduate) {
-                if ((studentCredits >= specializedCredits) && (passedFlag != 0)) {
+                if ((studentCredits >= specializedCredits) && (passedFlag)) {
                     List<String> t = new ArrayList<>();
                     t.add(student.getRollNumber());
                     t.add(student.getFullName());
@@ -157,7 +161,7 @@ public class GraduateController {
                     data.add(t);
                 }
             } else {
-                if ((studentCredits < specializedCredits) || (passedFlag == 0)) {
+                if ((studentCredits < specializedCredits) || (!passedFlag)) {
                     List<String> t = new ArrayList<>();
                     t.add(student.getRollNumber());
                     t.add(student.getFullName());
@@ -187,21 +191,21 @@ public class GraduateController {
 //        return subjectEntityList;
 //    }
 
-    private Integer countCreditsInCurriculumn(List<DocumentStudentEntity> documentStudentEntityList) {
-        int credits = 0;
-        if (documentStudentEntityList != null && !documentStudentEntityList.isEmpty()) {
-            for (DocumentStudentEntity documentStudentEntity : documentStudentEntityList) {
-                CurriculumEntity curriculumEntity = documentStudentEntity.getCurriculumId();
-                List<SubjectCurriculumEntity> subjectCurriculumEntityList = subjectCurriculumService.getSubjectCurriculums(curriculumEntity.getId());
-                subjectCurriculumEntityList = subjectCurriculumEntityList.stream().filter(s -> s.getTermNumber() > 0).collect(Collectors.toList());
-
-                for (SubjectCurriculumEntity subjectCurriculumEntity : subjectCurriculumEntityList) {
-                    credits += subjectCurriculumEntity.getSubjectCredits();
-                }
-            }
-        }
-        return credits;
-    }
+//    private Integer countCreditsInCurriculumn(List<DocumentStudentEntity> documentStudentEntityList) {
+//        int credits = 0;
+//        if (documentStudentEntityList != null && !documentStudentEntityList.isEmpty()) {
+//            for (DocumentStudentEntity documentStudentEntity : documentStudentEntityList) {
+//                CurriculumEntity curriculumEntity = documentStudentEntity.getCurriculumId();
+//                List<SubjectCurriculumEntity> subjectCurriculumEntityList = subjectCurriculumService.getSubjectCurriculums(curriculumEntity.getId());
+//                subjectCurriculumEntityList = subjectCurriculumEntityList.stream().filter(s -> s.getTermNumber() >= 0).collect(Collectors.toList());
+//
+//                for (SubjectCurriculumEntity subjectCurriculumEntity : subjectCurriculumEntityList) {
+//                    credits += subjectCurriculumEntity.getSubjectCredits();
+//                }
+//            }
+//        }
+//        return credits;
+//    }
 
     /**
      * [This method processes (sort all semesters then iterate over the list, add semester to result list until reaching the current semester)
@@ -231,7 +235,7 @@ public class GraduateController {
             for (DocumentStudentEntity documentStudentEntity : documentStudentEntityList) {
                 CurriculumEntity curriculumEntity = documentStudentEntity.getCurriculumId();
                 List<SubjectCurriculumEntity> subjectCurriculumEntityList = subjectCurriculumService.getSubjectCurriculums(curriculumEntity.getId());
-                subjectCurriculumEntityList = subjectCurriculumEntityList.stream().filter(s -> s.getTermNumber() > 0).collect(Collectors.toList());
+                subjectCurriculumEntityList = subjectCurriculumEntityList.stream().filter(s -> s.getTermNumber() >= 0).collect(Collectors.toList());
 
                 for (SubjectCurriculumEntity subjectCurriculumEntity : subjectCurriculumEntityList) {
                     SubjectEntity subjectEntity = subjectCurriculumEntity.getSubjectId();
