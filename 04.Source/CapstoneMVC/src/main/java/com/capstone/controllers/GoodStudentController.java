@@ -46,7 +46,7 @@ public class GoodStudentController {
             List<List<String>> studentList = this.getGoodStudentList(params);
             studentList = studentList.stream().filter(c ->
                     c.get(0).toLowerCase().contains(searchKey) ||
-                    c.get(1).toLowerCase().contains(searchKey) ||
+                            c.get(1).toLowerCase().contains(searchKey) ||
                             c.get(3).toLowerCase().contains(searchKey) ||
                             c.get(4).toLowerCase().contains(searchKey)).collect(Collectors.toList());
 
@@ -71,12 +71,15 @@ public class GoodStudentController {
         IMarksService marksService = new MarksServiceImpl();
         IStudentService studentService = new StudentServiceImpl();
         IRealSemesterService semesterService = new RealSemesterServiceImpl();
+        IMarkComponentService markComponentService = new MarkComponentServiceImpl();
 
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = emf.createEntityManager();
 
         int semesterId = Integer.parseInt(params.get("semesterId"));
-//        String sSearch = params.get("sSearch").trim();
+
+        MarkComponentEntity markComponent = markComponentService.getMarkComponentByName(
+                Enums.MarkComponent.AVERAGE.getValue());
 
         List<RealSemesterEntity> semesterList = semesterService.getAllSemester();
         semesterList = Ultilities.SortSemesters(semesterList);
@@ -94,21 +97,19 @@ public class GoodStudentController {
                 " INNER JOIN Student s ON m.StudentId = s.Id" +
                 " INNER JOIN Subject_MarkComponent smc ON m.SubjectMarkComponentId = smc.Id" +
                 " INNER JOIN Subject sub ON smc.SubjectId = sub.Id" +
-                " INNER JOIN MarkComponent mc ON smc.MarkComponentId = mc.Id" +
                 " INNER JOIN Document_Student ds ON m.StudentId = ds.StudentId" +
                 " INNER JOIN Curriculum c ON ds.CurriculumId = c.Id" +
                 " INNER JOIN Program p ON c.ProgramId = p.Id" +
                 " INNER JOIN Subject_Curriculum sc ON c.Id = sc.CurriculumId" +
-                " AND mc.Name LIKE '%average%' AND smc.SubjectId = sc.SubjectId" +
-                " AND (ds.CreatedDate = (SELECT MAX(CreatedDate) FROM Document_Student WHERE StudentId = m.StudentId) OR s.ProgramId = p.Id)" +
+                " AND smc.MarkComponentId = ? AND sub.Id = sc.SubjectId" +
+                " AND c.ProgramId = s.ProgramId AND p.Name != 'PC'" +
                 " AND ds.CurriculumId IS NOT NULL" +
-                " AND p.Name != 'PC'" +
-                ((semesterId != 0) ? " AND m.SemesterId = ?" : "") +
-                " ORDER BY m.StudentId, sc.TermNumber";
+                " AND m.IsActivated = 1" +
+                ((semesterId != 0) ? " AND m.SemesterId = ?" : "");
         Query query = em.createNativeQuery(queryStr);
-        int count = 1;
+        query.setParameter(1, markComponent.getId());
         if (semesterId != 0) {
-            query.setParameter(count++, semesterId);
+            query.setParameter(2, semesterId);
         }
 
         List<Object[]> searchList = query.getResultList();
@@ -145,10 +146,9 @@ public class GoodStudentController {
                     " INNER JOIN Student s ON ds.StudentId = s.Id" +
                     " INNER JOIN Curriculum c ON ds.CurriculumId = c.Id" +
                     " INNER JOIN Program p ON c.ProgramId = p.Id" +
+                    " AND c.ProgramId = s.ProgramId AND p.Name != 'PC'" +
                     " AND ds.StudentId IN " + idStr +
-                    " AND (ds.createdDate = (SELECT MAX(CreatedDate) FROM Document_Student WHERE Id = ds.Id) OR s.ProgramId = p.Id)" +
-                    " AND ds.CurriculumId IS NOT NULL" +
-                    " AND p.Name != 'PC'";
+                    " AND ds.CurriculumId IS NOT NULL";
             Query queryDocStudent = em.createNativeQuery(queryStr, DocumentStudentEntity.class);
             List<DocumentStudentEntity> docStudentList = queryDocStudent.getResultList();
 
@@ -232,7 +232,7 @@ public class GoodStudentController {
                         break;
                     }
                 }
-                for (DocumentStudentEntity docStudent :documentStudentList) {
+                for (DocumentStudentEntity docStudent : documentStudentList) {
                     if (docStudent.getCurriculumId().getId() == curriculumId) {
                         row.add(docStudent.getCurriculumId().getProgramId().getName() + "_"
                                 + docStudent.getCurriculumId().getName()); // Curriculum

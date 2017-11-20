@@ -2,10 +2,7 @@ package com.capstone.controllers;
 
 import com.capstone.entities.*;
 import com.capstone.models.*;
-import com.capstone.services.DocumentStudentServiceImpl;
-import com.capstone.services.IDocumentStudentService;
-import com.capstone.services.IStudentService;
-import com.capstone.services.StudentServiceImpl;
+import com.capstone.services.*;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -103,12 +100,19 @@ public class StudentList {
     @RequestMapping(value = "/studentList/marks")
     @ResponseBody
     public JsonObject GetStudentMarkList(@RequestParam int studentId) {
-        JsonObject jsonObj = new JsonObject();
         List<StudentDetailModel> result = new ArrayList<>();
+        IRealSemesterService semesterService = new RealSemesterServiceImpl();
+        JsonObject jsonObj = new JsonObject();
 
         try {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em = emf.createEntityManager();
+
+            List<RealSemesterEntity> sortedSemesters = Ultilities.SortSemesters(semesterService.getAllSemester());
+            Map<String, Integer> semesterPositionMap = new HashMap<>();
+            for (int i = 0; i < sortedSemesters.size(); ++i) {
+                semesterPositionMap.put(sortedSemesters.get(i).getSemester(), i);
+            }
 
             String queryStr = "SELECT m.id, sub.id, sub.name, m.semesterId.semester, sc.subjectCredits, m.averageMark, m.status, sc.termNumber" +
                     " FROM MarksEntity m" +
@@ -117,10 +121,11 @@ public class StudentList {
                     " INNER JOIN MarkComponentEntity mc ON smc.markComponentId.id = mc.id" +
                     " INNER JOIN DocumentStudentEntity ds ON ds.studentId.id = m.studentId.id" +
                     " INNER JOIN SubjectCurriculumEntity sc ON ds.curriculumId.id = sc.curriculumId.id" +
+                    " AND ds.curriculumId.programId.id = ds.studentId.programId.id" +
                     " AND smc.subjectId.id = sc.subjectId.id" +
                     " AND mc.name LIKE :markComponentName" +
                     " AND m.studentId.id = :studentId" +
-                    " AND ds.createdDate = (SELECT MAX(tDS.createdDate) FROM DocumentStudentEntity tDS WHERE tDS.id = ds.id)";
+                    " AND m.isActivated = true";
             Query query = em.createQuery(queryStr);
             query.setParameter("markComponentName", "%average%");
             query.setParameter("studentId", studentId);
@@ -170,14 +175,6 @@ public class StudentList {
                     }
                 });
 
-//                queryStr = "SELECT m.id, sub.id, sub.name, m.semesterId.semester, m.id, m.averageMark, m.status" +
-//                        " FROM MarksEntity m" +
-//                        " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id" +
-//                        " INNER JOIN SubjectEntity sub ON smc.subjectId.id = sub.id" +
-//                        " INNER JOIN MarkComponentEntity mc ON smc.markComponentId.id = mc.id" +
-//                        " AND mc.name LIKE :markComponentName" +
-//                        " AND m.studentId.id = :studentId" +
-//                        " AND m.id NOT IN :sList";
                 queryStr = "SELECT m.id, sub.id, sub.name, m.semesterId.semester, sc.subjectCredits, m.averageMark, m.status" +
                         " FROM MarksEntity m" +
                         " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id" +
@@ -187,7 +184,8 @@ public class StudentList {
                         " INNER JOIN SubjectCurriculumEntity sc ON ds.curriculumId.id = sc.curriculumId.id" +
                         " AND mc.name LIKE :markComponentName" +
                         " AND m.studentId.id = :studentId" +
-                        " AND m.id NOT IN :sList";
+                        " AND m.id NOT IN :sList" +
+                        " AND m.isActivated = true";
                 query = em.createQuery(queryStr);
                 query.setParameter("markComponentName", "%average%");
                 query.setParameter("studentId", studentId);
@@ -218,12 +216,14 @@ public class StudentList {
                 }
 
                 for (StudentDetailModel studentDetailModel : result) {
-                    Collections.sort(studentDetailModel.markList, new Comparator<MarkModel>() {
+                    studentDetailModel.markList.sort(new Comparator<MarkModel>() {
                         @Override
                         public int compare(MarkModel o1, MarkModel o2) {
                             return o1.getSubjectName().compareTo(o2.getSubjectName());
                         }
-                    });
+                    }.thenComparingInt(m -> {
+                        return semesterPositionMap.get(m.getSemester());
+                    }));
                 }
             }
 
