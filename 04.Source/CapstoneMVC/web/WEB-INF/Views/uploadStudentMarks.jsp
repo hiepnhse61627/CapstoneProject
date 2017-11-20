@@ -57,7 +57,6 @@
 
             <div class="form-group">
                 <button type="button" onclick="Add()" class="btn btn-success">Import</button>
-                <button type="button" onclick="asynctest()">async</button>
             </div>
 
             <div class="form-group">
