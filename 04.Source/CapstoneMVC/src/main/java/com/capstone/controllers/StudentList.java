@@ -166,6 +166,7 @@ public class StudentList {
 //                    curMarkList = curMarkList.stream().filter(Ultilities.distinctByKey(c -> c.getSubject() + "_" + c.getSemester())).collect(Collectors.toList());
 
                     markIdList.add((Integer) row[0]);
+                    System.out.print("," + (Integer) row[0]);
                 }
 
                 Collections.sort(result, new Comparator<StudentDetailModel>() {

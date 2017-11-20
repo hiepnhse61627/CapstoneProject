@@ -1154,12 +1154,14 @@ public class UploadController {
                 double mark = (double) m[2];
                 String status = m[3].toString();
 
-                if (!status.equals(Enums.MarkStatus.FAIL.getValue())
-                        && !status.equals(Enums.MarkStatus.IS_SUSPENDED.getValue())
-                        && !status.equals(Enums.MarkStatus.IS_ATTENDANCE_FAIL.getValue())) {
-                    totalPassCredits += subjectCredits;
+                if (!Ultilities.containsIgnoreCase(subjectCode, "VOV")) {
+                    if (!status.equals(Enums.MarkStatus.FAIL.getValue())
+                            && !status.equals(Enums.MarkStatus.IS_SUSPENDED.getValue())
+                            && !status.equals(Enums.MarkStatus.IS_ATTENDANCE_FAIL.getValue())) {
+                        totalPassCredits += subjectCredits;
+                    }
+                    totalPassFailCredits += subjectCredits;
                 }
-                totalPassFailCredits += subjectCredits;
 
                 if (!Ultilities.containsIgnoreCase(subjectCode, "LAB")
                         && !Ultilities.containsIgnoreCase(subjectCode, "SYB")) {
