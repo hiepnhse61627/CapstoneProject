@@ -691,7 +691,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
     }
 
     public List<Object[]> getLastestPassFailMarksAndCredits(int studentId) {
-        List<Object[]> result =  new ArrayList<>();
+        List<Object[]> result = new ArrayList<>();
         EntityManager em = null;
 
         try {
@@ -699,8 +699,10 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             List<MarksEntity> markList = this.getLastestMarksByStudentId(studentId);
             markList = markList.stream().filter(m ->
                     m.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
-                    || m.getStatus().equalsIgnoreCase(Enums.MarkStatus.IS_EXEMPT.getValue())
-                    || m.getStatus().equalsIgnoreCase(Enums.MarkStatus.FAIL.getValue()))
+                            || m.getStatus().equalsIgnoreCase(Enums.MarkStatus.IS_EXEMPT.getValue())
+                            || m.getStatus().equalsIgnoreCase(Enums.MarkStatus.FAIL.getValue())
+                            || m.getStatus().equalsIgnoreCase(Enums.MarkStatus.IS_ATTENDANCE_FAIL.getValue())
+                            || m.getStatus().equalsIgnoreCase(Enums.MarkStatus.IS_SUSPENDED.getValue()))
                     .collect(Collectors.toList());
 
             if (!markList.isEmpty()) {
@@ -768,7 +770,6 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
     }
 
 
-
     public List<MarksEntity> getMarksByConditions(int semesterId, List<String> subjects, int studentId) {
         if (realSemesters == null) {
             realSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester());
@@ -801,7 +802,6 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
         return marks;
     }
-
 
 
     private class AverageSubject_StudentData {
