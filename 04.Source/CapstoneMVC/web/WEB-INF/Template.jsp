@@ -177,23 +177,21 @@
                             <span class="name">${items.functionName}</span></a>
                     </li>
                 </c:forEach>
-                <c:forEach var="functionGroup" items="${applicationScope['functionGroup']}">
+                <c:forEach var="groupName" items="${applicationScope['functionGroup']}">
                     <li class="treeview">
                         <a href="#">
                             <i class="glyphicon glyphicon-save"></i>
-                            <span>${functionGroup}</span>
-                            <c:set var="groupName" value="${functionGroup}"/>
+                            <span>${groupName}</span>
                             <i class="fa fa-angle-left pull-right"></i>
                             <ul class="treeview-menu">
-                                <c:forEach var="items" items="${applicationScope['menu']}">
-                                    <c:set var="itemGroupName" value="${items.groupName}"/>
-                                    <c:if test="${itemGroupName.contains(groupName)}">
+                                <c:forEach var="item" items="${applicationScope['menu']}">
+                                    <c:if test="${item.groupName.contains(groupName)}">
                                         <li>
-                                            <a href="${items.link}">
+                                            <a href="${item.link}">
                                                 <div class="menu-child-wrapper">
                                                     <div class="child-icon"><i class="fa fa-circle-o"></i></div>
                                                     <div class="child-content col-md-11">
-                                                        <span class="name">${items.functionName}</span>
+                                                        <span class="name">${item.functionName}</span>
                                                     </div>
                                                 </div>
                                             </a>

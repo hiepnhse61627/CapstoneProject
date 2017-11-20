@@ -55,25 +55,25 @@ public class StudentDetail {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             CustomUser principal = (CustomUser) authentication.getPrincipal();
             if (principal.getUser().getRole().contains("ADMIN") || principal.getUser().getRole().contains("STAFF") || principal.getUser().getRole().contains("MANAGER")) {
-                students = studentService.findAllStudents();
+                students = studentService.findStudentsByFullNameOrRollNumber(searchValue);
             } else {
                 students = new ArrayList<>();
                 students.add(studentService.findStudentByRollNumber(principal.getUser().getStudentRollNumber()));
             }
 
-            final String finalSearchValue = searchValue;
+//            final String finalSearchValue = searchValue;
 //            List<StudentEntity> studentList = students.stream()
 //                    .filter(c -> Ultilities.containsIgnoreCase(c.getRollNumber(), finalSearchValue)
 //                            || Ultilities.containsIgnoreCase(c.getFullName(), finalSearchValue))
 //                    .collect(Collectors.toList());
 
-            List<StudentEntity> studentList = students.stream()
-                    .filter(c -> c.getRollNumber().toLowerCase().contains(finalSearchValue.toLowerCase())
-                            || c.getFullName().toLowerCase().contains(finalSearchValue.toLowerCase()))
-                    .collect(Collectors.toList());
+//            List<StudentEntity> studentList = students.stream()
+//                    .filter(c -> c.getRollNumber().toLowerCase().contains(finalSearchValue.toLowerCase())
+//                            || c.getFullName().toLowerCase().contains(finalSearchValue.toLowerCase()))
+//                    .collect(Collectors.toList());
 
             List<SelectItem> itemList = new ArrayList<>();
-            for (StudentEntity student : studentList) {
+            for (StudentEntity student : students) {
                 SelectItem item = new SelectItem();
                 item.setValue(student.getId() + "");
                 item.setText(student.getRollNumber() + " - " + student.getFullName());
@@ -81,15 +81,16 @@ public class StudentDetail {
                 itemList.add(item);
             }
 
-            JsonArray result = (JsonArray) new Gson().toJsonTree(itemList, new TypeToken<List<SelectItem>>() {
-            }.getType());
+            JsonArray result = (JsonArray) new Gson().toJsonTree(itemList);
 
-            jsonObj.addProperty("success", true);
             jsonObj.add("items", result);
+            jsonObj.addProperty("success", true);
         } catch (Exception e) {
             Logger.writeLog(e);
+            jsonObj.add("items", (JsonArray) new Gson().toJsonTree(new ArrayList<SelectItem>()));
             jsonObj.addProperty("success", false);
         }
+
 
         return jsonObj;
     }

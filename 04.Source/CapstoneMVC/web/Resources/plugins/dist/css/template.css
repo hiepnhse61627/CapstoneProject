@@ -186,7 +186,7 @@ a {
     margin: 5px 0px 0px 0px;
     /*font-size: 24px;*/
     font-size: 22px;
-    font-weight: 600;
+    /*font-weight: 600;*/
     color: darkgreen;
     min-height: 28px;
 }
@@ -213,8 +213,9 @@ a {
 
 .form-group .title > h4 {
     font-size: 18px;
-    font-weight: 600;
+    font-weight: 600 !important;
     margin: 0px;
+    color: #444444;
 }
 
 .form-group .title > h4 > i {

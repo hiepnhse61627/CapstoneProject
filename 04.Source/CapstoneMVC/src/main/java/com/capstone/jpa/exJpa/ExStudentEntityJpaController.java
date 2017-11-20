@@ -175,7 +175,7 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
         }
     }
 
-    public List<StudentEntity> findStudentsByValue(String value) {
+    public List<StudentEntity> findStudentsByFullNameOrRollNumber(String searchValue) {
         EntityManager em = getEntityManager();
         List<StudentEntity> result = null;
 
@@ -183,8 +183,8 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
             String queryStr = "SELECT s FROM StudentEntity s" +
                     " WHERE s.fullName LIKE :fullName OR s.rollNumber LIKE :rollNumber";
             TypedQuery<StudentEntity> query = em.createQuery(queryStr, StudentEntity.class);
-            query.setParameter("fullName", "%" + value + "%");
-            query.setParameter("rollNumber", "%" + value + "%");
+            query.setParameter("fullName", "%" + searchValue + "%");
+            query.setParameter("rollNumber", "%" + searchValue + "%");
 
             result = query.getResultList();
 

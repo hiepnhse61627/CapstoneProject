@@ -29,8 +29,8 @@ public class StudentServiceImpl implements IStudentService {
     }
 
     @Override
-    public List<StudentEntity> findStudentsByValue(String value) {
-        return studentEntityJpaController.findStudentsByValue(value);
+    public List<StudentEntity> findStudentsByFullNameOrRollNumber(String searchValue) {
+        return studentEntityJpaController.findStudentsByFullNameOrRollNumber(searchValue);
     }
 
     public List<StudentEntity> findAllStudents() {
