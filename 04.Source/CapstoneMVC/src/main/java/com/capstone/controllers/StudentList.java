@@ -382,31 +382,31 @@ public class StudentList {
             IStudentService studentService = new StudentServiceImpl();
 
             StudentEntity student = studentService.findStudentById(id);
-            List<SubjectCurriculumEntity> subs = new ArrayList<>();
-            for (DocumentStudentEntity doc : student.getDocumentStudentEntityList()) {
-                if (doc.getCurriculumId() != null) {
-                    CurriculumEntity cur = doc.getCurriculumId();
-                    subs.addAll(cur.getSubjectCurriculumEntityList());
-                }
-            }
-            int tongtinchi = subs.stream()
-                    .filter(Ultilities.distinctByKey(c -> c.getSubjectId().getId()))
-                    .filter(c -> student.getMarksEntityList().stream().anyMatch(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getSubjectId().getId())))
-                    .mapToInt(c -> c.getSubjectCredits())
-                    .sum();
-            double dtb = student.getMarksEntityList().stream()
-                    .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))
-                    .sorted(Comparator.comparingDouble(c -> {
-                        MarksEntity mark = (MarksEntity)c;
-                        return mark.getAverageMark();
-                    }).reversed())
-                    .mapToDouble(c -> c.getAverageMark())
-                    .average()
-                    .getAsDouble();
+//            List<SubjectCurriculumEntity> subs = new ArrayList<>();
+//            for (DocumentStudentEntity doc : student.getDocumentStudentEntityList()) {
+//                if (doc.getCurriculumId() != null) {
+//                    CurriculumEntity cur = doc.getCurriculumId();
+//                    subs.addAll(cur.getSubjectCurriculumEntityList());
+//                }
+//            }
+//            int tongtinchi = subs.stream()
+//                    .filter(Ultilities.distinctByKey(c -> c.getSubjectId().getId()))
+//                    .filter(c -> student.getMarksEntityList().stream().anyMatch(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getSubjectId().getId())))
+//                    .mapToInt(c -> c.getSubjectCredits())
+//                    .sum();
+//            double dtb = student.getMarksEntityList().stream()
+//                    .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))
+//                    .sorted(Comparator.comparingDouble(c -> {
+//                        MarksEntity mark = (MarksEntity)c;
+//                        return mark.getAverageMark();
+//                    }).reversed())
+//                    .mapToDouble(c -> c.getAverageMark())
+//                    .average()
+//                    .getAsDouble();
 
             jsonObj.addProperty("success", true);
-            jsonObj.addProperty("tinchi", String.valueOf(tongtinchi));
-            jsonObj.addProperty("dtb", String.valueOf(Math.round(dtb * 100.0) / 100.0));
+            jsonObj.addProperty("tinchi", String.valueOf(student.getPassCredits() + "/" + student.getPassFailCredits()));
+            jsonObj.addProperty("dtb", String.valueOf(student.getPassFailAverageMark()));
         } catch (Exception e) {
             e.printStackTrace();
             jsonObj.addProperty("success", false);

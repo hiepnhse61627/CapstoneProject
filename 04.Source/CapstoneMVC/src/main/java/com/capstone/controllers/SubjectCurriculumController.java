@@ -330,7 +330,7 @@ public class SubjectCurriculumController {
             List<List<String>> dataList = new ArrayList<>();
             for (CurriculumEntity c : curriculumList) {
                 List<String> row = new ArrayList<>();
-                row.add(c.getProgramId().getName() + "_" + c.getName());
+                row.add(c.getName());
                 row.add(c.getId().toString());
 
                 dataList.add(row);

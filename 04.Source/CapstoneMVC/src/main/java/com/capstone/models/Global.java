@@ -63,6 +63,9 @@ public class Global {
                 if (mark.getSemesterId() != null && mark.getSemesterId().getId() == temporarySemester.getId()) {
                     mark.setStatus("Studying");
                 }
+//                else if (mark.getSemesterId() != null && mark.getSemesterId().getId() > temporarySemester.getId()) {
+//                    mark.setStatus("NotStart");
+//                }
             }
         }
 

@@ -146,29 +146,30 @@ public class ExCurriculumEntityJpaController extends CurriculumEntityJpaControll
             em = getEntityManager();
 
             String queryStr = "SELECT c FROM CurriculumEntity c" +
-                    " WHERE c.programId.name LIKE :programName" +
-                    " OR c.name LIKE :curriculumName" +
-                    " ORDER BY c.programId.name, c.name DESC";
+                    " WHERE c.name LIKE :curriculumName" +
+                    " ORDER BY c.name DESC";
             TypedQuery<CurriculumEntity> query = em.createQuery(queryStr, CurriculumEntity.class)
                     .setFirstResult(firstResult)
                     .setMaxResults(maxResult);
 
-            if (!searchValue.isEmpty()) {
-                int pos = searchValue.indexOf("_");
-                if (pos != -1) {
-                    String programName = searchValue.substring(0, pos);
-                    String curriculumName = searchValue.substring(pos + 1);
+//            if (!searchValue.isEmpty()) {
+//                int pos = searchValue.indexOf("_");
+//                if (pos != -1) {
+//                    String programName = searchValue.substring(0, pos);
+//                    String curriculumName = searchValue.substring(pos + 1);
+//
+//                    query.setParameter("programName", programName);
+//                    query.setParameter("curriculumName", curriculumName + "%");
+//                } else {
+//                    query.setParameter("programName", "%" + searchValue + "%");
+//                    query.setParameter("curriculumName", "%" + searchValue + "%");
+//                }
+//            } else {
+//                query.setParameter("programName", "%%");
+//                query.setParameter("curriculumName", "%%");
+//            }
 
-                    query.setParameter("programName", programName);
-                    query.setParameter("curriculumName", curriculumName + "%");
-                } else {
-                    query.setParameter("programName", "%" + searchValue + "%");
-                    query.setParameter("curriculumName", "%" + searchValue + "%");
-                }
-            } else {
-                query.setParameter("programName", "%%");
-                query.setParameter("curriculumName", "%%");
-            }
+            query.setParameter("curriculumName", "%" + searchValue + "%");
 
             result = query.getResultList();
         } finally {

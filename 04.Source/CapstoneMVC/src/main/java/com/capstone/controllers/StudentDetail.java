@@ -1179,7 +1179,11 @@ public class StudentDetail {
 //        List<MarksEntity> list = marksService.getMarksByStudentIdAndStatusAndSemester(stuId, "start", t);
         List<MarksEntity> marks = marksService.getStudentMarksById(stuId);
         marks = Global.TransformMarksList(marks);
-        List<MarksEntity> list = marks.stream().filter(c -> c.getStatus().toLowerCase().contains("start")).collect(Collectors.toList());
+        List<MarksEntity> list = marks
+                .stream()
+                .filter(c -> c.getStatus().toLowerCase().contains("start"))
+//                .filter(c -> Global.getSortedList().indexOf(c.getSemesterId()) <= Global.getSortedList().indexOf(Global.getTemporarySemester()))
+                .collect(Collectors.toList());
 
         Iterator<MarksEntity> iterator = list.iterator();
         ISubjectService subjectService = new SubjectServiceImpl();
