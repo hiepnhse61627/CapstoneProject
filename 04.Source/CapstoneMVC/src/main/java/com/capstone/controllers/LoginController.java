@@ -37,7 +37,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -81,13 +83,22 @@ public class LoginController implements ServletContextAware {
                 return obj;
             }
 
-            PasswordEncoder encoder = new BCryptPasswordEncoder();
-            String encodedPass = encoder.encode(user.getPassword());
-            System.out.println("New password: " + encodedPass);
-            user.setPassword(encodedPass);
-            service.CreateCredentiall(user);
+            String[] domains = {"fpt.edu.vn"};
 
-            obj.addProperty("success", true);
+            String domain = user.getEmail().substring(user.getEmail().indexOf('@') + 1).toLowerCase();
+            if (Arrays.asList(domains).contains(domain)) {
+
+                PasswordEncoder encoder = new BCryptPasswordEncoder();
+                String encodedPass = encoder.encode(user.getPassword());
+                System.out.println("New password: " + encodedPass);
+                user.setPassword(encodedPass);
+                service.CreateCredentiall(user);
+
+                obj.addProperty("success", true);
+            } else {
+                obj.addProperty("success", false);
+                obj.addProperty("msg", "Email này không phải của nhà trường!");
+            }
         } catch (Exception e) {
             Logger.writeLog(e);
 
@@ -154,33 +165,45 @@ public class LoginController implements ServletContextAware {
                 String[] split_string = profile.getId_token().split("\\.");
                 byte[] valueDecoded = Base64.decodeBase64(split_string[1].getBytes());
                 profile = new Gson().fromJson(new String(valueDecoded, "UTF-8"), GoogleProfile.class);
-                ICredentialsService service = new CredentialsServiceImpl();
-                CredentialsEntity user = service.findCredentialByEmail(profile.getEmail());
-                if (user != null) {
-                    boolean edited = false;
-                    if (user.getFullname() == null) {
-                        user.setFullname(profile.getName());
-                        edited = true;
+
+                // check fpt email domain
+                String[] domains = {"fpt.edu.vn"};
+
+                String domain = profile.getEmail().substring(profile.getEmail().indexOf('@') + 1).toLowerCase();
+                if (Arrays.asList(domains).contains(domain)) {
+                    ICredentialsService service = new CredentialsServiceImpl();
+                    CredentialsEntity user = service.findCredentialByEmail(profile.getEmail());
+                    if (user != null) {
+                        boolean edited = false;
+                        if (user.getFullname() == null) {
+                            user.setFullname(profile.getName());
+                            edited = true;
+                        }
+                        if (user.getPicture() == null || !user.getPicture().equals(profile.getPicture())) {
+                            user.setPicture(profile.getPicture());
+                            edited = true;
+                        }
+
+                        if (edited) service.SaveCredential(user, false);
+
+                        Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(user.getUsername(), user.getPassword(), getGrantedAuthorities(user), user),
+                                user.getPassword(),
+                                getGrantedAuthorities(user));
+                        SecurityContextHolder.getContext().setAuthentication(auth);
+                        HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
+                            @Override public String getParameter(String name) { return "true"; }
+                        };
+                        rememberMeServices.loginSuccess(wrapper, response, auth);
+
+                        Ultilities.GetMenu(context, user);
+
+                        return "redirect:/";
+                    } else {
+                        return "redirect:/register?email=" + profile.getEmail() + "&disable=true";
                     }
-                    if (user.getPicture() == null || !user.getPicture().equals(profile.getPicture())) {
-                        user.setPicture(profile.getPicture());
-                        edited = true;
-                    }
-
-                    if (edited) service.SaveCredential(user, false);
-
-                    Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(user.getUsername(), user.getPassword(), getGrantedAuthorities(user), user),
-                            user.getPassword(),
-                            getGrantedAuthorities(user));
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                    HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
-                        @Override public String getParameter(String name) { return "true"; }
-                    };
-                    rememberMeServices.loginSuccess(wrapper, response, auth);
-
-                    Ultilities.GetMenu(context, user);
                 } else {
-                    return "redirect:/register?email=" + profile.getEmail() + "&disable=true";
+                    String msg = "Email này không phải của nhà trường!";
+                    return "redirect:/login?error=" + URLEncoder.encode(msg, "utf-8");
                 }
             }
         } catch (Exception e) {
