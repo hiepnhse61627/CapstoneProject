@@ -92,10 +92,12 @@
                         <select id="role" name="role">
                             <option value="ROLE_STUDENT">Student</option>
                             <option value="ROLE_ADMIN">Admin</option>
+                            <option value="ROLE_STAFF">Staff</option>
+                            <option value="ROLE_MANAGER">Manager</option>
                         </select>
                     </sec:authorize>
                     <sec:authorize access="isAnonymous()">
-                        <input type="hidden" name="role" value="ROLE_ADMIN"/>
+                        <input type="hidden" name="role" value="ROLE_MANAGER"/>
                     </sec:authorize>
                 </div>
                 <div class="row">

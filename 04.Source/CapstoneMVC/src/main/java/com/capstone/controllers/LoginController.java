@@ -74,6 +74,13 @@ public class LoginController implements ServletContextAware {
                 return obj;
             }
 
+            CredentialsEntity entity2 = service.findCredentialByEmail(user.getEmail());
+            if (entity2 != null) {
+                obj.addProperty("success", false);
+                obj.addProperty("msg", "Email đã tồn tại");
+                return obj;
+            }
+
             PasswordEncoder encoder = new BCryptPasswordEncoder();
             String encodedPass = encoder.encode(user.getPassword());
             System.out.println("New password: " + encodedPass);
