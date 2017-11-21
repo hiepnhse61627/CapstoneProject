@@ -10,6 +10,7 @@ public class ImportedMarkObject {
     private SubjectEntity subjectCode;
     private Double averageMark;
     private String status;
+    private Boolean isEnabled;
 
     public StudentEntity getStudentEntity() {
         return studentEntity;
@@ -49,5 +50,13 @@ public class ImportedMarkObject {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Boolean getEnabled() {
+        return isEnabled;
+    }
+
+    public void setEnabled(Boolean enabled) {
+        isEnabled = enabled;
     }
 }

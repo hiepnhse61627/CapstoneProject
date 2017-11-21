@@ -51,11 +51,11 @@ public class StudentEntity implements Serializable {
     private Integer passCredits;
     @Column(name = "PassFailAverageMark", precision = 53)
     private Double passFailAverageMark;
-    @OneToMany(mappedBy = "studentId", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "studentId")
     private List<DocumentStudentEntity> documentStudentEntityList;
     @OneToMany(mappedBy = "studentId")
     private List<OldRollNumberEntity> oldRollNumberEntityList;
-    @OneToMany(mappedBy = "studentId", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "studentId")
     private List<MarksEntity> marksEntityList;
     @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
     @ManyToOne

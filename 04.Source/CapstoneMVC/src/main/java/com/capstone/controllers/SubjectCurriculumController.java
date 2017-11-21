@@ -526,6 +526,7 @@ public class SubjectCurriculumController {
                                     subjectCurriculumEntity.setOrdinalNumber(1);
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
                                     subjectCurriculumEntity.setSubjectCredits(subjectCredits.intValue());
+                                    subjectCurriculumEntity.setRequired(true);
                                     subjectCurriculumEntityList.add(subjectCurriculumEntity);
 
                                     map.put(curriculumName, subjectCurriculumEntityList);
@@ -542,6 +543,7 @@ public class SubjectCurriculumController {
                                     subjectCurriculumEntity.setOrdinalNumber(1);
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
                                     subjectCurriculumEntity.setSubjectCredits(subjectCredits.intValue());
+                                    subjectCurriculumEntity.setRequired(true);
                                     subjectCurriculumEntityList.add(subjectCurriculumEntity);
 
                                     map.put(curriculumName, subjectCurriculumEntityList);
@@ -563,6 +565,7 @@ public class SubjectCurriculumController {
                                     subjectCurriculumEntity.setOrdinalNumber(map.get(curriculumName).size() + 1);
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
                                     subjectCurriculumEntity.setSubjectCredits(subjectCredits.intValue());
+                                    subjectCurriculumEntity.setRequired(true);
 
                                     map.get(curriculumName).add(subjectCurriculumEntity);
                                 } else { // curriculum null
@@ -577,6 +580,7 @@ public class SubjectCurriculumController {
                                     subjectCurriculumEntity.setOrdinalNumber(map.get(curriculumName).size() + 1);
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
                                     subjectCurriculumEntity.setSubjectCredits(subjectCredits.intValue());
+                                    subjectCurriculumEntity.setRequired(true);
 
                                     map.get(curriculumName).add(subjectCurriculumEntity);
                                 }
