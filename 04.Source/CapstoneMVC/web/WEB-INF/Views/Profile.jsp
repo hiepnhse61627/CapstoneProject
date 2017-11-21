@@ -48,21 +48,20 @@
                                            name="email" value="${user.email}" disabled>
                                 </div>
                             </div>
-                            <div class="form-group">
-                                <label for="role" class="col-sm-2 control-label">Role</label>
-                                <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="role" placeholder="Role"
-                                           name="role" value="${user.role}"/>
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="studentRollNumber" class="col-sm-2 control-label">MSSV</label>
-                                <div class="col-sm-10">
-                                    <input type="text" class="form-control" id="studentRollNumber"
+                            <%--<div class="form-group">--%>
+                                <%--<label for="role" class="col-sm-2 control-label">Role</label>--%>
+                                <%--<div class="col-sm-10">--%>
+                                    <input type="hidden" class="form-control" id="role" placeholder="Role" name="role" value="${user.role}"/>
+                                <%--</div>--%>
+                            <%--</div>--%>
+                            <%--<div class="form-group">--%>
+                                <%--<label for="studentRollNumber" class="col-sm-2 control-label">MSSV</label>--%>
+                                <%--<div class="col-sm-10">--%>
+                                    <input type="hidden" class="form-control" id="studentRollNumber"
                                            placeholder="Rollnumber"
                                            name="studentRollNumber" value="${user.studentRollNumber}">
-                                </div>
-                            </div>
+                                <%--</div>--%>
+                            <%--</div>--%>
                         </div>
                         <div class="form-group">
                             <h4>Đổi password</h4>

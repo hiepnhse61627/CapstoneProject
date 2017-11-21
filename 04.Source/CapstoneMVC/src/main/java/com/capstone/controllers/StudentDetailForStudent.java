@@ -54,8 +54,8 @@ public class StudentDetailForStudent {
         ModelAndView view = new ModelAndView("StudentDetailForStudent");
         view.addObject("title", "Thông tin chi tiết");
         CustomUser user = getPrincipal();
-        String rollnum = user.getUser().getStudentRollNumber();
-        StudentEntity student = studentService.findStudentByRollNumber(rollnum);
+//        String rollnum = user.getUser().getStudentRollNumber();
+        StudentEntity student = studentService.findStudentByEmail(user.getUser().getEmail());
         view.addObject("studentId", student.getId());
         return view;
     }

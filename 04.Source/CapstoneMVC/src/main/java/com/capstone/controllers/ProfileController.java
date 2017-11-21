@@ -62,7 +62,7 @@ public class ProfileController {
                 CredentialsEntity c = service.findCredentialById(cred.getId());
                 c.setFullname(cred.getFullname());
                 c.setRole(cred.getRole());
-                c.setStudentRollNumber(cred.getStudentRollNumber());
+                c.setStudentRollNumber(null);
 
                 // check password
                 if (cred.getPassword() != null && !cred.getPassword().isEmpty()) {

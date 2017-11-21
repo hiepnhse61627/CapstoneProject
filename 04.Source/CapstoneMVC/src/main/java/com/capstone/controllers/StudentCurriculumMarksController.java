@@ -50,7 +50,7 @@ public class StudentCurriculumMarksController {
         IStudentService studentService = new StudentServiceImpl();
 
         try {
-            StudentEntity student = studentService.findStudentByRollNumber(getPrincipal().getUser().getStudentRollNumber());
+            StudentEntity student = studentService.findStudentByEmail(getPrincipal().getUser().getEmail());
             if (student != null) {
                 IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
                 List<Integer> tmp = new ArrayList<>();
