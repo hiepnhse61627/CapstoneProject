@@ -198,11 +198,6 @@
 
 <form id="export-excel" action="/exportExcel" hidden>
     <input name="objectType"/>
-    <input name="credit"/>
-    <input name="sCredit"/>
-    <input name="programId"/>
-    <input name="semesterId"/>
-    <input name="sSearch"/>
 </form>
 
 <script>
@@ -289,18 +284,19 @@
                     "bSortable": false,
                     "sClass": "text-center",
                 },
+                {
+                    "aTargets": [5],
+                    "mRender": function (data, type, row) {
+                        return data == "AM" ? "Sáng" : "Chiều";
+                    }
+                },
             ],
             "bAutoWidth": false,
         }).fnSetFilteringDelay(1000);
     }
 
     function ExportExcel() {
-        $("input[name='objectType']").val(4);
-        $("input[name='credit']").val($('#credit').val());
-        $("input[name='sCredit']").val($('#sCredit').val());
-        $("input[name='programId']").val($('#program').val());
-        $("input[name='semesterId']").val($('#semester').val());
-        $("input[name='sSearch']").val(table.api().context[0].oPreviousSearch.sSearch);
+        $("input[name='objectType']").val(11);
 
         $("#export-excel").submit();
     }

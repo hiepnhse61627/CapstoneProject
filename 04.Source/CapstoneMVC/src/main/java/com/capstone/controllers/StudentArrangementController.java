@@ -77,7 +77,7 @@ public class StudentArrangementController {
         String shiftType = params.get("shiftType").trim();
 
         try {
-            List<List<String>> studentList = (List<List<String>>) request.getSession().getAttribute("studentArrangementList");
+            List<List<String>> studentList = (List<List<String>>) request.getSession().getAttribute("STUDENT_ARRANGEMENT_LIST");
             if (studentList == null) {
                 studentList = new ArrayList<>();
             }
@@ -209,7 +209,7 @@ public class StudentArrangementController {
                     }
 
                     if (isRelearn) {
-                        String otherShift = curStudentShift == "AM" ? "PM" : "AM";
+                        String otherShift = curStudentShift.equals("AM") ? "PM" : "AM";
                         subjectMap = shiftMap.get(otherShift);
                         if (subjectMap == null) {
                             subjectMap = new HashMap<>();
@@ -254,7 +254,7 @@ public class StudentArrangementController {
                         dataRow.add(student.getRollNumber());
                         dataRow.add(student.getFullName());
                         dataRow.add(classNumber + "");
-                        dataRow.add(shift.equals("AM") ? "Sáng" : "Chiều");
+                        dataRow.add(shift);
                         result.add(dataRow);
 
                         ++count;
@@ -272,7 +272,7 @@ public class StudentArrangementController {
                         dataRow.add(student.getRollNumber());
                         dataRow.add(student.getFullName());
                         dataRow.add(classNumber + "");
-                        dataRow.add(shift.equals("AM") ? "Sáng" : "Chiều");
+                        dataRow.add(shift);
                         result.add(dataRow);
 
                         ++count;
@@ -280,7 +280,7 @@ public class StudentArrangementController {
                 }
             }
 
-            request.getSession().setAttribute("studentArrangementList", result);
+            request.getSession().setAttribute("STUDENT_ARRANGEMENT_LIST", result);
 
             jsonObj.addProperty("success", true);
         } catch (Exception e) {
@@ -537,7 +537,7 @@ public class StudentArrangementController {
         List<String> result = new ArrayList<>();
         for (String relearnSubject : relearnList) {
             for (String suggestionSubject : suggestionList) {
-                if (relearnList.equals(suggestionSubject)) {
+                if (relearnSubject.equals(suggestionSubject)) {
                     result.add(relearnSubject);
                     break;
                 }
