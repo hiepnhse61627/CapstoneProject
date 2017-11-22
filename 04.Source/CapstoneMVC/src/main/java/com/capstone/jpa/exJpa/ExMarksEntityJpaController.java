@@ -803,14 +803,13 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         return marks;
     }
 
-    public List<MarksEntity> findMarksBySemesterIdAndStatus(Integer semesterId, String status) {
+    public List<MarksEntity> findMarksBySemesterId(Integer semesterId) {
         EntityManager em = getEntityManager();
         List<MarksEntity> marksEntities = new ArrayList<>();
         try {
-            String sqlString = "SELECT m FROM MarksEntity m WHERE m.semesterId.id = :semesterId AND m.status = :status";
+            String sqlString = "SELECT m FROM MarksEntity m WHERE m.semesterId.id = :semesterId";
             Query query = em.createQuery(sqlString);
             query.setParameter("semesterId", semesterId);
-            query.setParameter("status", status);
 
             marksEntities = query.getResultList();
             return marksEntities;

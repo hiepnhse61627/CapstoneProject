@@ -503,7 +503,7 @@ public class UploadController {
 
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
         semesters = Ultilities.SortSemesters(semesters);
-        semesters = semesters.stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+//        semesters = semesters.stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
 
         mav.addObject("semesters", semesters);
 
@@ -997,7 +997,7 @@ public class UploadController {
         Integer semesterId = Integer.parseInt(semesterIdStr.trim());
         RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterById(semesterId);
         String semesterName = realSemesterEntity.getSemester().toLowerCase();
-        List<MarksEntity> marksEntities = marksService.findMarksBySemesterIdAndStatus(semesterId, "Studying");
+        List<MarksEntity> marksEntities = marksService.findMarksBySemesterId(semesterId);
         if (marksEntities == null || marksEntities.isEmpty()) {
             jsonObject.addProperty("success", false);
             jsonObject.addProperty("message", "Không có sinh viên nào có trạng thái đang học trong học kỳ này");
