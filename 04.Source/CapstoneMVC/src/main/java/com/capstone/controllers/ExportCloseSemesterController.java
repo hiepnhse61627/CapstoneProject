@@ -44,7 +44,7 @@ public class ExportCloseSemesterController {
 //        return obj;
 //	}
 
-    private OutputStream Writefile(Map<String, String> params, IExportObject exportObject) throws Exception {
+    private OutputStream Writefile(Map<String, String> params, IExportObject exportObject, HttpServletRequest request) throws Exception {
         String loggerLocation = Logger.class.getProtectionDomain().getCodeSource().getLocation().getPath();
         String path = loggerLocation.substring(0, loggerLocation.indexOf("WEB-INF")) + "CloseSemester/";
 
@@ -70,7 +70,7 @@ public class ExportCloseSemesterController {
         }
 
         OutputStream os = new FileOutputStream(file);
-        exportObject.writeData(os, params);
+        exportObject.writeData(os, params, request);
         return os;
     }
 
@@ -103,7 +103,7 @@ public class ExportCloseSemesterController {
 
     @RequestMapping(value = "/export")
     @ResponseBody
-    public JsonObject exportFile(@RequestParam String semesterId, HttpServletRequest servlet) {
+    public JsonObject exportFile(@RequestParam String semesterId, HttpServletRequest servlet, HttpServletRequest request) {
 //        ExportStatusReport.StatusExportStudentDetailRunning = true;
 //        ExportStatusReport.StatusStudentDetailExport = "";
 //        ExportStatusReport.StopExporting = false;
@@ -125,30 +125,30 @@ public class ExportCloseSemesterController {
                     if (i == 1) {
                         Map<String, String> params = new HashMap<>();
                         params.put("semesterId", semesterId);
-                        os = Writefile(params, exportObject);
+                        os = Writefile(params, exportObject, request);
                     } else if (i == 2) {
                         Map<String, String> params = new HashMap<>();
                         params.put("semesterId", semesterId);
                         params.put("studentId", "64350");
-                        os = Writefile(params, exportObject);
+                        os = Writefile(params, exportObject, request);
                     } else if (i == 4) {
                         Map<String, String> params = new HashMap<>();
                         params.put("type", "Graduate");
                         params.put("semesterId", semesterId);
                         params.put("programId", "-1");
-                        os = Writefile(params, exportObject);
+                        os = Writefile(params, exportObject, request);
                     } else if (i == 7) {
                         Map<String, String> params = new HashMap<>();
                         params.put("semesterId", semesterId);
-                        os = Writefile(params, exportObject);
+                        os = Writefile(params, exportObject, request);
                     } else if (i == 9) {
                         Map<String, String> params = new HashMap<>();
                         params.put("semesterId", semesterId);
-                        os = Writefile(params, exportObject);
+                        os = Writefile(params, exportObject, request);
                     } else if (i == 10) {
                         Map<String, String> params = new HashMap<>();
                         params.put("semesterId", semName);
-                        os = Writefile(params, exportObject);
+                        os = Writefile(params, exportObject, request);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

@@ -9,6 +9,7 @@ import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class ExportStudentsFailImpl implements IExportObject {
     }
 
     @Override
-    public void writeData(OutputStream os, Map<String, String> params) throws Exception {
+    public void writeData(OutputStream os, Map<String, String> params, HttpServletRequest request) throws Exception {
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream is = classLoader.getResourceAsStream(STUDENTS_FAIL_EXCEL_TEMPL);
 

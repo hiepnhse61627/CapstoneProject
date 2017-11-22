@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -31,7 +32,7 @@ public class ExportController {
 
     @RequestMapping(value = "/exportExcel")
     @ResponseBody
-    public Callable exportFile(@RequestParam Map<String, String> params, HttpServletResponse response) {
+    public Callable exportFile(@RequestParam Map<String, String> params, HttpServletRequest request, HttpServletResponse response) {
         ExportStatusReport.StatusExportStudentDetailRunning = true;
         ExportStatusReport.StatusStudentDetailExport = "";
         ExportStatusReport.StopExporting = false;
@@ -51,7 +52,7 @@ public class ExportController {
 
                 // write data
                 os = response.getOutputStream();
-                exportObject.writeData(os, params);
+                exportObject.writeData(os, params, request);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -90,7 +91,8 @@ public class ExportController {
                 "com.capstone.exporters.ExportStudentListImpl", // 7 = Export students
                 "com.capstone.exporters.ExportPercentFailImpl", // 8 = Export percent fail
                 "com.capstone.exporters.ExportGoodStudentsImpl", // 9 = Export good student
-                "com.capstone.exporters.ExportFailStatisticsImpl" // 10 = Export fail statistics
+                "com.capstone.exporters.ExportFailStatisticsImpl", // 10 = Export fail statistics
+                "com.capstone.exporters.ExportStudentArrangementImpl", // 11 = Export student arrangement
         };
 
         try {

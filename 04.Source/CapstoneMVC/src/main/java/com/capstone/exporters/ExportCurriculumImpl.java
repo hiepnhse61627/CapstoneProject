@@ -12,6 +12,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -31,7 +32,7 @@ public class ExportCurriculumImpl implements IExportObject {
     }
 
     @Override
-    public void writeData(OutputStream os, Map<String, String> params) throws Exception {
+    public void writeData(OutputStream os, Map<String, String> params, HttpServletRequest request) throws Exception {
         ICurriculumService curriculumService = new CurriculumServiceImpl();
 
         ClassLoader classLoader = getClass().getClassLoader();
