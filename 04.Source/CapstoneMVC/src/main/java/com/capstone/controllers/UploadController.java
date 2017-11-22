@@ -1179,12 +1179,13 @@ public class UploadController {
                 }
 
                 if (!Ultilities.containsIgnoreCase(subjectCode, "LAB")
+                        && !Ultilities.containsIgnoreCase(subjectCode, "OJT")
                         && !Ultilities.containsIgnoreCase(subjectCode, "SYB")) {
                     sumPassFailMark += mark * subjectCredits;
                     sumPassFailCredits += subjectCredits;
                 }
             }
-            passFailAverageMark = Math.round(sumPassFailMark / sumPassFailCredits * 10.0) / 10.0;
+            passFailAverageMark = Math.round(sumPassFailMark / sumPassFailCredits * 100.0) / 100.0;
 
             student.setPassCredits(totalPassCredits);
             student.setPassFailCredits(totalPassFailCredits);
