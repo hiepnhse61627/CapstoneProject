@@ -275,7 +275,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             MarkComponentEntity markComponent = markComponentService
                     .getMarkComponentByName(Enums.MarkComponent.AVERAGE.getValue());
 
-            String queryStr = "SELECT s.id, s.rollNumber, s.fullName, sub.id, sub.credits, sub.isSpecialized" +
+            String queryStr = "SELECT s.id, s.rollNumber, s.fullName, sub.id, sub.isSpecialized" +
                     " FROM MarksEntity m" +
                     " INNER JOIN StudentEntity s ON m.studentId.id = s.id" +
                     " INNER JOIN SubjectMarkComponentEntity smc ON m.subjectMarkComponentId.id = smc.id" +
@@ -803,6 +803,21 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         return marks;
     }
 
+    public List<MarksEntity> findMarksBySemesterIdAndStatus(Integer semesterId, String status) {
+        EntityManager em = getEntityManager();
+        List<MarksEntity> marksEntities = new ArrayList<>();
+        try {
+            String sqlString = "SELECT m FROM MarksEntity m WHERE m.semesterId.id = :semesterId AND m.status = :status";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("semesterId", semesterId);
+            query.setParameter("status", status);
+
+            marksEntities = query.getResultList();
+            return marksEntities;
+        } catch (NoResultException nrEx) {
+            return null;
+        }
+    }
 
     private class AverageSubject_StudentData {
         public int curriculumId;

@@ -30,6 +30,7 @@ public interface IMarksService {
     List<List<String>> getMarksForGraduatedStudent(int programId, int semesterId, int limitTotalCredits, int limitTotalSCredits);
 
     List<Object[]> getLastestPassFailMarksAndCredits(int studentId);
+    List<MarksEntity> findMarksBySemesterIdAndStatus(Integer semesterId, String status);
 
     // ----- Manager function ----
     List<Object[]> getTotalStudentsGroupBySemesterAndSubject(int semesterId);
