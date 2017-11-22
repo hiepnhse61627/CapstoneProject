@@ -6,9 +6,6 @@ import com.capstone.models.Logger;
 import com.capstone.services.CurriculumServiceImpl;
 import com.capstone.services.DocumentStudentServiceImpl;
 import com.capstone.services.ICurriculumService;
-import com.capstone.services.IDocumentStudentService;
-import com.sun.javaws.exceptions.MultipleHostsException;
-import org.springframework.security.access.method.P;
 
 import javax.persistence.*;
 import javax.persistence.criteria.*;

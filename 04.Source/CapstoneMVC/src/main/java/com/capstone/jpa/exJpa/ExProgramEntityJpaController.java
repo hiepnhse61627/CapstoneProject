@@ -6,7 +6,6 @@ import com.capstone.models.Logger;
 import com.capstone.models.ProgramModel;
 import com.capstone.services.IProgramService;
 import com.capstone.services.ProgramServiceImpl;
-import com.sun.deploy.security.ValidationState;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
