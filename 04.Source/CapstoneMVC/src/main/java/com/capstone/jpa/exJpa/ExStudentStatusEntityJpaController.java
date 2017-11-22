@@ -23,7 +23,7 @@ public class ExStudentStatusEntityJpaController extends StudentStatusEntityJpaCo
 
             String queryStr = "SELECT s FROM StudentStatusEntity s" +
                     " WHERE s.semesterId.id = :semesterId AND s.status IN :statusList" +
-                    " AND s.studentId.shift IS NOT NULL AND s.studentId.payRollClass IS NOT NULL";
+                    " AND s.studentId.shift IS NOT NULL";
             TypedQuery<StudentStatusEntity> query = em.createQuery(queryStr, StudentStatusEntity.class);
             query.setParameter("semesterId", semesterId);
             query.setParameter("statusList", statusList);
