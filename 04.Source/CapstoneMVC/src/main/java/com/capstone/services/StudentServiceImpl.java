@@ -29,6 +29,11 @@ public class StudentServiceImpl implements IStudentService {
     }
 
     @Override
+    public StudentEntity findStudentByEmail(String email) {
+        return studentEntityJpaController.findStudentByEmail(email);
+    }
+
+    @Override
     public List<StudentEntity> findStudentsByFullNameOrRollNumber(String searchValue) {
         return studentEntityJpaController.findStudentsByFullNameOrRollNumber(searchValue);
     }

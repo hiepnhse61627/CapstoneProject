@@ -11,6 +11,7 @@ public interface IStudentService {
     void createStudentList(List<StudentEntity> studentEntityList);
     StudentEntity findStudentById(int id);
     StudentEntity findStudentByRollNumber(String rollNumber);
+    StudentEntity findStudentByEmail(String email);
     List<StudentEntity> findStudentsByFullNameOrRollNumber(String searchValue);
     List<StudentEntity> findAllStudents();
     List<StudentEntity> findAllStudentsWithoutCurChange();

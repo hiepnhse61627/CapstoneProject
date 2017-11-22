@@ -7,6 +7,7 @@ import com.capstone.services.CurriculumServiceImpl;
 import com.capstone.services.DocumentStudentServiceImpl;
 import com.capstone.services.ICurriculumService;
 import com.capstone.services.IDocumentStudentService;
+import com.sun.javaws.exceptions.MultipleHostsException;
 import org.springframework.security.access.method.P;
 
 import javax.persistence.*;
@@ -126,7 +127,7 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
         EntityManager em = getEntityManager();
         try {
             String sqlString = "select distinct s.* from Student s, Marks m where s.Id = m.StudentId and m.IsActivated = 0";
-            Query query = em.createNativeQuery(sqlString,StudentEntity.class);
+            Query query = em.createNativeQuery(sqlString, StudentEntity.class);
             List<StudentEntity> objectList = query.getResultList();
             return objectList;
         } catch (NoResultException nrEx) {
@@ -150,6 +151,33 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
 
             return studentEntity;
         } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    public StudentEntity findStudentByEmail(String email) {
+        EntityManager em = getEntityManager();
+        Query query = null;
+        try {
+            String sqlString = "SELECT s FROM StudentEntity s WHERE s.email = :email";
+            query = em.createQuery(sqlString);
+            query.setParameter("email", email);
+
+            StudentEntity studentEntity = (StudentEntity) query.getSingleResult();
+
+            return studentEntity;
+        } catch (NoResultException nrEx) {
+            System.out.println("Student with email " + email + " not found!");
+            return null;
+        } catch (NonUniqueResultException ex) {
+            System.out.println("Student with email " + email + " more than one!");
+            return (StudentEntity) query.getResultList().get(0);
+        } catch (Exception e) {
+            e.printStackTrace();
             return null;
         } finally {
             if (em != null) {
@@ -283,8 +311,8 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
                 em.close();
             }
         }
-	}
-	
+    }
+
     public List<StudentEntity> getStudentByProgram(int programId) {
         EntityManager em = getEntityManager();
         List<StudentEntity> result = null;

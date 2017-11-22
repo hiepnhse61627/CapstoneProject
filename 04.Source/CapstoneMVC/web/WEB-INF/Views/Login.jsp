@@ -63,9 +63,16 @@
         <div class="login-box-body">
             <p class="login-box-msg">Đăng nhập</p>
             <c:if test="${param.error != null}">
-                <div class="alert alert-danger">
-                    <p>Sai tên đăng nhập hoặc mật khẩu.</p>
-                </div>
+                <c:if test="${not empty param.error}">
+                    <div class="alert alert-danger">
+                        <p>${param.error}</p>
+                    </div>
+                </c:if>
+                <c:if test="${empty param.error}">
+                    <div class="alert alert-danger">
+                        <p>Sai tên đăng nhập hoặc mật khẩu.</p>
+                    </div>
+                </c:if>
             </c:if>
             <%--<c:if test="${param.logout != null}">--%>
                 <%--<div class="alert alert-success">--%>
