@@ -29,6 +29,8 @@
         <!--<intercept-url pattern="/studentMarkHistory**" access="hasAnyRole('ROLE_STUDENT')"/>-->
         <intercept-url pattern="/studentMarkHistory/**" access="hasAnyRole('ROLE_STUDENT')"/>
         <intercept-url pattern="/student/**" access="hasAnyRole('ROLE_STUDENT', 'ROLE_MANAGER', 'ROLE_STAFF')"/>
+        <intercept-url pattern="/studentDetail**" access="hasAnyRole('ROLE_STUDENT', 'ROLE_MANAGER', 'ROLE_STAFF')"/>
+        <intercept-url pattern="/getStudent**" access="hasAnyRole('ROLE_STUDENT', 'ROLE_MANAGER', 'ROLE_STAFF')"/>
         <!--<intercept-url pattern="/student**" access="hasAnyRole('ROLE_STUDENT')"/>-->
         <intercept-url pattern="/getStudentList**" access="hasAnyRole('ROLE_STAFF', 'ROLE_STUDENT', 'ROLE_MANAGER', 'ROLE_STUDENT')"/>
 
