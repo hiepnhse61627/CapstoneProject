@@ -81,6 +81,11 @@ public class MarksServiceImpl implements IMarksService {
     }
 
     @Override
+    public List<MarksEntity> findMarksBySemesterId(Integer semesterId) {
+        return marksEntityJpaController.findMarksBySemesterId(semesterId);
+    }
+
+    @Override
     public List<MarksEntity> getStudentMarksById(int stuId) {
         return marksEntityJpaController.getAllMarksByStudent(stuId);
     }
