@@ -690,19 +690,16 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         return result;
     }
 
-    public List<Object[]> getLastestPassFailMarksAndCredits(int studentId) {
+    public List<Object[]> getLatestPassFailMarksAndCredits(int studentId) {
         List<Object[]> result = new ArrayList<>();
         EntityManager em = null;
 
         try {
             em = getEntityManager();
-            List<MarksEntity> markList = this.getLastestMarksByStudentId(studentId);
+            List<MarksEntity> markList = this.getLatestMarksByStudentId(studentId);
             markList = markList.stream().filter(m ->
                     m.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
-                            || m.getStatus().equalsIgnoreCase(Enums.MarkStatus.IS_EXEMPT.getValue())
-                            || m.getStatus().equalsIgnoreCase(Enums.MarkStatus.FAIL.getValue())
-                            || m.getStatus().equalsIgnoreCase(Enums.MarkStatus.IS_ATTENDANCE_FAIL.getValue())
-                            || m.getStatus().equalsIgnoreCase(Enums.MarkStatus.IS_SUSPENDED.getValue()))
+                            || m.getStatus().equalsIgnoreCase(Enums.MarkStatus.FAIL.getValue()))
                     .collect(Collectors.toList());
 
             if (!markList.isEmpty()) {
@@ -715,7 +712,9 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                         " INNER JOIN Subject sub ON smc.SubjectId = sub.Id" +
                         " INNER JOIN Document_Student ds ON m.StudentId = ds.StudentId" +
                         " INNER JOIN Curriculum c ON ds.CurriculumId = c.Id" +
+                        " INNER JOIN Program p ON c.ProgramId = p.Id" +
                         " INNER JOIN Subject_Curriculum sc ON sc.CurriculumId = c.Id" +
+                        " AND p.Name != ?" +
                         " AND sc.SubjectId = sub.Id" +
                         " AND m.IsActivated = 1" +
                         " AND m.StudentId = ?" +
@@ -723,8 +722,9 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                         " AND ds.CurriculumId IS NOT NULL" +
                         " AND m.Id IN (" + Ultilities.parseIntegerListToString(markIds) + ")";
                 Query query = em.createNativeQuery(queryStr);
-                query.setParameter(1, studentId);
-                query.setParameter(2, Enums.MarkComponent.AVERAGE.getValue());
+                query.setParameter(1, "PC");
+                query.setParameter(2, studentId);
+                query.setParameter(3, Enums.MarkComponent.AVERAGE.getValue());
 
                 result = query.getResultList();
             }
@@ -738,27 +738,28 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         return result;
     }
 
-    public List<MarksEntity> getLastestMarksByStudentId(int studentId) {
+    public List<MarksEntity> getLatestMarksByStudentId(int studentId) {
         List<MarksEntity> result = null;
         EntityManager em = null;
 
         try {
-            List<MarksEntity> markList = this.getAllMarksByStudent(studentId);
-            markList = Ultilities.SortSemestersByMarks(markList);
+            em = getEntityManager();
 
+            String queryStr = "SELECT m FROM MarksEntity m" +
+                    " WHERE m.isActivated = true AND m.isEnabled = true AND m.studentId.id = :studentId";
+            TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
+            query.setParameter("studentId", studentId);
+            List<MarksEntity> markList = query.getResultList();
+
+            // Remove duplicate and get last record if duplicate
             result = new ArrayList<>();
-            for (MarksEntity curMark : markList) {
-                boolean duppicate = false;
-                for (MarksEntity mark : result) {
-                    if (curMark.getSubjectMarkComponentId().getId() == mark.getSubjectMarkComponentId().getId()) {
-                        mark = curMark;
-                        duppicate = true;
-                        break;
-                    }
-                }
-                if (!duppicate) {
-                    result.add(curMark);
-                }
+            Map<Integer, MarksEntity> map = new HashMap<>();
+            for (MarksEntity m : markList) {
+                map.put(m.getSubjectMarkComponentId().getId(), m);
+            }
+
+            for (Integer key : map.keySet()) {
+                result.add(map.get(key));
             }
         } finally {
             if (em != null) {

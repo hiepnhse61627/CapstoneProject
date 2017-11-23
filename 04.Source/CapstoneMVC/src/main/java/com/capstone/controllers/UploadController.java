@@ -1071,10 +1071,11 @@ public class UploadController {
 
     private void UpdateStudentCredits(Collection<StudentEntity> studentList) {
         this.totalLine1 = studentList.size();
+        this.currentLine1 = 0;
 
         for (StudentEntity student : studentList) {
             // Object[]: SubjectId, SubjectCredits, Mark, MarkStatus
-            List<Object[]> markList = marksService.getLastestPassFailMarksAndCredits(student.getId());
+            List<Object[]> markList = marksService.getLatestPassFailMarksAndCredits(student.getId());
             int totalPassCredits = 0;
             int totalPassFailCredits = 0;
             double passFailAverageMark = 0;
@@ -1089,9 +1090,7 @@ public class UploadController {
                 String status = m[3].toString();
 
                 if (!Ultilities.containsIgnoreCase(subjectCode, "VOV")) {
-                    if (!status.equals(Enums.MarkStatus.FAIL.getValue())
-                            && !status.equals(Enums.MarkStatus.IS_SUSPENDED.getValue())
-                            && !status.equals(Enums.MarkStatus.IS_ATTENDANCE_FAIL.getValue())) {
+                    if (!status.equals(Enums.MarkStatus.FAIL.getValue())) {
                         totalPassCredits += subjectCredits;
                     }
                     totalPassFailCredits += subjectCredits;

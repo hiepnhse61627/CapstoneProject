@@ -33,11 +33,25 @@ public class StudentList {
 
     @RequestMapping("/studentList/{studentId}")
     public ModelAndView StudentInfo(@PathVariable("studentId") int studentId) {
-        IStudentService studentService = new StudentServiceImpl();
-        IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
-
         ModelAndView view = new ModelAndView("StudentInfo");
         view.addObject("title", "Thông tin sinh viên");
+        view = this.GetStudentInfoData(view, studentId);
+
+        return view;
+    }
+
+    @RequestMapping("/studentProcess/{studentId}")
+    public ModelAndView StudentInfo2(@PathVariable("studentId") int studentId) {
+        ModelAndView view = new ModelAndView("StudentInfo2");
+        view.addObject("title", "Điểm quá trình");
+        view = this.GetStudentInfoData(view, studentId);
+
+        return view;
+    }
+
+    private ModelAndView GetStudentInfoData(ModelAndView view, int studentId) {
+        IStudentService studentService = new StudentServiceImpl();
+        IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
 
         StudentEntity student = studentService.findStudentById(studentId);
 
@@ -98,10 +112,13 @@ public class StudentList {
 
     @RequestMapping(value = "/studentList/marks")
     @ResponseBody
-    public JsonObject GetStudentMarkList(@RequestParam int studentId) {
+    public JsonObject GetStudentMarkList(@RequestParam Map<String, String> params) {
         List<StudentDetailModel> result = new ArrayList<>();
         IRealSemesterService semesterService = new RealSemesterServiceImpl();
         JsonObject jsonObj = new JsonObject();
+
+        int studentId = Integer.parseInt(params.get("studentId"));
+        boolean getLatestMarks = Boolean.parseBoolean(params.get("getLatestMarks") != null ? params.get("getLatestMarks") : "false");
 
         try {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
@@ -121,7 +138,8 @@ public class StudentList {
                     " AND smc.subjectId.id = sc.subjectId.id" +
                     " AND mc.name LIKE :markComponentName" +
                     " AND m.studentId.id = :studentId" +
-                    " AND m.isActivated = true";
+                    " AND m.isActivated = true" +
+                    (getLatestMarks ? " AND m.isEnabled = true" : "");
             Query query = em.createQuery(queryStr);
             query.setParameter("markComponentName", "%average%");
             query.setParameter("studentId", studentId);
@@ -183,7 +201,8 @@ public class StudentList {
                         " AND mc.name LIKE :markComponentName" +
                         " AND m.studentId.id = :studentId" +
                         " AND m.id NOT IN :sList" +
-                        " AND m.isActivated = true";
+                        " AND m.isActivated = true" +
+                        (getLatestMarks ? " AND m.isEnabled = true" : "");
                 query = em.createQuery(queryStr);
                 query.setParameter("markComponentName", "%average%");
                 query.setParameter("studentId", studentId);

@@ -25,11 +25,11 @@ public interface IMarksService {
     List<MarksEntity> getMarksByStudentIdAndStatusAndSemester(int studentId, String status, List<String> semesters);
     List<MarksEntity> getListMarkToCurrentSemester(List<Integer> semesterIds, String[] statuses);
     List<MarksEntity> getMarkByConditions(int semesterId, List<String> subjects, int studentId);
-    List<MarksEntity> getLastestMarksByStudentId(int studentId);
+    List<MarksEntity> getLatestMarksByStudentId(int studentId);
 
     List<List<String>> getMarksForGraduatedStudent(int programId, int semesterId, int limitTotalCredits, int limitTotalSCredits);
 
-    List<Object[]> getLastestPassFailMarksAndCredits(int studentId);
+    List<Object[]> getLatestPassFailMarksAndCredits(int studentId);
     List<MarksEntity> findMarksBySemesterId(Integer semesterId);
 
     // ----- Manager function ----
