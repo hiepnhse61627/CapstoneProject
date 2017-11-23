@@ -1,9 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<c:set var="passCredits" property="${student.passCredits}" />
-<c:set var="passFailCredits" property="${student.passFailCredits}" />
-<c:set var="passFailAverageMark" property="${student.passFailAverageMark}" />
+<c:set var="passCredits" value="${student.passCredits}" />
+<c:set var="passFailCredits" value="${student.passFailCredits}" />
+<c:set var="passFailAverageMark" value="${student.passFailAverageMark}" />
 
 <c:if test="${empty passCredits}">
     <c:set var="passCredits" value="0"/>
@@ -385,8 +385,8 @@
 //        html += "<div class='small-col'><span id='average'></span></div>";
 //        html += "<div class='medium-col'><span></span></div>";
         html += "<div class='width-5'></div>"
+        html += "<div class='width-29'><span class='bottom-info-text'>Số tín chỉ đã học: </span>${passFailCredits}</div>";
         html += "<div class='width-29'><span class='bottom-info-text'>Số tín chỉ tích lũy: </span>${passCredits}</div>";
-        html += "<div class='width-29'><span class='bottom-info-text'>Tổng tín chỉ tích lũy: </span>${passFailCredits}</div>";
         html += "<div class='width-29'><span class='bottom-info-text'>Điểm trung bình: </span>${passFailAverageMark}</div>";
         html += "</div></div>";
 
