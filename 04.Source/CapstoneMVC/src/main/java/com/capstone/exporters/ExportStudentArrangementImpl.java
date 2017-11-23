@@ -70,6 +70,14 @@ public class ExportStudentArrangementImpl implements IExportObject {
         cellStyle.setAlignment(HorizontalAlignment.CENTER);
         cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
+        CellStyle cellAlignmentLeftStyle = workbook.createCellStyle();
+        cellAlignmentLeftStyle.setBorderBottom(BorderStyle.THIN);
+        cellAlignmentLeftStyle.setBorderLeft(BorderStyle.THIN);
+        cellAlignmentLeftStyle.setBorderRight(BorderStyle.THIN);
+        cellAlignmentLeftStyle.setBorderTop(BorderStyle.THIN);
+        cellAlignmentLeftStyle.setAlignment(HorizontalAlignment.LEFT);
+        cellAlignmentLeftStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
         int ordinalNumber = 1;
         int currentRow = 3;
         int classNumber = 1;
@@ -119,9 +127,8 @@ public class ExportStudentArrangementImpl implements IExportObject {
                 cell.setCellValue(rollNumber);
 
                 cell = row.createCell(2);
-                cell.setCellStyle(cellStyle);
+                cell.setCellStyle(cellAlignmentLeftStyle);
                 cell.setCellValue(studentName);
-                cell.getCellStyle().setAlignment(HorizontalAlignment.LEFT);
 
                 previousSubject = currentSubject;
                 previousShift = currentShift;
