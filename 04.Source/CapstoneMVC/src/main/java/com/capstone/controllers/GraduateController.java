@@ -316,7 +316,12 @@ public class GraduateController {
                     }
                 }
             }
-            subjects = subjects.stream().distinct().collect(Collectors.toList());
+
+            if (type.equals("OJT")) {
+                subjects = subjects.stream().filter(c -> c.getSubjectId().getType() != SubjectTypeEnum.OJT.getId()).distinct().collect(Collectors.toList());
+            } else if (type.equals("SWP")) {
+                subjects = subjects.stream().distinct().collect(Collectors.toList());
+            }
 
 //                boolean aye = false;
 
