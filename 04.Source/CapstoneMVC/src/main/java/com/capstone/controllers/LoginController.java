@@ -137,10 +137,15 @@ public class LoginController implements ServletContextAware {
             con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
             System.out.println(request.getHeader("host"));
+            String url = request.getHeader("host");
+            if (!url.contains("localhost") && !url.contains("xip.io")) {
+                url += ".xip.io";
+            }
+
             String POST_PARAMS = "code=" + params.get("code") +
                     "&client_id=415843400023-vlpk1t8gu558gmt597aqtumvkco0lmme.apps.googleusercontent.com" +
                     "&client_secret=TEORfSizWyVpF4c-p8ziwBvu" +
-                    "&redirect_uri=http://" + request.getHeader("host") +"/auth/google" +
+                    "&redirect_uri=http://" + url +"/auth/google" +
                     "&grant_type=authorization_code";
 
             con.setDoOutput(true);

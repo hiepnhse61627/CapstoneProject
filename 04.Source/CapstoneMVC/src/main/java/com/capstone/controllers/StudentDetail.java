@@ -1075,16 +1075,25 @@ public class StudentDetail {
                 }
 
                 if (exist) {
-//                    List<SubjectCurriculumEntity> curSubs = new ArrayList<>();
-//                    for (DocumentStudentEntity doc : docs) {
-//                        curSubs.addAll(doc.getCurriculumId().getSubjectCurriculumEntityList());
-//                    }
+                    List<SubjectCurriculumEntity> curSubs = new ArrayList<>();
+                    for (DocumentStudentEntity doc : docs) {
+                        if (doc.getCurriculumId() != null) {
+                            curSubs.addAll(doc.getCurriculumId().getSubjectCurriculumEntityList());
+                        }
+                    }
 //                    int total = 0; // total total tin chi
-                    int total = student.getProgramId().getSpecializedCredits();
-//                    for (SubjectCurriculumEntity m : studentSubs) {
-//                        Integer num = m.getSubjectCredits();
-//                        total += (num == null ? 0 : num);
-//                    }
+                    int total = 0;
+
+                    for (SubjectCurriculumEntity m : studentSubs) {
+                        Integer num = m.getSubjectCredits();
+                        total += (num == null ? 0 : num);
+                    }
+
+                    if (subject.getType() == SubjectTypeEnum.OJT.getId()) {
+                        total = total;
+                    } else if (subject.getType() == SubjectTypeEnum.Capstone.getId()) {
+                        total = student.getProgramId().getSpecializedCredits();
+                    }
 //                    List<MarksEntity> stuSubs = student.getMarksEntityList();
 //                    stuSubs = Global.TransformMarksList(stuSubs);
 //                    int tongtinchi = 0;

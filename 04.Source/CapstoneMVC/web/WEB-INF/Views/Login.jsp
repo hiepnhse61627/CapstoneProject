@@ -116,7 +116,11 @@
 <script>
     $(function () {
         var href = document.getElementById("goog");
-        href.href = "https://accounts.google.com/o/oauth2/auth?client_id=415843400023-vlpk1t8gu558gmt597aqtumvkco0lmme.apps.googleusercontent.com&redirect_uri=http://" + window.location.hostname + "/auth/google&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto";
+        var url = window.location.hostname;
+        if (url.indexOf("localhost") == -1 && url.indexOf("xip.io") == -1) {
+            url += ".xip.io";
+        }
+        href.href = "https://accounts.google.com/o/oauth2/auth?client_id=415843400023-vlpk1t8gu558gmt597aqtumvkco0lmme.apps.googleusercontent.com&redirect_uri=http://" + url + "/auth/google&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto";
 
         $('input').iCheck({
             checkboxClass: 'icheckbox_square-blue',
