@@ -1128,7 +1128,8 @@ public class StudentDetail {
                                     itr.remove();
                                 }
                             } else {
-
+                                parent.add(sss);
+                                itr.remove();
                             }
                         }
                     }
