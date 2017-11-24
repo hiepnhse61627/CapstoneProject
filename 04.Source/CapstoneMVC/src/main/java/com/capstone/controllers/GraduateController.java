@@ -843,7 +843,7 @@ public class GraduateController {
                 }
             }
         }
-        if (student.getTerm() == ojt) {
+        if (student.getTerm() == ojt - 1) {
             return true;
         } else {
             return false;
