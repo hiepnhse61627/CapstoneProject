@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="spring-mvc-quickstart:war">
+    <output-path>$PROJECT_DIR$/out/artifacts/spring_mvc_quickstart_war</output-path>
+    <root id="archive" name="spring-mvc-quickstart_war.war">
+      <element id="artifact" artifact-name="spring-mvc-quickstart:war exploded" />
+    </root>
+  </artifact>
+</component>
