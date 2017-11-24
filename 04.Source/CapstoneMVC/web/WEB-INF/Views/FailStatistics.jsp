@@ -40,6 +40,7 @@
                                     <th>Số nợ đầu kỳ</th>
                                     <th>Số nợ đầu kỳ đã trả được trong kỳ</th>
                                     <th>Số nợ phát sinh trong kỳ</th>
+                                    <th>Số sinh viên trả nợ ngay trong kỳ</th>
                                     <th>Số nợ cuối kỳ</th>
                                 </tr>
                             </thead>
@@ -125,11 +126,11 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3],
+                    "aTargets": [0, 1, 2, 3, 4],
                     "bSortable": false,
                 },
                 {
-                    "aTargets": [0, 1, 2, 3],
+                    "aTargets": [0, 1, 2, 3, 4],
                     "sClass": "text-center",
                 }
             ],

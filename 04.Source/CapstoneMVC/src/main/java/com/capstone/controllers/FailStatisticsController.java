@@ -86,12 +86,14 @@ public class FailStatisticsController {
         List<MarksEntity> listPassed = listPassedInCurrentSemester(semester);
         List<MarksEntity> listPaid = intersectionOfTwoLists(listFailed, listPassed);
         List<MarksEntity> listFailedAtTheEndSemester = listFailedAtTheEndOfSemester(semester);
+        Integer numberOfStudentPaidFailedSubject = countNumberOfStudentsPaidFailedSubjectInSemester(semester);
 
         ArrayList<ArrayList<String>> resultList = new ArrayList<>();
         ArrayList<String> record = new ArrayList<>();
         record.add(String.valueOf(listFailed.size()));
         record.add(String.valueOf(listPaid.size()));
         record.add(String.valueOf(listFailedAtTheEndSemester.size() - listFailed.size() + listPaid.size()));
+        record.add(String.valueOf(numberOfStudentPaidFailedSubject));
         record.add(String.valueOf(listFailedAtTheEndSemester.size()));
         resultList.add(record);
 
@@ -350,6 +352,43 @@ public class FailStatisticsController {
         }
 
         return resultList;
+    }
+
+    private Integer countNumberOfStudentsPaidFailedSubjectInSemester(String semester) {
+        Integer count = 0;
+        RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterByName(semester);
+        List<MarksEntity> marksEntities = marksService.findMarksBySemesterId(realSemesterEntity.getId());
+
+        Table<Integer, String, List<MarksEntity>> table = HashBasedTable.create();
+
+        if (marksEntities != null && !marksEntities.isEmpty()) {
+            for (MarksEntity mark : marksEntities) {
+                Integer studentId = mark.getStudentId().getId();
+                String subjectCd = mark.getSubjectMarkComponentId().getSubjectId().getId();
+                if (table.get(studentId, subjectCd) == null) {
+                    List<MarksEntity> newMarkList = new ArrayList<>();
+                    newMarkList.add(mark);
+
+                    table.put(studentId, subjectCd, newMarkList);
+                } else {
+                    table.get(studentId, subjectCd).add(mark);
+                }
+            }
+
+            Set<Integer> studentIds = table.rowKeySet();
+            for (Integer studentId : studentIds) {
+                Map<String, List<MarksEntity>> map = table.row(studentId);
+                for (Map.Entry<String, List<MarksEntity>> entry : map.entrySet()) {
+                    List<MarksEntity> marks = entry.getValue();
+                    Set<String> markStatuses = marks.stream().map(MarksEntity::getStatus).collect(Collectors.toSet());
+                    if (markStatuses.contains("Passed") && markStatuses.contains("Fail")) {
+                        count++;
+                    }
+                }
+            }
+        }
+
+        return count;
     }
 
     /**
