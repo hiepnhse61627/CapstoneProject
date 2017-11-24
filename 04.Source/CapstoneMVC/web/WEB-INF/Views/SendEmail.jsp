@@ -134,7 +134,7 @@
     var VALIDURL = 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=';
     var SCOPE = 'https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email';
     var CLIENTID = '415843400023-daksefsdrol9o9b5b79o9mhk8cskc9k4.apps.googleusercontent.com';
-    var REDIRECT = 'http://localhost:8080/email/google';
+    var REDIRECT = "http://" + window.location.hostname + "/email/google";
     var TYPE = 'token';
     var url = OAUTHURL + 'scope=' + SCOPE + '&client_id=' + CLIENTID + '&redirect_uri=' + REDIRECT + '&response_type=' + TYPE;
 
