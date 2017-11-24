@@ -710,7 +710,7 @@ public class StudentDetail {
 //                        prequisiteQuery.setParameter("id", stuId);
 //                        prequisiteQuery.setParameter("sem", t);
 
-                            List<MarksEntity> list29 =  marks
+                            List<MarksEntity> list29 = marks
                                     .stream()
                                     .filter(c -> processedData.stream().anyMatch(b -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(b)))
                                     .collect(Collectors.toList());
@@ -916,7 +916,7 @@ public class StudentDetail {
 //                            queryCheckPass2.setParameter("marks", t);
 
 //                            List<MarksEntity> result = queryCheckPass2.getResultList();
-                                List<MarksEntity> result =  marks
+                                List<MarksEntity> result = marks
                                         .stream()
                                         .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(r.getId()))
                                         .filter(c -> c.getStatus().toLowerCase().contains("pass") ||
@@ -1075,26 +1075,34 @@ public class StudentDetail {
                 }
 
                 if (exist) {
-
-//                    List<SubjectCurriculumEntity> curSubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                    List<SubjectCurriculumEntity> curSubs = new ArrayList<>();
+                    for (DocumentStudentEntity doc : docs) {
+                        curSubs.addAll(doc.getCurriculumId().getSubjectCurriculumEntityList());
+                    }
                     int total = 0; // total total tin chi
                     for (SubjectCurriculumEntity m : studentSubs) {
                         Integer num = m.getSubjectCredits();
                         total += (num == null ? 0 : num);
                     }
-                    List<MarksEntity> stuSubs = student.getMarksEntityList();
-                    stuSubs = Global.TransformMarksList(stuSubs);
-                    int tongtinchi = 0;
-                    for (MarksEntity mark : stuSubs) {
-                        if (mark.getIsActivated() && (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt"))) {
-                            int cred = findSubjectCredit(student, mark.getSubjectMarkComponentId().getSubjectId().getId());
-                            tongtinchi += cred;
-                        }
-                    }
+//                    List<MarksEntity> stuSubs = student.getMarksEntityList();
+//                    stuSubs = Global.TransformMarksList(stuSubs);
+//                    int tongtinchi = 0;
+//                    for (MarksEntity mark : stuSubs) {
+//                        if (mark.getIsActivated() && (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt"))) {
+//                            int cred = findSubjectCredit(student, mark.getSubjectMarkComponentId().getSubjectId().getId());
+//                            tongtinchi += cred;
+//                        }
+//                    }
                     // tính tổng tín chỉ
                     List<List<String>> parent = new ArrayList<>();
-                    float required = (float) ((total * 1.0) * (percent * 1.0) / 100);
-                    if (tongtinchi > required) {
+                    float required = 0;
+                    if (subject.getType() == SubjectTypeEnum.OJT.getId()) {
+                        required = (float) ((total * 1.0) * (percent * 1.0) / 100);
+                    } else if (subject.getType() == SubjectTypeEnum.Capstone.getId()) {
+                        required = (float) ((total * 1.0) * (percent * 1.0) / 100);
+                    }
+
+                    if (student.getPassCredits() >= required) {
                         suggestion.setDuchitieu(true);
                     } else {
                         suggestion.setDuchitieu(false);
@@ -1113,9 +1121,13 @@ public class StudentDetail {
                         while (itr.hasNext()) {
                             List<String> sss = itr.next();
                             SubjectEntity s = subjectService.findSubjectById(sss.get(0));
-                            if (s.getType() == SubjectTypeEnum.Capstone.getId()) {
-                                parent.add(sss);
-                                itr.remove();
+                            if (!suggestion.isDuchitieu()) {
+                                if (s.getType() == SubjectTypeEnum.Capstone.getId()) {
+                                    parent.add(sss);
+                                    itr.remove();
+                                }
+                            } else {
+
                             }
                         }
                     }
@@ -1135,7 +1147,12 @@ public class StudentDetail {
         }
 
         if (suggestion.getData() == null) suggestion.setData(new ArrayList<>());
-        List<List<String>> trim = others.stream().limit(7).collect(Collectors.toList());
+        List<List<String>> trim;
+        if (Global.SemesterGap() > 0) {
+            trim = others;
+        } else {
+            trim = others.stream().limit(7).collect(Collectors.toList());
+        }
         for (List<String> o : trim) {
             suggestion.getData().add(o);
         }
@@ -1264,7 +1281,7 @@ public class StudentDetail {
 //                            queryCheckPass2.setParameter("list", t);
 
 //                            List<MarksEntity> result = queryCheckPass2.getResultList();
-                                List<MarksEntity> result =  marks
+                                List<MarksEntity> result = marks
                                         .stream()
                                         .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(r.getId()))
                                         .filter(c -> c.getStatus().toLowerCase().contains("pass") ||
