@@ -71,6 +71,7 @@
     function Add() {
         var form = new FormData();
         form.append('file', $('#file')[0].files[0]);
+        form.append('semesterId', $('#semester').val());
 
         swal({
             title: 'Đang xử lý',

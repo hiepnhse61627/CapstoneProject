@@ -818,6 +818,25 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         }
     }
 
+    public List<MarksEntity> findMarksByStudentIdAndSubjectCdAndSemesterId(Integer studentId, String subjectCd, Integer semesterId) {
+        EntityManager em = getEntityManager();
+        List<MarksEntity> marksEntities = new ArrayList<>();
+        try {
+            String sqlString = "SELECT m FROM MarksEntity m WHERE m.studentId.id = :studentId " +
+                                                             "AND m.subjectMarkComponentId.subjectId.id = :subjectCd " +
+                                                             "AND m.semesterId.id = :semesterId";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("studentId", studentId);
+            query.setParameter("subjectCd", subjectCd);
+            query.setParameter("semesterId", semesterId);
+
+            marksEntities = query.getResultList();
+            return marksEntities;
+        } catch (NoResultException nrEx) {
+            return null;
+        }
+    }
+
     private class AverageSubject_StudentData {
         public int curriculumId;
         public List<String> subjectList;

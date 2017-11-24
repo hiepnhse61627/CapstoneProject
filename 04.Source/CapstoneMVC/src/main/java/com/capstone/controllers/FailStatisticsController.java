@@ -85,14 +85,14 @@ public class FailStatisticsController {
         List<MarksEntity> listFailed = listFailedAtTheBeginningOfSemester(semester);
         List<MarksEntity> listPassed = listPassedInCurrentSemester(semester);
         List<MarksEntity> listPaid = intersectionOfTwoLists(listFailed, listPassed);
-        List<MarksEntity> listFailedAtCurrentSemester = listFailedInCurrentSemester(semester);
+        List<MarksEntity> listFailedAtTheEndSemester = listFailedAtTheEndOfSemester(semester);
 
         ArrayList<ArrayList<String>> resultList = new ArrayList<>();
         ArrayList<String> record = new ArrayList<>();
         record.add(String.valueOf(listFailed.size()));
         record.add(String.valueOf(listPaid.size()));
-        record.add(String.valueOf(listFailedAtCurrentSemester.size()));
-        record.add(String.valueOf(listFailed.size() - listPaid.size() + listFailedAtCurrentSemester.size()));
+        record.add(String.valueOf(listFailedAtTheEndSemester.size() - listFailed.size() + listPaid.size()));
+        record.add(String.valueOf(listFailedAtTheEndSemester.size()));
         resultList.add(record);
 
         return resultList;
@@ -105,11 +105,11 @@ public class FailStatisticsController {
      **/
     private List<MarksEntity> listFailedAtTheBeginningOfSemester(String semesterName) {
         List<MarksEntity> resultList = new ArrayList<>();
-        List<Integer> semesterIds = getToCurrentSemester(semesterName);
+        List<Integer> semesterIds = getToSemesterBeforeCurrentSemester(semesterName);
         if (semesterIds.size() == 1) {
             return resultList;
         }
-        List<MarksEntity> markList = marksService.getListMarkToCurrentSemester(semesterIds, new String[] {"Fail", "IsSuspended", "IsAttendanceFail", "Passed", "IsExempt"});
+        List<MarksEntity> markList = marksService.getListMarkToCurrentSemester(semesterIds, new String[] {"Fail","Passed"});
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
         if (!markList.isEmpty()) {
             for (MarksEntity m : markList) {
@@ -196,7 +196,7 @@ public class FailStatisticsController {
         RealSemesterEntity currentSemester = realSemesterService.findSemesterByName(semester);
         List<Integer> semesterIds = new ArrayList<>();
         semesterIds.add(currentSemester.getId());
-        List<MarksEntity> listPassed = marksService.getListMarkToCurrentSemester(semesterIds, new String[] {"Passed", "IsExempt"});
+        List<MarksEntity> listPassed = marksService.getListMarkToCurrentSemester(semesterIds, new String[] {"Passed"});
         // remove duplicate
         for (MarksEntity marksEntity : listPassed) {
             if (!noneDuplicateList.stream().anyMatch
@@ -215,12 +215,10 @@ public class FailStatisticsController {
      * @author HiepNH
      * @DateCreated 28/10/2017
      **/
-    private List<MarksEntity> listFailedInCurrentSemester(String semester) {
+    private List<MarksEntity> listFailedAtTheEndOfSemester(String semester) {
         List<MarksEntity> resultList = new ArrayList<>();
-        RealSemesterEntity currentSemester = realSemesterService.findSemesterByName(semester);
-        List<Integer> semesterIds = new ArrayList<>();
-        semesterIds.add(currentSemester.getId());
-        List<MarksEntity> markList = marksService.getListMarkToCurrentSemester(semesterIds, new String[] {"Fail", "IsSuspended", "IsAttendanceFail", "Passed", "IsExempt"});
+        List<Integer> semesterIds = getToCurrentSemester(semester);
+        List<MarksEntity> markList = marksService.getListMarkToCurrentSemester(semesterIds, new String[] {"Fail","Passed"});
         Table<String, String, List<MarksEntity>> map = HashBasedTable.create();
         if (!markList.isEmpty()) {
             for (MarksEntity m : markList) {
@@ -356,6 +354,30 @@ public class FailStatisticsController {
 
     /**
      * [This method processes (sort all semesters then iterate over the list, add semester to result list until reaching the current semester)
+     *              and returns list semesters from the beginning to semester that before the current semester]
+     * @param currentSemester
+     * @return listResult
+     * @author HiepNH
+     * @DateCreated 28/10/2017
+     **/
+    private List<Integer> getToSemesterBeforeCurrentSemester (String currentSemester) {
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester().stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+        semesters = Ultilities.SortSemesters(semesters);
+        List<Integer> listResult = new ArrayList<>();
+        for (RealSemesterEntity semester : semesters) {
+            listResult.add(semester.getId());
+            if (semester.getSemester().equals(currentSemester)) {
+                break;
+            }
+        }
+
+        if (listResult.size() == 1) { return listResult; }
+        listResult.remove(listResult.size() - 1);
+        return listResult;
+    }
+
+    /**
+     * [This method processes (sort all semesters then iterate over the list, add semester to result list until reaching the current semester)
      *              and returns list semesters from the beginning to current semester]
      * @param currentSemester
      * @return listResult
@@ -373,8 +395,6 @@ public class FailStatisticsController {
             }
         }
 
-        if (listResult.size() == 1) { return listResult; }
-        listResult.remove(listResult.size() - 1);
         return listResult;
     }
 }
