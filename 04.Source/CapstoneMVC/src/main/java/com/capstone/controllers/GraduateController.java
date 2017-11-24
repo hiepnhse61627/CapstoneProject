@@ -287,12 +287,13 @@ public class GraduateController {
             students = studentService.getStudentByProgram(programId);
         }
 
-        if (type.equals("Graduate")) {
-            students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
-        } else if (type.equals("OJT")) {
-            students = students.stream().filter(c -> c.getTerm() == 6).collect(Collectors.toList());
+//        if (type.equals("Graduate")) {
+//            students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
+//        } else
+        if (type.equals("OJT")) {
+            students = students.stream().filter(c -> c.getTerm() == 5).collect(Collectors.toList());
         } else if (type.equals("SWP")) {
-            students = students.stream().filter(c -> c.getTerm() == 9).collect(Collectors.toList());
+            students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
         }
 
         int i = 1;
@@ -382,50 +383,51 @@ public class GraduateController {
                 }
             }
 
-            int required = 0;
-            for (SubjectCurriculumEntity s : processedSub) {
-                required += s.getSubjectCredits();
-            }
+            int required = student.getProgramId().getSpecializedCredits();
+//            for (SubjectCurriculumEntity s : processedSub) {
+//                required += s.getSubjectCredits();
+//            }
 
-            int percent = 9999;
-            if (type.equals("Graduate")) {
-                percent = student.getProgramId().getGraduate();
-            } else if (type.equals("OJT")) {
+            int percent = 0;
+//            if (type.equals("Graduate")) {
+//                percent = student.getProgramId().getGraduate();
+//            } else
+            if (type.equals("OJT")) {
                 percent = student.getProgramId().getOjt();
             } else if (type.equals("SWP")) {
                 percent = student.getProgramId().getCapstone();
             }
 
-            int tongtinchi = 0;
+            int tongtinchi = student.getPassCredits();
 //            List<String> datontai = new ArrayList<>();
-            for (SubjectCurriculumEntity s : processedSub) {
-                if (map.get(s.getSubjectId().getId()) != null) {
-                    List<MarksEntity> list = map.get(s.getSubjectId().getId());
-                    if (list.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
-                        tongtinchi += s.getSubjectCredits();
-                    } else {
-                        boolean dacong = false;
-                        for (SubjectEntity ss : s.getSubjectId().getSubjectEntityList()) {
-                            List<MarksEntity> t = student.getMarksEntityList().stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(ss.getId())).collect(Collectors.toList());
-                            if (t.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
-                                tongtinchi += s.getSubjectCredits();
-                                dacong = true;
-                                break;
-                            }
-                        }
-                        if (!dacong) {
-                            for (SubjectEntity ss : s.getSubjectId().getSubjectEntityList1()) {
-                                for (SubjectEntity sss : ss.getSubjectEntityList()) {
-                                    List<MarksEntity> t = student.getMarksEntityList().stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(sss.getId())).collect(Collectors.toList());
-                                    if (t.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
-                                        tongtinchi += s.getSubjectCredits();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+//            for (SubjectCurriculumEntity s : processedSub) {
+//                if (map.get(s.getSubjectId().getId()) != null) {
+//                    List<MarksEntity> list = map.get(s.getSubjectId().getId());
+//                    if (list.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+//                        tongtinchi += s.getSubjectCredits();
+//                    } else {
+//                        boolean dacong = false;
+//                        for (SubjectEntity ss : s.getSubjectId().getSubjectEntityList()) {
+//                            List<MarksEntity> t = student.getMarksEntityList().stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(ss.getId())).collect(Collectors.toList());
+//                            if (t.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+//                                tongtinchi += s.getSubjectCredits();
+//                                dacong = true;
+//                                break;
+//                            }
+//                        }
+//                        if (!dacong) {
+//                            for (SubjectEntity ss : s.getSubjectId().getSubjectEntityList1()) {
+//                                for (SubjectEntity sss : ss.getSubjectEntityList()) {
+//                                    List<MarksEntity> t = student.getMarksEntityList().stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(sss.getId())).collect(Collectors.toList());
+//                                    if (t.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+//                                        tongtinchi += s.getSubjectCredits();
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 //            for (MarksEntity mark : marks) {
 //                if (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt")) {
 //                    if (!datontai.contains(mark.getSubjectMarkComponentId().getSubjectId().getId())) {
@@ -436,26 +438,19 @@ public class GraduateController {
 //                }
 //            }
 
+            List<String> t = new ArrayList<>();
+            t.add(student.getRollNumber());
+            t.add(student.getFullName());
+            t.add(String.valueOf(tongtinchi));
+            t.add(String.valueOf(Math.round((required * percent * 1.0) / 100)));
+            t.add(String.valueOf(student.getId()));
+
             if (isGraduate) {
                 if (tongtinchi >= ((required * percent * 1.0) / 100)) {
-                    List<String> t = new ArrayList<>();
-                    t.add(student.getRollNumber());
-                    t.add(student.getFullName());
-                    t.add(String.valueOf(tongtinchi));
-//                    t.add(String.valueOf((tongtinchi > required) ? (tongtinchi - required) : 0));.
-                    t.add(String.valueOf(Math.round((required * percent * 1.0) / 100)));
-                    t.add(String.valueOf(student.getId()));
                     data.add(t);
                 }
             } else {
                 if (tongtinchi < ((required * percent * 1.0) / 100)) {
-                    List<String> t = new ArrayList<>();
-                    t.add(student.getRollNumber());
-                    t.add(student.getFullName());
-                    t.add(String.valueOf(tongtinchi));
-//                    t.add(String.valueOf((tongtinchi > required) ? (tongtinchi - required) : 0));
-                    t.add(String.valueOf(Math.round((required * percent * 1.0) / 100)));
-                    t.add(String.valueOf(student.getId()));
                     data.add(t);
                 }
             }
