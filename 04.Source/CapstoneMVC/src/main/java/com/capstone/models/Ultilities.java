@@ -615,4 +615,19 @@ public class Ultilities {
         });
         return list;
     }
+
+    public static int GetSemesterIdBeforeThisId(int id) {
+        for (int i = 0; i < Global.getSortedList().size(); i++) {
+            RealSemesterEntity r = Global.getSortedList().get(i);
+            if (r.getId() == id) {
+                if (i == 0) {
+                    return 0;
+                } else {
+                    return (i - 1);
+                }
+            }
+        }
+
+        return -1;
+    }
 }

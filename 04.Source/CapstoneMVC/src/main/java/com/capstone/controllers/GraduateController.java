@@ -301,7 +301,13 @@ public class GraduateController {
 //            students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
 //        } else
         if (type.equals("OJT")) {
-            students = students.stream().filter(c -> c.getTerm() == 6).collect(Collectors.toList());
+            if (programService.getProgramById(programId).getName().contains("SE")) {
+                students = students.stream().filter(c -> isOJT(c)).collect(Collectors.toList());
+            } else if (programService.getProgramById(programId).getName().contains("BA")) {
+                students = students.stream().filter(c -> c.getTerm() == 5).collect(Collectors.toList());
+            } else {
+                students = students.stream().filter(c -> c.getTerm() == 6).collect(Collectors.toList());
+            }
         } else if (type.equals("SWP")) {
             students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
         }
@@ -386,7 +392,7 @@ public class GraduateController {
                 if (!tmp.contains(s.getSubjectId().getId())) tmp.add(s.getSubjectId().getId());
             }
 
-            List<MarksEntity> marks = marksService.getMarkByConditions(semesterId, tmp, student.getId());
+            List<MarksEntity> marks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semesterId), tmp, student.getId());
             Map<String, List<MarksEntity>> map = new HashMap<>();
             for (MarksEntity m : marks) {
                 if (map.get(m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
@@ -585,14 +591,14 @@ public class GraduateController {
 //        return credits;
 //	}
 
-    /**
-     * [This method processes (sort all semesters then iterate over the list, add semester to result list until reaching the current semester)
-     *              and returns list semesters from the beginning to current semester]
-     * @param currentSemesterId
-     * @return listResult
-     * @author HiepNH
-     * @DateCreated 28/10/2017
-     **/
+//    /**
+//     * [This method processes (sort all semesters then iterate over the list, add semester to result list until reaching the current semester)
+//     *              and returns list semesters from the beginning to current semester]
+//     * @param currentSemesterId
+//     * @return listResult
+//     * @author HiepNH
+//     * @DateCreated 28/10/2017
+//     **/
 //    private List<RealSemesterEntity> getToCurrentSemester (Integer currentSemesterId) {
 //        List<RealSemesterEntity> semesters = semesterService.getAllSemester();
 //        semesters = Ultilities.SortSemesters(semesters);
@@ -822,6 +828,27 @@ public class GraduateController {
 //        public int capstonePercent;
 //        public List<Integer> curriculumIds;
 //    }
+
+    private boolean isOJT(StudentEntity student) {
+        int ojt = -9999;
+        List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+        for (DocumentStudentEntity doc : docs) {
+            if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
+                List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                for (SubjectCurriculumEntity s : list) {
+                    if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
+                        ojt = s.getTermNumber();
+                        break;
+                    }
+                }
+            }
+        }
+        if (student.getTerm() == ojt) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 

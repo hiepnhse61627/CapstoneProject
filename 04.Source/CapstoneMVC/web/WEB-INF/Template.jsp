@@ -28,7 +28,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 
-    <title>${title} | Uniap 2.0</title>
+    <title>${title} | ExperimentalAP 2.0</title>
 
     <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
     <link rel="stylesheet" href="/Resources/plugins/bootstrap/css/bootstrap.min.css"/>
