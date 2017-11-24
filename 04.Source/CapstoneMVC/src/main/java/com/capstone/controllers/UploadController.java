@@ -3,9 +3,6 @@ package com.capstone.controllers;
 import com.capstone.models.*;
 import com.capstone.services.*;
 import com.google.gson.JsonObject;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.poi.hssf.usermodel.HSSFRow;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
@@ -19,9 +16,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.persistence.criteria.CriteriaBuilder;
 import javax.servlet.ServletContext;
-import javax.swing.text.Document;
 import java.io.*;
 
 import java.text.SimpleDateFormat;
@@ -496,14 +491,28 @@ public class UploadController {
         return view;
     }
 
-    @RequestMapping(value = "/manageStudyingStudent")
-    public ModelAndView goManageStudyingStudentPage() {
-        ModelAndView mav = new ModelAndView("manageStudyingStudent");
-        mav.addObject("title", "Quản lý điểm cho sinh viên đang học");
+    @RequestMapping(value = "/importStudyingStudent")
+    public ModelAndView goImportStudyingStudentPage() {
+        ModelAndView mav = new ModelAndView("importStudyingStudent");
+        mav.addObject("title", "Nhập điểm sinh viên đang học");
 
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
         semesters = Ultilities.SortSemesters(semesters);
 //        semesters = semesters.stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+
+        mav.addObject("semesters", semesters);
+
+        return mav;
+    }
+
+    @RequestMapping(value = "/updateMarkForStudyingStudent")
+    public ModelAndView goUpdateMarkForStudyingStudentPage() {
+        ModelAndView mav = new ModelAndView("updateMarkForStudyingStudent");
+        mav.addObject("title", "Cập nhật điểm cho sinh viên đang học");
+
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+        semesters = semesters.stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
 
         mav.addObject("semesters", semesters);
 

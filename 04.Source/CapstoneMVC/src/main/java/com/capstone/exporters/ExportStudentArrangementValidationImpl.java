@@ -309,7 +309,7 @@ public class ExportStudentArrangementValidationImpl implements IExportObject {
                     for (MarksEntity m : markList) {
                         if (currentSubject.equals(m.getSubjectMarkComponentId().getSubjectId().getId())
                                 && !m.getStatus().equals(Enums.MarkStatus.NOT_START.getValue())
-                                && m.getIsActivated() && m.getEnabled() != null && m.getEnabled()) {
+                                && m.getIsActivated()) {
                             markExistInDB = true;
                         }
                     }
