@@ -281,6 +281,7 @@ public class StudentArrangementController {
             }
 
             request.getSession().setAttribute("STUDENT_ARRANGEMENT_LIST", result);
+            request.getSession().setAttribute("STUDENT_ARRANGEMENT_SEMESTER_ID", semesterId);
 
             jsonObj.addProperty("success", true);
         } catch (Exception e) {

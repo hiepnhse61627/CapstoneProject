@@ -26,6 +26,7 @@
                 </div>
                 <div class="col-md-5 text-right">
                     <button type="button" class="btn btn-success" onclick="ExportExcel()">Xuất dữ liệu</button>
+                    <button type="button" class="btn btn-success" onclick="ExportValidationExcel()">Xuất file kiểm tra</button>
                     <button type="button" class="btn btn-warning" onclick="ShowImportModal()">Nhập dữ liệu</button>
                 </div>
             </div>
@@ -297,6 +298,12 @@
 
     function ExportExcel() {
         $("input[name='objectType']").val(11);
+
+        $("#export-excel").submit();
+    }
+
+    function ExportValidationExcel() {
+        $("input[name='objectType']").val(12);
 
         $("#export-excel").submit();
     }

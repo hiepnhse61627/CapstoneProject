@@ -70,7 +70,7 @@
                 </c:if>
                 <c:if test="${empty param.error}">
                     <div class="alert alert-danger">
-                        <p>Sai tên đăng nhập hoặc mật khẩu.</p>
+                        <p>Tên đăng nhập hoặc mật khẩu sai.</p>
                     </div>
                 </c:if>
             </c:if>
