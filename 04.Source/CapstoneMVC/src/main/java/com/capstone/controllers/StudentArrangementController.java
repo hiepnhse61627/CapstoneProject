@@ -105,9 +105,25 @@ public class StudentArrangementController {
         return jsonObj;
     }
 
-    @RequestMapping(value = "/studentArrangement/import", method = RequestMethod.POST)
+    @RequestMapping(value = "/studentArrangement/import1", method = RequestMethod.POST)
     @ResponseBody
-    public Callable<JsonObject> importFile(
+    public Callable<JsonObject> importFile1(
+            @RequestParam("file-suggestion") MultipartFile fileSuggestion, HttpServletRequest request) {
+        Callable<JsonObject> callable = new Callable<JsonObject>() {
+            @Override
+            public JsonObject call() throws Exception {
+                JsonObject obj = ReadFile(fileSuggestion, request);;
+
+                return obj;
+            }
+        };
+
+        return callable;
+    }
+
+    @RequestMapping(value = "/studentArrangement/import2", method = RequestMethod.POST)
+    @ResponseBody
+    public Callable<JsonObject> importFile2(
             @RequestParam("file-suggestion") MultipartFile fileSuggestion,
             @RequestParam("file-going") MultipartFile fileGoing,
             @RequestParam("file-relearn") MultipartFile fileRelearn,
@@ -115,17 +131,111 @@ public class StudentArrangementController {
         Callable<JsonObject> callable = new Callable<JsonObject>() {
             @Override
             public JsonObject call() throws Exception {
-                JsonObject obj = ReadFile(fileSuggestion, fileGoing, fileRelearn, semesterId, request);
-//                if (obj.get("success").getAsBoolean()) {
-//                    ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
-//                    read.saveFile(context, file, folder);
-//                }
+                JsonObject obj = ReadFile(fileSuggestion, fileGoing, fileRelearn, semesterId, request);;
 
                 return obj;
             }
         };
 
         return callable;
+    }
+
+    private JsonObject ReadFile(MultipartFile fileSuggestion, HttpServletRequest request) {
+        JsonObject jsonObj = new JsonObject();
+        IStudentService studentService = new StudentServiceImpl();
+        ISubjectService subjectService = new SubjectServiceImpl();
+
+        this.totalStudents = 0;
+        this.countStudents = 0;
+        this.file1Done = false;
+
+        try {
+            List<StudentEntity> students = studentService.findAllStudents();
+            Map<String, StudentEntity> studentMap = new HashMap<>();
+            for (StudentEntity s : students) {
+                studentMap.put(s.getRollNumber(), s);
+            }
+
+            Map<String, SubjectList> studentSubjectSuggestion = this.getSubjectSuggestionList(fileSuggestion);
+
+            totalStudents = studentSubjectSuggestion.keySet().size();
+
+            Map<String, Map<String, List<StudentEntity>>> shiftMap = new HashMap<>();
+            shiftMap.put("AM", new HashMap<>());
+            shiftMap.put("PM", new HashMap<>());
+
+            int count = 0;
+            for (String rollNumber : studentSubjectSuggestion.keySet()) {
+                StudentEntity curStudent = studentMap.get(rollNumber);
+                if (curStudent != null) {
+                    SubjectList subjectList = studentSubjectSuggestion.get(rollNumber);
+                    if (!subjectList.suggestionList.isEmpty()) {
+                        count = 1;
+
+                        Map<String, List<StudentEntity>> subjectMap = shiftMap.get(curStudent.getShift());
+                        for (String subjectCode : subjectList.suggestionList) {
+                            if (count > 6) {
+                                subjectMap = shiftMap.get(curStudent.getShift().equals("AM") ? "PM" : "AM");
+                            }
+
+                            List<StudentEntity> studentList = subjectMap.get(subjectCode);
+                            if (studentList == null) {
+                                studentList = new ArrayList<>();
+                                subjectMap.put(subjectCode, studentList);
+                            }
+                            studentList.add(curStudent);
+
+                            ++count;
+                        }
+                    }
+                }
+                countStudents++;
+            }
+
+            int classNumber = 0;
+            List<List<String>> result = new ArrayList<>();
+            for (String shift : shiftMap.keySet()) {
+                Map<String, List<StudentEntity>> subjectMap = shiftMap.get(shift);
+                for (String subjectCode : subjectMap.keySet()) {
+                    count = 0;
+                    classNumber++;
+
+                    List<StudentEntity> studentList = subjectMap.get(subjectCode);
+                    Collections.sort(studentList, new RollNumberComparator());
+
+                    SubjectEntity subject = subjectService.findSubjectById(subjectCode);
+
+                    List<String> dataRow = new ArrayList<>();
+                    for (StudentEntity student : studentList) {
+                        if (count == 25) {
+                            classNumber++;
+                            count = 0;
+                        }
+
+                        dataRow = new ArrayList<>();
+                        dataRow.add(subject.getId());
+                        dataRow.add(subject.getName());
+                        dataRow.add(student.getRollNumber());
+                        dataRow.add(student.getFullName());
+                        dataRow.add(classNumber + "");
+                        dataRow.add(shift);
+                        result.add(dataRow);
+
+                        ++count;
+                    }
+                }
+            }
+
+            request.getSession().setAttribute("STUDENT_ARRANGEMENT_LIST", result);
+            jsonObj.addProperty("success", true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            jsonObj.addProperty("success", false);
+            jsonObj.addProperty("message", e.getMessage());
+        }
+
+
+        return jsonObj;
     }
 
     private JsonObject ReadFile(MultipartFile fileSuggestion, MultipartFile fileGoing,

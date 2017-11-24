@@ -85,30 +85,6 @@
                 <h4 class="modal-title">Nhập dữ liệu</h4>
             </div>
             <div class="modal-body">
-                <%--<c:if test="${not empty files}">--%>
-                <%--<div class="form-group">--%>
-                <%--<div class="row">--%>
-                <%--<div class="title">--%>
-                <%--<h4>Các file gần đây:</h4>--%>
-                <%--</div>--%>
-                <%--<div class="my-content">--%>
-                <%--<div class="col-md-12">--%>
-                <%--<table id="choose" class="table">--%>
-                <%--<c:forEach var="file" items="${files}">--%>
-                <%--<tr class="table-row">--%>
-                <%--<td>${file.name}</td>--%>
-                <%--</tr>--%>
-                <%--</c:forEach>--%>
-                <%--</table>--%>
-                <%--</div>--%>
-                <%--<div class="col-md-12">--%>
-                <%--<button type="button" class="btn btn-primary" onclick="UseFile()">Sử dụng</button>--%>
-                <%--</div>--%>
-                <%--</div>--%>
-                <%--</div>--%>
-                <%--</div>--%>
-                <%--</c:if>--%>
-
                 <div class="form-group">
                     <div class="row">
                         <div class="title">
@@ -130,7 +106,7 @@
                 <div class="form-group">
                     <div class="row">
                         <div class="title">
-                            <h4>Nhập danh sách kế hoạch học đi và học lại:</h4>
+                            <h4>Nhập danh sách kế hoạch dự kiến:</h4>
                         </div>
                         <div class="my-content">
                             <div class="col-md-12">
@@ -145,11 +121,15 @@
                         </div>
                     </div>
                 </div>
+                <hr>
 
                 <div class="form-group">
                     <div class="row">
                         <div class="title">
-                            <h4>Nhập danh sách sinh viên học đi:</h4>
+                            <h4 class="text-left">Nhập danh sách sinh viên học đi:</h4>
+                            <div class="text-left m-l-10">
+                                <input type="checkbox" id="cb-file-going" /> Sử dụng file
+                            </div>
                         </div>
                         <div class="my-content">
                             <div class="col-md-12">
@@ -168,7 +148,10 @@
                 <div class="form-group">
                     <div class="row">
                         <div class="title">
-                            <h4>Nhập danh sách sinh viên học lại:</h4>
+                            <h4 class="text-left">Nhập danh sách sinh viên học lại:</h4>
+                            <div class="text-left m-l-10">
+                                <input type="checkbox" id="cb-file-relearn" /> Sử dụng file
+                            </div>
                         </div>
                         <div class="my-content">
                             <div class="col-md-12">
@@ -320,12 +303,12 @@
             swal('', 'Xin chọn học kỳ', 'warning');
             return;
         } else if (typeof($('#file-suggestion')[0].files[0]) == 'undefined' || $('#file-suggestion')[0].files[0] == null) {
-            swal('', 'Xin nhập danh sách kế hoạch học đi và học lại', 'warning');
+            swal('', 'Xin nhập danh sách kế hoạch dự kiến', 'warning');
             return;
-        } else if (typeof($('#file-going')[0].files[0]) == 'undefined' || $('#file-going')[0].files[0] == null) {
+        } else if ($('#cb-file-going').prop('checked') && (typeof($('#file-going')[0].files[0]) == 'undefined' || $('#file-going')[0].files[0] == null)) {
             swal('', 'Xin nhập danh sách sinh viên học đi', 'warning');
             return;
-        } else if (typeof($('#file-relearn')[0].files[0]) == 'undefined' || $('#file-relearn')[0].files[0] == null) {
+        } else if ($('#cb-file-relearn').prop('checked') && (typeof($('#file-relearn')[0].files[0]) == 'undefined' || $('#file-relearn')[0].files[0] == null)) {
             swal('', 'Xin nhập danh sách sinh viên học lại', 'warning');
             return;
         }
@@ -333,8 +316,19 @@
         var form = new FormData();
         form.append('semesterId', $('#cb-semester').val());
         form.append('file-suggestion', $('#file-suggestion')[0].files[0]);
-        form.append('file-going', $('#file-going')[0].files[0]);
-        form.append('file-relearn', $('#file-relearn')[0].files[0]);
+        if ($('#cb-file-going').prop('checked')) {
+            form.append('file-going', $('#file-going')[0].files[0]);
+        }
+        if ($('#cb-file-relearn').prop('checked')) {
+            form.append('file-relearn', $('#file-relearn')[0].files[0]);
+        }
+
+        var url = "";
+        if ($('#cb-file-going').prop('checked') && $('#cb-file-relearn').prop('checked')) {
+            url = "/studentArrangement/import2";
+        } else {
+            url = "/studentArrangement/import1";
+        }
 
         swal({
             title: 'Đang xử lý',
@@ -345,7 +339,7 @@
                 isRunning = true;
                 $.ajax({
                     type: "POST",
-                    url: "/studentArrangement/import",
+                    url: url,
                     processData: false,
                     contentType: false,
                     data: form,
@@ -364,13 +358,39 @@
                         }
                     }
                 });
-                updateProgress(isRunning);
+                if ($('#cb-file-going').prop('checked') && $('#cb-file-relearn').prop('checked')) {
+                    updateProgressFullFile(isRunning);
+                } else {
+                    updateProgressOneFile(isRunning);
+                }
+
             },
             allowOutsideClick: false
         });
     }
 
-    function updateProgress(running) {
+    function updateProgressOneFile(running) {
+        $.ajax({
+            type: "GET",
+            url: "/studentArrangement/updateProgress",
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                if (result.file1Done) {
+                    $('#progress-file-1').html("<div class='f-green'>Đã xử lý danh sách kế hoạch học đi và học lại</div>");
+                } else {
+                    $('#progress-file-1').html("<div class='f-red'>Đang xử lý danh sách kế hoạch học đi và học lại</div>");
+                }
+
+                $('#progress').html("<div>(" + result.count + "/" + result.total + ")</div>");
+                if (running) {
+                    setTimeout("updateProgressOneFile(isRunning)", 50);
+                }
+            }
+        });
+    }
+
+    function updateProgressFullFile(running) {
         $.ajax({
             type: "GET",
             url: "/studentArrangement/updateProgress",
@@ -397,7 +417,7 @@
 
                 $('#progress').html("<div>(" + result.count + "/" + result.total + ")</div>");
                 if (running) {
-                    setTimeout("updateProgress(isRunning)", 50);
+                    setTimeout("updateProgressFullFile(isRunning)", 50);
                 }
             }
         });
