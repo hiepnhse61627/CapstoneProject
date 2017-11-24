@@ -172,13 +172,14 @@ public class UploadController {
             int rollNumberIndex = 0;
 
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                System.out.println(rowIndex);
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
                     Cell rollNumberCell = row.getCell(rollNumberIndex);
                     String rollNumber = rollNumberCell.getCellType() == Cell.CELL_TYPE_STRING ?
-                            rollNumberCell.getStringCellValue().trim().toUpperCase() : rollNumberCell.getNumericCellValue() + "";
+                            rollNumberCell.getStringCellValue().trim().toUpperCase() : Integer.toString((int) rollNumberCell.getNumericCellValue()).trim().toUpperCase();
                     if (rollNumberCell != null) {
-                        StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumberCell.getStringCellValue().trim().toUpperCase());
+                        StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumber);
                         if (studentEntity != null) {
                             StudentStatusEntity studentStatusEntity = studentStatusService.getStudentStatusBySemesterIdAndStudentId(semesterId, studentEntity.getId());
                             // update status
@@ -195,10 +196,12 @@ public class UploadController {
             Logger.writeLog(ex);
             jsonObject.addProperty("success", false);
             jsonObject.addProperty("message", ex.getMessage());
+
+            return jsonObject;
         }
 
         jsonObject.addProperty("success", true);
-        jsonObject.addProperty("message", "Import sinh viên đang học thành công !");
+        jsonObject.addProperty("message", "Cập nhật trạng thái cho sinh viên thành công !");
         return jsonObject;
     }
 
