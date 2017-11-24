@@ -843,7 +843,6 @@ public class UploadController {
                 }
             }
             marksService.createMarks(marksEntities);
-            UpdateStudentCredits(studentMarksMap.keySet());
 
             if (!isCancel) {
                 jsonObject.addProperty("success", true);
@@ -1071,9 +1070,13 @@ public class UploadController {
         return jsonObject;
     }
 
-    private void UpdateStudentCredits(Collection<StudentEntity> studentList) {
-        this.totalLine1 = studentList.size();
+    @RequestMapping(value = "/updateStudentCredits", method = RequestMethod.POST)
+    @ResponseBody
+    public void UpdateStudentCredits() {
         this.currentLine1 = 0;
+        this.totalLine1 = 0;
+        List<StudentEntity> studentList = studentService.findAllStudents();
+        this.totalLine1 = studentList.size();
 
         for (StudentEntity student : studentList) {
             // Object[]: SubjectId, SubjectCredits, Mark, MarkStatus
@@ -1300,7 +1303,6 @@ public class UploadController {
                 ++this.currentLine;
                 System.out.println(currentLine + " - " + totalLine);
             }
-            this.UpdateStudentCredits(studentSet);
 
             workbook.close();
             is.close();
