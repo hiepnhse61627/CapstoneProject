@@ -152,7 +152,11 @@
 //                        cancelButtonColor: '#d33',
 //                        confirmButtonText: 'Ok'
                     }).then(function () {
-                        window.location.href = "https://accounts.google.com/o/oauth2/auth?client_id=154261814473-m5o6qqmt4768ij676ore7280qbpgf03u.apps.googleusercontent.com&redirect_uri=http://localhost:8080/auth/google&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto&login_hint=" + $('#email').val();
+                        var url = window.location.hostname;
+                        if (url.indexOf("localhost") == -1 && url.indexOf("xip.io") == -1) {
+                            url += ".xip.io";
+                        }
+                        window.location.href = "https://accounts.google.com/o/oauth2/auth?client_id=415843400023-vlpk1t8gu558gmt597aqtumvkco0lmme.apps.googleusercontent.com&redirect_uri=http://" + url + "/auth/google&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto&login_hint=" + $('#email').val();
                     });
                 } else {
                     swal("Lỗi", result.msg, "error");

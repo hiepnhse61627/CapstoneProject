@@ -105,7 +105,7 @@
 
             <div class="social-auth-links text-center">
                 <p>- Hoặc -</p>
-                <a href="https://accounts.google.com/o/oauth2/auth?client_id=154261814473-m5o6qqmt4768ij676ore7280qbpgf03u.apps.googleusercontent.com&redirect_uri=http://localhost:8080/auth/google&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto" class="btn btn-block btn-social btn-google btn-flat">
+                <a id="goog" href="#" class="btn btn-block btn-social btn-google btn-flat">
                     <i class="fa fa-google-plus"></i> Đăng nhập bằng Google+
                 </a>
             </div>
@@ -115,6 +115,13 @@
 
 <script>
     $(function () {
+        var href = document.getElementById("goog");
+        var url = window.location.hostname;
+        if (url.indexOf("localhost") == -1 && url.indexOf("xip.io") == -1) {
+            url += ".xip.io";
+        }
+        href.href = "https://accounts.google.com/o/oauth2/auth?client_id=415843400023-vlpk1t8gu558gmt597aqtumvkco0lmme.apps.googleusercontent.com&redirect_uri=http://" + url + "/auth/google&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto";
+
         $('input').iCheck({
             checkboxClass: 'icheckbox_square-blue',
             radioClass: 'iradio_square-blue',

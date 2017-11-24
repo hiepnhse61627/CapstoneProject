@@ -301,7 +301,7 @@ public class GraduateController {
 //            students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
 //        } else
         if (type.equals("OJT")) {
-            students = students.stream().filter(c -> c.getTerm() == 5).collect(Collectors.toList());
+            students = students.stream().filter(c -> c.getTerm() == 6).collect(Collectors.toList());
         } else if (type.equals("SWP")) {
             students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
         }
@@ -326,7 +326,12 @@ public class GraduateController {
                     }
                 }
             }
-            subjects = subjects.stream().distinct().collect(Collectors.toList());
+
+            if (type.equals("OJT")) {
+                subjects = subjects.stream().filter(c -> c.getSubjectId().getType() != SubjectTypeEnum.OJT.getId()).distinct().collect(Collectors.toList());
+            } else if (type.equals("SWP")) {
+                subjects = subjects.stream().distinct().collect(Collectors.toList());
+            }
 
 //                boolean aye = false;
 
@@ -393,10 +398,24 @@ public class GraduateController {
                 }
             }
 
-            int required = student.getProgramId().getSpecializedCredits();
+            int required = 0;
 //            for (SubjectCurriculumEntity s : processedSub) {
 //                required += s.getSubjectCredits();
 //            }
+
+            if (type.equals("OJT")) {
+                for (SubjectCurriculumEntity s : processedSub) {
+                    if (s.getSubjectCredits() != null) {
+                        required += s.getSubjectCredits();
+                    }
+                }
+            } else if (type.equals("SWP")) {
+                required = student.getProgramId().getSpecializedCredits();
+            }
+
+            if (required == 0) {
+                System.out.println();
+            }
 
             int percent = 0;
 //            if (type.equals("Graduate")) {
