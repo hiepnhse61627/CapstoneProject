@@ -136,7 +136,7 @@ public class ExportStudentArrangementValidationImpl implements IExportObject {
                         ++countStudentPM;
                     }
 
-                    if (previousShift.isEmpty() || (currentShift.equals(previousShift) && !currentClass.equals(previousClass))) {
+                    if (!currentClass.equals(previousClass)) {
                         if (currentShift.equals("AM")) {
                             ++countClassAM;
                         } else {
