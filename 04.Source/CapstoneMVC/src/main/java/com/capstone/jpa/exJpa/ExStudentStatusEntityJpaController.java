@@ -3,9 +3,7 @@ package com.capstone.jpa.exJpa;
 import com.capstone.entities.StudentStatusEntity;
 import com.capstone.jpa.StudentStatusEntityJpaController;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,4 +35,27 @@ public class ExStudentStatusEntityJpaController extends StudentStatusEntityJpaCo
 
         return result;
     }
+
+    public StudentStatusEntity getStudentStatusBySemesterIdAndStudentId(Integer semesterId, Integer studentId) {
+        StudentStatusEntity studentStatusEntity = new StudentStatusEntity();
+        EntityManager em = getEntityManager();
+
+        try {
+            String sqlstring = "SELECT s FROM StudentStatusEntity s WHERE s.semesterId.id = :semesterId AND s.studentId.id = :studentId";
+            Query query = em.createQuery(sqlstring);
+            query.setParameter("semesterId", semesterId);
+            query.setParameter("studentId", studentId);
+
+            studentStatusEntity = (StudentStatusEntity) query.getSingleResult();
+
+            return studentStatusEntity;
+        } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
 }
+

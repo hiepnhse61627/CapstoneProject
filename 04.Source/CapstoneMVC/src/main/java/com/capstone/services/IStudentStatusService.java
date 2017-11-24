@@ -7,4 +7,6 @@ import java.util.List;
 public interface IStudentStatusService {
     void createStudentStatus(StudentStatusEntity entity);
     List<StudentStatusEntity> getStudentStatusForStudentArrangement(int semesterId, List<String> statusList);
+    StudentStatusEntity getStudentStatusBySemesterIdAndStudentId(Integer semesterId, Integer studentId);
+    void updateStudentStatus(StudentStatusEntity entity);
 }

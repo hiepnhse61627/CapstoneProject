@@ -80,6 +80,20 @@ public class UploadController {
         return view;
     }
 
+    @RequestMapping(value = "/updateStatusForStudentsPage")
+    public ModelAndView goUpdateStatusForStudentPage() {
+        ModelAndView mav = new ModelAndView("updateStatusForStudents");
+        mav.addObject("title", "Cập nhật trạng thái cho sinh viên");
+
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+        semesters = semesters.stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+
+        mav.addObject("semesters", semesters);
+
+        return mav;
+    }
+
     @RequestMapping("/getlinestatus")
     @ResponseBody
     public JsonObject getCurrentLine() {
@@ -137,6 +151,55 @@ public class UploadController {
         };
 
         return callable;
+    }
+
+    @RequestMapping(value = "/updateStatusForStudents", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject updateStatusForStudents(@RequestParam("updateFile") MultipartFile file, @RequestParam("semesterId") Integer semesterId) {
+        JsonObject jsonObject = new JsonObject();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+            int excelDataIndex = 1;
+            int lastRow = spreadsheet.getLastRowNum();
+            this.totalLine = lastRow - startRowNumber + 1;
+
+            int rollNumberIndex = 0;
+
+            for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+                if (row != null) {
+                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    String rollNumber = rollNumberCell.getCellType() == Cell.CELL_TYPE_STRING ?
+                            rollNumberCell.getStringCellValue().trim().toUpperCase() : rollNumberCell.getNumericCellValue() + "";
+                    if (rollNumberCell != null) {
+                        StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumberCell.getStringCellValue().trim().toUpperCase());
+                        if (studentEntity != null) {
+                            StudentStatusEntity studentStatusEntity = studentStatusService.getStudentStatusBySemesterIdAndStudentId(semesterId, studentEntity.getId());
+                            // update status
+                            studentStatusEntity.setStatus("G");
+                            studentStatusService.updateStudentStatus(studentStatusEntity);
+                        }
+                    }
+                }
+            }
+
+            this.currentLine = 0;
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+        jsonObject.addProperty("success", true);
+        jsonObject.addProperty("message", "Import sinh viên đang học thành công !");
+        return jsonObject;
     }
 
     private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile, String semesterId) {
@@ -491,7 +554,7 @@ public class UploadController {
         return view;
     }
 
-    @RequestMapping(value = "/importStudyingStudent")
+    @RequestMapping(value = "/importStudyingStudentPage")
     public ModelAndView goImportStudyingStudentPage() {
         ModelAndView mav = new ModelAndView("importStudyingStudent");
         mav.addObject("title", "Nhập điểm sinh viên đang học");
@@ -505,7 +568,7 @@ public class UploadController {
         return mav;
     }
 
-    @RequestMapping(value = "/updateMarkForStudyingStudent")
+    @RequestMapping(value = "/updateMarkForStudyingStudentPage")
     public ModelAndView goUpdateMarkForStudyingStudentPage() {
         ModelAndView mav = new ModelAndView("updateMarkForStudyingStudent");
         mav.addObject("title", "Cập nhật điểm cho sinh viên đang học");

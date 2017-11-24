@@ -109,9 +109,19 @@ public class GraduateController {
         } else {
             studentEntityList = studentService.findStudentByProgramId(programId);
         }
+        // filter student in term 9
         studentEntityList = studentEntityList.stream().filter(s -> s.getTerm() == 9).collect(Collectors.toList());
+        List<StudentEntity> filteredList = new ArrayList<>();
+        for (StudentEntity studentEntity : studentEntityList) {
+            List<StudentStatusEntity> studentStatusEntities = studentEntity.getStudentStatusEntityList();
+            for (StudentStatusEntity studentStatusEntity : studentStatusEntities) {
+                if (studentStatusEntity.getSemesterId().getId() == semesterId && !studentStatusEntities.get(0).getStatus().equals("G")) {
+                    filteredList.add(studentEntity);
+                }
+            }
+        }
 
-        for (StudentEntity student : studentEntityList) {
+        for (StudentEntity student : filteredList) {
             List<DocumentStudentEntity> documentStudentEntityList = student.getDocumentStudentEntityList();
             Map<SubjectEntity, Integer> subjectsCredits = processCreditsForSubject(documentStudentEntityList);
             // get mark list from student
