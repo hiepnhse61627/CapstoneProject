@@ -99,33 +99,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
 
                 Cell tinchi = row.createCell(3);
                 tinchi.setCellStyle(cellStyle);
-
-                List<SubjectCurriculumEntity> subjects = new ArrayList<>();
-                List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
-                for (DocumentStudentEntity doc : docs) {
-                    if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
-                        List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
-                        for (SubjectCurriculumEntity s : list) {
-                            if (!subjects.contains(s)) {
-                                subjects.add(s);
-                            }
-                        }
-                    }
-                }
-                subjects = subjects.stream().distinct().collect(Collectors.toList());
-                int credits = 0;
-                List<MarksEntity> marksCredits = student.getMarksEntityList();
-                List<String> dacong = new ArrayList<>();
-                for (SubjectCurriculumEntity s : subjects) {
-                    if (marksCredits.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(s.getSubjectId().getId()))) {
-                        if  (!dacong.contains(s.getSubjectId().getId())) {
-                            Integer tmp = s.getSubjectCredits();
-                            credits += (tmp == null ? 0 : tmp);
-                            dacong.add(s.getSubjectId().getId());
-                        }
-                    }
-                }
-                tinchi.setCellValue(credits);
+                tinchi.setCellValue(student.getPassCredits());
 
                 // failed subject
                 List<List<String>> marks = processFailedSubject(student, semester);
