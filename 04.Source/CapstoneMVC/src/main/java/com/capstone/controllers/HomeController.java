@@ -18,10 +18,10 @@ import java.util.stream.Collectors;
 public class HomeController {
 
     @RequestMapping("/")
-    public String Index() {
+    public ModelAndView Index() {
         ModelAndView view = new ModelAndView("Dashboard");
         view.addObject("tittle", "Dashboard");
 
-        return "Dashboard";
+        return view;
     }
 }

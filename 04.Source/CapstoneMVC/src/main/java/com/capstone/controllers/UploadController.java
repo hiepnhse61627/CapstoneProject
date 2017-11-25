@@ -929,7 +929,7 @@ public class UploadController {
         return jsonObject;
     }
 
-    @RequestMapping(value = "/uploadStudyingStudent",  method = RequestMethod.POST)
+    @RequestMapping(value = "/uploadStudyingStudent", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject importStudyingStudent(@RequestParam("file") MultipartFile file, @RequestParam("semesterId") String semesterIdStr) {
         JsonObject jsonObject = new JsonObject();
@@ -1045,7 +1045,7 @@ public class UploadController {
                 this.currentLine++;
             }
             marksService.createMarks(marksEntities);
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             System.out.println(ex.getMessage());
             Logger.writeLog(ex);
             jsonObject.addProperty("success", false);
@@ -1110,7 +1110,7 @@ public class UploadController {
 
                             List<MarksEntity> foundMarks = marksEntities.stream()
                                     .filter(m -> m.getStudentId().getRollNumber().toLowerCase().equals(rollNumberValue)
-                                              && m.getSubjectMarkComponentId().getSubjectId().getId().toLowerCase().equals(subjectCodeValue)).collect(Collectors.toList());
+                                            && m.getSubjectMarkComponentId().getSubjectId().getId().toLowerCase().equals(subjectCodeValue)).collect(Collectors.toList());
 
                             if (foundMarks != null && !foundMarks.isEmpty()) {
                                 MarksEntity foundMark = foundMarks.get(0);
@@ -1138,51 +1138,144 @@ public class UploadController {
 
     @RequestMapping(value = "/updateStudentCredits", method = RequestMethod.POST)
     @ResponseBody
-    public void UpdateStudentCredits() {
-        this.currentLine1 = 0;
-        this.totalLine1 = 0;
-        List<StudentEntity> studentList = studentService.findAllStudents();
-        this.totalLine1 = studentList.size();
+    public Callable<JsonObject> UpdateStudentCredits() {
+        currentLine1 = 0;
+        totalLine1 = 0;
 
-        for (StudentEntity student : studentList) {
-            // Object[]: SubjectId, SubjectCredits, Mark, MarkStatus
-            List<Object[]> markList = marksService.getLatestPassFailMarksAndCredits(student.getId());
-            int totalPassCredits = 0;
-            int totalPassFailCredits = 0;
-            double passFailAverageMark = 0;
+        Callable<JsonObject> callable = () -> {
+            JsonObject result = new JsonObject();
 
-            double sumPassFailMark = 0;
-            double sumPassFailCredits = 0;
+            try {
+                List<StudentEntity> studentList = studentService.findAllStudents();
+                totalLine1 = studentList.size();
 
-            for (Object[] m : markList) {
-                String subjectCode = m[0].toString();
-                int subjectCredits = (int) m[1];
-                double mark = (double) m[2];
-                String status = m[3].toString();
+                for (StudentEntity student : studentList) {
+                    // Object[]: SubjectId, SubjectCredits, Mark, MarkStatus
+//                    List<Object[]> markList = marksService.getLatestPassFailMarksAndCredits(student.getId());
+                    int totalPassCredits = 0;
+                    int totalPassFailCredits = 0;
 
-                if (!Ultilities.containsIgnoreCase(subjectCode, "VOV")) {
-                    if (!status.equals(Enums.MarkStatus.FAIL.getValue())) {
-                        totalPassCredits += subjectCredits;
+                    double sumPassFailMark = 0;
+                    double sumPassFailCredits = 0;
+
+                    List<MarksEntity> marks = marksService.getStudentMarksById(student.getId());
+                    marks = marks.stream().filter(c -> c.getIsActivated() && c.getEnabled() != null && c.getEnabled()).collect(Collectors.toList());
+                    marks = Ultilities.SortSemestersByMarks(marks);
+
+                    List<SubjectCurriculumEntity> stuSubs = Ultilities.StudentCurriculumSubjects(student);
+
+//                    List<MarksEntity> curriculumMarks = marks
+//                            .stream()
+//                            .filter(c -> stuSubs.stream().anyMatch(a -> a.getSubjectId().getId().equals(c.getSubjectMarkComponentId().getSubjectId().getId())))
+//                            .collect(Collectors.toList());
+
+                    for (SubjectCurriculumEntity sub : stuSubs) {
+                        if (!sub.getSubjectId().getId().toLowerCase().contains("vov")) {
+                            List<MarksEntity> subMarks = marks
+                                    .stream()
+                                    .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub.getSubjectId().getId()))
+                                    .collect(Collectors.toList());
+                            if (subMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
+                                    c.getStatus().toLowerCase().contains("exempt"))) {
+                                totalPassCredits += sub.getSubjectCredits();
+                            } else {
+                                boolean dacong = false;
+                                List<SubjectEntity> replacers = sub.getSubjectId().getSubjectEntityList();
+                                for (SubjectEntity replacer : replacers) {
+                                    List<MarksEntity> replaceMarks = marks
+                                            .stream()
+                                            .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
+                                            .collect(Collectors.toList());
+                                    if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
+                                            c.getStatus().toLowerCase().contains("exempt"))) {
+                                        totalPassCredits += sub.getSubjectCredits();
+                                        dacong = true;
+                                    }
+                                }
+                                if (!dacong) {
+                                    List<SubjectEntity> replacersFirst = sub.getSubjectId().getSubjectEntityList1();
+                                    for (SubjectEntity repls : replacersFirst) {
+                                        List<SubjectEntity> reps = repls.getSubjectEntityList();
+                                        for (SubjectEntity replacer : reps) {
+                                            List<MarksEntity> replaceMarks = marks
+                                                    .stream()
+                                                    .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
+                                                    .collect(Collectors.toList());
+                                            if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
+                                                    c.getStatus().toLowerCase().contains("exempt"))) {
+                                                totalPassCredits += sub.getSubjectCredits();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            List<MarksEntity> m = marks
+                                    .stream()
+                                    .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub.getSubjectId().getId()))
+                                    .collect(Collectors.toList());
+                            if (!m.isEmpty()) {
+                                totalPassFailCredits += sub.getSubjectCredits();
+                            }
+                        }
+
+                        // tính dtb
+                        MarksEntity latestEntry = marks
+                                .stream()
+                                .filter(c -> !c.getSubjectMarkComponentId().getSubjectId().getId().toLowerCase().contains("lab") &&
+                                        !c.getSubjectMarkComponentId().getSubjectId().getId().toLowerCase().contains("oj") &&
+                                        !c.getSubjectMarkComponentId().getSubjectId().getId().toLowerCase().contains("syb"))
+                                .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub.getSubjectId().getId()))
+                                .reduce((first, second) -> second)
+                                .orElse(null);
+                        if (latestEntry != null) {
+                            sumPassFailMark += latestEntry.getAverageMark() * sub.getSubjectCredits();
+                            sumPassFailCredits += sub.getSubjectCredits();
+                        }
                     }
-                    totalPassFailCredits += subjectCredits;
+
+//
+//                    for (Object[] m : markList) {
+//                        String subjectCode = m[0].toString();
+//                        int subjectCredits = (int) m[1];
+//                        double mark = (double) m[2];
+//                        String status = m[3].toString();
+//
+//                        if (!Ultilities.containsIgnoreCase(subjectCode, "VOV")) {
+//                            if (!status.equals(Enums.MarkStatus.FAIL.getValue())) {
+//                                totalPassCredits += subjectCredits;
+//                            }
+//                            totalPassFailCredits += subjectCredits;
+//                        }
+//
+//                        if (!Ultilities.containsIgnoreCase(subjectCode, "LAB")
+//                                && !Ultilities.containsIgnoreCase(subjectCode, "OJT")
+//                                && !Ultilities.containsIgnoreCase(subjectCode, "SYB")) {
+//                            sumPassFailMark += mark * subjectCredits;
+//                            sumPassFailCredits += subjectCredits;
+//                        }
+//                    }
+
+                    double passFailAverageMark = Math.round(sumPassFailMark / sumPassFailCredits * 100.0) / 100.0;
+
+                    student.setPassCredits(totalPassCredits);
+                    student.setPassFailCredits(totalPassFailCredits);
+                    student.setPassFailAverageMark(passFailAverageMark);
+
+                    studentService.updateStudent(student);
+                    ++currentLine1;
                 }
 
-                if (!Ultilities.containsIgnoreCase(subjectCode, "LAB")
-                        && !Ultilities.containsIgnoreCase(subjectCode, "OJT")
-                        && !Ultilities.containsIgnoreCase(subjectCode, "SYB")) {
-                    sumPassFailMark += mark * subjectCredits;
-                    sumPassFailCredits += subjectCredits;
-                }
+                result.addProperty("success", true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                result.addProperty("success", false);
+                result.addProperty("message", e.getMessage());
             }
-            passFailAverageMark = Math.round(sumPassFailMark / sumPassFailCredits * 100.0) / 100.0;
 
-            student.setPassCredits(totalPassCredits);
-            student.setPassFailCredits(totalPassFailCredits);
-            student.setPassFailAverageMark(passFailAverageMark);
-
-            studentService.updateStudent(student);
-            ++this.currentLine1;
-        }
+            return result;
+        };
+        return callable;
     }
 
     @RequestMapping("/marks/getStatus")
