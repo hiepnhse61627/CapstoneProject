@@ -1,5 +1,5 @@
 
-.login-page {
+.register-page {
     background-color: white;
 
     background-image: url('/Resources/plugins/dist/img/background/orange-bg-2.jpg');
@@ -11,16 +11,18 @@
     background-repeat: no-repeat;
     background-size: cover;
     background-attachment: fixed;
+
+    height: 100%;
 }
 
-.login-box {
+.register-box {
     border: 1px #f5b441 solid;
     border-radius: 5px;
     padding: 10px;
 }
 
 @media only screen and (max-width: 768px) {
-    .login-page {
+    .register-page {
         background-image: url('/Resources/plugins/dist/img/background/orange-bg-2.jpg');
         background-position: bottom right;
     }
@@ -34,18 +36,18 @@
     position: relative;
 }
 
-.login-logo {
+.register-logo {
     margin-bottom: 0px;
     background-color: inherit;
     border-top: 5px;
 }
 
-.login-box-body {
+.register-box-body {
     background-color: inherit;
     border-bottom: 5px;
 }
 
-.login-box-body .login-box-msg {
+.register-box-body .register-box-msg {
     font-size: 18px;
     padding-left: 0px;
     padding-right: 0px;
@@ -68,7 +70,7 @@
 }
 
 .link-orange a {
+    /*color: #795548;*/
     color: #b94949;
-    /*color: #c28008;*/
     font-weight: 600;
 }

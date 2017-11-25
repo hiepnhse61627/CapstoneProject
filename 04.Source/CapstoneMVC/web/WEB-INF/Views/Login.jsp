@@ -12,7 +12,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>Log in</title>
+    <title>Trang đăng nhập</title>
     <!-- Tell the browser to be responsive to screen width -->
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
     <!-- Bootstrap 3.3.7 -->
@@ -74,11 +74,6 @@
                     </div>
                 </c:if>
             </c:if>
-            <%--<c:if test="${param.logout != null}">--%>
-                <%--<div class="alert alert-success">--%>
-                    <%--<p>Đăng xuất thành công.</p>--%>
-                <%--</div>--%>
-            <%--</c:if>--%>
 
             <form action="/processlogin" method="post">
                 <div class="form-group has-feedback">
@@ -103,12 +98,18 @@
                 </div>
             </form>
 
+            <div class="text-center link-orange">
+                <a href="/register">Đăng ký tài khoản mới tại đây</a>
+            </div>
+
             <div class="social-auth-links text-center">
                 <p>- Hoặc -</p>
                 <a id="goog" href="#" class="btn btn-block btn-social btn-google btn-flat">
                     <i class="fa fa-google-plus"></i> Đăng nhập bằng Google+
                 </a>
             </div>
+
+
         </div>
     </div>
 </div>
