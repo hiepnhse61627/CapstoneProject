@@ -176,15 +176,21 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
         EntityManager em = getEntityManager();
 
-        String queryStr = "select a from MarksEntity a where a.isActivated = true and a.semesterId.id IN :listSemester";
+        String queryStr = "select a from MarksEntity a where a.isActivated = true and a.isEnabled = true and a.semesterId.id IN :listSemester";
         if (!subjectId.equals("0")) {
             queryStr += " and a.subjectMarkComponentId.subjectId.id IN :sub";
+        }
+        if (!searchKey.equals("0")) {
+            queryStr += "  and a.studentId.id = :student";
         }
 
         TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
         query.setParameter("listSemester", allSemesters);
         if (!subjectId.equals("0")) {
             query.setParameter("sub", allSubs);
+        }
+        if (!searchKey.equals("0")) {
+            query.setParameter("student", Integer.parseInt(searchKey));
         }
         marks = query.getResultList();
 

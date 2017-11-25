@@ -599,23 +599,6 @@ public class Ultilities {
 
     }
 
-    public static List<DocumentStudentEntity> sortDocumentStudentListByDate(List<DocumentStudentEntity> list) {
-        Collections.sort(list, new Comparator<DocumentStudentEntity>() {
-            @Override
-            public int compare(DocumentStudentEntity o1, DocumentStudentEntity o2) {
-                Date d1 = o1.getCreatedDate();
-                Date d2 = o2.getCreatedDate();
-                if (d2.before(d1))
-                    return -1;
-                else if (d2.after(d1))
-                    return 1;
-                else
-                    return 0;
-            }
-        });
-        return list;
-    }
-
     public static int GetSemesterIdBeforeThisId(int id) {
         for (int i = 0; i < Global.getSortedList().size(); i++) {
             RealSemesterEntity r = Global.getSortedList().get(i);
@@ -629,5 +612,15 @@ public class Ultilities {
         }
 
         return -1;
+    }
+
+    public static List<SubjectCurriculumEntity> StudentCurriculumSubjects(StudentEntity student) {
+        List<SubjectCurriculumEntity> list = new ArrayList<>();
+        for (DocumentStudentEntity doc : student.getDocumentStudentEntityList()) {
+            if (doc.getCurriculumId() != null && !doc.getCurriculumId().getName().toLowerCase().contains("pc")) {
+                list.addAll(doc.getCurriculumId().getSubjectCurriculumEntityList());
+            }
+        }
+        return list;
     }
 }
