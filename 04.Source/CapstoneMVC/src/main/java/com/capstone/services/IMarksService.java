@@ -33,6 +33,8 @@ public interface IMarksService {
     List<MarksEntity> findMarksBySemesterId(Integer semesterId);
     List<MarksEntity> findMarksByStudentIdAndSubjectCdAndSemesterId(Integer studentId, String subjectCd, Integer semesterId);
 
+    List<MarksEntity> getMarksForMarkPage(int studentId);
+
     // ----- Manager function ----
     List<Object[]> getTotalStudentsGroupBySemesterAndSubject(int semesterId);
     List<List<String>> getAverageSubjectLearnedByStudent(int programId);

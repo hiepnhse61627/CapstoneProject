@@ -23,3 +23,11 @@ function CreateEmptyDataTable(id) {
 
     return table;
 }
+
+function ShowTableColumn(table, colNum) {
+    $(table).dataTable().fnSetColumnVis(colNum, true);
+}
+
+function HideTableColumn(table, colNum) {
+    $(table).dataTable().fnSetColumnVis(colNum, false);
+}

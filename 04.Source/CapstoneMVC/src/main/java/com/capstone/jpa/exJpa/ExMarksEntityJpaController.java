@@ -368,6 +368,37 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         return result;
     }
 
+    public List<MarksEntity> getMarksForMarkPage(int studentId) {
+        IMarkComponentService markComponentService = new MarkComponentServiceImpl();
+        List<MarksEntity> result = null;
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+
+            MarkComponentEntity markComponent = markComponentService.getMarkComponentByName(
+                    Enums.MarkComponent.AVERAGE.getValue());
+
+            String queryStr = "SELECT m FROM MarksEntity m" +
+                    " WHERE m.subjectMarkComponentId.markComponentId.id = :markComponentId" +
+                    ((studentId > 0) ? " AND m.studentId.id = :studentId" : "") +
+                    " ORDER BY m.studentId.id, m.subjectMarkComponentId.subjectId.id";
+            TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
+            query.setParameter("markComponentId", markComponent.getId());
+            if (studentId > 0) {
+                query.setParameter("studentId", studentId);
+            }
+
+            result = query.getResultList();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
+    }
+
     public int countMarksByCourseId(int courseId) {
         EntityManager em = getEntityManager();
         int count = 0;

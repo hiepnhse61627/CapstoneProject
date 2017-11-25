@@ -226,6 +226,7 @@ public class ManagerController {
         int semesterId = Integer.parseInt(params.get("semesterId"));
         int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
         int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
+        String sSearch = params.get("sSearch");
 
         try {
             List<RealSemesterEntity> semesterList = Ultilities.SortSemesters(semesterService.getAllSemester());
@@ -238,8 +239,8 @@ public class ManagerController {
             }
 
             // Sorted by semester, then by subjectCode
-            List<Object[]> countList = marksService.getTotalStudentsGroupBySemesterAndSubject(semesterId);
-            countList.sort(Comparator.comparingInt(a -> {
+            List<Object[]> searchList = marksService.getTotalStudentsGroupBySemesterAndSubject(semesterId);
+            searchList.sort(Comparator.comparingInt(a -> {
                 Object[] arr = (Object[]) a;
                 return semesterPositionMap.get(arr[0]);
             }).thenComparing(new Comparator<Object>() {
@@ -250,10 +251,13 @@ public class ManagerController {
                     return arr1[1].toString().compareTo(arr2[1].toString());
                 }
             }));
+            List<Object[]> filterList = searchList.stream().filter(s -> Ultilities.containsIgnoreCase(s[1].toString(), sSearch))
+                    .collect(Collectors.toList());
 
             List<List<String>> result = new ArrayList<>();
-            for (Object[] arr : countList.stream().skip(iDisplayStart)
-                    .limit(iDisplayLength).collect(Collectors.toList())) {
+            List<Object[]> displayList = filterList.stream().skip(iDisplayStart)
+                    .limit(iDisplayLength).collect(Collectors.toList());
+            for (Object[] arr : displayList) {
                 List<String> row = new ArrayList<>();
 
                 int semesId = (int) arr[0];
@@ -263,14 +267,14 @@ public class ManagerController {
                 row.add(semesterNameMap.get(semesId));
                 row.add(subjectName);
                 row.add(numOfStudent + "");
-                row.add((Math.round(numOfStudent / 25.0 * 100.0) / 100.0) + ""); // Average classes are created
+                row.add(Math.ceil(numOfStudent / 25.0) + ""); // Average classes are created
                 result.add(row);
             }
 
             JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
 
-            jsonObj.addProperty("iTotalRecords", countList.size());
-            jsonObj.addProperty("iTotalDisplayRecords", countList.size());
+            jsonObj.addProperty("iTotalRecords", searchList.size());
+            jsonObj.addProperty("iTotalDisplayRecords", filterList.size());
             jsonObj.add("aaData", aaData);
             jsonObj.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {
