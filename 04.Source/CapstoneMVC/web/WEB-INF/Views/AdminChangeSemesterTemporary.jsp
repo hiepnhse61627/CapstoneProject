@@ -1,12 +1,67 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+<style>
+    .table {
+        width: 60%;
+        border-bottom: 1px #666 solid;
+    }
+
+    .table > thead > tr > th  {
+        font-weight: 600;
+        border-bottom: 1px #666 solid;
+    }
+
+    .table > tbody > tr > td {
+        vertical-align: middle;
+    }
+
+    .table > thead > tr > th:first-child,
+    .table > tbody > tr > td:first-child,
+    .table > thead > tr > th:last-child,
+    .table > tbody > tr > td:last-child {
+        text-align: center;
+    }
+
+    .table input[type="radio"] {
+        display: none;
+    }
+
+    .table input[type="radio"] + label {
+        width: 120px;
+        padding: 5px;
+        color: #333;
+        background-color: #fff;
+        border: 1px #ccc solid;
+        font-weight: normal;
+        cursor: pointer;
+        margin: 0px;
+    }
+
+    .table input[type="radio"] + label:hover {
+        background-color: #e6e6e6;
+        border-color: #adadad;
+    }
+
+    .table input[type="radio"]:checked + label {
+        color: #fff;
+        background-color: #5cb85c;
+        border-color: #4cae4c;
+    }
+
+    .table input[type="radio"]:checked + label:hover {
+        background-color: #449d44;
+        border-color: #398439;
+    }
+
+</style>
+
 <section class="content">
     <div class="box">
         <div class="b-header">
             <div class="row">
                 <div class="col-md-9 title">
-                    <h1>Set học kỳ tạm thời</h1>
+                    <h1>Thiết lập học kỳ hiện hành</h1>
                 </div>
             </div>
             <hr>
@@ -20,8 +75,7 @@
                         <tr>
                             <th>STT</th>
                             <th>Học kỳ</th>
-                            <%--<th>Đóng mở</th>--%>
-                            <th>Chọn tạm thời</th>
+                            <th>Thiết lập tạm thời</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -30,11 +84,15 @@
                                 <td>${count.count}</td>
                                 <td>${semester.semester}</td>
                                 <td>
-                                    <input type="radio" name="radio" value="${semester.id}"
-                                            <c:if test="${semester.id eq temporarySemester}">
-                                                checked
-                                            </c:if>
-                                    /> Set tạm thời
+                                    <c:choose>
+                                        <c:when test="${semester.id eq temporarySemester}">
+                                            <input type="radio" id="rd-${semester.id}" name="radio" value="${semester.id}" checked/>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <input type="radio" id="rd-${semester.id}" name="radio" value="${semester.id}"/>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <label for="rd-${semester.id}">Chọn</label>
                                 </td>
                             </tr>
                         </c:forEach>
@@ -48,40 +106,18 @@
 
 <script>
     $(document).ready(function () {
-//        $("input[type='checkbox']").bootstrapSwitch();
         $('input[type="radio"]').click(function () {
             if ($(this).is(':checked')) {
                 $.ajax({
                     type: "POST",
                     url: "/admin/changesemster",
-                    data: {"semesterId": $(this).val() },
+                    data: {"semesterId": $(this).val()},
                     success: function (result) {
-                        console.log(result);
+//                        console.log(result);
                     }
                 });
-//                alert($(this).val());
             }
         });
-//            $.ajax({
-//                type: "GET",
-//                url: "/managerrole/semester/edit",
-//                data: { "semesterId": $(this).val(), "onoff": $(this).is(':checked') },
-//                success: function (result) {
-//                    console.log(result);
-//                }
-//            });
-//        $("#tbl-semester").DataTable();
     });
 
-    //    function Create() {
-    //        $.ajax({
-    //            type: "GET",
-    //            url: "/managerrole/semester/create",
-    //            data: { "name": $("#s").val() },
-    //            success: function (result) {
-    //                console.log(result);
-    //                location.reload();
-    //            }
-    //        });
-    //    }
 </script>
