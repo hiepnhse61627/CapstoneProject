@@ -65,12 +65,11 @@
     font-size: 18px !important;
 }
 
-.link-orange {
+.link-red {
     margin-top: 5px;
 }
 
-.link-orange a {
-    /*color: #795548;*/
+.link-red a {
     color: #b94949;
     font-weight: 600;
 }

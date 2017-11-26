@@ -98,8 +98,8 @@
                 </div>
             </form>
 
-            <div class="text-center link-orange">
-                <a href="/register">Đăng ký tài khoản mới tại đây</a>
+            <div class="text-center link-red">
+                <a href="/register">Đăng ký tài khoản mới</a>
             </div>
 
             <div class="social-auth-links text-center">

@@ -17,10 +17,10 @@
     <div class="box">
         <div class="b-header">
             <div class="row">
-                <div class="col-md-9 title">
+                <div class="col-md-5 title">
                     <h1>Thông tin chi tiết sinh viên</h1>
                 </div>
-                <div class="col-md-3 text-right">
+                <div class="col-md-7 text-right">
                     <button type="button" class="btn btn-warning btn-with-icon" onclick="ExportExcelForOneStudent()">
                         <i class="glyphicon glyphicon-open"></i>
                         <div>Xuất dữ liêu cho sinh viên đang được chọn</div>
@@ -41,9 +41,14 @@
                             <div class="left-content m-r-5">
                                 <label class="p-t-8">Chọn sinh viên:</label>
                             </div>
-                            <div class="right-content width-30 width-m-70">
-                                <select id="cb-student" class="select">
-                                </select>
+                            <div class="right-content width-60 width-m-70">
+                                <div class="width-40 float-left m-r-5">
+                                    <select id="cb-student" class="select"> </select>
+                                </div>
+                                <button id="find" type="button" class="btn btn-primary float-left m-r-5">Tìm kiếm</button>
+                                <button id="detail" type="button" class="btn btn-success float-left"
+                                        style="display: none" onclick="GetAllStudentMarks()">Xem chi tiết điểm
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -51,32 +56,23 @@
             </div>
 
             <%--<div class="form-group">--%>
-                <%--<div class="row">--%>
-                    <%--<div class="my-content">--%>
-                        <%--<div class="my-input-group">--%>
-                            <%--<div class="left-content m-r-5">--%>
-                                <%--<label class="p-t-8">Chọn kì</label>--%>
-                            <%--</div>--%>
-                            <%--<div class="right-content width-30 width-m-70">--%>
-                                <%--<select id="semester" class="select">--%>
-                                    <%--<c:forEach var="sem" items="${semesters}">--%>
-                                        <%--<option value="${sem.semester}">${sem.semester}</option>--%>
-                                    <%--</c:forEach>--%>
-                                <%--</select>--%>
-                            <%--</div>--%>
-                        <%--</div>--%>
-                    <%--</div>--%>
-                <%--</div>--%>
+            <%--<div class="row">--%>
+            <%--<div class="my-content">--%>
+            <%--<div class="my-input-group">--%>
+            <%--<div class="left-content m-r-5">--%>
+            <%--<label class="p-t-8">Chọn kì</label>--%>
             <%--</div>--%>
-
-            <div class="form-group">
-                <div class="row">
-                    <div class="my-content">
-                        <button id="find" type="button" class="btn btn-primary">Tìm kiếm</button>
-                        <button id="detail" type="button" class="btn btn-success" style="display: none" onclick="GetAllStudentMarks()">Xem điểm chi tiết sinh viên</button>
-                    </div>
-                </div>
-            </div>
+            <%--<div class="right-content width-30 width-m-70">--%>
+            <%--<select id="semester" class="select">--%>
+            <%--<c:forEach var="sem" items="${semesters}">--%>
+            <%--<option value="${sem.semester}">${sem.semester}</option>--%>
+            <%--</c:forEach>--%>
+            <%--</select>--%>
+            <%--</div>--%>
+            <%--</div>--%>
+            <%--</div>--%>
+            <%--</div>--%>
+            <%--</div>--%>
 
             <div class="form-group">
                 <div class="row">

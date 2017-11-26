@@ -122,8 +122,8 @@
                 </div>
             </form>
 
-            <div class="text-center link-orange">
-                <a href="/login">Bạn đã có tài khoản, click vào đây</a>
+            <div class="text-center link-red">
+                <a href="/login">Bạn đã có tài khoản, đăng nhập tại đây</a>
             </div>
         </div>
         <!-- /.form-box -->
