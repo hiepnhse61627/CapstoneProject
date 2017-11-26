@@ -17,6 +17,15 @@
     .b-footer {
         height: 30px;
     }
+
+    .subject-row-btn {
+        visibility: hidden;
+        float: left;
+    }
+
+    .table > tbody > tr > td {
+        vertical-align: middle;
+    }
 </style>
 
 <section class="content">
@@ -47,7 +56,7 @@
                             <div class="left-content">
                                 <label class="p-t-8">Khóa:</label>
                             </div>
-                            <div class="right-content">
+                            <div class="right-content width-40">
                                 <input id="name" type="text" class="form-control"/>
                             </div>
                         </div>
@@ -56,7 +65,7 @@
                             <div class="left-content">
                                 <label class="p-t-8">Ngành:</label>
                             </div>
-                            <div class="right-content">
+                            <div class="right-content width-40">
                                 <select id="program" class="form-control">
                                     <c:forEach var="p" items="${programs}">
                                         <c:choose>
@@ -103,17 +112,24 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="col-md-12">
-                            <div class="scroll-wrapper custom-scrollbar">
-                                <table class="table" id="table">
-                                    <tbody>
-                                    </tbody>
-                                </table>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="scroll-wrapper custom-scrollbar">
+                                    <table class="table" id="table">
+                                        <tbody>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-12 m-t-10">
-                            <button type="button" onclick="Add()" class="btn btn-default">Thêm học kỳ tiếp theo</button>
-                            <button type="button" onclick="Send()" class="btn btn-success">Lưu</button>
+                        <div class="row">
+                            <div class="col-md-12 m-t-10">
+                                <a type="button" onclick="Add()" class="btn btn-default btn-with-icon">
+                                    <i class="fa fa-plus" style="color: #666"></i>
+                                    <div style="margin-bottom: 1px; margin-left: 2px;">Thêm học kỳ tiếp theo</div>
+                                </a>
+                                <button type="button" onclick="Send()" class="btn btn-success">Lưu</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -210,9 +226,9 @@
             "<td>" + id + "</td>" +
             "<td>" + name + "</td>" +
             "<td>" +
-            "<button class='up btn btn-link' type='button' style='visibility: hidden'><i class='fa fa-arrow-up'></i></button>" +
-            "<button class='down btn btn-link' type='button' style='visibility: hidden'><i class='fa fa-arrow-down'></i></button>" +
-            "<button class='remove btn btn-link' type='button' style='visibility: hidden'><i class='fa fa-times'></i></button>" +
+            "<button class='up btn btn-link tbl-btn subject-row-btn' type='button'><i class='fa fa-arrow-up'></i></button>" +
+            "<button class='down btn btn-link tbl-btn subject-row-btn' type='button'><i class='fa fa-arrow-down'></i></button>" +
+            "<button class='remove btn btn-link tbl-btn subject-row-btn' type='button'><i class='fa fa-times'></i></button>" +
             "</td>" +
             "</tr>");
         IntializeRows();

@@ -315,6 +315,18 @@
                     "sClass": "text-center",
                 },
                 {
+                    "aTargets": [0],
+                    "sWidth": "50%"
+                },
+                {
+                    "aTargets": [1],
+                    "sWidth": "25%"
+                },
+                {
+                    "aTargets": [2],
+                    "sWidth": "25%"
+                },
+                {
                     "aTargets": [1],
                     "mRender": function (data, type, row) {
                         return "<a class='btn btn-success tbl-btn' href='/editcurriculum/" + data + "'>" +
