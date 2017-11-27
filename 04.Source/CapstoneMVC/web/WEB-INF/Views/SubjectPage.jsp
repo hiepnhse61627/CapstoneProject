@@ -1,35 +1,33 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 
-<%--<section class="content-header">--%>
-<%--<h1>Danh sách môn học</h1>--%>
-<%--</section>--%>
-
 <section class="content">
-    <br class="box">
-    <div class="b-header">
-        <div class="col-md-9 title">
-            <h1>Danh sách môn học</h1>
+    <div class="box">
+        <div class="b-header">
+            <div class="row">
+                <div class="col-md-9 title">
+                    <h1>Danh sách môn học</h1>
+                </div>
+                <div class="col-md-3 text-right">
+                    <input class="btn btn-primary" type="button" value="Tạo khóa học" onclick="CreateNewSubject()"/>
+                </div>
+            </div>
+            <hr>
         </div>
-        <div class="col-md-3 text-right">
-            <input class="btn btn-primary" type="button" value="Tạo khóa học" onclick="CreateNewSubject()"/>
-        </div>
-    </div>
-    </br>
-    <div class="b-body">
-        <div class="row">
-            <div class="col-md-12">
-                <table id="tbl-subject">
-                    <thead>
-                    <th>Mã Môn</th>
-                    <th>Tên Môn</th>
-                    <th>Xem Chi Tiết</th>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+        <div class="b-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <table id="tbl-subject">
+                        <thead>
+                        <th>Mã môn</th>
+                        <th>Tên môn</th>
+                        <th>Chi tiết</th>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
     </div>
 </section>
 
@@ -39,17 +37,17 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Chi Tiết Môn học</h4>
+                <h4 class="modal-title">Chi tiết môn học</h4>
             </div>
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label for="subjectId">Mã Môn:</label>
+                            <label for="subjectId">Mã môn:</label>
                             <input disabled id="subjectId" type="text" class="form-control"/>
                         </div>
                         <div class="form-group">
-                            <label for="subjectName">Tên Môn:</label>
+                            <label for="subjectName">Tên môn:</label>
                             <input id="subjectName" type="text" class="form-control"/>
                         </div>
                         <div class="form-group">
@@ -194,7 +192,7 @@
         return this;
     };
 
-    $(document).ready(function(){
+    $(document).ready(function () {
         $('[id^=credits]').keypress(validateNumber);
         $('[id^=newCredits]').keypress(validateNumber);
     });
@@ -204,7 +202,7 @@
         var key = window.event ? event.keyCode : event.which;
         if (event.keyCode === 8 || event.keyCode === 46) {
             return true;
-        } else if ( key < 48 || key > 57 ) {
+        } else if (key < 48 || key > 57) {
             return false;
         } else {
             return true;
@@ -233,6 +231,7 @@
     function CreateNewSubject() {
         $("#subjectNewDetailModal").modal('toggle');
     }
+
     function LoadSubjectList() {
         tblSubject = $('#tbl-subject').dataTable({
             "bServerSide": true,
