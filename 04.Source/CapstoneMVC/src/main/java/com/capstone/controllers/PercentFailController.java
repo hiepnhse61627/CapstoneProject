@@ -37,9 +37,12 @@ public class PercentFailController {
         view.addObject("title", "Tỉ lệ môn đạt");
 
         ISubjectService service1 = new SubjectServiceImpl();
-        ICourseService service2 = new CourseServiceImpl();
+        IRealSemesterService service2 = new RealSemesterServiceImpl();
         view.addObject("subjects", service1.getAllSubjects());
-        view.addObject("classes", service2.getAllCourse());
+        List<RealSemesterEntity> semesters = service2.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+        semesters = semesters.stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+        view.addObject("semesters", semesters);
         return view;
     }
 
@@ -65,7 +68,7 @@ public class PercentFailController {
 
     public List<List<String>> processFailPercent(Map<String, String> params) {
         String subjectId = params.get("subject");
-        String courseId = params.get("course");
+        String semesterId = params.get("semester");
 
         EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager manager = fac.createEntityManager();
@@ -79,16 +82,16 @@ public class PercentFailController {
             if (!subjectId.equals("0")) {
                 queryStr += " AND a.subjectMarkComponentId.subjectId.id = :subject";
             }
-            if (!courseId.equals("0")) {
-                queryStr += " AND a.courseId.id = :course";
+            if (!semesterId.equals("0")) {
+                queryStr += " AND a.semesterId.id = :semesterId";
             }
 
             TypedQuery<MarksEntity> query = manager.createQuery(queryStr, MarksEntity.class);
             if (!subjectId.equals("0")) {
                 query.setParameter("subject", subjectId);
             }
-            if (!courseId.equals("0")) {
-                query.setParameter("course", Integer.parseInt(courseId));
+            if (!semesterId.equals("0")) {
+                query.setParameter("semesterId", Integer.parseInt(semesterId));
             }
 
             List<MarksEntity> list = query.getResultList();
