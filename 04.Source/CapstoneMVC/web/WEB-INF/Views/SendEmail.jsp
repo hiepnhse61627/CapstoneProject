@@ -281,7 +281,31 @@
                                         },
                                     },
                                     {
-                                        "aTargets": [5, 6, 7, 8, 9],
+                                        "aTargets": [5],
+                                        "mRender": function (data, type, row) {
+                                            return FormatText(data);
+                                        }
+                                    },
+                                    {
+                                        "aTargets": [6],
+                                        "mRender": function (data, type, row) {
+                                            return FormatText(data);
+                                        }
+                                    },
+                                    {
+                                        "aTargets": [7],
+                                        "mRender": function (data, type, row) {
+                                            return FormatText(data);
+                                        }
+                                    },
+                                    {
+                                        "aTargets": [8],
+                                        "mRender": function (data, type, row) {
+                                            return FormatText(data);
+                                        }
+                                    },
+                                    {
+                                        "aTargets": [9],
                                         "mRender": function (data, type, row) {
                                             return FormatText(data);
                                         }
@@ -378,16 +402,17 @@
     }
 
     function FormatText(str) {
+        var result = str;
         if (str.indexOf(",") !== -1) {
             var data = str.split(",");
-            var result = data[0];
+            result = data[0];
             for (var i = 1; i < data.length; ++i) {
                 if (data[i] != '') {
                     result += ", " + data[i];
                 }
             }
         }
-        return str;
+        return result;
     }
 
     function ShowImportModal() {
