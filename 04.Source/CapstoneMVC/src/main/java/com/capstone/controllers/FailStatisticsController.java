@@ -128,16 +128,15 @@ public class FailStatisticsController {
             for (String studentId : studentIds) {
                 Map<String, List<MarksEntity>> subject = map.row(studentId);
                 for (Map.Entry<String, List<MarksEntity>> entry : subject.entrySet()) {
-//                    if (!aReplace.stream().anyMatch(c -> c.getId().equals(entry.getKey()))) {
                     boolean isPass = false;
 
-                    List<MarksEntity> g = Ultilities.FilterStudentsOnlyPassAndFail(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
+                    List<MarksEntity> g = entry.getValue();
 
                     if (!g.isEmpty()) {
                         MarksEntity tmp = null;
                         for (MarksEntity k2 : g) {
                             tmp = k2;
-                            if (k2.getStatus().toLowerCase().contains("pass") || k2.getStatus().toLowerCase().contains("exempt")) {
+                            if (k2.getStatus().toLowerCase().contains("pass")) {
                                 isPass = true;
                                 break;
                             }
@@ -150,12 +149,11 @@ public class FailStatisticsController {
                             MarksEntity failedRow = tmp;
 
                             for (SubjectEntity replace : sub.getSubjectEntityList()) {
-//                                    List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), semesterId);
                                 List<MarksEntity> replaced = subject.get(replace.getId());
                                 if (replaced != null) {
                                     for (MarksEntity marks : replaced) {
                                         tmp = marks;
-                                        if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                        if (marks.getStatus().toLowerCase().contains("pass")) {
                                             isPass = true;
                                             break;
                                         }
@@ -178,7 +176,6 @@ public class FailStatisticsController {
                             }
                         }
                     }
-//                    }
                 }
             }
         }
@@ -237,16 +234,15 @@ public class FailStatisticsController {
             for (String studentId : studentIds) {
                 Map<String, List<MarksEntity>> subject = map.row(studentId);
                 for (Map.Entry<String, List<MarksEntity>> entry : subject.entrySet()) {
-//                    if (!aReplace.stream().anyMatch(c -> c.getId().equals(entry.getKey()))) {
                     boolean isPass = false;
 
-                    List<MarksEntity> g = Ultilities.FilterStudentsOnlyPassAndFail(entry.getValue().stream().filter(c -> !c.getStatus().toLowerCase().contains("studying")).collect(Collectors.toList()));
+                    List<MarksEntity> g = entry.getValue();
 
                     if (!g.isEmpty()) {
                         MarksEntity tmp = null;
                         for (MarksEntity k2 : g) {
                             tmp = k2;
-                            if (k2.getStatus().toLowerCase().contains("pass") || k2.getStatus().toLowerCase().contains("exempt")) {
+                            if (k2.getStatus().toLowerCase().contains("pass")) {
                                 isPass = true;
                                 break;
                             }
@@ -259,12 +255,11 @@ public class FailStatisticsController {
                             MarksEntity failedRow = tmp;
 
                             for (SubjectEntity replace : sub.getSubjectEntityList()) {
-//                                    List<MarksEntity> replaced = marksService.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), semesterId);
                                 List<MarksEntity> replaced = subject.get(replace.getId());
                                 if (replaced != null) {
                                     for (MarksEntity marks : replaced) {
                                         tmp = marks;
-                                        if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                        if (marks.getStatus().toLowerCase().contains("pass")) {
                                             isPass = true;
                                             break;
                                         }
@@ -287,7 +282,6 @@ public class FailStatisticsController {
                             }
                         }
                     }
-//                    }
                 }
             }
         }
