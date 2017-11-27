@@ -90,6 +90,7 @@ public class SubjectController {
         view.addObject("title", "Danh sách môn học");
 
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester().stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+        semesters = Ultilities.SortSemesters(semesters);
         view.addObject("effectionSemester", semesters);
 
         return view;
