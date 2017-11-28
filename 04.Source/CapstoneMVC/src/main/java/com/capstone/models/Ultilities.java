@@ -604,9 +604,10 @@ public class Ultilities {
             RealSemesterEntity r = Global.getSortedList().get(i);
             if (r.getId() == id) {
                 if (i == 0) {
-                    return 0;
+                    return r.getId();
                 } else {
-                    return (i - 1);
+                    RealSemesterEntity rAnother = Global.getSortedList().get(i - 1);
+                    return rAnother.getId();
                 }
             }
         }
