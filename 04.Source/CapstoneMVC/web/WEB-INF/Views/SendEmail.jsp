@@ -138,6 +138,7 @@
     if (url.indexOf("localhost") == -1 && url.indexOf("xip.io") == -1) {
         url += ".xip.io";
     }
+    url += ":" + (location.port == '' ? "80" : location.port);
     var REDIRECT = "http://" + url + "/email/google";
     var TYPE = 'token';
     var url = OAUTHURL + 'scope=' + SCOPE + '&client_id=' + CLIENTID + '&redirect_uri=' + REDIRECT + '&response_type=' + TYPE;
