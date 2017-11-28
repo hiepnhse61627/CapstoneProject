@@ -129,7 +129,7 @@ public class ExportCloseSemesterController {
                     } else if (i == 2) {
                         Map<String, String> params = new HashMap<>();
                         params.put("semesterId", semesterId);
-                        params.put("studentId", "64350");
+                        params.put("studentId", "-1");
                         os = Writefile(params, exportObject, request);
                     } else if (i == 4) {
                         Map<String, String> params = new HashMap<>();
