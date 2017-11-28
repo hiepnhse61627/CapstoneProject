@@ -55,29 +55,39 @@ public class AdminController {
     public JsonObject GetUsers(@RequestParam Map<String, String> params) {
         JsonObject data = new JsonObject();
 
+        int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
+        int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
+        String sSearch = params.get("sSearch").trim();
+
         try {
             ICredentialsService credentialsService = new CredentialsServiceImpl();
-            List<CredentialsEntity> list = credentialsService.getAllCredentials();
-            List<List<String>> parent = new ArrayList<>();
-            if (!list.isEmpty()) {
-                list.forEach(m -> {
+            List<CredentialsEntity> userList = credentialsService.getAllCredentials();
+            List<List<String>> list = new ArrayList<>();
+            if (!userList.isEmpty()) {
+                userList.forEach(u -> {
                     ArrayList<String> tmp = new ArrayList<>();
-                    tmp.add(m.getUsername());
-                    tmp.add(m.getPicture() == null ? "N/A" : m.getPicture());
-                    tmp.add(m.getEmail() == null ? "N/A" : m.getEmail());
-                    tmp.add(m.getFullname() == null ? "N/A" : m.getFullname());
-                    tmp.add(m.getRole() == null ? "N/A" : m.getRole());
-                    tmp.add(m.getId().toString());
-                    parent.add(tmp);
+                    tmp.add(u.getPicture() == null || u.getPicture().isEmpty() ? "N/A" : u.getPicture());
+                    tmp.add(u.getUsername());
+                    tmp.add(u.getFullname() == null || u.getFullname().isEmpty() ? "N/A" : u.getFullname());
+                    tmp.add(u.getEmail() == null || u.getEmail().isEmpty() ? "N/A" : u.getEmail());
+                    tmp.add(u.getRole() == null || u.getRole().isEmpty() ? "N/A" : u.getRole());
+                    tmp.add(u.getId().toString());
+                    list.add(tmp);
                 });
             }
 
-            List<List<String>> set2 = parent.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+            List<List<String>> searchList = list.stream().filter(u ->
+                    Ultilities.containsIgnoreCase(u.get(1), sSearch)
+                    || Ultilities.containsIgnoreCase(u.get(2), sSearch)
+                    || Ultilities.containsIgnoreCase(u.get(3), sSearch))
+                    .collect(Collectors.toList());
+            List<List<String>> displayList = searchList.stream().skip(iDisplayStart).limit(iDisplayLength)
+                    .collect(Collectors.toList());
 
-            JsonArray result = (JsonArray) new Gson().toJsonTree(set2);
+            JsonArray result = (JsonArray) new Gson().toJsonTree(displayList);
 
-            data.addProperty("iTotalRecords", parent.size());
-            data.addProperty("iTotalDisplayRecords", parent.size());
+            data.addProperty("iTotalRecords", list.size());
+            data.addProperty("iTotalDisplayRecords", searchList.size());
             data.add("aaData", result);
             data.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {

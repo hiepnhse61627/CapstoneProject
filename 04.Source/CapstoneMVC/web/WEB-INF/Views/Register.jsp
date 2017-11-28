@@ -8,12 +8,12 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>AdminLTE 2 | Registration Page</title>
+    <title>Trang đăng ký</title>
     <!-- Tell the browser to be responsive to screen width -->
     <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 
@@ -31,6 +31,7 @@
     <link rel="stylesheet" href="/Resources/plugins/daterangepicker-2.1.25/daterangepicker.css"/>
     <link rel="stylesheet" href="/Resources/plugins/dist/css/template.css"/>
     <link rel="stylesheet" href="/Resources/plugins/dist/css/custom-scrollbar.css"/>
+    <link rel="stylesheet" href="/Resources/plugins/dist/css/register-page.css"/>
 
     <!-- REQUIRED JS SCRIPTS -->
 
@@ -60,67 +61,73 @@
 </head>
 <body class="hold-transition register-page">
 <div class="register-box">
-    <div class="register-logo">
-        <a href="#"><b>Admin</b>LTE</a>
-    </div>
+    <div class="overlay">
+        <div class="register-logo">
+            <div class="my-logo">
+                <img src="/Resources/plugins/dist/img/logo/logo-fpt-1.png">
+            </div>
+        </div>
 
-    <div class="register-box-body">
-        <p class="login-box-msg">Register a new membership</p>
+        <div class="register-box-body">
+            <p class="register-box-msg">Đăng ký</p>
 
-        <form id="form">
-            <div class="col-md-12">
+            <form id="form">
                 <div class="form-group has-feedback">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" placeholder="Username"/>
+                    <input type="text" class="form-control" name="username" placeholder="Tên đăng nhập">
+                    <span class="glyphicon glyphicon-user form-control-feedback"></span>
                 </div>
                 <div class="form-group has-feedback">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" placeholder="Password"/>
+                    <input type="password" class="form-control" name="password" placeholder="Mật khẩu">
+                    <span class="glyphicon glyphicon-lock form-control-feedback"></span>
                 </div>
                 <div class="form-group has-feedback">
-                    <label for="password">Email</label>
                     <c:if var="disable" test="${param.disable eq true}">
-                        <input type="email" id="email" name="email" placeholder="Email" value="${param.email}" readonly/>
+                        <input type="email" class="form-control" name="email" placeholder="Email" value="${param.email}"
+                               readonly/>
                     </c:if>
                     <c:if var="disable" test="${empty param.disable}">
-                        <input type="email" id="email" name="email" placeholder="Email" value="${param.email}"/>
+                        <input type="email" class="form-control" name="email" placeholder="Email"
+                               value="${param.email}"/>
                     </c:if>
+                    <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
                 </div>
-                <div class="form-group">
-                    <sec:authorize access="hasRole('ROLE_ADMIN')">
-                        <label for="role">Role</label>
-                        <select id="role" name="role">
-                            <option value="ROLE_STUDENT">Student</option>
-                            <option value="ROLE_ADMIN">Admin</option>
-                            <option value="ROLE_STAFF">Staff</option>
-                            <option value="ROLE_MANAGER">Manager</option>
-                        </select>
-                    </sec:authorize>
-                    <sec:authorize access="isAnonymous()">
-                        <input type="hidden" name="role" value="ROLE_MANAGER"/>
-                    </sec:authorize>
+                <sec:authorize access="hasRole('ROLE_ADMIN')">
+                <div class="form-group has-feedback">
+                    <select class="form-control" name="role">
+                        <option value="0">- Chọn chức vụ -</option>
+                        <option value="ROLE_STUDENT">Student</option>
+                        <option value="ROLE_ADMIN">Admin</option>
+                        <option value="ROLE_STAFF">Staff</option>
+                        <option value="ROLE_MANAGER">Manager</option>
+                    </select>
                 </div>
+                </sec:authorize>
+                <sec:authorize access="isAnonymous()">
+                    <input type="hidden" name="role" value="ROLE_MANAGER"/>
+                </sec:authorize>
                 <div class="row">
-                    <div class="col-xs-8">
+                    <div class="col-xs-7 p-r-5">
                         <div class="checkbox icheck">
                             <label>
-                                <input type="checkbox"> I agree to the <a href="#">terms</a>
+                                <input type="checkbox"> Chấp nhận <a href="#">điều khoản</a>
                             </label>
                         </div>
                     </div>
                     <!-- /.col -->
-                    <div class="col-xs-4">
-                        <button type="button" class="btn btn-primary btn-block btn-flat" onclick="Add()">Register
+                    <div class="col-xs-5">
+                        <button type="button" class="btn btn-primary btn-block btn-flat" onclick="Register()">Đăng ký
                         </button>
                     </div>
                     <!-- /.col -->
                 </div>
-            </div>
-        </form>
+            </form>
 
-        <a href="/login" class="text-center">I already have a membership</a>
+            <div class="text-center link-red">
+                <a href="/login">Bạn đã có tài khoản, đăng nhập tại đây</a>
+            </div>
+        </div>
+        <!-- /.form-box -->
     </div>
-    <!-- /.form-box -->
 </div>
 </body>
 </html>
@@ -134,7 +141,7 @@
         });
     });
 
-    function Add() {
+    function Register() {
         var form = JSON.stringify($('#form').serializeJSON());
         $.ajax({
             type: "POST",

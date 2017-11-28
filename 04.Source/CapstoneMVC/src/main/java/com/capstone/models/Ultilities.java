@@ -137,10 +137,6 @@ public class Ultilities {
 
             Set<String> studentIds = map.rowKeySet();
             for (String studentId : studentIds) {
-                if (studentId.equals("SE61453")) {
-                    System.out.println("test");
-                }
-
                 Map<String, List<MarksEntity>> subjects = map.row(studentId);
 
                 for (Map.Entry<String, PrequisiteEntity> subject : prequisites.entrySet()) {
@@ -151,7 +147,7 @@ public class Ultilities {
                         if (subjects.get(subject.getKey()) != null && !subjects.get(subject.getKey()).isEmpty()) {
 
                             for (MarksEntity m : subjects.get(subject.getKey())) {
-                                if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt") || m.getStatus().toLowerCase().contains("studying")) {
+                                if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("studying")) {
 
                                     int totalFail = 0;
                                     FailPrequisiteModel failedRow = null;
@@ -185,7 +181,7 @@ public class Ultilities {
                                                         failMark = pre.getNewFailMark() == null ? pre.getFailMark() : pre.getNewFailMark();
                                                     }
 
-                                                    if (k2.getAverageMark() >= failMark || k2.getStatus().toLowerCase().contains("exempt")) {
+                                                    if (k2.getAverageMark() >= failMark || k2.getStatus().toLowerCase().contains("pass")) {
                                                         isPass = true;
                                                         break;
                                                     }
@@ -200,7 +196,7 @@ public class Ultilities {
                                                             replaced = SortSemestersByMarks(replaced);
                                                             for (MarksEntity marks : replaced) {
                                                                 tmp = marks;
-                                                                if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                                                if (marks.getStatus().toLowerCase().contains("pass")) {
                                                                     isPass = true;
                                                                     break;
                                                                 }
@@ -218,7 +214,7 @@ public class Ultilities {
                                                                 replaced = SortSemestersByMarks(replaced);
                                                                 for (MarksEntity marks : replaced) {
                                                                     tmp = marks;
-                                                                    if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                                                    if (marks.getStatus().toLowerCase().contains("pass")) {
                                                                         isPass = true;
                                                                         break;
                                                                     }

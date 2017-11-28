@@ -17,6 +17,15 @@
     .b-footer {
         height: 30px;
     }
+
+    .subject-row-btn {
+        visibility: hidden;
+        float: left;
+    }
+
+    .table > tbody > tr > td {
+        vertical-align: middle;
+    }
 </style>
 
 <div id="subjectDetailModal" class="modal fade" role="dialog">
@@ -25,7 +34,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Chi Tiết Môn học</h4>
+                <h4 class="modal-title">Chi tiết môn học</h4>
             </div>
             <div class="modal-body">
                 <div class="row">
@@ -35,11 +44,11 @@
                             <input disabled id="curId" type="text" class="form-control"/>
                         </div>
                         <div class="form-group">
-                            <label for="subjectId">Mã Môn:</label>
+                            <label for="subjectId">Mã môn:</label>
                             <input disabled id="subjectId" type="text" class="form-control"/>
                         </div>
                         <div class="form-group">
-                            <label for="subjectName">Tên Môn:</label>
+                            <label for="subjectName">Tên môn:</label>
                             <input id="subjectName" type="text" class="form-control"/>
                         </div>
                         <div class="form-group">
@@ -72,11 +81,11 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 <button id="btnSubmit" type="button" class="btn btn-primary" onclick="return confirmChange($('#curId').val(),$('#subjectId').val(),$('#subjectName').val()
                 ,$('#prerequisiteSubs').val(),$('#credits').val(),$('#replacementSubject').val(),
                 $('#effectionSemester').val(),$('#failMark').val())">Thay đổi thông tin
                 </button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
             </div>
         </div>
 
@@ -96,8 +105,8 @@
                         <div class="m-l-3">QUAY LẠI</div>
                     </a>
                     <a href="#" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
-                        <i class="fa fa-arrow-left"></i>
-                        <div class="m-l-3">Xuất file excel</div>
+                        <i class="glyphicon glyphicon-open"></i>
+                        <div class="m-l-3">XUẤT DỮ LIỆU</div>
                     </a>
                 </div>
             </div>
@@ -105,12 +114,12 @@
         </div>
 
         <div class="b-body">
-            <div class="form-group">
-                <div class="row">
-                    <div class="title">
+            <%--<div class="form-group">--%>
+                <%--<div class="row">--%>
+                    <%--<div class="title">--%>
                         <%--<h4>Thông tin chi tiết</h4>--%>
-                    </div>
-                    <div class="my-content">
+                    <%--</div>--%>
+                    <%--<div class="my-content">--%>
                         <%--<div class="my-input-group p-l-30">--%>
                         <%--<div class="left-content" style="width: 90px">--%>
                         <%--<label class="p-t-8">Khóa:</label>--%>
@@ -140,9 +149,9 @@
                         <%--</div>--%>
                         <%--</div>--%>
 
-                    </div>
-                </div>
-            </div>
+                    <%--</div>--%>
+                <%--</div>--%>
+            <%--</div>--%>
 
             <div class="form-group">
                 <div class="row">
@@ -172,43 +181,48 @@
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <div class="col-md-12">
-                            <div class="scroll-wrapper custom-scrollbar">
-                                <table class="table" id="table">
-                                    <tbody>
-                                    <c:forEach var="row" items="${displayList}">
-                                        <tr id="${row.key}" class="index nodrag">
-                                            <td colspan="2"><b>${row.key}</b></td>
-                                        </tr>
-                                        <c:forEach var="list" items="${row.value}">
-                                            <tr id="${list.subjectId.id}" class="draggable">
-                                                <td>${list.subjectId.id}</td>
-                                                <td>${list.subjectId.name}</td>
-                                                <td>
-                                                    <button class="up btn btn-link" type="button"
-                                                            style="visibility: hidden"><i
-                                                            class="fa fa-arrow-up"></i></button>
-                                                    <button class="down btn btn-link" type="button"
-                                                            style="visibility: hidden">
-                                                        <i
-                                                                class="fa fa-arrow-down"></i></button>
-                                                    <button class="remove btn btn-link" type="button"
-                                                            style="visibility: hidden"><i
-                                                            class="fa fa-times"></i></button>
-                                                    <button type="button"
-                                                            style="visibility: hidden" onclick="ShowModal(${list.id})">
-                                                        <i>edit</i></button>
-                                                </td>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="scroll-wrapper custom-scrollbar">
+                                    <table class="table" id="table">
+                                        <tbody>
+                                        <c:forEach var="row" items="${displayList}">
+                                            <tr id="${row.key}" class="index nodrag">
+                                                <td colspan="2"><b>${row.key}</b></td>
                                             </tr>
+                                            <c:forEach var="list" items="${row.value}">
+                                                <tr id="${list.subjectId.id}" class="draggable">
+                                                    <td>${list.subjectId.id}</td>
+                                                    <td>${list.subjectId.name}</td>
+                                                    <td>
+                                                            <button class="btn btn-link tbl-btn subject-row-btn" type="button" onclick="ShowModal(${list.id})">
+                                                                <i class="glyphicon glyphicon-pencil"></i>
+                                                            </button>
+                                                            <button class="up btn btn-link tbl-btn subject-row-btn" type="button">
+                                                                <i class="fa fa-arrow-up"></i>
+                                                            </button>
+                                                            <button class="down btn btn-link tbl-btn subject-row-btn" type="button">
+                                                                <i class="fa fa-arrow-down"></i></button>
+                                                            <button class="remove btn btn-link tbl-btn subject-row-btn" type="button">
+                                                                <i class="fa fa-times"></i>
+                                                            </button>
+                                                    </td>
+                                                </tr>
+                                            </c:forEach>
                                         </c:forEach>
-                                    </c:forEach>
-                                    </tbody>
-                                </table>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-12 m-t-10">
-                            <button type="button" onclick="Add()" class="btn btn-default">Thêm học kỳ tiếp theo</button>
-                            <button type="button" onclick="Send()" class="btn btn-success">Lưu</button>
+                        <div class="row">
+                            <div class="col-md-12 m-t-10">
+                                <a type="button" onclick="Add()" class="btn btn-default btn-with-icon">
+                                    <i class="fa fa-plus" style="color: #666"></i>
+                                    <div style="margin-bottom: 1px; margin-left: 2px;">Thêm học kỳ tiếp theo</div>
+                                </a>
+                                <button type="button" onclick="Send()" class="btn btn-success">Lưu</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -385,9 +399,9 @@
             "<td>" + id + "</td>" +
             "<td>" + name + "</td>" +
             "<td>" +
-            "<button class='up btn btn-link' type='button' style='visibility: hidden'><i class='fa fa-arrow-up'></i></button>" +
-            "<button class='down btn btn-link' type='button' style='visibility: hidden'><i class='fa fa-arrow-down'></i></button>" +
-            "<button class='remove btn btn-link' type='button' style='visibility: hidden'><i class='fa fa-times'></i></button>" +
+            "<button class='up btn btn-link tbl-btn subject-row-btn' type='button'><i class='fa fa-arrow-up'></i></button>" +
+            "<button class='down btn btn-link tbl-btn subject-row-btn' type='button'><i class='fa fa-arrow-down'></i></button>" +
+            "<button class='remove btn btn-link tbl-btn subject-row-btn' type='button'><i class='fa fa-times'></i></button>" +
             "</td>" +
             "</tr>");
         IntializeRows();

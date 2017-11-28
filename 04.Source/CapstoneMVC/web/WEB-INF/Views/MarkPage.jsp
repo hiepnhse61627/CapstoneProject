@@ -112,6 +112,13 @@
 
         $('#cb-student').on("change", function() {
            RefreshTable();
+            if ($('#cb-student').val() == "0") {
+                ShowTableColumn("#tbl-mark", 0);
+                ShowTableColumn("#tbl-mark", 1);
+            } else {
+                HideTableColumn("#tbl-mark", 0);
+                HideTableColumn("#tbl-mark", 1);
+            }
         });
     });
 
@@ -245,7 +252,7 @@
                 aoData.push({"name": "studentId", "value": $('#cb-student').val()})
             },
             "oLanguage": {
-                "sSearchPlaceholder": "Mã hoặc tên môn",
+                "sSearchPlaceholder": "Mã môn, Tên môn, Học kỳ, Trạng thái",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
@@ -274,6 +281,13 @@
             ],
             "bAutoWidth": false,
         }).fnSetFilteringDelay(1000);
+        if ($('#cb-student').val() == "0") {
+            ShowTableColumn("#tbl-mark", 0);
+            ShowTableColumn("#tbl-mark", 1);
+        } else {
+            HideTableColumn("#tbl-mark", 0);
+            HideTableColumn("#tbl-mark", 1);
+        }
     }
 
     function ShowEditModal(row) {

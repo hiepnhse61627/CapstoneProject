@@ -176,11 +176,11 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
         EntityManager em = getEntityManager();
 
-        String queryStr = "select a from MarksEntity a where a.isActivated = true and a.isEnabled = true and a.semesterId.id IN :listSemester";
+        String queryStr = "select a from MarksEntity a where a.isActivated = true and a.semesterId.id IN :listSemester";
         if (!subjectId.equals("0")) {
             queryStr += " and a.subjectMarkComponentId.subjectId.id IN :sub";
         }
-        if (!searchKey.equals("0")) {
+        if (!searchKey.equals("")) {
             queryStr += "  and a.studentId.id = :student";
         }
 
@@ -189,7 +189,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         if (!subjectId.equals("0")) {
             query.setParameter("sub", allSubs);
         }
-        if (!searchKey.equals("0")) {
+        if (!searchKey.equals("")) {
             query.setParameter("student", Integer.parseInt(searchKey));
         }
         marks = query.getResultList();
@@ -369,6 +369,37 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
         } finally {
             em.close();
+        }
+
+        return result;
+    }
+
+    public List<MarksEntity> getMarksForMarkPage(int studentId) {
+        IMarkComponentService markComponentService = new MarkComponentServiceImpl();
+        List<MarksEntity> result = null;
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+
+            MarkComponentEntity markComponent = markComponentService.getMarkComponentByName(
+                    Enums.MarkComponent.AVERAGE.getValue());
+
+            String queryStr = "SELECT m FROM MarksEntity m" +
+                    " WHERE m.subjectMarkComponentId.markComponentId.id = :markComponentId" +
+                    ((studentId > 0) ? " AND m.studentId.id = :studentId" : "") +
+                    " ORDER BY m.studentId.id, m.subjectMarkComponentId.subjectId.id";
+            TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
+            query.setParameter("markComponentId", markComponent.getId());
+            if (studentId > 0) {
+                query.setParameter("studentId", studentId);
+            }
+
+            result = query.getResultList();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
         }
 
         return result;

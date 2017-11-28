@@ -123,7 +123,8 @@
                 {
                     "aTargets": [0, 1, 2, 3, 4, 5],
                     "bSortable": false,
-                }
+                    "class": "text-center",
+                },
             ],
             "bAutoWidth": false,
         }).fnSetFilteringDelay(1000);

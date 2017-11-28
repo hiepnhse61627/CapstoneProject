@@ -114,6 +114,11 @@
         $('.select').select2();
         $('#cb-semester').on("change", function () {
             RefreshTable();
+            if ($('#cb-semester').val() == "0") {
+                ShowTableColumn("#tbl-average-student", 0);
+            } else {
+                HideTableColumn("#tbl-average-student", 0);
+            }
         });
 
         CreateTable();
@@ -133,7 +138,7 @@
                 aoData.push({"name": "semesterId", "value": $('#cb-semester').val()})
             },
             "oLanguage": {
-                "sSearchPlaceholder": "",
+                "sSearchPlaceholder": "Môn",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
@@ -162,6 +167,11 @@
             ],
             "bAutoWidth": false,
         }).fnSetFilteringDelay(1000);
+        if ($('#cb-semester').val() == "0") {
+            ShowTableColumn("#tbl-average-student", 0);
+        } else {
+            HideTableColumn("#tbl-average-student", 0);
+        }
     }
 
     function RefreshTable() {
@@ -170,4 +180,5 @@
             tblAverageStudent._fnAjaxUpdate();
         }
     }
+
 </script>

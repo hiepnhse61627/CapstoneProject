@@ -45,14 +45,14 @@
             <div class="form-group">
                 <div class="row">
                     <div class="title">
-                        <h4>Lớp</h4>
+                        <h4>Học Kỳ</h4>
                     </div>
                     <div class="my-content">
                         <div class="col-md-12">
-                            <select id="class" class="select form-control">
+                            <select id="semester" class="select form-control">
                                 <option value="0">All</option>
-                                <c:forEach var="s" items="${classes}">
-                                    <option value="${s.id}">${s.semester}_${s.subjectCode}</option>
+                                <c:forEach var="s" items="${semesters}">
+                                    <option value="${s.id}">${s.semester}</option>
                                 </c:forEach>
                             </select>
                         </div>
@@ -126,7 +126,7 @@
     function ExportExcel() {
         $("input[name='objectType']").val(8);
         $("input[name='subject']").val($('#subject').val());
-        $("input[name='course']").val($('#class').val());
+        $("input[name='semester']").val($('#semester').val());
         $("#export-excel").submit();
     }
 
@@ -144,7 +144,7 @@
             "sAjaxSource": "/percent/query", // url getData.php etc
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "subject", "value": $('#subject').val()}),
-                    aoData.push({"name": "course", "value": $('#class').val()})
+                    aoData.push({"name": "semester", "value": $('#semester').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "Tìm theo Môn, Lớp",

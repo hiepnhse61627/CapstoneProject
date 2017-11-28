@@ -358,6 +358,14 @@ a {
     text-align: center;
 }
 
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
+}
+
 /* -------------- Margin ---------------- */
 .m-0 {
     margin: 0px !important;

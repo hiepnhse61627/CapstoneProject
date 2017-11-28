@@ -30,7 +30,6 @@
                         <th>Ngành học</th>
                         <th>Khung chương trình</th>
                         <th>Chi tiết</th>
-                        <%--<th>Chỉnh sửa</th>--%>
                         </thead>
                         <tbody></tbody>
                     </table>

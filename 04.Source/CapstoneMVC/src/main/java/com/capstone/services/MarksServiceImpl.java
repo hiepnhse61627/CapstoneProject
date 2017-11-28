@@ -91,6 +91,11 @@ public class MarksServiceImpl implements IMarksService {
     }
 
     @Override
+    public List<MarksEntity> getMarksForMarkPage(int studentId) {
+        return marksEntityJpaController.getMarksForMarkPage(studentId);
+    }
+
+    @Override
     public List<MarksEntity> getStudentMarksById(int stuId) {
         return marksEntityJpaController.getAllMarksByStudent(stuId);
     }
