@@ -68,20 +68,13 @@ public class GraduateController {
             List<List<String>> studentList;
             if (type.equals("Graduate")) {
                 studentList = processGraduate(params);
-            } else {
+            } else if (type.equals("OJT")) {
                 studentList = proccessOJT(params);
+            } else {
+                studentList = new ArrayList<>();
             }
-//            List<List<String>> searchList = studentList.stream().filter(s ->
-//                    Ultilities.containsIgnoreCase(s.get(0), sSearch)
-//                            || Ultilities.containsIgnoreCase(s.get(1), sSearch)).collect(Collectors.toList());
-//            List<List<String>> result = searchList.stream()
-//                    .skip(iDisplayStart).limit(iDisplayLength)
-//                    .collect(Collectors.toList());
 
             JsonArray aaData = (JsonArray) new Gson().toJsonTree(studentList);
-
-//            obj.addProperty("iTotalRecords", studentList.size());
-//            obj.addProperty("iTotalDisplayRecords", studentList.size());
             obj.add("aaData", aaData);
 //            obj.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {
@@ -300,16 +293,17 @@ public class GraduateController {
 //        if (type.equals("Graduate")) {
 //            students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
 //        } else
-        if (type.equals("OJT")) {
-            if (programService.getProgramById(programId).getName().contains("SE")) {
-                students = students.stream().filter(c -> isOJT(c)).collect(Collectors.toList());
-            } else if (programService.getProgramById(programId).getName().contains("BA")) {
-                students = students.stream().filter(c -> c.getTerm() == 5).collect(Collectors.toList());
-            } else {
-                students = students.stream().filter(c -> c.getTerm() == 6).collect(Collectors.toList());
-            }
-        } else if (type.equals("SWP")) {
-            students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
+//        if (type.equals("OJT")) {
+//
+//        } else if (type.equals("SWP")) {
+//            students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
+//        }
+        if (programService.getProgramById(programId).getName().contains("SE")) {
+            students = students.stream().filter(c -> isOJT(c)).collect(Collectors.toList());
+        } else if (programService.getProgramById(programId).getName().contains("BA")) {
+            students = students.stream().filter(c -> c.getTerm() == 5).collect(Collectors.toList());
+        } else {
+            students = students.stream().filter(c -> c.getTerm() == 6).collect(Collectors.toList());
         }
 
         int i = 1;
@@ -326,18 +320,22 @@ public class GraduateController {
                     for (SubjectCurriculumEntity s : list) {
                         if (!subjects.contains(s)) {
                             subjects.add(s);
-                            if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId())
+                            if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
                                 ojt = s.getTermNumber();
+//                                break;
+                            }
                         }
                     }
                 }
             }
 
-            if (type.equals("OJT")) {
-                subjects = subjects.stream().filter(c -> c.getSubjectId().getType() != SubjectTypeEnum.OJT.getId()).distinct().collect(Collectors.toList());
-            } else if (type.equals("SWP")) {
-                subjects = subjects.stream().distinct().collect(Collectors.toList());
-            }
+//            if (type.equals("OJT")) {
+//
+//            } else if (type.equals("SWP")) {
+//                subjects = subjects.stream().distinct().collect(Collectors.toList());
+//            }
+
+            subjects = subjects.stream().filter(c -> c.getSubjectId().getType() != SubjectTypeEnum.OJT.getId()).distinct().collect(Collectors.toList());
 
 //                boolean aye = false;
 
@@ -374,16 +372,11 @@ public class GraduateController {
 
             System.out.println(i + " - " + students.size());
 
+//            List<SubjectCurriculumEntity> processedSub = subjects;
             List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
             for (SubjectCurriculumEntity c : subjects) {
-                if (type.equals("OJT")) {
-                    if (c.getTermNumber() >= 1 && c.getTermNumber() <= (ojt - 1)) {
-                        processedSub.add(c);
-                    }
-                } else {
-                    if (c.getTermNumber() >= 1) {
-                        processedSub.add(c);
-                    }
+                if (c.getTermNumber() >= 1 && c.getTermNumber() < ojt) {
+                    processedSub.add(c);
                 }
             }
 
@@ -392,9 +385,18 @@ public class GraduateController {
                 if (!tmp.contains(s.getSubjectId().getId())) tmp.add(s.getSubjectId().getId());
             }
 
-            List<MarksEntity> marks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semesterId), tmp, student.getId());
+//            List<MarksEntity> marks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semesterId), tmp, student.getId());
+            List<MarksEntity> marks = marksService.getMarkByConditions(semesterId, tmp, student.getId());
             marks = marks.stream().filter(c -> c.getIsActivated() && c.getEnabled() != null && c.getEnabled()).collect(Collectors.toList());
             marks = Ultilities.SortSemestersByMarks(marks);
+
+            List<MarksEntity> finalMarks = marks;
+            tmp.stream().filter(c -> !finalMarks.stream().anyMatch(a -> a
+                    .getSubjectMarkComponentId()
+                    .getSubjectId()
+                    .getId()
+                    .equals(c))).forEach(c -> System.out.println("môn" + c + " không có điểm"));
+
             //            Map<String, List<MarksEntity>> map = marks.stream()
 //                    .collect(Collectors.groupingBy(c -> c.getSubjectMarkComponentId().getSubjectId().getId()));
 //            for (MarksEntity m : marks) {
@@ -412,25 +414,28 @@ public class GraduateController {
 //                required += s.getSubjectCredits();
 //            }
 
-            if (type.equals("OJT")) {
-                for (SubjectCurriculumEntity s : processedSub) {
-                    if (s.getSubjectCredits() != null) {
-                        required += s.getSubjectCredits();
-                    }
+//            if (type.equals("OJT")) {
+//
+//            } else if (type.equals("SWP")) {
+//                required = student.getProgramId().getSpecializedCredits();
+//            }
+            for (SubjectCurriculumEntity s : processedSub) {
+                if (s.getSubjectCredits() != null) {
+                    required += s.getSubjectCredits();
                 }
-            } else if (type.equals("SWP")) {
-                required = student.getProgramId().getSpecializedCredits();
             }
 
             int percent = 0;
 //            if (type.equals("Graduate")) {
 //                percent = student.getProgramId().getGraduate();
 //            } else
-            if (type.equals("OJT")) {
-                percent = student.getProgramId().getOjt();
-            } else if (type.equals("SWP")) {
-                percent = student.getProgramId().getCapstone();
-            }
+//            if (type.equals("OJT")) {
+//                percent = student.getProgramId().getOjt();
+//            } else if (type.equals("SWP")) {
+//                percent = student.getProgramId().getCapstone();
+//            }
+
+            percent = student.getProgramId().getOjt();
 
 //            int tongtinchi = student.getPassCredits();
             int tongtinchi = 0;
