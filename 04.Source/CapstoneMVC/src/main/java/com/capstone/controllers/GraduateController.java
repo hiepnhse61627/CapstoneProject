@@ -387,7 +387,7 @@ public class GraduateController {
 
 //            List<MarksEntity> marks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semesterId), tmp, student.getId());
             List<MarksEntity> marks = marksService.getMarkByConditions(semesterId, tmp, student.getId());
-            marks = marks.stream().filter(c -> c.getIsActivated() && c.getEnabled() != null && c.getEnabled()).collect(Collectors.toList());
+//            marks = marks.stream().filter(c -> c.getIsActivated() && c.getEnabled() != null && c.getEnabled()).collect(Collectors.toList());
             marks = Ultilities.SortSemestersByMarks(marks);
 
             List<MarksEntity> finalMarks = marks;
@@ -437,56 +437,62 @@ public class GraduateController {
 
             percent = student.getProgramId().getOjt();
 
-//            int tongtinchi = student.getPassCredits();
-            int tongtinchi = 0;
+            int tongtinchi = student.getPassCredits();
+//            int tongtinchi = 0;
 
 //                    List<MarksEntity> curriculumMarks = marks
 //                            .stream()
 //                            .filter(c -> stuSubs.stream().anyMatch(a -> a.getSubjectId().getId().equals(c.getSubjectMarkComponentId().getSubjectId().getId())))
 //                            .collect(Collectors.toList());
 
-            for (SubjectCurriculumEntity sub : processedSub) {
-                if (!sub.getSubjectId().getId().toLowerCase().contains("vov")) {
-                    List<MarksEntity> subMarks = marks
-                            .stream()
-                            .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub.getSubjectId().getId()))
-                            .collect(Collectors.toList());
-                    if (subMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-                            c.getStatus().toLowerCase().contains("exempt"))) {
-                        tongtinchi += sub.getSubjectCredits();
-                    } else {
-                        boolean dacong = false;
-                        List<SubjectEntity> replacers = sub.getSubjectId().getSubjectEntityList();
-                        for (SubjectEntity replacer : replacers) {
-                            List<MarksEntity> replaceMarks = marks
-                                    .stream()
-                                    .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
-                                    .collect(Collectors.toList());
-                            if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-                                    c.getStatus().toLowerCase().contains("exempt"))) {
-                                tongtinchi += sub.getSubjectCredits();
-                                dacong = true;
-                            }
-                        }
-                        if (!dacong) {
-                            List<SubjectEntity> replacersFirst = sub.getSubjectId().getSubjectEntityList1();
-                            for (SubjectEntity repls : replacersFirst) {
-                                List<SubjectEntity> reps = repls.getSubjectEntityList();
-                                for (SubjectEntity replacer : reps) {
-                                    List<MarksEntity> replaceMarks = marks
-                                            .stream()
-                                            .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
-                                            .collect(Collectors.toList());
-                                    if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-                                            c.getStatus().toLowerCase().contains("exempt"))) {
-                                        tongtinchi += sub.getSubjectCredits();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+//            for (SubjectCurriculumEntity sub : processedSub) {
+//                if (!sub.getSubjectId().getId().toLowerCase().contains("vov")) {
+//                    List<MarksEntity> subMarks = marks
+//                            .stream()
+//                            .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub.getSubjectId().getId()))
+//                            .collect(Collectors.toList());
+//                    if (subMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
+//                            c.getStatus().toLowerCase().contains("exempt"))) {
+//                        tongtinchi += sub.getSubjectCredits();
+//                    } else {
+//                        System.out.println("môn" + sub.getSubjectId().getId() + " không đạt - " + student.getRollNumber());
+//
+//                        boolean dacong = false;
+//                        List<SubjectEntity> replacers = sub.getSubjectId().getSubjectEntityList();
+//                        for (SubjectEntity replacer : replacers) {
+//                            List<MarksEntity> replaceMarks = marks
+//                                    .stream()
+//                                    .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
+//                                    .collect(Collectors.toList());
+//                            if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
+//                                    c.getStatus().toLowerCase().contains("exempt"))) {
+//                                tongtinchi += sub.getSubjectCredits();
+//                                dacong = true;
+//
+//                                System.out.println("đã cộng môn thay thế");
+//                            }
+//                        }
+//                        if (!dacong) {
+//                            List<SubjectEntity> replacersFirst = sub.getSubjectId().getSubjectEntityList1();
+//                            for (SubjectEntity repls : replacersFirst) {
+//                                List<SubjectEntity> reps = repls.getSubjectEntityList();
+//                                for (SubjectEntity replacer : reps) {
+//                                    List<MarksEntity> replaceMarks = marks
+//                                            .stream()
+//                                            .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
+//                                            .collect(Collectors.toList());
+//                                    if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
+//                                            c.getStatus().toLowerCase().contains("exempt"))) {
+//                                        tongtinchi += sub.getSubjectCredits();
+//
+//                                        System.out.println("đã cộng môn thay thế");
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 //            List<String> datontai = new ArrayList<>();
 //            for (SubjectCurriculumEntity s : processedSub) {
 //                if (map.get(s.getSubjectId().getId()) != null) {

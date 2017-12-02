@@ -177,8 +177,6 @@ public class StudentList {
 
                     curMarkList.add(markModel);
 
-//                    curMarkList = curMarkList.stream().filter(Ultilities.distinctByKey(c -> c.getSubject() + "_" + c.getSemester())).collect(Collectors.toList());
-
                     markIdList.add((Integer) row[0]);
                 }
 
@@ -224,8 +222,6 @@ public class StudentList {
                         markList.add(markModel);
                     }
 
-                    markList = markList.stream().filter(Ultilities.distinctByKey(c -> c.getSubject() + "_" + c.getSemester())).collect(Collectors.toList());
-
                     StudentDetailModel studentDetailModel = new StudentDetailModel();
                     studentDetailModel.term = -1;
                     studentDetailModel.markList = markList;
@@ -243,6 +239,9 @@ public class StudentList {
                 }.thenComparingInt(m -> {
                     return sortedSemesters.indexOf(m.getSemester());
                 }));
+                studentDetailModel.markList = studentDetailModel.markList
+                        .stream()
+                        .filter(Ultilities.distinctByKey(c -> c.getSubject() + "_" + c.getSemester())).collect(Collectors.toList());
             }
 
             JsonArray detailList = (JsonArray) new Gson().toJsonTree(result);
