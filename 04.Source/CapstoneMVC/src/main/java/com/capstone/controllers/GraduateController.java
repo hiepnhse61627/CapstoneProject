@@ -322,7 +322,6 @@ public class GraduateController {
                             subjects.add(s);
                             if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
                                 ojt = s.getTermNumber();
-//                                break;
                             }
                         }
                     }
@@ -335,7 +334,7 @@ public class GraduateController {
 //                subjects = subjects.stream().distinct().collect(Collectors.toList());
 //            }
 
-            subjects = subjects.stream().filter(c -> c.getSubjectId().getType() != SubjectTypeEnum.OJT.getId()).distinct().collect(Collectors.toList());
+//            subjects = subjects.stream().filter(c -> c.getSubjectId().getType() != SubjectTypeEnum.OJT.getId()).distinct().collect(Collectors.toList());
 
 //                boolean aye = false;
 
@@ -536,15 +535,15 @@ public class GraduateController {
             t.add(student.getRollNumber());
             t.add(student.getFullName());
             t.add(String.valueOf(tongtinchi));
-            t.add(String.valueOf(Math.round((required * percent * 1.0) / 100)));
+            t.add(String.valueOf((int)((required * percent * 1.0) / 100)));
             t.add(String.valueOf(student.getId()));
 
             if (isGraduate) {
-                if (tongtinchi >= ((required * percent * 1.0) / 100)) {
+                if (tongtinchi >= (int)((required * percent * 1.0) / 100)) {
                     data.add(t);
                 }
             } else {
-                if (tongtinchi < ((required * percent * 1.0) / 100)) {
+                if (tongtinchi < (int)((required * percent * 1.0) / 100)) {
                     data.add(t);
                 }
             }
