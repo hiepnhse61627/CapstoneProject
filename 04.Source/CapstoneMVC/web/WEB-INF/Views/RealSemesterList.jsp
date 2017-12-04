@@ -132,7 +132,13 @@
             data: { "name": $("#s").val() },
             success: function (result) {
                 console.log(result);
-                location.reload();
+                if (result.success) {
+                    swal('', 'Thành công!', 'success').then(function () {
+                        location.reload();
+                    });
+                } else {
+                    swal('', result.msg, 'error');
+                }
             }
         });
     }

@@ -4,8 +4,10 @@ import com.capstone.entities.RealSemesterEntity;
 import com.capstone.models.CustomRealSemesterEntity;
 import com.capstone.models.Jobs;
 import com.capstone.models.Logger;
+import com.capstone.models.Ultilities;
 import com.capstone.services.IRealSemesterService;
 import com.capstone.services.RealSemesterServiceImpl;
+import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -31,7 +33,7 @@ public class RealSemesterController {
     public ModelAndView Index(HttpServletRequest request) {
         ModelAndView view = new ModelAndView("RealSemesterList");
         IRealSemesterService realSemesterService = new RealSemesterServiceImpl();
-        List<RealSemesterEntity> real = realSemesterService.getAllSemester();
+        List<RealSemesterEntity> real = Lists.reverse(Ultilities.SortSemesters(realSemesterService.getAllSemester()));
         List<CustomRealSemesterEntity> r2 = new ArrayList<>();
         for (RealSemesterEntity r : real) {
             CustomRealSemesterEntity custom = new CustomRealSemesterEntity();
@@ -97,6 +99,12 @@ public class RealSemesterController {
     public JsonObject Create(@RequestParam String name) {
         JsonObject obj = new JsonObject();
         try {
+            if (name.isEmpty()) {
+                obj.addProperty("success", false);
+                obj.addProperty("msg", "Không được để trống!");
+                return obj;
+            }
+
             IRealSemesterService service = new RealSemesterServiceImpl();
             RealSemesterEntity semester = new RealSemesterEntity();
             semester.setActive(true);

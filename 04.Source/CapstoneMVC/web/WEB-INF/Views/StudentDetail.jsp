@@ -25,6 +25,10 @@
                         <i class="glyphicon glyphicon-open"></i>
                         <div>Xuất dữ liêu cho sinh viên đang được chọn</div>
                     </button>
+                    <button type="button" class="btn btn-warning btn-with-icon" onclick="ExportExcel2()">
+                        <i class="glyphicon glyphicon-open"></i>
+                        <div>Xuất dữ liêu chỉ học đi</div>
+                    </button>
                     <button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
                         <i class="glyphicon glyphicon-open"></i>
                         <div>XUẤT DỮ LIỆU</div>
@@ -642,6 +646,15 @@
 
         Call();
     }
+
+    function ExportExcel2() {
+        $("input[name='objectType']").val(13);
+        $("input[name='studentId']").val("-1");
+        $("#export-excel").submit();
+
+        Call();
+    }
+
 
     function ExportExcelForOneStudent() {
         $("input[name='objectType']").val(2);

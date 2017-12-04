@@ -94,6 +94,7 @@ public class ExportController {
                 "com.capstone.exporters.ExportFailStatisticsImpl", // 10 = Export fail statistics
                 "com.capstone.exporters.ExportStudentArrangementImpl", // 11 = Export student arrangement
                 "com.capstone.exporters.ExportStudentArrangementValidationImpl", // 12 = Export student arrangement validate
+                "com.capstone.exporters.ExportStudentOnlyNextImpl", // 13 = Export student only next subjects
         };
 
         try {
