@@ -437,100 +437,48 @@ public class GraduateController {
 
             percent = student.getProgramId().getOjt();
 
-            int tongtinchi = student.getPassCredits();
-//            int tongtinchi = 0;
-
-//                    List<MarksEntity> curriculumMarks = marks
-//                            .stream()
-//                            .filter(c -> stuSubs.stream().anyMatch(a -> a.getSubjectId().getId().equals(c.getSubjectMarkComponentId().getSubjectId().getId())))
-//                            .collect(Collectors.toList());
-
-//            for (SubjectCurriculumEntity sub : processedSub) {
-//                if (!sub.getSubjectId().getId().toLowerCase().contains("vov")) {
-//                    List<MarksEntity> subMarks = marks
-//                            .stream()
-//                            .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub.getSubjectId().getId()))
-//                            .collect(Collectors.toList());
-//                    if (subMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-//                            c.getStatus().toLowerCase().contains("exempt"))) {
-//                        tongtinchi += sub.getSubjectCredits();
-//                    } else {
-//                        System.out.println("môn" + sub.getSubjectId().getId() + " không đạt - " + student.getRollNumber());
-//
-//                        boolean dacong = false;
-//                        List<SubjectEntity> replacers = sub.getSubjectId().getSubjectEntityList();
-//                        for (SubjectEntity replacer : replacers) {
-//                            List<MarksEntity> replaceMarks = marks
-//                                    .stream()
-//                                    .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
-//                                    .collect(Collectors.toList());
-//                            if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-//                                    c.getStatus().toLowerCase().contains("exempt"))) {
-//                                tongtinchi += sub.getSubjectCredits();
-//                                dacong = true;
-//
-//                                System.out.println("đã cộng môn thay thế");
-//                            }
-//                        }
-//                        if (!dacong) {
-//                            List<SubjectEntity> replacersFirst = sub.getSubjectId().getSubjectEntityList1();
-//                            for (SubjectEntity repls : replacersFirst) {
-//                                List<SubjectEntity> reps = repls.getSubjectEntityList();
-//                                for (SubjectEntity replacer : reps) {
-//                                    List<MarksEntity> replaceMarks = marks
-//                                            .stream()
-//                                            .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
-//                                            .collect(Collectors.toList());
-//                                    if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-//                                            c.getStatus().toLowerCase().contains("exempt"))) {
-//                                        tongtinchi += sub.getSubjectCredits();
-//
-//                                        System.out.println("đã cộng môn thay thế");
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            List<String> datontai = new ArrayList<>();
-//            for (SubjectCurriculumEntity s : processedSub) {
-//                if (map.get(s.getSubjectId().getId()) != null) {
-//                    List<MarksEntity> list = map.get(s.getSubjectId().getId());
-//                    if (list.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
-//                        tongtinchi += s.getSubjectCredits();
-//                    } else {
-//                        boolean dacong = false;
-//                        for (SubjectEntity ss : s.getSubjectId().getSubjectEntityList()) {
-//                            List<MarksEntity> t = student.getMarksEntityList().stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(ss.getId())).collect(Collectors.toList());
-//                            if (t.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
-//                                tongtinchi += s.getSubjectCredits();
-//                                dacong = true;
-//                                break;
-//                            }
-//                        }
-//                        if (!dacong) {
-//                            for (SubjectEntity ss : s.getSubjectId().getSubjectEntityList1()) {
-//                                for (SubjectEntity sss : ss.getSubjectEntityList()) {
-//                                    List<MarksEntity> t = student.getMarksEntityList().stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(sss.getId())).collect(Collectors.toList());
-//                                    if (t.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
-//                                        tongtinchi += s.getSubjectCredits();
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//            for (MarksEntity mark : marks) {
-//                if (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt")) {
-//                    if (!datontai.contains(mark.getSubjectMarkComponentId().getSubjectId().getId())) {
-//                        SubjectCurriculumEntity s = processedSub.stream().filter(c -> c.getSubjectId().getId().equals(mark.getSubjectMarkComponentId().getSubjectId().getId())).findFirst().get();
-//                        tongtinchi += s.getSubjectCredits();
-//                        datontai.add(mark.getSubjectMarkComponentId().getSubjectId().getId());
-//                    }
-//                }
-//            }
+//            int tongtinchi = student.getPassCredits();
+            int tongtinchi = 0;
+            for (SubjectCurriculumEntity sub : processedSub) {
+                List<MarksEntity> subMarks = marks
+                        .stream()
+                        .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub.getSubjectId().getId()))
+                        .collect(Collectors.toList());
+                if (subMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
+                        c.getStatus().toLowerCase().contains("exempt"))) {
+                    tongtinchi += sub.getSubjectCredits();
+                } else {
+                    boolean dacong = false;
+                    List<SubjectEntity> replacers = sub.getSubjectId().getSubjectEntityList();
+                    for (SubjectEntity replacer : replacers) {
+                        List<MarksEntity> replaceMarks = marks
+                                .stream()
+                                .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
+                                .collect(Collectors.toList());
+                        if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
+                                c.getStatus().toLowerCase().contains("exempt"))) {
+                            tongtinchi += sub.getSubjectCredits();
+                            dacong = true;
+                        }
+                    }
+                    if (!dacong) {
+                        List<SubjectEntity> replacersFirst = sub.getSubjectId().getSubjectEntityList1();
+                        for (SubjectEntity repls : replacersFirst) {
+                            List<SubjectEntity> reps = repls.getSubjectEntityList();
+                            for (SubjectEntity replacer : reps) {
+                                List<MarksEntity> replaceMarks = marks
+                                        .stream()
+                                        .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
+                                        .collect(Collectors.toList());
+                                if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
+                                        c.getStatus().toLowerCase().contains("exempt"))) {
+                                    tongtinchi += sub.getSubjectCredits();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             List<String> t = new ArrayList<>();
             t.add(student.getRollNumber());
@@ -538,6 +486,10 @@ public class GraduateController {
             t.add(String.valueOf(tongtinchi));
             t.add(String.valueOf((int)((required * percent * 1.0) / 100)));
             t.add(String.valueOf(student.getId()));
+
+            if (student.getRollNumber().equals("SE60592") || student.getRollNumber().equals("SE61242") || student.getRollNumber().equals("SE90223") || student.getRollNumber().equals("SE61600")) {
+                System.out.println();
+            }
 
             if (isGraduate) {
                 if (tongtinchi >= (int)((required * percent * 1.0) / 100)) {
@@ -918,6 +870,7 @@ public class GraduateController {
         marks = Ultilities.SortSemestersByMarks(marks);
         int require = ojt - 1 + Global.CompareSemesterGap(semester);
 //        if (student.getTerm() >= require) {
+
         if ((student.getTerm() >= require) && (marks.size() == 0 || !marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("studying")))) {
             return true;
         } else {
@@ -951,6 +904,7 @@ public class GraduateController {
 //        List<MarksEntity> processedMarks = marks.stream()
 //                .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(finalSubjectName))
 //                .collect(Collectors.toList());
+
         List<MarksEntity> marks = service.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(r1.getId()), tmp, student.getId());
         marks = marks.stream().filter(c -> c.getIsActivated() && c.getEnabled() != null && c.getEnabled()).collect(Collectors.toList());
         marks = Ultilities.SortSemestersByMarks(marks);
