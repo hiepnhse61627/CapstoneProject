@@ -40,10 +40,11 @@
         <intercept-url pattern="/email/**" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>
         <intercept-url pattern="/stuydingstatus**" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>
         <intercept-url pattern="/stuydingstatus/**" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>
-
+        <intercept-url pattern="/passfail" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>
+        <intercept-url pattern="/passfail/**" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>
 
         <!-- Admin -->
-        <!--<intercept-url pattern="/admin/**" access="hasAnyRole('ROLE_ADMIN')"/>-->
+        <intercept-url pattern="/admin/**" access="hasAnyRole('ROLE_ADMIN')"/>
 
         <!-- All other links -->
         <intercept-url pattern="/**" access="hasAnyRole('ROLE_STAFF', 'ROLE_ADMIN', 'ROLE_MANAGER')"/>
