@@ -72,11 +72,7 @@ public class Global {
         return removeMarks;
     }
 
-    public static boolean CompareSemester(RealSemesterEntity r1, RealSemesterEntity r2) {
-        if (sortedList.indexOf(r1) <= sortedList.indexOf(r2)) {
-            return true;
-        } else {
-            return false;
-        }
+    public static int CompareSemesterGap(RealSemesterEntity r1) {
+        return sortedList.indexOf(currentSemester) - sortedList.indexOf(r1);
     }
 }
