@@ -194,6 +194,7 @@
                                                 <tr id="${list.subjectId.id}" class="draggable">
                                                     <td>${list.subjectId.id}</td>
                                                     <td>${list.subjectId.name}</td>
+                                                    <td>${list.subjectCredits}</td>
                                                     <td>
                                                             <button class="btn btn-link tbl-btn subject-row-btn" type="button" onclick="ShowModal(${list.id})">
                                                                 <i class="glyphicon glyphicon-pencil"></i>

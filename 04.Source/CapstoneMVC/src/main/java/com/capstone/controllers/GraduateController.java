@@ -889,16 +889,18 @@ public class GraduateController {
 //    }
 
     private boolean isOJT(StudentEntity student, RealSemesterEntity semester) {
-        int ojt = -9999;
+        int ojt = 9999;
         List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
-        String subjectName = "";
+//        String subjectName = "";
+        List<String> tmp = new ArrayList<>();
         for (DocumentStudentEntity doc : docs) {
             if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
                 List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
                 for (SubjectCurriculumEntity s : list) {
                     if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
                         ojt = s.getTermNumber();
-                        subjectName = s.getSubjectId().getId();
+//                        subjectName = s.getSubjectId().getId();
+                        tmp.add(s.getSubjectId().getId());
                         break;
                     }
                 }
@@ -906,12 +908,17 @@ public class GraduateController {
         }
 
         IMarksService service = new MarksServiceImpl();
-        List<MarksEntity> marks = service.getStudentMarksById(student.getId());
-        String finalSubjectName = subjectName;
-        List<MarksEntity> processedMarks = marks.stream()
-                .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(finalSubjectName))
-                .collect(Collectors.toList());
-        if (!finalSubjectName.isEmpty() && (student.getTerm() >= ojt - 1 + Global.CompareSemesterGap(semester)) && processedMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("start") || c.getStatus().toLowerCase().contains("fail"))) {
+//        List<MarksEntity> marks = service.getStudentMarksById(student.getId());
+//        String finalSubjectName = subjectName;
+//        List<MarksEntity> processedMarks = marks.stream()
+//                .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(finalSubjectName))
+//                .collect(Collectors.toList());
+        List<MarksEntity> marks = service.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semester.getId()), tmp, student.getId());
+        marks = marks.stream().filter(c -> c.getIsActivated() && c.getEnabled() != null && c.getEnabled()).collect(Collectors.toList());
+        marks = Ultilities.SortSemestersByMarks(marks);
+        int require = ojt - 1 + Global.CompareSemesterGap(semester);
+//        if (student.getTerm() >= require) {
+        if ((student.getTerm() >= require) && (marks.size() == 0 || !marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("studying")))) {
             return true;
         } else {
             return false;
@@ -921,30 +928,35 @@ public class GraduateController {
     private boolean isCapstone(StudentEntity student, RealSemesterEntity r1) {
         IMarksService service = new MarksServiceImpl();
 
-        int capstone = -9999;
+        int capstone = 9999;
         List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
-        String subjectName = "";
+        List<String> tmp = new ArrayList<>();
+//        String subjectName = "";
         for (DocumentStudentEntity doc : docs) {
             if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
                 List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
                 for (SubjectCurriculumEntity s : list) {
                     if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
                         capstone = s.getTermNumber();
-                        subjectName = s.getSubjectId().getId();
+//                        subjectName = s.getSubjectId().getId();
+                        tmp.add(s.getSubjectId().getId());
                         break;
                     }
                 }
             }
         }
 
-        List<MarksEntity> marks = service.getStudentMarksById(student.getId());
-        String finalSubjectName = subjectName;
-        List<MarksEntity> processedMarks = marks.stream()
-                .filter(c -> finalSubjectName.isEmpty() || c.getSubjectMarkComponentId().getSubjectId().getId().equals(finalSubjectName))
-                .collect(Collectors.toList());
+//        List<MarksEntity> marks = service.getStudentMarksById(student.getId());
+//        String finalSubjectName = subjectName;
+//        List<MarksEntity> processedMarks = marks.stream()
+//                .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(finalSubjectName))
+//                .collect(Collectors.toList());
+        List<MarksEntity> marks = service.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(r1.getId()), tmp, student.getId());
+        marks = marks.stream().filter(c -> c.getIsActivated() && c.getEnabled() != null && c.getEnabled()).collect(Collectors.toList());
+        marks = Ultilities.SortSemestersByMarks(marks);
+        int require = capstone - 1 + Global.CompareSemesterGap(r1);
 //        if (student.getTerm() == capstone - 1) {
-        if (!finalSubjectName.isEmpty() && (student.getTerm() >= capstone - 1 + Global.CompareSemesterGap(r1)) && processedMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("start") || c.getStatus().toLowerCase().contains("fail"))) {
-//        if (student.getTerm() == capstone - 1 + Global.CompareSemesterGap(r1) && !processedMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("studying"))) {
+        if ((student.getTerm() >= require) && (marks.size() == 0 || !marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("studying")))) {
             return true;
         } else {
             return false;
