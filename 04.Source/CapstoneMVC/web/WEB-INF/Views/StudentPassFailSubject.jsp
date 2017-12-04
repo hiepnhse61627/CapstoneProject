@@ -54,7 +54,7 @@
             <div class="form-group">
                 <div class="row">
                     <div class="title">
-                        <h4>Môn học</h4>
+                        <h4>Trạng thái</h4>
                     </div>
                     <div class="my-content">
                         <div class="col-md-12">
