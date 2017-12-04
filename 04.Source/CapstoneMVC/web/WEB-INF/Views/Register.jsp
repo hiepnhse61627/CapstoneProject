@@ -82,13 +82,13 @@
                 </div>
                 <div class="form-group has-feedback">
                     <c:if var="disable" test="${param.disable eq true}">
-                        <input type="email" class="form-control" value="${param.email}"
+                        <input id="email" type="email" class="form-control" value="${param.email}"
                                disabled/>
-                        <input type="hidden" class="form-control" name="email" placeholder="Email" value="${param.email}"
+                        <input id="email" type="hidden" class="form-control" name="email" placeholder="Email" value="${param.email}"
                                 />
                     </c:if>
                     <c:if var="disable" test="${empty param.disable}">
-                        <input type="email" class="form-control" name="email" placeholder="Email"
+                        <input id="email" type="email" class="form-control" name="email" placeholder="Email"
                                value="${param.email}"/>
                     </c:if>
                     <span class="glyphicon glyphicon-envelope form-control-feedback"></span>
