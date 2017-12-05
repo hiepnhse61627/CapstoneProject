@@ -193,7 +193,7 @@
             table._fnAjaxUpdate();
         } else {
             table = $('#table').dataTable({
-                "bServerSide": true,
+                "bServerSide": false,
                 "bFilter": true,
                 "bRetrieve": true,
                 "sScrollX": "100%",
@@ -236,7 +236,7 @@
             table2._fnAjaxUpdate();
         } else {
             table2 = $('#table2').dataTable({
-                "bServerSide": true,
+                "bServerSide": false,
                 "bFilter": true,
                 "bRetrieve": true,
                 "sScrollX": "100%",

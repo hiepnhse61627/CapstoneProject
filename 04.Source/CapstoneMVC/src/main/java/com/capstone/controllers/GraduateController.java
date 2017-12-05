@@ -868,7 +868,7 @@ public class GraduateController {
         List<MarksEntity> marks = service.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semester.getId()), tmp, student.getId());
         marks = marks.stream().filter(c -> c.getIsActivated() && c.getEnabled() != null && c.getEnabled()).collect(Collectors.toList());
         marks = Ultilities.SortSemestersByMarks(marks);
-        int require = ojt - 1 + Global.CompareSemesterGap(semester);
+        int require = ojt - 1 - Global.CompareSemesterGap(semester);
 //        if (student.getTerm() >= require) {
 
         if ((student.getTerm() >= require) && (marks.size() == 0 || !marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("studying")))) {
@@ -908,7 +908,7 @@ public class GraduateController {
         List<MarksEntity> marks = service.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(r1.getId()), tmp, student.getId());
         marks = marks.stream().filter(c -> c.getIsActivated() && c.getEnabled() != null && c.getEnabled()).collect(Collectors.toList());
         marks = Ultilities.SortSemestersByMarks(marks);
-        int require = capstone - 1 + Global.CompareSemesterGap(r1);
+        int require = capstone - 1 - Global.CompareSemesterGap(r1);
 //        if (student.getTerm() == capstone - 1) {
         if ((student.getTerm() >= require) && (marks.size() == 0 || !marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("studying")))) {
             return true;

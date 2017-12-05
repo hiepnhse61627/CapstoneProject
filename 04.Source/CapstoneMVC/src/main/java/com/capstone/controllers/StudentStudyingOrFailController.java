@@ -84,10 +84,13 @@ public class StudentStudyingOrFailController {
                 curs.add(curr);
             }
 
+            List<RealSemesterEntity> realSemesters = Ultilities.SortSemesters(semesterService.getAllSemester());
+
             ArrayList<ArrayList<String>> result = new ArrayList<>();
             List<MarksEntity> list = new ArrayList<>();
+            int j = 1;
             for (CurriculumEntity cur : curs) {
-                List<RealSemesterEntity> realSemesters = Ultilities.SortSemesters(semesterService.getAllSemester());
+                System.out.println(j++ + " - " + curs.size());
 
                 List<String> subject = new ArrayList<>();
                 List<SubjectCurriculumEntity> listCur = cur.getSubjectCurriculumEntityList();
@@ -159,13 +162,8 @@ public class StudentStudyingOrFailController {
                 }
             }
 
-            List<MarksEntity> displayList = new ArrayList<>();
             if (!list.isEmpty()) {
-                displayList = list.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
-            }
-
-            if (!displayList.isEmpty()) {
-                displayList.forEach(m -> {
+                list.forEach(m -> {
                     ArrayList<String> tmp = new ArrayList<>();
                     tmp.add(m.getStudentId().getRollNumber());
                     tmp.add(m.getStudentId().getFullName());
@@ -180,8 +178,8 @@ public class StudentStudyingOrFailController {
 
             JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
 
-            data.addProperty("iTotalRecords", list.size());
-            data.addProperty("iTotalDisplayRecords", list.size());
+//            data.addProperty("iTotalRecords", list.size());
+//            data.addProperty("iTotalDisplayRecords", list.size());
             data.add("aaData", aaData);
             data.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {
@@ -293,13 +291,13 @@ public class StudentStudyingOrFailController {
                 }
             }
 
-            List<MarksEntity> displayList = new ArrayList<>();
-            if (!list.isEmpty()) {
-                displayList = list.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
-            }
+//            List<MarksEntity> displayList = new ArrayList<>();
+//            if (!list.isEmpty()) {
+//                displayList = list.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+//            }
 
-            if (!displayList.isEmpty()) {
-                displayList.forEach(m -> {
+            if (!list.isEmpty()) {
+                list.forEach(m -> {
                     ArrayList<String> tmp = new ArrayList<>();
                     tmp.add(m.getStudentId().getRollNumber());
                     tmp.add(m.getStudentId().getFullName());
@@ -314,8 +312,8 @@ public class StudentStudyingOrFailController {
 
             JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
 
-            data.addProperty("iTotalRecords", list.size());
-            data.addProperty("iTotalDisplayRecords", list.size());
+//            data.addProperty("iTotalRecords", list.size());
+//            data.addProperty("iTotalDisplayRecords", list.size());
             data.add("aaData", aaData);
             data.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {
