@@ -73,6 +73,11 @@ public class Global {
     }
 
     public static int CompareSemesterGap(RealSemesterEntity r1) {
-        return sortedList.indexOf(currentSemester) - sortedList.indexOf(r1);
+        int gap = sortedList.indexOf(temporarySemester) - sortedList.indexOf(r1);
+        System.out.println(gap);
+        if (gap < 0)
+            return 0;
+        else
+            return gap;
     }
 }

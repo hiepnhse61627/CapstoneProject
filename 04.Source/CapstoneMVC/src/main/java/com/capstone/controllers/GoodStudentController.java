@@ -106,6 +106,7 @@ public class GoodStudentController {
                 " AND ds.CurriculumId IS NOT NULL" +
                 " AND m.IsActivated = 1" +
                 ((semesterId != 0) ? " AND m.SemesterId = ?" : "");
+
         Query query = em.createNativeQuery(queryStr);
         query.setParameter(1, markComponent.getId());
         if (semesterId != 0) {
