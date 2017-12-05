@@ -103,14 +103,14 @@
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label for="studentRollNumber" class="col-sm-3 control-label">MSSV</label>
-                                <div class="col-sm-9">
-                                    <input type="text" class="form-control" id="studentRollNumber"
-                                           placeholder="Rollnumber"
-                                           name="studentRollNumber"/>
-                                </div>
-                            </div>
+                            <%--<div class="form-group">--%>
+                                <%--<label for="studentRollNumber" class="col-sm-3 control-label">MSSV</label>--%>
+                                <%--<div class="col-sm-9">--%>
+                                    <%--<input type="text" class="form-control" id="studentRollNumber"--%>
+                                           <%--placeholder="Rollnumber"--%>
+                                           <%--name="studentRollNumber"/>--%>
+                                <%--</div>--%>
+                            <%--</div>--%>
                         </div>
                     </form>
                 </div>

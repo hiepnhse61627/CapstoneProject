@@ -156,8 +156,8 @@ public class AdminController {
                 }
                 service.SaveCredential(c, false);
 
-                Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(c.getUsername(), c.getPassword(), getGrantedAuthorities(c), c), c.getPassword(), getGrantedAuthorities(c));
-                SecurityContextHolder.getContext().setAuthentication(auth);
+//                Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(c.getUsername(), c.getPassword(), getGrantedAuthorities(c), c), c.getPassword(), getGrantedAuthorities(c));
+//                SecurityContextHolder.getContext().setAuthentication(auth);
             }
 
             data.addProperty("success", true);

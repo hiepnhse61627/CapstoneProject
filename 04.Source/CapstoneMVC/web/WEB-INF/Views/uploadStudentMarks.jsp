@@ -51,7 +51,7 @@
             </div>
 
             <div class="form-group">
-                Bấm vào <a class="link" href="/Resources/FileTemplates/DSSV_Template.xlsx">Template</a> để tải
+                Bấm vào <a class="link" href="/Resources/FileTemplates/FPT-FINAL-MARKS-Template.xlsx">Template</a> để tải
                 về bản mẫu
             </div>
 

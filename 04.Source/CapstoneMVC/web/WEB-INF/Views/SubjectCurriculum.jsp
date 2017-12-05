@@ -81,7 +81,7 @@
                 </div>
 
                 <div class="form-group">
-                    Bấm vào <a class="link" href="/Resources/FileTemplates/SubjectList_Upload_Template.xls">Template</a> để tải
+                    Bấm vào <a class="link" href="/Resources/FileTemplates/AllCurriculum-Template.xlsx">Template</a> để tải
                     về bản mẫu
                 </div>
                 <div class="form-group">

@@ -243,10 +243,20 @@
                                            value="${curriculum}"/>
                                 </div>
                             </div>
+
+                            <div class="my-input-group width-40 p-l-30 text-left">
+                                <div class="left-content" style="width: 85px">
+                                    <label class="p-t-8">Học kì:</label>
+                                </div>
+                                <div class="right-content">
+                                    <input id="termNumber" disabled type="text" class="form-control"
+                                           value="${student.term}"/>
+                                </div>
+                            </div>
                         </div>
                         <div class="row m-0">
                             <button style="display: none" id="change" type="button" class="btn btn-primary" onclick="return EditStudent($('#rollNumber').val(),$('#studentName').val()
-                                    ,$('#gender').val(),$('#dateOfBirth').val(),$('#program').val(),$('#curriculum').val())">
+                                    ,$('#gender').val(),$('#dateOfBirth').val(),$('#program').val(),$('#curriculum').val(),$('#termNumber').val())">
                                 Thay đổi thông tin
                             </button>
 
@@ -311,6 +321,7 @@
     var oldFullName;
     var oldGender;
     var oldDoB;
+    var oldTerm;
 
     $(document).ready(function () {
         LoadMarkList();
@@ -318,6 +329,7 @@
         oldFullName = '${student.fullName}';
         oldGender = '${gender}';
         oldDoB = '${dateOfBirth}';
+        oldTerm = '${student.term}';
     });
 
     function LoadMarkList() {
@@ -415,6 +427,7 @@
                     "sDOB": $('#dateOfBirth').val(),
                     "sProgram": $('#program').val(),
                     "sCurriculum": $('#curriculum').val(),
+                    "sTermNumber": $('#termNumber').val(),
                 },
                 success: function (result) {
                     if (result.success) {
@@ -426,6 +439,7 @@
                             oldFullName = $('#studentName').val();
                             oldGender = $('#gender').val();
                             oldDoB = $('#dateOfBirth').val();
+                            oldTerm = $('#termNumber').val();
                             onCancel();
                         });
                     } else {
@@ -443,6 +457,7 @@
         $('#studentName').prop("disabled", false);
         $('#dateOfBirth').prop("disabled", false);
         $('#gender').prop("disabled", false);
+        $('#termNumber').prop("disabled", false);
     }
 
     function onCancel() {
@@ -452,10 +467,12 @@
         $('#studentName').prop("disabled", true);
         $('#dateOfBirth').prop("disabled", true);
         $('#gender').prop("disabled", true);
+        $('#termNumber').prop("disabled", true);
 
         $('#studentName').val(oldFullName);
         $('#dateOfBirth').val(oldDoB);
         $('#gender').val(oldGender);
+        $('#termNumber').val(oldTerm);
     }
 
 </script>

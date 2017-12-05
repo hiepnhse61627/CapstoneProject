@@ -72,7 +72,8 @@ public class StudentList {
     @RequestMapping(value = "/student/edit")
     @ResponseBody
     public JsonObject EditSubject(@RequestParam("sRollNumber") String rollNumber, @RequestParam("sFullName") String fullName,
-                                  @RequestParam("sGender") String gender, @RequestParam("sDOB") String dob) {
+                                  @RequestParam("sGender") String gender, @RequestParam("sDOB") String dob
+            , @RequestParam("sTermNumber") String term) {
         JsonObject jsonObj = new JsonObject();
         IStudentService studentService = new StudentServiceImpl();
         try {
@@ -89,6 +90,7 @@ public class StudentList {
             student.setDateOfBirth(dateOfBirth);
             student.setDateOfBirth(date);
             student.setFullName(fullName);
+            student.setTerm(Integer.valueOf(term));
             if (gender.equals("Nam")){
                 student.setGender(true);
             }else{
