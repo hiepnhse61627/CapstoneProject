@@ -22,11 +22,10 @@
         <div class="b-header">
             <div class="row">
                 <div class="col-md-7 title">
-                    <h1>Danh sách sinh viên theo lớp môn</h1>
+                    <h1>Danh sách sinh viên lớp môn theo slot</h1>
                 </div>
                 <div class="col-md-5 text-right">
                     <button type="button" class="btn btn-success" onclick="ExportExcel()">Xuất dữ liệu</button>
-                    <button type="button" class="btn btn-success" onclick="ExportValidationExcel()">Xuất file kiểm tra</button>
                     <button type="button" class="btn btn-warning" onclick="ShowImportModal()">Nhập dữ liệu</button>
                 </div>
             </div>
@@ -85,23 +84,6 @@
                 <h4 class="modal-title">Nhập dữ liệu</h4>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <div class="row">
-                        <div class="title">
-                            <h4>Chọn học kỳ:</h4>
-                        </div>
-                        <div class="my-content">
-                            <div class="col-md-12">
-                                <select id="cb-semester" class="select">
-                                    <option value="-1">- Chọn học kỳ -</option>
-                                    <c:forEach var="s" items="${semesters}">
-                                        <option value="${s.id}">${s.semester}</option>
-                                    </c:forEach>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
                 <div class="form-group">
                     <div class="row">
@@ -113,60 +95,14 @@
                                 <label for="file-suggestion" hidden></label>
                                 <input type="file" accept=".xlsx, .xls" id="file-suggestion"/>
                             </div>
-                            <div class="col-md-12 m-t-5">
-                                Bấm vào <a class="link" href="/Resources/FileTemplates/SubjectList_Upload_Template.xls">Template</a>
-                                để tải
-                                về bản mẫu
-                            </div>
+                            <%--<div class="col-md-12 m-t-5">--%>
+                                <%--Bấm vào <a class="link" href="/Resources/FileTemplates/SubjectList_Upload_Template.xls">Template</a>--%>
+                                <%--để tải--%>
+                                <%--về bản mẫu--%>
+                            <%--</div>--%>
                         </div>
                     </div>
                 </div>
-                <hr>
-
-                <div class="form-group">
-                    <div class="row">
-                        <div class="title">
-                            <h4 class="text-left">Nhập danh sách sinh viên học đi:</h4>
-                            <div class="text-left m-l-10">
-                                <input type="checkbox" id="cb-file-going" /> Sử dụng file
-                            </div>
-                        </div>
-                        <div class="my-content">
-                            <div class="col-md-12">
-                                <label for="file-going" hidden></label>
-                                <input type="file" accept=".xlsx, .xls" id="file-going"/>
-                            </div>
-                            <div class="col-md-12 m-t-5">
-                                Bấm vào <a class="link" href="/Resources/FileTemplates/SubjectList_Upload_Template.xls">Template</a>
-                                để tải
-                                về bản mẫu
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="row">
-                        <div class="title">
-                            <h4 class="text-left">Nhập danh sách sinh viên học lại:</h4>
-                            <div class="text-left m-l-10">
-                                <input type="checkbox" id="cb-file-relearn" /> Sử dụng file
-                            </div>
-                        </div>
-                        <div class="my-content">
-                            <div class="col-md-12">
-                                <label for="file-relearn" hidden></label>
-                                <input type="file" accept=".xlsx, .xls" id="file-relearn"/>
-                            </div>
-                            <div class="col-md-12 m-t-5">
-                                Bấm vào <a class="link" href="/Resources/FileTemplates/SubjectList_Upload_Template.xls">Template</a>
-                                để tải
-                                về bản mẫu
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
 
                 <div class="form-group">
                     <button type="button" onclick="ImportFile()" class="btn btn-success">Import</button>
@@ -243,7 +179,7 @@
             "bProcessing": true,
             "bSort": false,
             "iDisplayLength": '25',
-            "sAjaxSource": "/studentArrangement/loadTable",
+            "sAjaxSource": "/studentArrangementBySlot/loadTable",
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "shiftType", "value": $("#cb-shift-type").val()})
             },
@@ -285,12 +221,6 @@
         $("#export-excel").submit();
     }
 
-    function ExportValidationExcel() {
-        $("input[name='objectType']").val(12);
-
-        $("#export-excel").submit();
-    }
-
     function RefreshTable() {
         if (tblStudenArrangement != null) {
             tblStudenArrangement._fnPageChange(0);
@@ -299,47 +229,20 @@
     }
 
     function ImportFile() {
-        if ($('#cb-semester').val() == '-1') {
-            swal('', 'Xin chọn học kỳ', 'warning');
-            return;
-        } else if (typeof($('#file-suggestion')[0].files[0]) == 'undefined' || $('#file-suggestion')[0].files[0] == null) {
-            swal('', 'Xin nhập danh sách kế hoạch dự kiến', 'warning');
-            return;
-        } else if ($('#cb-file-going').prop('checked') && (typeof($('#file-going')[0].files[0]) == 'undefined' || $('#file-going')[0].files[0] == null)) {
-            swal('', 'Xin nhập danh sách sinh viên học đi', 'warning');
-            return;
-        } else if ($('#cb-file-relearn').prop('checked') && (typeof($('#file-relearn')[0].files[0]) == 'undefined' || $('#file-relearn')[0].files[0] == null)) {
-            swal('', 'Xin nhập danh sách sinh viên học lại', 'warning');
-            return;
-        }
-
         var form = new FormData();
-        form.append('semesterId', $('#cb-semester').val());
         form.append('file-suggestion', $('#file-suggestion')[0].files[0]);
-        if ($('#cb-file-going').prop('checked')) {
-            form.append('file-going', $('#file-going')[0].files[0]);
-        }
-        if ($('#cb-file-relearn').prop('checked')) {
-            form.append('file-relearn', $('#file-relearn')[0].files[0]);
-        }
 
-        var url = "";
-        if ($('#cb-file-going').prop('checked') && $('#cb-file-relearn').prop('checked')) {
-            url = "/studentArrangement/import2";
-        } else {
-            url = "/studentArrangement/import1";
-        }
 
         swal({
             title: 'Đang xử lý',
-            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!</div><div id='progress-file-1' class='form-group'></div><div id='progress-file-2' class='form-group'></div><div id='progress-file-3' class='form-group'></div><div id='progress' class='form-group'></div>",
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!</div><div id='progress-file-1' class='form-group'></div><div id='process1' class='form-group'></div><div id='process2' class='form-group'></div>",
             type: 'info',
             onOpen: function () {
                 swal.showLoading();
                 isRunning = true;
                 $.ajax({
                     type: "POST",
-                    url: url,
+                    url: "/studentArrangementBySlot/import",
                     processData: false,
                     contentType: false,
                     data: form,
@@ -358,18 +261,14 @@
                         }
                     }
                 });
-                if ($('#cb-file-going').prop('checked') && $('#cb-file-relearn').prop('checked')) {
-                    updateProgressFullFile(isRunning);
-                } else {
-                    updateProgressOneFile(isRunning);
-                }
+                updateProgress(isRunning);
 
             },
             allowOutsideClick: false
         });
     }
 
-    function updateProgressOneFile(running) {
+    function updateProgress(running) {
         $.ajax({
             type: "GET",
             url: "/studentArrangement/updateProgress",
@@ -382,42 +281,20 @@
                     $('#progress-file-1').html("<div class='f-red'>Đang xử lý danh sách kế hoạch học đi và học lại</div>");
                 }
 
-                $('#progress').html("<div>(" + result.count + "/" + result.total + ")</div>");
+                if (result.process1) {
+                    $('#process1').html("<div class='f-green'>Đã chuẩn bị dữ liệu để xử lý</div>");
+                } else {
+                    $('#process1').html("<div class='f-red'>Đang chuẩn bị dữ liệu để xử lý</div>");
+                }
+
+                if (result.process2) {
+                    $('#process2').html("<div class='f-green'>Hoàn tất việc xếp lớp cho sinh viên</div>");
+                } else {
+                    $('#process2').html("<div class='f-red'>Đang xếp lớp cho sinh viên</div>");
+                }
+                console.log(result.file1Done + " " + result.process1 + " " + result.process2)
                 if (running) {
-                    setTimeout("updateProgressOneFile(isRunning)", 50);
-                }
-            }
-        });
-    }
-
-    function updateProgressFullFile(running) {
-        $.ajax({
-            type: "GET",
-            url: "/studentArrangement/updateProgress",
-            processData: false,
-            contentType: false,
-            success: function (result) {
-                if (result.file1Done) {
-                    $('#progress-file-1').html("<div class='f-green'>Đã xử lý danh sách kế hoạch học đi và học lại</div>");
-                } else {
-                    $('#progress-file-1').html("<div class='f-red'>Đang xử lý danh sách kế hoạch học đi và học lại</div>");
-                }
-
-                if (result.file2Done) {
-                    $('#progress-file-2').html("<div class='f-green'>Đã xử lý danh sách sinh viên học đi</div>");
-                } else {
-                    $('#progress-file-2').html("<div class='f-red'>Đang xử lý danh sách sinh viên học đi</div>");
-                }
-
-                if (result.file3Done) {
-                    $('#progress-file-3').html("<div class='f-green'>Đã xử lý danh sách sinh viên học lại</div>");
-                } else {
-                    $('#progress-file-3').html("<div class='f-red'>Đang xử lý danh sách sinh viên học lại</div>");
-                }
-
-                $('#progress').html("<div>(" + result.count + "/" + result.total + ")</div>");
-                if (running) {
-                    setTimeout("updateProgressFullFile(isRunning)", 50);
+                    setTimeout("updateProgress(isRunning)", 50);
                 }
             }
         });
