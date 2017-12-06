@@ -370,6 +370,9 @@
             html += "<div class='term-wrapper'>";
             html += "<div class='term'><span>" + termStr + "</span></div>";
             html += "<div class='marks'>";
+
+            var sum = 0;
+
             for (var j = 0; j < markList.length; ++j) {
                 var mark = markList[j];
 
@@ -381,8 +384,25 @@
                 html += "<div class='small-col'><span>" + mark.averageMark + "</span></div>";
                 html += "<div class='medium-col'><span>" + mark.status + "</span></div>";
                 html += "</div>";
+
+                sum += parseFloat(mark.averageMark);
             }
-            html += "</div></div>"
+            html += "</div>";
+
+            html += "<div class='term'><span>Trung bình</span></div>";
+            html += "<div class='marks'>";
+            html += "<div class='mark'>";
+            html += "<div class='small-col'><span></span></div>";
+            html += "<div class='large-col text-left'><span></span></div>";
+            html += "<div class='medium-col'><span></span></div>";
+            html += "<div class='small-col'><span></span></div>";
+            html += "<div class='small-col'><span>" + (Math.round(sum / markList.length * 100) / 100) + "</span></div>";
+            html += "<div class='medium-col'><span></span></div>";
+            html += "</div>";
+            html += "</div>";
+
+            html += "</div>";
+
         }
 
         html += "<div class='term-wrapper'>";

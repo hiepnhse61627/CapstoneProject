@@ -18,6 +18,8 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Controller
@@ -231,19 +233,67 @@ public class StudentList {
                 }
             }
 
+            ArrayList<String> seasons = new ArrayList<String>() {{
+                add("spring");
+                add("summer");
+                add("fall");
+                add("n/a");
+            }};
+
             // Sort data
             for (StudentDetailModel studentDetailModel : result) {
-                studentDetailModel.markList.sort(new Comparator<MarkModel>() {
-                    @Override
-                    public int compare(MarkModel o1, MarkModel o2) {
-                        return o1.getSubjectName().compareTo(o2.getSubjectName());
-                    }
-                }.thenComparingInt(m -> {
-                    return sortedSemesters.indexOf(m.getSemester());
-                }));
-                studentDetailModel.markList = studentDetailModel.markList
+                studentDetailModel.markList.sort(Comparator
+                        .comparing(MarkModel::getSubject)
+                        .thenComparingInt(c -> {
+                            if (c.getSemester().equalsIgnoreCase("n/a")) return 0;
+                            String removewhite = c.getSemester().replaceAll("\\s+", "");
+                            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
+                            Pattern pattern = Pattern.compile("^\\D*(\\d)");
+                            Matcher matcher = pattern.matcher(removeline);
+                            matcher.find();
+                            return Integer.parseInt(removeline.substring(matcher.start(1), removeline.length()));
+                        }).thenComparingInt(a -> {
+                            if (a.getSemester().equalsIgnoreCase("n/a")) return seasons.indexOf("n/a");
+                            String removewhite = a.getSemester().replaceAll("\\s+", "");
+                            String removeline = removewhite.substring(0, removewhite.indexOf("_") < 0 ? removewhite.length() : removewhite.indexOf("_"));
+                            Pattern pattern = Pattern.compile("^\\D*(\\d)");
+                            Matcher matcher = pattern.matcher(removeline);
+                            matcher.find();
+                            String season = removeline.substring(0, matcher.start(1)).toLowerCase();
+                            return seasons.indexOf(season);
+                        }));
+
+                List<String> subs = studentDetailModel.markList
                         .stream()
-                        .filter(Ultilities.distinctByKey(c -> c.getSubject() + "_" + c.getSemester())).collect(Collectors.toList());
+                        .map(c -> c.getSubject())
+                        .distinct()
+                        .collect(Collectors.toList());
+                for (String sub : subs) {
+                    List<MarkModel> l = studentDetailModel.markList
+                            .stream()
+                            .filter(c -> c.getSubject().equals(sub))
+                            .collect(Collectors.toList());
+                    if (l.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+                        studentDetailModel.markList.removeIf(c -> c.getSubject().equals(sub) && !c.getStatus().toLowerCase().contains("pass") && !c.getStatus().toLowerCase().contains("exempt"));
+                    } else {
+                        studentDetailModel.markList.removeIf(c -> l.indexOf(c) != -1 && l.indexOf(c) < l.size() - 1);
+                    }
+                }
+
+//                if (studentDetailModel.markList.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))){
+//                    studentDetailModel.markList = studentDetailModel.markList
+//                            .stream()
+//                            .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))
+//                            .collect(Collectors.toList());
+//                } else {
+//                    studentDetailModel.markList = studentDetailModel.markList
+//                            .stream()
+//                            .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))
+//                            .collect(Collectors.toList());
+//                }
+//                studentDetailModel.markList = studentDetailModel.markList
+//                        .stream()
+//                        .filter(Ultilities.distinctByKey(c -> c.getSubject() + "_" + c.getSemester())).collect(Collectors.toList());
             }
 
             JsonArray detailList = (JsonArray) new Gson().toJsonTree(result);

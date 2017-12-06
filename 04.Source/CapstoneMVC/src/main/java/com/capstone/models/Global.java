@@ -21,11 +21,11 @@ public class Global {
 //    }
 
     public static List<RealSemesterEntity> getSortedList() {
-        if (sortedList == null) {
+//        if (sortedList == null) {
             IRealSemesterService semesterService = new RealSemesterServiceImpl();
             List<RealSemesterEntity> l = semesterService.getAllSemester();
             sortedList = Ultilities.SortSemesters(l);
-        }
+//        }
         return sortedList;
     }
 
