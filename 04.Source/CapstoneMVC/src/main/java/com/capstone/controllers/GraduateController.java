@@ -387,15 +387,15 @@ public class GraduateController {
 
             List<MarksEntity> marks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semesterId), tmp, student.getId());
 //            List<MarksEntity> marks = marksService.getMarkByConditions(semesterId, tmp, student.getId());
-            marks = marks.stream().filter(c -> c.getIsActivated() && c.getEnabled() != null && c.getEnabled()).collect(Collectors.toList());
+            marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
             marks = Ultilities.SortSemestersByMarks(marks);
 
-            List<MarksEntity> finalMarks = marks;
-            tmp.stream().filter(c -> !finalMarks.stream().anyMatch(a -> a
-                    .getSubjectMarkComponentId()
-                    .getSubjectId()
-                    .getId()
-                    .equals(c))).forEach(c -> System.out.println("môn" + c + " không có điểm"));
+//            List<MarksEntity> finalMarks = marks;
+//            tmp.stream().filter(c -> !finalMarks.stream().anyMatch(a -> a
+//                    .getSubjectMarkComponentId()
+//                    .getSubjectId()
+//                    .getId()
+//                    .equals(c))).forEach(c -> System.out.println("môn" + c + " không có điểm"));
 
             //            Map<String, List<MarksEntity>> map = marks.stream()
 //                    .collect(Collectors.groupingBy(c -> c.getSubjectMarkComponentId().getSubjectId().getId()));
@@ -486,10 +486,6 @@ public class GraduateController {
             t.add(String.valueOf(tongtinchi));
             t.add(String.valueOf((int)((required * percent * 1.0) / 100)));
             t.add(String.valueOf(student.getId()));
-
-            if (student.getRollNumber().equals("SE60592") || student.getRollNumber().equals("SE61242") || student.getRollNumber().equals("SE90223") || student.getRollNumber().equals("SE61600")) {
-                System.out.println();
-            }
 
             if (isGraduate) {
                 if (tongtinchi >= (int)((required * percent * 1.0) / 100)) {
@@ -865,11 +861,16 @@ public class GraduateController {
 //        List<MarksEntity> processedMarks = marks.stream()
 //                .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(finalSubjectName))
 //                .collect(Collectors.toList());
-        List<MarksEntity> marks = service.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semester.getId()), tmp, student.getId());
-        marks = marks.stream().filter(c -> c.getIsActivated() && c.getEnabled() != null && c.getEnabled()).collect(Collectors.toList());
+        int semesterId = Ultilities.GetSemesterIdBeforeThisId(semester.getId());
+        List<MarksEntity> marks = service.getMarkByConditions(semesterId, tmp, student.getId());
+        marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
         marks = Ultilities.SortSemestersByMarks(marks);
         int require = ojt - 1 - Global.CompareSemesterGap(semester);
 //        if (student.getTerm() >= require) {
+
+        if (student.getRollNumber().equals("SE61790")) {
+            System.out.println();
+        }
 
         if ((student.getTerm() >= require) && (marks.size() == 0 || !marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("studying")))) {
             return true;
@@ -906,7 +907,7 @@ public class GraduateController {
 //                .collect(Collectors.toList());
 
         List<MarksEntity> marks = service.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(r1.getId()), tmp, student.getId());
-        marks = marks.stream().filter(c -> c.getIsActivated() && c.getEnabled() != null && c.getEnabled()).collect(Collectors.toList());
+        marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
         marks = Ultilities.SortSemestersByMarks(marks);
         int require = capstone - 1 - Global.CompareSemesterGap(r1);
 //        if (student.getTerm() == capstone - 1) {
@@ -1036,15 +1037,15 @@ public class GraduateController {
 
             List<MarksEntity> marks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semesterId), tmp, student.getId());
 //            List<MarksEntity> marks = marksService.getMarkByConditions(semesterId, tmp, student.getId());
-            marks = marks.stream().filter(c -> c.getIsActivated() && c.getEnabled() != null && c.getEnabled()).collect(Collectors.toList());
+            marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
             marks = Ultilities.SortSemestersByMarks(marks);
 
-            List<MarksEntity> finalMarks = marks;
-            tmp.stream().filter(c -> !finalMarks.stream().anyMatch(a -> a
-                    .getSubjectMarkComponentId()
-                    .getSubjectId()
-                    .getId()
-                    .equals(c))).forEach(c -> System.out.println("môn" + c + " không có điểm"));
+//            List<MarksEntity> finalMarks = marks;
+//            tmp.stream().filter(c -> !finalMarks.stream().anyMatch(a -> a
+//                    .getSubjectMarkComponentId()
+//                    .getSubjectId()
+//                    .getId()
+//                    .equals(c))).forEach(c -> System.out.println("môn" + c + " không có điểm"));
 
             //            Map<String, List<MarksEntity>> map = marks.stream()
 //                    .collect(Collectors.groupingBy(c -> c.getSubjectMarkComponentId().getSubjectId().getId()));
