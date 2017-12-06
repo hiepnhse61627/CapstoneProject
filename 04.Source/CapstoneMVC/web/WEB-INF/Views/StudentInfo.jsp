@@ -171,6 +171,9 @@
                         <button class="btn btn-primary text-left" id="btnEdit" onclick="onEdit()">
                             <i class="glyphicon glyphicon-pencil btn-icon"></i>
                         </button>
+                        <a class="btn btn-warning" onclick='GetAllStudentMarks(${student.id})'>
+                            <i class="glyphicon glyphicon-pencil btn-icon"></i>
+                        </a>
                         <button class="btn btn-success text-left m-r-5" id="btnSubmit" onclick="EditStudent()" style="display: none">
                             <i class="fa fa-check btn-icon"></i>
                         </button>
@@ -316,12 +319,44 @@
     </div>
 </section>
 
+<div id="markDetail" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Chi tiết điểm</h4>
+            </div>
+            <div class="modal-body">
+                <div class="col-md-12">
+                    <table id="table-mark-detail">
+                        <thead>
+                        <tr>
+                            <th>Môn học</th>
+                            <th>Học kỳ</th>
+                            <th>Số lần học</th>
+                            <th>Điểm trung bình</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 
 <script>
     var oldFullName;
     var oldGender;
     var oldDoB;
     var oldTerm;
+    var tableMarkDetail = null;
 
     $(document).ready(function () {
         LoadMarkList();
@@ -495,5 +530,75 @@
         $('#termNumber').val(oldTerm);
     }
 
+    function GetAllStudentMarks(studentId) {
+        var form = new FormData();
+        form.append("studentId", studentId);
+
+        $.ajax({
+            type: "POST",
+            url: "/student/getAllLatestMarks",
+            processData: false,
+            contentType: false,
+            data: form,
+            success: function (result) {
+
+                if (result.success) {
+                    result.studentMarkDetail = JSON.parse(result.studentMarkDetail);
+
+                    $("#markDetail").find(".modal-title").html("Chi tiết điểm - " + result.studentMarkDetail.studentName);
+                    CreateMarkDetailTable(result.studentMarkDetail.markList);
+                    $("#markDetail").modal();
+                } else {
+                    swal('', 'Có lỗi xảy ra, vui lòng thử lại sau', 'warning');
+                }
+            }
+        });
+    }
+
+    function CreateMarkDetailTable(dataSet) {
+        if (tableMarkDetail != null) {
+            tableMarkDetail.fnDestroy();
+        }
+
+        tableMarkDetail = $('#table-mark-detail').dataTable({
+            "bFilter": true,
+            "bRetrieve": true,
+            "bScrollCollapse": true,
+            "bProcessing": true,
+            "bSort": false,
+            "data": dataSet,
+            "aoColumns": [
+                {"mData": "subject"},
+                {"mData": "semester"},
+                {"mData": "repeatingNumber"},
+                {"mData": "averageMark"},
+                {"mData": "status"},
+            ],
+            "oLanguage": {
+                "sSearchPlaceholder": "",
+                "sSearch": "Tìm kiếm:",
+                "sZeroRecords": "Không có dữ liệu phù hợp",
+                "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
+                "sEmptyTable": "Không có dữ liệu",
+                "sInfoFiltered": " - lọc ra từ _MAX_ dòng",
+                "sLengthMenu": "Hiển thị _MENU_ dòng",
+                "sProcessing": "Đang xử lý...",
+                "oPaginate": {
+                    "sNext": "<i class='fa fa-chevron-right'></i>",
+                    "sPrevious": "<i class='fa fa-chevron-left'></i>"
+                }
+
+            },
+            "aoColumnDefs": [
+                {
+                    "aTargets": [0, 1, 2, 3, 4],
+                    "bSortable": false,
+                    "sClass": "text-center",
+                },
+            ],
+            "bAutoWidth": false,
+        });
+        $("#markDetail").modal();
+    }
 </script>
 
