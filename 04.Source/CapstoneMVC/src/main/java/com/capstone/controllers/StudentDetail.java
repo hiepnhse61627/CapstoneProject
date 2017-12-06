@@ -393,6 +393,10 @@ public class StudentDetail {
             }
         }
 
+        if (list.isEmpty()) {
+//            List<DocumentStudentEntity> sorted = Ultilities.Sort
+        }
+
         List<SubjectEntity> failedPrequisiteList = new ArrayList<>();
 
         // Check students score if exist remove
