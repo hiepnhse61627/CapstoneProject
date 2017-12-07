@@ -158,8 +158,8 @@ public class GraduateController {
                     List<String> t = new ArrayList<>();
                     t.add(student.getRollNumber());
                     t.add(student.getFullName());
+                    t.add(String.valueOf(student.getTerm()));
                     t.add(String.valueOf(studentCredits));
-//                    t.add(String.valueOf(studentCredits > creditsInCurriculum ? (studentCredits - creditsInCurriculum) : 0));
                     t.add(String.valueOf(specializedCredits));
                     t.add(String.valueOf(student.getId()));
                     data.add(t);
@@ -169,8 +169,8 @@ public class GraduateController {
                     List<String> t = new ArrayList<>();
                     t.add(student.getRollNumber());
                     t.add(student.getFullName());
+                    t.add(String.valueOf(student.getTerm()));
                     t.add(String.valueOf(studentCredits));
-//                    t.add(String.valueOf(studentCredits > creditsInCurriculum ? (studentCredits - creditsInCurriculum) : 0));
                     t.add(String.valueOf(specializedCredits));
                     t.add(String.valueOf(student.getId()));
                     data.add(t);
