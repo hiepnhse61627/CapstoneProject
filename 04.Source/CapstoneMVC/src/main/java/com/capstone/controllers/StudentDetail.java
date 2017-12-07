@@ -399,9 +399,11 @@ public class StudentDetail {
             String studentClass = docs.get(0).getCurriculumId().getName().split("_")[1];
             String nextCur = prefix +"_" + studentClass + "_OJT";
             CurriculumEntity nCur = curriculumService.getCurriculumByName(nextCur);
-            List<SubjectCurriculumEntity> cursubs = nCur.getSubjectCurriculumEntityList();
-            for (SubjectCurriculumEntity s : cursubs) {
-                if (!list.contains(s)) list.add(s);
+            if (nCur != null) {
+                List<SubjectCurriculumEntity> cursubs = nCur.getSubjectCurriculumEntityList();
+                for (SubjectCurriculumEntity s : cursubs) {
+                    if (!list.contains(s)) list.add(s);
+                }
             }
         }
 
@@ -683,8 +685,10 @@ public class StudentDetail {
             String nextCur = prefix +"_" + studentClass + "_OJT";
             CurriculumEntity nCur = curriculumService.getCurriculumByName(nextCur);
             List<SubjectCurriculumEntity> cursubs = nCur.getSubjectCurriculumEntityList();
-            for (SubjectCurriculumEntity s : cursubs) {
-                if (!listNextCurri.contains(s)) listNextCurri.add(s);
+            if (nCur != null) {
+                for (SubjectCurriculumEntity s : cursubs) {
+                    if (!listNextCurri.contains(s)) listNextCurri.add(s);
+                }
             }
         }
 
