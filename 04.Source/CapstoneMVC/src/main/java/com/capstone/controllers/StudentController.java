@@ -184,8 +184,40 @@ public class StudentController {
                                 }
 
                                 if (!isPass) {
-                                    failedRow = tmp;
-                                    totalFail++;
+                                    for (SubjectEntity rep : replace.getSubjectEntityList1()) {
+                                        List<MarksEntity> repd = subject.get(rep.getId());
+                                        if (repd != null) {
+                                            for (MarksEntity marks : repd) {
+                                                tmp = marks;
+                                                if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                                    isPass = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (!isPass) {
+                                        for (SubjectEntity rep : replace.getSubjectEntityList1()) {
+                                            for (SubjectEntity r: rep.getSubjectEntityList()) {
+                                                List<MarksEntity> repd = subject.get(r.getId());
+                                                if (repd != null) {
+                                                    for (MarksEntity marks : repd) {
+                                                        tmp = marks;
+                                                        if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                                            isPass = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                        if (!isPass) {
+                                            failedRow = tmp;
+                                            totalFail++;
+                                        }
+                                    }
                                 }
                             }
 
