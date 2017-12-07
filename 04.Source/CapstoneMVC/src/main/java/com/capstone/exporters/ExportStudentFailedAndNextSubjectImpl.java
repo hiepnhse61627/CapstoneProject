@@ -26,9 +26,16 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
 
     private String EXCEL_TEMPL = "/template/Kehoachhocdihoclai.xlsx";
 
+    private String fileName = "Kehoachhocdihoclai.xlsx";
+
     @Override
     public String getFileName() {
-        return "Kehoachhocdihoclai.xlsx";
+        return fileName;
+    }
+
+    @Override
+    public void setFileName(String name) {
+        fileName = name;
     }
 
     @Override

@@ -66,6 +66,7 @@
             </div>
             <div class="modal-body">
                 <div class="col-md-12">
+                    <input type="hidden" id="markId" value=""/>
                     <div class="form-group">
                         <label for="subjectCode">Mã môn:</label>
                         <input disabled id="subjectCode" type="text" class="form-control"/>
@@ -98,7 +99,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button id="btnEdit" data-id="" type="button" class="btn btn-primary">Cập nhật</button>
+                <button id="btnEdit" type="button" class="btn btn-primary">Cập nhật</button>
             </div>
         </div>
 
@@ -154,7 +155,7 @@
                 type: "POST",
                 url: "/markPage/edit",
                 data: {
-                    markId: $("#btnEdit").data("id"),
+                    markId: $("#markId").val(),
                     mark: $('#mark').val(),
                     status: $('#status').val(),
                 },
@@ -292,15 +293,16 @@
 
     function ShowEditModal(row) {
         ClearModal();
+        console.log(row);
         row = row.split(",");
 
-        $('#modal-header').html(row[1] + " - " + row[0]);
+        $('#modal-header').html(row[1] + " - " + row[0] + " - " + row[7]);
         $('#subjectCode').val(row[2]);
         $('#subjectName').val(row[3]);
         $('#semester').val(row[4]);
         $('#mark').val(row[5]);
         $('#status').val(row[6]);
-        $("#btnEdit").attr("data-id", row[7]);
+        $("#markId").val(row[7]);
 
         $('#mark-detail').modal('toggle');
     }

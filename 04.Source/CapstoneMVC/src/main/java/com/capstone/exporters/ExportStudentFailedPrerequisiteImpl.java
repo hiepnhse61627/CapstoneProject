@@ -35,9 +35,16 @@ public class ExportStudentFailedPrerequisiteImpl implements IExportObject {
 
     private ISubjectService service = new SubjectServiceImpl();
 
+    private String fileName = "DSSV_Fail_Prequisite.xlsx";
+
     @Override
     public String getFileName() {
-        return "DSSV_Fail_Prequisite.xlsx";
+        return fileName;
+    }
+
+    @Override
+    public void setFileName(String name) {
+        fileName = name;
     }
 
     @Override

@@ -7,5 +7,6 @@ import java.util.Map;
 
 public interface IExportObject {
     String getFileName();
+    void setFileName(String name);
     void writeData(OutputStream os, Map<String, String> params, HttpServletRequest request) throws Exception;
 }

@@ -2,6 +2,11 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <link rel="stylesheet" href="/Resources/plugins/dist/css/upload-page.css">
 
+<form id="export-excel" action="/exportExcel" hidden>
+    <input name="objectType"/>
+    <input name="curId"/>
+</form>
+
 <section class="content">
     <div class="box">
         <div class="b-header">
@@ -11,6 +16,7 @@
                 </div>
                 <div class="col-md-3 text-right">
                     <input class="btn btn-warning" type="button" value="Nhập dữ liệu" onclick="ShowImportModal()"/>
+                    <a class="btn btn-primary" onclick="ExportExcel()">Xuất tất cả</a>
                     <a class="btn btn-success" href="/createcurriculum">Tạo mới</a>
                 </div>
             </div>
@@ -164,6 +170,12 @@
             });
 
         }
+    }
+
+    function ExportExcel() {
+        $("input[name='objectType']").val(14);
+        <%--$("input[name='curId']").val(${data.id});--%>
+        $("#export-excel").submit();
     }
 
     function Remove(id) {

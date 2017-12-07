@@ -19,8 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 public class ExportStudentArrangementImpl implements IExportObject {
-    private String EXCEL_TEMPLATE = "/template/Empty_Excel.xlsx";
-    private String FILE_NAME = "DSSV theo lop mon.xlsx";
+    private String fileName = "DSSV theo lop mon.xlsx";
 
     private CellStyle titleStyle;
     private CellStyle tableHeaderStyle;
@@ -29,7 +28,12 @@ public class ExportStudentArrangementImpl implements IExportObject {
 
     @Override
     public String getFileName() {
-        return FILE_NAME;
+        return fileName;
+    }
+
+    @Override
+    public void setFileName(String name) {
+        fileName = name;
     }
 
     @Override

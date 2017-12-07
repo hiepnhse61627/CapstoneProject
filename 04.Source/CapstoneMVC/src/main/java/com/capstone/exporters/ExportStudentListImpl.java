@@ -27,9 +27,16 @@ public class ExportStudentListImpl implements IExportObject {
 
     private String EXCEL_TEMPL = "/template/DSSV.xlsx";
 
+    private String fileName = "StudentList.xlsx";
+
     @Override
     public String getFileName() {
-        return "StudentList.xlsx";
+        return fileName;
+    }
+
+    @Override
+    public void setFileName(String name) {
+        fileName = name;
     }
 
     @Override

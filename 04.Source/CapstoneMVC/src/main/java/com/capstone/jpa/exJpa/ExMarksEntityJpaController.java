@@ -2,6 +2,7 @@ package com.capstone.jpa.exJpa;
 
 import com.capstone.entities.*;
 import com.capstone.jpa.MarksEntityJpaController;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
 import com.capstone.models.Enums;
 import com.capstone.models.Ultilities;
@@ -783,7 +784,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             em = getEntityManager();
 
             String queryStr = "SELECT m FROM MarksEntity m" +
-                    " WHERE m.isActivated = true AND m.isEnabled = true AND m.studentId.id = :studentId";
+                    " WHERE m.isActivated = true AND m.studentId.id = :studentId";
             TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
             query.setParameter("studentId", studentId);
             List<MarksEntity> markList = query.getResultList();
@@ -897,5 +898,21 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         public String fullName;
         public int totalCredits;
         public int totalSpecializedCredits;
+    }
+
+    @Override
+    public void edit(MarksEntity marksEntity) {
+        EntityManager em = null;
+        try {
+            em = getEntityManager();
+            em.getTransaction().begin();
+//            marksEntity = em.getReference(MarksEntity.class, marksEntity);
+            marksEntity = em.merge(marksEntity);
+            em.flush();
+            em.getTransaction().commit();
+            em.refresh(marksEntity);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }
