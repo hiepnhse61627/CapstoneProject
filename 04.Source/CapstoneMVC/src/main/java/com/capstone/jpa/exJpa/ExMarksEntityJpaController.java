@@ -2,6 +2,7 @@ package com.capstone.jpa.exJpa;
 
 import com.capstone.entities.*;
 import com.capstone.jpa.MarksEntityJpaController;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
 import com.capstone.models.Enums;
 import com.capstone.models.Ultilities;
@@ -897,5 +898,21 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         public String fullName;
         public int totalCredits;
         public int totalSpecializedCredits;
+    }
+
+    @Override
+    public void edit(MarksEntity marksEntity) {
+        EntityManager em = null;
+        try {
+            em = getEntityManager();
+            em.getTransaction().begin();
+//            marksEntity = em.getReference(MarksEntity.class, marksEntity);
+            marksEntity = em.merge(marksEntity);
+            em.flush();
+            em.getTransaction().commit();
+            em.refresh(marksEntity);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 }
