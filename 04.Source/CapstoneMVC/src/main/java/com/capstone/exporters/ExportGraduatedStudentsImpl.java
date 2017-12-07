@@ -26,9 +26,16 @@ public class ExportGraduatedStudentsImpl implements IExportObject {
     private IMarksService marksService = new MarksServiceImpl();
     private ISubjectService subjectService = new SubjectServiceImpl();
 
+    private String fileName = "Graduated-Students.xlsx";
+
     @Override
     public String getFileName() {
-        return "Graduated-Students.xlsx";
+        return fileName;
+    }
+
+    @Override
+    public void setFileName(String name) {
+        fileName = name;
     }
 
     @Override

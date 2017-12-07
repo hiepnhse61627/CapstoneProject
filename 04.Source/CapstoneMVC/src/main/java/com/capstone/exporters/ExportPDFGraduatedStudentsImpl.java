@@ -34,9 +34,16 @@ public class ExportPDFGraduatedStudentsImpl implements IExportObject {
     private IMarksService marksService = new MarksServiceImpl();
     private ISubjectService subjectService = new SubjectServiceImpl();
 
+    private String fileName = "Graduated-Students.pdf";
+
     @Override
     public String getFileName() {
-        return "Graduated-Students.pdf";
+        return fileName;
+    }
+
+    @Override
+    public void setFileName(String name) {
+        fileName = name;
     }
 
     @Override

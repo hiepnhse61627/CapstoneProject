@@ -20,8 +20,7 @@ import java.io.OutputStream;
 import java.util.*;
 
 public class ExportStudentArrangementValidationImpl implements IExportObject {
-    private String EXCEL_TEMPLATE = "/template/Empty_Excel.xlsx";
-    private String FILE_NAME = "Kiem tra DSSV theo lop mon.xlsx";
+    private String fileName = "Kiem tra DSSV theo lop mon.xlsx";
 
     private CellStyle titleStyle;
     private CellStyle tableHeaderStyle;
@@ -30,7 +29,12 @@ public class ExportStudentArrangementValidationImpl implements IExportObject {
 
     @Override
     public String getFileName() {
-        return FILE_NAME;
+        return fileName;
+    }
+
+    @Override
+    public void setFileName(String name) {
+        fileName = name;
     }
 
     @Override

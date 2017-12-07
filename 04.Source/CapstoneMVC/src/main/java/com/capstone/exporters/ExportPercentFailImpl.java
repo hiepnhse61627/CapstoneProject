@@ -21,9 +21,16 @@ public class ExportPercentFailImpl implements IExportObject {
 
     private String EXCEL_TEMPL = "/template/PercentFail.xlsx";
 
+    private String fileName = "PercentFail.xlsx";
+
     @Override
     public String getFileName() {
-        return "PercentFail.xlsx";
+        return fileName;
+    }
+
+    @Override
+    public void setFileName(String name) {
+        fileName = name;
     }
 
     @Override

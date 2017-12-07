@@ -19,9 +19,16 @@ public class ExportAllCurriculumImpl implements IExportObject {
 
     private String EXCEL_TEMPL = "/template/Curriculum.xlsx";
 
+    private String fileName = "Curriculum.xlsx";
+
     @Override
     public String getFileName() {
-        return "Curriculum.xlsx";
+        return fileName;
+    }
+
+    @Override
+    public void setFileName(String name) {
+        fileName = name;
     }
 
     @Override

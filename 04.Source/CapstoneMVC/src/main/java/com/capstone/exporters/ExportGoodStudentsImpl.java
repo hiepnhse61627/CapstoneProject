@@ -16,9 +16,16 @@ import java.util.Map;
 public class ExportGoodStudentsImpl implements IExportObject {
     private String EXCEL_TEMPL = "/template/DSSV-Giỏi.xlsx";
 
+    private String fileName = "GoodStudent_List.xlsx";
+
     @Override
     public String getFileName() {
-        return "GoodStudent_List.xlsx";
+        return fileName;
+    }
+
+    @Override
+    public void setFileName(String name) {
+        fileName = name;
     }
 
     @Override

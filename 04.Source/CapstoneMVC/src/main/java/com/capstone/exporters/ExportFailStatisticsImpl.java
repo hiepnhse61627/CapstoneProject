@@ -20,9 +20,16 @@ public class ExportFailStatisticsImpl implements IExportObject {
 
     private String EXCEL_TEMPLATE = "/template/Fail_Statistics_Template.xlsx";
 
+    private String fileName = "Fail_statistics.xlsx";
+
     @Override
     public String getFileName() {
-        return "Fail_Statistics.xlsx";
+        return fileName;
+    }
+
+    @Override
+    public void setFileName(String name) {
+        fileName = name;
     }
 
     @Override
