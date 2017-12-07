@@ -1246,7 +1246,7 @@ public class UploadController {
                 List<StudentEntity> studentList = studentService.findAllStudents();
                 totalLine1 = studentList.size();
 
-//                studentList = studentList.stream().filter(c -> c.getRollNumber().equals("SE61073")).collect(Collectors.toList());
+//                studentList = studentList.stream().filter(c -> c.getRollNumber().equals("SE62357")).collect(Collectors.toList());
 
                 for (StudentEntity student : studentList) {
                     // Object[]: SubjectId, SubjectCredits, Mark, MarkStatus
@@ -1269,6 +1269,8 @@ public class UploadController {
 //                            .filter(c -> stuSubs.stream().anyMatch(a -> a.getSubjectId().getId().equals(c.getSubjectMarkComponentId().getSubjectId().getId())))
 //                            .collect(Collectors.toList());
 
+                    List<String> dacongList = new ArrayList<>();
+
                     for (SubjectCurriculumEntity sub : stuSubs) {
                         if (!sub.getSubjectId().getId().toLowerCase().contains("vov")) {
                             List<MarksEntity> subMarks = marks
@@ -1277,7 +1279,14 @@ public class UploadController {
                                     .collect(Collectors.toList());
                             if (subMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
                                     c.getStatus().toLowerCase().contains("exempt"))) {
-                                totalPassCredits += sub.getSubjectCredits();
+
+                                if (!dacongList.stream().anyMatch(c -> c.equals(sub.getSubjectId().getId()))) {
+                                    totalPassCredits += sub.getSubjectCredits();
+                                    dacongList.add(sub.getSubjectId().getId());
+
+                                    System.out.println(totalPassCredits + " - " + sub.getSubjectId().getId() + " - " + sub.getSubjectCredits());
+                                }
+
                             } else {
                                 boolean dacong = false;
                                 List<SubjectEntity> replacers = sub.getSubjectId().getSubjectEntityList();
@@ -1288,9 +1297,17 @@ public class UploadController {
                                             .collect(Collectors.toList());
                                     if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
                                             c.getStatus().toLowerCase().contains("exempt"))) {
-                                        totalPassCredits += sub.getSubjectCredits();
-                                        dacong = true;
-                                        break;
+
+                                        if (!dacongList.stream().anyMatch(c -> c.equals(replacer.getId()))) {
+                                            totalPassCredits += sub.getSubjectCredits();
+                                            dacongList.add(replacer.getId());
+
+                                            System.out.println(totalPassCredits + " - " + sub.getSubjectId().getId() + " - " + replacer.getId() + " - " + sub.getSubjectCredits());
+
+                                            dacong = true;
+                                            break;
+                                        }
+
                                     }
                                 }
                                 if (!dacong) {
@@ -1302,8 +1319,16 @@ public class UploadController {
                                                 .collect(Collectors.toList());
                                         if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
                                                 c.getStatus().toLowerCase().contains("exempt"))) {
-                                            totalPassCredits += sub.getSubjectCredits();
-                                            break;
+
+                                            if (!dacongList.stream().anyMatch(c -> c.equals(repls.getId()))) {
+                                                totalPassCredits += sub.getSubjectCredits();
+                                                dacongList.add(repls.getId());
+
+                                                System.out.println(totalPassCredits + " - " + sub.getSubjectId().getId() + " - " + repls.getId() + " - " + sub.getSubjectCredits());
+
+                                                break;
+                                            }
+
                                         } else {
                                             List<SubjectEntity> reps = repls.getSubjectEntityList();
                                             for (SubjectEntity replacer : reps) {
@@ -1313,8 +1338,15 @@ public class UploadController {
                                                         .collect(Collectors.toList());
                                                 if (replaceMarks2.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
                                                         c.getStatus().toLowerCase().contains("exempt"))) {
-                                                    totalPassCredits += sub.getSubjectCredits();
-                                                    break;
+
+                                                    if (!dacongList.stream().anyMatch(c -> c.equals(replacer.getId()))) {
+                                                        totalPassCredits += sub.getSubjectCredits();
+                                                        dacongList.add(replacer.getId());
+
+                                                        System.out.println(totalPassCredits + " - " + sub.getSubjectId().getId() + " - " + replacer.getId() + " - " + sub.getSubjectCredits());
+
+                                                        break;
+                                                    }
                                                 }
                                             }
                                         }
