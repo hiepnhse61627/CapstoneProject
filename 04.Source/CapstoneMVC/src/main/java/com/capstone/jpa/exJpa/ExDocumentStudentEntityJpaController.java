@@ -1,6 +1,6 @@
 package com.capstone.jpa.exJpa;
 
-import com.capstone.entities.DocumentStudentEntity;
+import com.capstone.entities.*;
 import com.capstone.jpa.DocumentStudentEntityJpaController;
 import com.capstone.models.Ultilities;
 
@@ -15,20 +15,55 @@ public class ExDocumentStudentEntityJpaController extends DocumentStudentEntityJ
         super(emf);
     }
 
-    public DocumentStudentEntity createDocumentStudent(DocumentStudentEntity entity) {
+    public DocumentStudentEntity createDocumentStudent(DocumentStudentEntity documentStudentEntity) {
         EntityManager em = null;
 
         try {
             em = getEntityManager();
-
             em.getTransaction().begin();
-            em.persist(entity);
+            CurriculumEntity curriculumId = documentStudentEntity.getCurriculumId();
+            if (curriculumId != null) {
+                curriculumId = em.getReference(curriculumId.getClass(), curriculumId.getId());
+                documentStudentEntity.setCurriculumId(curriculumId);
+            }
+            DocumentEntity documentId = documentStudentEntity.getDocumentId();
+            if (documentId != null) {
+                documentId = em.getReference(documentId.getClass(), documentId.getId());
+                documentStudentEntity.setDocumentId(documentId);
+            }
+            OldRollNumberEntity oldStudentId = documentStudentEntity.getOldStudentId();
+            if (oldStudentId != null) {
+                oldStudentId = em.getReference(oldStudentId.getClass(), oldStudentId.getId());
+                documentStudentEntity.setOldStudentId(oldStudentId);
+            }
+            StudentEntity studentId = documentStudentEntity.getStudentId();
+            if (studentId != null) {
+                studentId = em.getReference(studentId.getClass(), studentId.getId());
+                documentStudentEntity.setStudentId(studentId);
+            }
+            em.persist(documentStudentEntity);
+            if (curriculumId != null) {
+                curriculumId.getDocumentStudentEntityList().add(documentStudentEntity);
+                curriculumId = em.merge(curriculumId);
+            }
+            if (documentId != null) {
+                documentId.getDocumentStudentEntityList().add(documentStudentEntity);
+                documentId = em.merge(documentId);
+            }
+            if (oldStudentId != null) {
+                oldStudentId.getDocumentStudentEntityList().add(documentStudentEntity);
+                oldStudentId = em.merge(oldStudentId);
+            }
+            if (studentId != null) {
+                studentId.getDocumentStudentEntityList().add(documentStudentEntity);
+                studentId = em.merge(studentId);
+            }
             em.getTransaction().commit();
         } finally {
             em.close();
         }
 
-        return entity;
+        return documentStudentEntity;
     }
 
     public DocumentStudentEntity getLastestDocumentStudentById(int studentId) {
