@@ -112,6 +112,7 @@ public class ExportController {
                 "com.capstone.exporters.ExportStudentArrangementValidationImpl", // 12 = Export student arrangement validate
                 "com.capstone.exporters.ExportStudentOnlyNextImpl", // 13 = Export student only next subjects
                 "com.capstone.exporters.ExportAllCurriculumImpl", // 14 = Export student only next subjects
+                "com.capstone.exporters.ExportStudentArrangementBySlotImpl", // 14 = Export student arrangement by slot
         };
 
         try {

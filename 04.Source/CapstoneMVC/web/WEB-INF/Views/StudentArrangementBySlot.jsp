@@ -216,7 +216,7 @@
     }
 
     function ExportExcel() {
-        $("input[name='objectType']").val(11);
+        $("input[name='objectType']").val(14);
 
         $("#export-excel").submit();
     }
@@ -282,15 +282,15 @@
                 }
 
                 if (result.process1) {
-                    $('#process1').html("<div class='f-green'>Đã chuẩn bị dữ liệu để xử lý</div>");
+                    $('#process1').html("<div class='f-green'>Đã khởi tạo dữ liệu để xử lý</div>");
                 } else {
-                    $('#process1').html("<div class='f-red'>Đang chuẩn bị dữ liệu để xử lý</div>");
+                    $('#process1').html("<div class='f-red'>Đang khởi tạo dữ liệu để xử lý</div>");
                 }
 
                 if (result.process2) {
                     $('#process2').html("<div class='f-green'>Hoàn tất việc xếp lớp cho sinh viên</div>");
                 } else {
-                    $('#process2').html("<div class='f-red'>Đang xếp lớp cho sinh viên</div>");
+                    $('#process2').html("<div class='f-red'>Đang tiến hành xếp lớp cho sinh viên</div>");
                 }
                 console.log(result.file1Done + " " + result.process1 + " " + result.process2)
                 if (running) {

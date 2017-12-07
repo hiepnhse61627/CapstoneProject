@@ -1,25 +1,20 @@
 package com.capstone.exporters;
 
-import com.capstone.controllers.PercentFailController;
-import com.capstone.entities.RealSemesterEntity;
-import com.capstone.services.IRealSemesterService;
-import com.capstone.services.RealSemesterServiceImpl;
+import com.capstone.models.Ultilities;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
-public class ExportStudentArrangementImpl implements IExportObject {
-    private String fileName = "DSSV theo lop mon.xlsx";
+public class ExportStudentArrangementBySlotImpl implements IExportObject {
+    private String FILE_NAME = "DSSV lop mon theo slot.xlsx";
 
     private CellStyle titleStyle;
     private CellStyle tableHeaderStyle;
@@ -28,23 +23,17 @@ public class ExportStudentArrangementImpl implements IExportObject {
 
     @Override
     public String getFileName() {
-        return fileName;
-    }
-
-    @Override
-    public void setFileName(String name) {
-        fileName = name;
+        return FILE_NAME;
     }
 
     @Override
     public void writeData(OutputStream os, Map<String, String> params, HttpServletRequest request) throws Exception {
         // Mã môn, Tên môn, MSSV, Tên sinh viên, Lớp, Buổi
-        List<List<String>> studentList = (List<List<String>>) request.getSession().getAttribute("STUDENT_ARRANGEMENT_LIST");
+        List<List<String>> studentList = (List<List<String>>) request.getSession().getAttribute("STUDENT_ARRANGEMENT_BY_SLOT_LIST");
         if (studentList == null) {
             return;
         }
         studentList = new ArrayList<>(studentList);
-        this.sortStudentList(studentList);
 
         XSSFWorkbook xssfWorkbook = new XSSFWorkbook();
 
@@ -109,11 +98,8 @@ public class ExportStudentArrangementImpl implements IExportObject {
                 String currentShift = data.get(5);
 
                 boolean isCreateNewSheet = false;
-                if (!currentSubject.equals(previousSubject) || !currentShift.equals(previousShift)) {
-                    classNumber = 1;
-                    isCreateNewSheet = true;
-                } else if (!currentClass.equals(previousClass)) {
-                    classNumber++;
+                if (!currentSubject.equals(previousSubject) || !currentShift.equals(previousShift)
+                        || !currentClass.equals(previousClass)) {
                     isCreateNewSheet = true;
                 }
 
@@ -121,10 +107,9 @@ public class ExportStudentArrangementImpl implements IExportObject {
                     ordinalNumber = 1;
                     currentRow = 3;
 
-                    String className = currentSubject + "_" + currentShift + "_" + classNumber;
-                    spreadsheet = workbook.createSheet(className);
+                    spreadsheet = workbook.createSheet(currentClass);
                     spreadsheet.setColumnWidth(2, 8000);
-                    this.createSpreadSheetTitle(spreadsheet, titleStyle, tableHeaderStyle, className);
+                    this.createSpreadSheetTitle(spreadsheet, titleStyle, tableHeaderStyle, currentClass);
                 }
 
                 row = spreadsheet.createRow(currentRow++);
@@ -156,20 +141,32 @@ public class ExportStudentArrangementImpl implements IExportObject {
             this.createTitleForStatisticSheet(spreadsheet);
 
             spreadsheet.setColumnWidth(2, 4200);
-            spreadsheet.setColumnWidth(3, 4200);
-            spreadsheet.setColumnWidth(4, 3000);
-            spreadsheet.setColumnWidth(5, 4100);
-            spreadsheet.setColumnWidth(6, 4200);
-            spreadsheet.setColumnWidth(7, 3000);
-            spreadsheet.setColumnWidth(8, 7200);
+            spreadsheet.setColumnWidth(9, 4200);
+            spreadsheet.setColumnWidth(16, 4100);
+            spreadsheet.setColumnWidth(17, 4200);
+            spreadsheet.setColumnWidth(24, 4200);
+            spreadsheet.setColumnWidth(31, 4200);
+
+            List<String> slotList = new ArrayList<>();
+            slotList.add("S21");
+            slotList.add("S22");
+            slotList.add("S23");
+            slotList.add("S31");
+            slotList.add("S32");
+            slotList.add("S33");
 
             int ordinalNumber = 1;
             int currentRow = 3;
 
-            int countClassAM = 0;
-            int countClassPM = 0;
-            int countStudentAM = 0;
-            int countStudentPM = 0;
+            int totalClassAM = 0;
+            int totalClassPM = 0;
+            int totalStudentAM = 0;
+            int totalStudentPM = 0;
+            
+            int[] countClassAM = new int[6];
+            int[] countClassPM = new int[6];
+            int[] countStudentAM = new int[6];
+            int[] countStudentPM = new int[6];
 
             String previousSubject = "";
             String previousShift = "";
@@ -187,66 +184,129 @@ public class ExportStudentArrangementImpl implements IExportObject {
                 String currentClass = data.get(4);
                 String currentShift = data.get(5);
 
+                int pos = currentClass.indexOf("_S");
+                String slotName = "";
+                if (pos != -1) {
+                    slotName = currentClass.substring(pos + 1);
+                }
+
                 if (previousSubject.isEmpty() || currentSubject.equals(previousSubject)) {
                     if (currentShift.equals("AM")) {
-                        ++countStudentAM;
+                        ++totalStudentAM;
+
+                        if (!slotName.isEmpty()) {
+                            countStudentAM[slotList.indexOf(slotName)]++;
+                        }
                     } else {
-                        ++countStudentPM;
+                        ++totalStudentPM;
+
+                        if (!slotName.isEmpty()) {
+                            countStudentPM[slotList.indexOf(slotName)]++;
+                        }
                     }
 
                     if (!currentClass.equals(previousClass)) {
                         if (currentShift.equals("AM")) {
-                            ++countClassAM;
+                            ++totalClassAM;
+
+                            if (!slotName.isEmpty()) {
+                                countClassAM[slotList.indexOf(slotName)]++;
+                            }
                         } else {
-                            ++countClassPM;
+                            ++totalClassPM;
+
+                            if (!slotName.isEmpty()) {
+                                countClassPM[slotList.indexOf(slotName)]++;
+                            }
                         }
                     }
                 } else {
                     // Change subject, write data
                     row = spreadsheet.createRow(currentRow++);
 
-                    cell = row.createCell(0);
+                    int colNum = 0;
+                    boolean isLabSubject = Ultilities.containsIgnoreCase(previousSubject, "LAB");
+
+                    cell = row.createCell(colNum++);
                     cell.setCellValue(ordinalNumber++);
                     cell.setCellStyle(tableCellStyle);
 
-                    cell = row.createCell(1);
+                    cell = row.createCell(colNum++);
                     cell.setCellValue(previousSubject);
                     cell.setCellStyle(tableCellStyle);
 
-                    cell = row.createCell(2);
-                    cell.setCellValue(countClassAM);
+                    cell = row.createCell(colNum++);
+                    cell.setCellValue(totalClassAM);
                     cell.setCellStyle(tableCellStyle);
 
-                    cell = row.createCell(3);
-                    cell.setCellValue(countClassPM);
+                    for (int i = 0; i < slotList.size(); i++) {
+                        cell = row.createCell(colNum++);
+                        cell.setCellValue(isLabSubject ? "N/A" : String.valueOf(countClassAM[i]));
+                        cell.setCellStyle(tableCellStyle);
+                    }
+
+                    cell = row.createCell(colNum++);
+                    cell.setCellValue(totalClassPM);
                     cell.setCellStyle(tableCellStyle);
 
-                    cell = row.createCell(4);
-                    cell.setCellValue(countClassAM + countClassPM);
+                    for (int i = 0; i < slotList.size(); i++) {
+                        cell = row.createCell(colNum++);
+                        cell.setCellValue(isLabSubject ? "N/A" : String.valueOf(countClassPM[i]));
+                        cell.setCellStyle(tableCellStyle);
+                    }
+
+                    cell = row.createCell(colNum++);
+                    cell.setCellValue(totalClassAM + totalClassPM);
                     cell.setCellStyle(tableCellStyle);
 
-                    cell = row.createCell(5);
-                    cell.setCellValue(countStudentAM);
+                    cell = row.createCell(colNum++);
+                    cell.setCellValue(totalStudentAM);
                     cell.setCellStyle(tableCellStyle);
 
-                    cell = row.createCell(6);
-                    cell.setCellValue(countStudentPM);
+                    for (int i = 0; i < slotList.size(); i++) {
+                        cell = row.createCell(colNum++);
+                        cell.setCellValue(isLabSubject ? "N/A" : String.valueOf(countStudentAM[i]));
+                        cell.setCellStyle(tableCellStyle);
+                    }
+
+                    cell = row.createCell(colNum++);
+                    cell.setCellValue(totalStudentPM);
                     cell.setCellStyle(tableCellStyle);
 
-                    cell = row.createCell(7);
-                    cell.setCellValue(countStudentAM + countStudentPM);
+                    for (int i = 0; i < slotList.size(); i++) {
+                        cell = row.createCell(colNum++);
+                        cell.setCellValue(isLabSubject ? "N/A" : String.valueOf(countStudentPM[i]));
+                        cell.setCellStyle(tableCellStyle);
+                    }
+
+                    cell = row.createCell(colNum++);
+                    cell.setCellValue(totalStudentAM + totalStudentPM);
                     cell.setCellStyle(tableCellStyle);
 
-                    countStudentAM = 0;
-                    countStudentPM = 0;
-                    countClassAM = 0;
-                    countClassPM = 0;
+                    totalStudentAM = 0;
+                    totalStudentPM = 0;
+                    totalClassAM = 0;
+                    totalClassPM = 0;
+
+                    countClassAM = new int[6];
+                    countClassPM = new int[6];
+                    countStudentAM = new int[6];
+                    countStudentPM = new int[6];
+
                     if (currentShift.equals("AM")) {
-                        ++countClassAM;
-                        ++countStudentAM;
+                        ++totalClassAM;
+                        ++totalStudentAM;
+                        if (!slotName.isEmpty()) {
+                            countClassAM[slotList.indexOf(slotName)]++;
+                            countStudentAM[slotList.indexOf(slotName)]++;
+                        }
                     } else {
-                        ++countClassPM;
-                        ++countStudentPM;
+                        ++totalClassPM;
+                        ++totalStudentPM;
+                        if (!slotName.isEmpty()) {
+                            countClassPM[slotList.indexOf(slotName)]++;
+                            countStudentPM[slotList.indexOf(slotName)]++;
+                        }
                     }
                 }
 
@@ -257,37 +317,63 @@ public class ExportStudentArrangementImpl implements IExportObject {
 
             // Create last record
             row = spreadsheet.createRow(currentRow);
+            boolean isLabSubject = Ultilities.containsIgnoreCase(previousSubject, "LAB");
 
-            cell = row.createCell(0);
+            int colNum = 0;
+            cell = row.createCell(colNum++);
             cell.setCellValue(ordinalNumber++);
             cell.setCellStyle(tableCellStyle);
 
-            cell = row.createCell(1);
+            cell = row.createCell(colNum++);
             cell.setCellValue(previousSubject);
             cell.setCellStyle(tableCellStyle);
 
-            cell = row.createCell(2);
-            cell.setCellValue(countClassAM);
+            cell = row.createCell(colNum++);
+            cell.setCellValue(totalClassAM);
             cell.setCellStyle(tableCellStyle);
 
-            cell = row.createCell(3);
-            cell.setCellValue(countClassPM);
+            for (int i = 0; i < slotList.size(); i++) {
+                cell = row.createCell(colNum++);
+                cell.setCellValue(isLabSubject ? "N/A" : String.valueOf(countClassAM[i]));
+                cell.setCellStyle(tableCellStyle);
+            }
+
+            cell = row.createCell(colNum++);
+            cell.setCellValue(totalClassPM);
             cell.setCellStyle(tableCellStyle);
 
-            cell = row.createCell(4);
-            cell.setCellValue(countClassAM + countClassPM);
+            for (int i = 0; i < slotList.size(); i++) {
+                cell = row.createCell(colNum++);
+                cell.setCellValue(isLabSubject ? "N/A" : String.valueOf(countClassPM[i]));
+                cell.setCellStyle(tableCellStyle);
+            }
+
+            cell = row.createCell(colNum++);
+            cell.setCellValue(totalClassAM + totalClassPM);
             cell.setCellStyle(tableCellStyle);
 
-            cell = row.createCell(5);
-            cell.setCellValue(countStudentAM);
+            cell = row.createCell(colNum++);
+            cell.setCellValue(totalStudentAM);
             cell.setCellStyle(tableCellStyle);
 
-            cell = row.createCell(6);
-            cell.setCellValue(countStudentPM);
+            for (int i = 0; i < slotList.size(); i++) {
+                cell = row.createCell(colNum++);
+                cell.setCellValue(isLabSubject ? "N/A" : String.valueOf(countStudentAM[i]));
+                cell.setCellStyle(tableCellStyle);
+            }
+
+            cell = row.createCell(colNum++);
+            cell.setCellValue(totalStudentPM);
             cell.setCellStyle(tableCellStyle);
 
-            cell = row.createCell(7);
-            cell.setCellValue(countStudentAM + countStudentPM);
+            for (int i = 0; i < slotList.size(); i++) {
+                cell = row.createCell(colNum++);
+                cell.setCellValue(isLabSubject ? "N/A" : String.valueOf(countStudentPM[i]));
+                cell.setCellStyle(tableCellStyle);
+            }
+
+            cell = row.createCell(colNum++);
+            cell.setCellValue(totalStudentAM + totalStudentPM);
             cell.setCellStyle(tableCellStyle);
         } catch (Exception e) {
             e.printStackTrace();
@@ -295,6 +381,14 @@ public class ExportStudentArrangementImpl implements IExportObject {
     }
 
     private void createTitleForStatisticSheet(SXSSFSheet spreadsheet){
+        List<String> slotList = new ArrayList<>();
+        slotList.add("S21");
+        slotList.add("S22");
+        slotList.add("S23");
+        slotList.add("S31");
+        slotList.add("S32");
+        slotList.add("S33");
+
         Row row = spreadsheet.createRow(0);
 
         Cell titleCell = row.createCell(0);
@@ -303,35 +397,60 @@ public class ExportStudentArrangementImpl implements IExportObject {
 
         row = spreadsheet.createRow(2);
 
-        Cell tableCell = row.createCell(0);
+        int colNum = 0;
+        Cell tableCell = row.createCell(colNum++);
         tableCell.setCellValue("STT");
         tableCell.setCellStyle(tableHeaderStyle);
 
-        tableCell = row.createCell(1);
+        tableCell = row.createCell(colNum++);
         tableCell.setCellValue("Môn");
         tableCell.setCellStyle(tableHeaderStyle);
 
-        tableCell = row.createCell(2);
+        tableCell = row.createCell(colNum++);
         tableCell.setCellValue("Số lớp buổi sáng");
         tableCell.setCellStyle(tableHeaderStyle);
 
-        tableCell = row.createCell(3);
+        for (String slotName : slotList) {
+            tableCell = row.createCell(colNum++);
+            tableCell.setCellValue(slotName);
+            tableCell.setCellStyle(tableHeaderStyle);
+        }
+        
+        tableCell = row.createCell(colNum++); // 9
         tableCell.setCellValue("Số lớp buổi chiều");
         tableCell.setCellStyle(tableHeaderStyle);
 
-        tableCell = row.createCell(4);
+        for (String slotName : slotList) {
+            tableCell = row.createCell(colNum++);
+            tableCell.setCellValue(slotName);
+            tableCell.setCellStyle(tableHeaderStyle);
+        }
+
+        tableCell = row.createCell(colNum++); // 16
         tableCell.setCellValue("Tổng số lớp");
         tableCell.setCellStyle(tableHeaderStyle);
 
-        tableCell = row.createCell(5);
+        tableCell = row.createCell(colNum++); // 17
         tableCell.setCellValue("Số SV buổi sáng");
         tableCell.setCellStyle(tableHeaderStyle);
 
-        tableCell = row.createCell(6);
+        for (String slotName : slotList) {
+            tableCell = row.createCell(colNum++);
+            tableCell.setCellValue(slotName);
+            tableCell.setCellStyle(tableHeaderStyle);
+        }
+
+        tableCell = row.createCell(colNum++); // 24
         tableCell.setCellValue("Số SV buổi chiều");
         tableCell.setCellStyle(tableHeaderStyle);
 
-        tableCell = row.createCell(7);
+        for (String slotName : slotList) {
+            tableCell = row.createCell(colNum++);
+            tableCell.setCellValue(slotName);
+            tableCell.setCellStyle(tableHeaderStyle);
+        }
+
+        tableCell = row.createCell(colNum); // 31
         tableCell.setCellValue("Tổng số SV");
         tableCell.setCellStyle(tableHeaderStyle);
     }
@@ -356,30 +475,5 @@ public class ExportStudentArrangementImpl implements IExportObject {
         tableCell = row.createCell(2);
         tableCell.setCellValue("Họ Tên");
         tableCell.setCellStyle(tableHeaderStyle);
-    }
-
-    private void sortStudentList(List<List<String>> studentList) {
-        // Sort: Mã môn > Buổi > Lớp > MSSV
-        studentList.sort(new Comparator<List<String>>() {
-            @Override
-            public int compare(List<String> o1, List<String> o2) {
-                return o1.get(0).compareTo(o2.get(0));
-            }
-        }.thenComparing(new Comparator<List<String>>() {
-            @Override
-            public int compare(List<String> o1, List<String> o2) {
-                return o1.get(5).compareTo(o2.get(5));
-            }
-        }).thenComparing(new Comparator<List<String>>() {
-            @Override
-            public int compare(List<String> o1, List<String> o2) {
-                return o1.get(4).compareTo(o2.get(4));
-            }
-        }).thenComparing(new Comparator<List<String>>() {
-            @Override
-            public int compare(List<String> o1, List<String> o2) {
-                return o1.get(3).compareTo(o2.get(3));
-            }
-        }));
     }
 }

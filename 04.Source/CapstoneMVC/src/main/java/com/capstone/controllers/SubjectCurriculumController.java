@@ -458,6 +458,7 @@ public class SubjectCurriculumController {
             int curriculumIndex = -1;
             int programIndex = -1;
             int creditsIndex = -1;
+            int ordinalIndex = -1;
 
             int rowIndex;
             boolean flag = false;
@@ -478,9 +479,11 @@ public class SubjectCurriculumController {
                             programIndex = cellIndex;
                         } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("credits")) {
                             creditsIndex = cellIndex;
+                        } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("stt")) {
+                            ordinalIndex = cellIndex;
                         }
 
-                        if (termIndex != -1 && subjectIndex != -1 && curriculumIndex != -1 && programIndex != -1 && creditsIndex != -1) {
+                        if (termIndex != -1 && subjectIndex != -1 && curriculumIndex != -1 && programIndex != -1 && creditsIndex != -1 && ordinalIndex != -1) {
                             flag = true;
                             break;
                         }
@@ -509,6 +512,7 @@ public class SubjectCurriculumController {
                     String programName = row.getCell(programIndex).getStringCellValue().trim();
                     Double termNo = row.getCell(termIndex).getNumericCellValue();
                     Double subjectCredits = row.getCell(creditsIndex).getNumericCellValue();
+                    Double ordinalNumber = row.getCell(ordinalIndex).getNumericCellValue();
 
                     if (map.get(curriculumName) == null) {
                         SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
@@ -523,7 +527,7 @@ public class SubjectCurriculumController {
                                     SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
                                     subjectCurriculumEntity.setCurriculumId(curriculumEntity);
                                     subjectCurriculumEntity.setSubjectId(subjectEntity);
-                                    subjectCurriculumEntity.setOrdinalNumber(1);
+                                    subjectCurriculumEntity.setOrdinalNumber(ordinalNumber.intValue());
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
                                     subjectCurriculumEntity.setSubjectCredits(subjectCredits.intValue());
                                     subjectCurriculumEntity.setRequired(true);
@@ -540,7 +544,7 @@ public class SubjectCurriculumController {
                                     SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
                                     subjectCurriculumEntity.setCurriculumId(curriculumEntity);
                                     subjectCurriculumEntity.setSubjectId(subjectEntity);
-                                    subjectCurriculumEntity.setOrdinalNumber(1);
+                                    subjectCurriculumEntity.setOrdinalNumber(ordinalNumber.intValue());
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
                                     subjectCurriculumEntity.setSubjectCredits(subjectCredits.intValue());
                                     subjectCurriculumEntity.setRequired(true);
@@ -562,7 +566,7 @@ public class SubjectCurriculumController {
                                     SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
                                     subjectCurriculumEntity.setCurriculumId(curriculumEntity);
                                     subjectCurriculumEntity.setSubjectId(subjectEntity);
-                                    subjectCurriculumEntity.setOrdinalNumber(map.get(curriculumName).size() + 1);
+                                    subjectCurriculumEntity.setOrdinalNumber(ordinalNumber.intValue());
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
                                     subjectCurriculumEntity.setSubjectCredits(subjectCredits.intValue());
                                     subjectCurriculumEntity.setRequired(true);
@@ -577,7 +581,7 @@ public class SubjectCurriculumController {
                                     SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
                                     subjectCurriculumEntity.setCurriculumId(curriculumEntity);
                                     subjectCurriculumEntity.setSubjectId(subjectEntity);
-                                    subjectCurriculumEntity.setOrdinalNumber(map.get(curriculumName).size() + 1);
+                                    subjectCurriculumEntity.setOrdinalNumber(ordinalNumber.intValue());
                                     subjectCurriculumEntity.setTermNumber(termNo.intValue());
                                     subjectCurriculumEntity.setSubjectCredits(subjectCredits.intValue());
                                     subjectCurriculumEntity.setRequired(true);

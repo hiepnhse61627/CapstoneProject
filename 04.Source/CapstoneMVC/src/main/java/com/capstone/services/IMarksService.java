@@ -1,6 +1,7 @@
 package com.capstone.services;
 
 import com.capstone.entities.MarksEntity;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ public interface IMarksService {
     void createMark(MarksEntity entity);
     void createMarks(List<MarksEntity> marksEntities);
     void updateMark(MarksEntity entity) throws Exception;
+    void deleteMark(int markId) throws Exception;
     int getTotalExistMarks();
     int getSuccessSavedMark();
     List<MarksEntity> getAllMarks();

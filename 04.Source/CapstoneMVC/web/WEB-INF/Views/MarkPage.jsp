@@ -42,6 +42,7 @@
                                 <th>Điểm</th>
                                 <th>Trạng thái</th>
                                 <th>Chỉnh sửa</th>
+                                <th>Xóa</th>
                             </tr>
                             </thead>
                             <tbody></tbody>
@@ -269,7 +270,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4, 5, 6, 7],
+                    "aTargets": [0, 1, 2, 3, 4, 5, 6, 7, 8],
                     "sClass": "text-center",
                 },
                 {
@@ -277,6 +278,13 @@
                     "mRender": function (data, type, row) {
                         return "<a class='btn btn-success tbl-btn' onclick='ShowEditModal(\""+ row +"\")'>" +
                             "<i class='glyphicon glyphicon-pencil'></i></a>";
+                    }
+                },
+                {
+                    "aTargets": [8],
+                    "mRender": function (data, type, row) {
+                        return "<a class='btn btn-danger tbl-btn' onclick='DeleteMark(\""+ row[7] +"\")'>" +
+                            "<i class='glyphicon glyphicon-trash'></i></a>";
                     }
                 },
             ],
@@ -305,6 +313,34 @@
         $("#markId").val(row[7]);
 
         $('#mark-detail').modal('toggle');
+    }
+
+    function DeleteMark(markId) {
+        swal({
+            title: 'Bạn muốn xóa điểm này?',
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Tiếp tục',
+            cancelButtonText: 'Đóng'
+        }).then(function () {
+            $.ajax({
+                type: "POST",
+                url: "/markPage/delete",
+                data: {
+                    markId: markId,
+                },
+                success: function (result) {
+                    if (result.success) {
+                        swal('Xóa thành công!', '', 'success');
+                        RefreshTable();
+                    } else {
+                        swal('Đã xảy ra lỗi!', result.message, 'error');
+                    }
+                }
+            });
+        });
     }
 
     function ClearModal() {
