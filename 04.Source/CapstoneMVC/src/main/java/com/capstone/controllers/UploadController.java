@@ -1246,9 +1246,12 @@ public class UploadController {
                 List<StudentEntity> studentList = studentService.findAllStudents();
                 totalLine1 = studentList.size();
 
+//                studentList = studentList.stream().filter(c -> c.getRollNumber().equals("SE61073")).collect(Collectors.toList());
+
                 for (StudentEntity student : studentList) {
                     // Object[]: SubjectId, SubjectCredits, Mark, MarkStatus
 //                    List<Object[]> markList = marksService.getLatestPassFailMarksAndCredits(student.getId());
+
                     int totalPassCredits = 0;
                     int totalPassFailCredits = 0;
 
@@ -1256,7 +1259,7 @@ public class UploadController {
                     double sumPassFailCredits = 0;
 
                     List<MarksEntity> marks = marksService.getStudentMarksById(student.getId());
-                    marks = marks.stream().filter(c -> c.getIsActivated() && c.getEnabled() != null && c.getEnabled()).collect(Collectors.toList());
+                    marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
                     marks = Ultilities.SortSemestersByMarks(marks);
 
                     List<SubjectCurriculumEntity> stuSubs = Ultilities.StudentCurriculumSubjects(student);
@@ -1287,20 +1290,32 @@ public class UploadController {
                                             c.getStatus().toLowerCase().contains("exempt"))) {
                                         totalPassCredits += sub.getSubjectCredits();
                                         dacong = true;
+                                        break;
                                     }
                                 }
                                 if (!dacong) {
                                     List<SubjectEntity> replacersFirst = sub.getSubjectId().getSubjectEntityList1();
                                     for (SubjectEntity repls : replacersFirst) {
-                                        List<SubjectEntity> reps = repls.getSubjectEntityList();
-                                        for (SubjectEntity replacer : reps) {
-                                            List<MarksEntity> replaceMarks = marks
-                                                    .stream()
-                                                    .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
-                                                    .collect(Collectors.toList());
-                                            if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-                                                    c.getStatus().toLowerCase().contains("exempt"))) {
-                                                totalPassCredits += sub.getSubjectCredits();
+                                        List<MarksEntity> replaceMarks = marks
+                                                .stream()
+                                                .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(repls.getId()))
+                                                .collect(Collectors.toList());
+                                        if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
+                                                c.getStatus().toLowerCase().contains("exempt"))) {
+                                            totalPassCredits += sub.getSubjectCredits();
+                                            break;
+                                        } else {
+                                            List<SubjectEntity> reps = repls.getSubjectEntityList();
+                                            for (SubjectEntity replacer : reps) {
+                                                List<MarksEntity> replaceMarks2 = marks
+                                                        .stream()
+                                                        .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
+                                                        .collect(Collectors.toList());
+                                                if (replaceMarks2.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
+                                                        c.getStatus().toLowerCase().contains("exempt"))) {
+                                                    totalPassCredits += sub.getSubjectCredits();
+                                                    break;
+                                                }
                                             }
                                         }
                                     }

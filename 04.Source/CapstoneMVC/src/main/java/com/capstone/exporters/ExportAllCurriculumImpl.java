@@ -31,11 +31,11 @@ public class ExportAllCurriculumImpl implements IExportObject {
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream is = classLoader.getResourceAsStream(EXCEL_TEMPL);
 
-        XSSFWorkbook xssfWorkbook = new XSSFWorkbook(is);
+        XSSFWorkbook streamingWorkbook = new XSSFWorkbook(is);
         is.close();
 
         // change to streaming working
-        SXSSFWorkbook streamingWorkbook = new SXSSFWorkbook(xssfWorkbook);
+//        XSSFWorkbook streamingWorkbook = new XSSFWorkbook(xssfWorkbook);
 //        SXSSFSheet streamingSheet = streamingWorkbook.getSheetAt(0);
 //        streamingSheet.setRandomAccessWindowSize(100);
 
@@ -46,7 +46,7 @@ public class ExportAllCurriculumImpl implements IExportObject {
         streamingWorkbook.write(os);
     }
 
-    private void writeDataToTable(SXSSFWorkbook workbook,  List<CurriculumEntity> stu) throws Exception {
+    private void writeDataToTable(XSSFWorkbook workbook,  List<CurriculumEntity> stu) throws Exception {
         // start data table row
         if (stu != null && !stu.isEmpty()) {
             // style
@@ -59,7 +59,9 @@ public class ExportAllCurriculumImpl implements IExportObject {
             cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
             for (CurriculumEntity cur : stu) {
-                SXSSFSheet spreadsheet = workbook.createSheet(cur.getName());
+                Sheet spreadsheet = workbook.cloneSheet(0);
+                workbook.setSheetName(workbook.getSheetIndex(spreadsheet), cur.getName());
+//                SXSSFSheet spreadsheet = workbook.createSheet(cur.getName());
 
                 int rowIndex = 6;
 
@@ -91,5 +93,7 @@ public class ExportAllCurriculumImpl implements IExportObject {
                 }
             }
         }
+
+        workbook.removeSheetAt(0);
     }
 }

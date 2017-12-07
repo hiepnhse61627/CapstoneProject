@@ -784,7 +784,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             em = getEntityManager();
 
             String queryStr = "SELECT m FROM MarksEntity m" +
-                    " WHERE m.isActivated = true AND m.isEnabled = true AND m.studentId.id = :studentId";
+                    " WHERE m.isActivated = true AND m.studentId.id = :studentId";
             TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
             query.setParameter("studentId", studentId);
             List<MarksEntity> markList = query.getResultList();

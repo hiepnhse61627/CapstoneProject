@@ -142,9 +142,7 @@ public class StudentList {
                     " AND smc.subjectId.id = sc.subjectId.id" +
                     " AND mc.name LIKE :markComponentName" +
                     " AND m.studentId.id = :studentId" +
-                    " AND m.isActivated = true" +
-                    (getLatestMarks ? " AND m.isEnabled = true" : "");
-            Query query = em.createQuery(queryStr);
+                    " AND m.isActivated = true";Query query = em.createQuery(queryStr);
             query.setParameter("markComponentName", "%average%");
             query.setParameter("studentId", studentId);
 
@@ -203,8 +201,7 @@ public class StudentList {
                         " AND mc.name LIKE :markComponentName" +
                         " AND m.studentId.id = :studentId" +
                         " AND m.id NOT IN :sList" +
-                        " AND m.isActivated = true" +
-                        (getLatestMarks ? " AND m.isEnabled = true" : "");
+                        " AND m.isActivated = true";
                 query = em.createQuery(queryStr);
                 query.setParameter("markComponentName", "%average%");
                 query.setParameter("studentId", studentId);
