@@ -393,8 +393,16 @@ public class StudentDetail {
             }
         }
 
-        if (list.isEmpty()) {
-//            List<DocumentStudentEntity> sorted = Ultilities.Sort
+        if (student.getTerm() - Global.SemesterGap() == 5) {
+            ICurriculumService curriculumService = new CurriculumServiceImpl();
+            String prefix = student.getProgramId().getName();
+            String studentClass = docs.get(0).getCurriculumId().getName().split("_")[1];
+            String nextCur = prefix +"_" + studentClass + "_OJT";
+            CurriculumEntity nCur = curriculumService.getCurriculumByName(nextCur);
+            List<SubjectCurriculumEntity> cursubs = nCur.getSubjectCurriculumEntityList();
+            for (SubjectCurriculumEntity s : cursubs) {
+                if (!list.contains(s)) list.add(s);
+            }
         }
 
         List<SubjectEntity> failedPrequisiteList = new ArrayList<>();
@@ -667,6 +675,19 @@ public class StudentDetail {
                 if (!listNextCurri.contains(s)) listNextCurri.add(s);
             }
         }
+
+        if (student.getTerm() - Global.SemesterGap() == 5) {
+            ICurriculumService curriculumService = new CurriculumServiceImpl();
+            String prefix = student.getProgramId().getName();
+            String studentClass = docs.get(0).getCurriculumId().getName().split("_")[1];
+            String nextCur = prefix +"_" + studentClass + "_OJT";
+            CurriculumEntity nCur = curriculumService.getCurriculumByName(nextCur);
+            List<SubjectCurriculumEntity> cursubs = nCur.getSubjectCurriculumEntityList();
+            for (SubjectCurriculumEntity s : cursubs) {
+                if (!listNextCurri.contains(s)) listNextCurri.add(s);
+            }
+        }
+
         List<String> tt = listNextCurri.stream().map(c -> c.getSubjectId().getId()).distinct().collect(Collectors.toList());
         if (!listNextCurri.isEmpty()) {
 //            TypedQuery<MarksEntity> query2 = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :marks AND a.semesterId.semester IN :slist", MarksEntity.class);

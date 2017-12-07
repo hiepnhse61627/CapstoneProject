@@ -620,4 +620,12 @@ public class Ultilities {
         }
         return list;
     }
+
+    public static DocumentStudentEntity GetLatestDoc(List<DocumentStudentEntity> docs) {
+        docs.sort(Comparator.comparingLong(c -> {
+            DocumentStudentEntity d = (DocumentStudentEntity)c;
+            return d.getCreatedDate().getTime();
+        }).reversed());
+        return docs.get(0);
+    }
 }
