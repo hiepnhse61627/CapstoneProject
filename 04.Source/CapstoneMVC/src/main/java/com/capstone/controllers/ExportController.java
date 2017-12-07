@@ -2,6 +2,10 @@ package com.capstone.controllers;
 
 import com.capstone.exporters.ExportStatusReport;
 import com.capstone.exporters.IExportObject;
+import com.capstone.services.IProgramService;
+import com.capstone.services.IRealSemesterService;
+import com.capstone.services.ProgramServiceImpl;
+import com.capstone.services.RealSemesterServiceImpl;
 import com.google.gson.JsonObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -47,8 +51,20 @@ public class ExportController {
                 response.setContentType(mimeType);
 
                 // set headers for the response
-                String headerValue = String.format("attachment; filename=\"%s\"", exportObject.getFileName());
-                response.setHeader(headerKey, headerValue);
+                if (params.get("objectType").equals("4")) {
+                    int programId = Integer.parseInt(params.get("programId"));
+                    int semesterId = Integer.parseInt(params.get("semesterId"));
+                    String type = params.get("type");
+
+                    IRealSemesterService service = new RealSemesterServiceImpl();
+                    IProgramService programService = new ProgramServiceImpl();
+                    exportObject.setFileName(programService.getProgramById(programId).getName() + "_" + type + "_" + service.findSemesterById(semesterId).getSemester());
+                    String headerValue = String.format("attachment; filename=\"%s\"", exportObject.getFileName());
+                    response.setHeader(headerKey, headerValue);
+                } else {
+                    String headerValue = String.format("attachment; filename=\"%s\"", exportObject.getFileName());
+                    response.setHeader(headerKey, headerValue);
+                }
 
                 // write data
                 os = response.getOutputStream();
