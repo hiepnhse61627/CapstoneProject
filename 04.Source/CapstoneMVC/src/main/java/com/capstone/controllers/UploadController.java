@@ -94,6 +94,14 @@ public class UploadController {
         return mav;
     }
 
+    @RequestMapping(value = "/importStudentCurriculumsPage")
+    public ModelAndView goImportStudentCurriculumsPage() {
+        ModelAndView mav = new ModelAndView("ImportStudentCurriculum");
+        mav.addObject("title", "Nhập khung chương trình cho sinh viên");
+
+        return mav;
+    }
+
     @RequestMapping("/getlinestatus")
     @ResponseBody
     public JsonObject getCurrentLine() {
@@ -202,6 +210,86 @@ public class UploadController {
 
         jsonObject.addProperty("success", true);
         jsonObject.addProperty("message", "Cập nhật trạng thái cho sinh viên thành công !");
+        return jsonObject;
+    }
+
+    @RequestMapping(value = "/importStudentCurriculums", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject importStudentCurriculum(@RequestParam("file") MultipartFile file) {
+        JsonObject jsonObject = new JsonObject();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+
+            int excelDataIndex = 1;
+            int lastRow = spreadsheet.getLastRowNum();
+
+            int rollNumberIndex = 0;
+            int curriculumIndex = 1;
+
+            int count = 0;
+
+            for (int index = excelDataIndex; index <= lastRow; index++) {
+                row = spreadsheet.getRow(index);
+                if (row != null) {
+                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    if (rollNumberCell != null) {
+                        String rollNumber = rollNumberCell.getCellType() == Cell.CELL_TYPE_STRING ?
+                                rollNumberCell.getStringCellValue().trim().toUpperCase() :
+                                Integer.toString((int) rollNumberCell.getNumericCellValue()).trim().toUpperCase();
+                        StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumber);
+                        if (studentEntity != null) {
+                            Cell curriculumCell = row.getCell(curriculumIndex);
+                            String curriculumCellValue = curriculumCell.getStringCellValue().trim().toUpperCase();
+
+                            boolean found = false;
+                            List<DocumentStudentEntity> documentStudentEntityList = studentEntity.getDocumentStudentEntityList();
+                            for (DocumentStudentEntity documentStudentEntity : documentStudentEntityList) {
+                                CurriculumEntity curriculumEntity = documentStudentEntity.getCurriculumId();
+
+                                if (curriculumEntity.getName().trim().toUpperCase().equals(curriculumCellValue)) {
+                                    found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!found) {
+                                // Start create new
+                                DocumentEntity documentEntity = documentService.getAllDocuments().get(0); // get document
+                                CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCellValue);
+                                DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
+                                documentStudentEntity.setStudentId(studentEntity);
+                                documentStudentEntity.setDocumentId(documentEntity);
+                                documentStudentEntity.setCurriculumId(curriculumEntity);
+
+                                Calendar calendar = Calendar.getInstance();
+                                calendar.setTime(new Date());
+                                documentStudentEntity.setCreatedDate(calendar.getTime());
+
+                                documentStudentService.createDocumentStudent(documentStudentEntity);
+                                count++;
+                            }
+                        }
+                    }
+                }
+            }
+            System.out.println(count);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", ex.getMessage());
+
+            return jsonObject;
+        }
+
+        jsonObject.addProperty("success", true);
+        jsonObject.addProperty("message", "Cập nhật khung chương trình cho sinh viên thành công !");
         return jsonObject;
     }
 
@@ -973,7 +1061,17 @@ public class UploadController {
                         List<MarksEntity> studentMarks =
                                 marksService.findMarksByStudentIdAndSubjectCdAndSemesterId(studentEntity.getId(), subjectCodeCell.getStringCellValue().trim().toUpperCase(), semesterId);
 
-                        if (studentMarks == null || studentMarks.isEmpty()) {
+                        boolean found = false;
+                        for (MarksEntity marksEntity : studentMarks) {
+                            if (marksEntity.getStatus().equals("Studying")) {
+                                found = true;
+                                break;
+                            }
+                        }
+
+                        String status = statusCell.getStringCellValue();
+                        String semesterName = semesterNameCell.getStringCellValue().trim().toUpperCase().replaceAll(" ", "");
+                        if ((!found || !status.equals("Studying")) && (realSemesterEntity.getSemester().equals(semesterName))) {
                             MarksEntity mark = new MarksEntity();
                             // set Student
                             mark.setStudentId(studentEntity);
@@ -1005,7 +1103,6 @@ public class UploadController {
 
                             // set course
                             if (semesterNameCell != null && subjectCodeCell != null) {
-                                String semesterName = semesterNameCell.getStringCellValue().trim().toUpperCase().replaceAll(" ", "");
                                 String subjectCode = subjectCodeCell.getStringCellValue().trim().toUpperCase();
                                 CourseEntity courseEntity = courseService.findCourseBySemesterAndSubjectCode(semesterName, subjectCode);
                                 if (courseEntity != null) {
@@ -1026,7 +1123,7 @@ public class UploadController {
 
                             // set status
                             if (statusCell != null) {
-                                mark.setStatus(statusCell.getStringCellValue());
+                                mark.setStatus(status);
                             }
 
                             // set isActivated
