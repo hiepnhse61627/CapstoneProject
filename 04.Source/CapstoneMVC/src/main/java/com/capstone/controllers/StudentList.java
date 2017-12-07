@@ -276,21 +276,75 @@ public class StudentList {
                         studentDetailModel.markList.removeIf(c -> l.indexOf(c) != -1 && l.indexOf(c) < l.size() - 1);
                     }
                 }
+            }
 
-//                if (studentDetailModel.markList.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))){
-//                    studentDetailModel.markList = studentDetailModel.markList
-//                            .stream()
-//                            .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))
-//                            .collect(Collectors.toList());
-//                } else {
-//                    studentDetailModel.markList = studentDetailModel.markList
-//                            .stream()
-//                            .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))
-//                            .collect(Collectors.toList());
-//                }
-//                studentDetailModel.markList = studentDetailModel.markList
-//                        .stream()
-//                        .filter(Ultilities.distinctByKey(c -> c.getSubject() + "_" + c.getSemester())).collect(Collectors.toList());
+            IMarksService marksService = new MarksServiceImpl();
+            ISubjectService service = new SubjectServiceImpl();
+            for (StudentDetailModel studentDetailModel : result) {
+                for (MarkModel model : studentDetailModel.markList) {
+                    if (!model.getStatus().toLowerCase().contains("pass") && !model.getStatus().toLowerCase().contains("exempt")) {
+                        SubjectEntity s = service.findSubjectById(model.getSubject());
+                        boolean pass = false;
+
+                        for (SubjectEntity replacer : s.getSubjectEntityList()) {
+                            List<MarksEntity> list = marksService.getMarkByConditions(-1, Arrays.asList(replacer.getId()), studentId);
+                            for (MarksEntity m : list) {
+                                if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt")) {
+                                    model.setAverageMark(m.getAverageMark());
+                                    model.setSemester(m.getSemesterId().getSemester());
+                                    model.setStatus(m.getStatus());
+                                    model.setSubject(m.getSubjectMarkComponentId().getSubjectId().getId());
+                                    model.setMarkId(m.getId());
+                                    model.setSubjectName(m.getSubjectMarkComponentId().getSubjectId().getName() + " <font color='red'>(thay thế)</font>");
+                                    pass = true;
+                                    break;
+                                }
+                            }
+
+                            if (pass) {
+                                break;
+                            }
+                        }
+
+                        if (!pass) {
+                            for (SubjectEntity replacer : s.getSubjectEntityList1()) {
+                                List<MarksEntity> list = marksService.getMarkByConditions(-1, Arrays.asList(replacer.getId()), studentId);
+                                for (MarksEntity m : list) {
+                                    if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt")) {
+                                        model.setAverageMark(m.getAverageMark());
+                                        model.setSemester(m.getSemesterId().getSemester());
+                                        model.setStatus(m.getStatus());
+                                        model.setSubject(m.getSubjectMarkComponentId().getSubjectId().getId());
+                                        model.setMarkId(m.getId());
+                                        model.setSubjectName(m.getSubjectMarkComponentId().getSubjectId().getName() + " <font color='red'>(thay thế)</font>");
+                                        pass = true;
+                                        break;
+                                    }
+                                }
+
+                                if (pass) {
+                                    break;
+                                } else {
+                                    for (SubjectEntity replacer2 : replacer.getSubjectEntityList()) {
+                                        List<MarksEntity> list2 = marksService.getMarkByConditions(-1, Arrays.asList(replacer2.getId()), studentId);
+                                        for (MarksEntity m : list2) {
+                                            if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt")) {
+                                                model.setAverageMark(m.getAverageMark());
+                                                model.setSemester(m.getSemesterId().getSemester());
+                                                model.setStatus(m.getStatus());
+                                                model.setSubject(m.getSubjectMarkComponentId().getSubjectId().getId());
+                                                model.setMarkId(m.getId());
+                                                model.setSubjectName(m.getSubjectMarkComponentId().getSubjectId().getName() + " <font color='red'>(thay thế)</font>");
+                                                pass = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
 
             JsonArray detailList = (JsonArray) new Gson().toJsonTree(result);
