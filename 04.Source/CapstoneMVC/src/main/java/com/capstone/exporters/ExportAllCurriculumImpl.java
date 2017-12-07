@@ -46,7 +46,7 @@ public class ExportAllCurriculumImpl implements IExportObject {
         streamingWorkbook.write(os);
     }
 
-    private void writeDataToTable(XSSFWorkbook workbook,  List<CurriculumEntity> stu) throws Exception {
+    private void writeDataToTable(XSSFWorkbook workbook, List<CurriculumEntity> stu) throws Exception {
         // start data table row
         if (stu != null && !stu.isEmpty()) {
             // style
@@ -65,7 +65,7 @@ public class ExportAllCurriculumImpl implements IExportObject {
 
                 int rowIndex = 6;
 
-                for (SubjectCurriculumEntity entity: cur.getSubjectCurriculumEntityList()) {
+                for (SubjectCurriculumEntity entity : cur.getSubjectCurriculumEntityList()) {
                     Row row = spreadsheet.createRow(rowIndex);
                     Cell cell;
 
@@ -87,7 +87,7 @@ public class ExportAllCurriculumImpl implements IExportObject {
 
                     cell = row.createCell(4);
                     cell.setCellStyle(cellStyle);
-//                cell.setCellValue(entity.getSubjectId().getCredits());
+                    cell.setCellValue(entity.getSubjectCredits());
 
                     rowIndex++;
                 }
