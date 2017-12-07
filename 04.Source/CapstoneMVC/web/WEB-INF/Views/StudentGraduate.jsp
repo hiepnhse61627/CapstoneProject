@@ -18,7 +18,8 @@
                 </div>
                 <div class="col-md-5 text-right">
                     <button type="button" class="btn btn-success" onclick="ExportExcel()">Xuất dữ liệu</button>
-                    <%--<button type="button" class="btn btn-warning" onclick="ExportExcelPDF()">Xuất dữ liệu (PDF)</button>--%>
+                    <button type="button" class="btn btn-warning" onclick="ExportExcelPDF()">Xuất danh sách sinh viên tốt nghiệp (PDF)</button>
+                    <button type="button" class="btn btn-success" onclick="ExportExcelPDF2()">Xuất danh sách sinh viên tốt nghiệp (Excel)</button>
                 </div>
             </div>
             <hr>
@@ -144,6 +145,18 @@
     <input name="semesterId"/>
     <input name="boolean"/>
     <input name="type"/>
+</form>
+
+<form id="export-pdf" action="/exportExcelWithoutCallable" hidden>
+    <input name="objectType"/>
+    <input name="programId"/>
+    <input name="semesterId"/>
+</form>
+
+<form id="export-excel-2" action="/exportExcelWithoutCallable" hidden>
+    <input name="objectType"/>
+    <input name="programId"/>
+    <input name="semesterId"/>
 </form>
 
 <script>
@@ -282,6 +295,22 @@
         $("input[name='boolean']").val($("#pass").val());
 
         $("#export-excel").submit();
+    }
+
+    function ExportExcelPDF() {
+        $("input[name='objectType']").val(16);
+        $("input[name='programId']").val($("#program").val());
+        $("input[name='semesterId']").val($("#semester").val());
+
+        $('#export-pdf').submit();
+    }
+
+    function ExportExcelPDF2() {
+        $("input[name='objectType']").val(17);
+        $("input[name='programId']").val($("#program").val());
+        $("input[name='semesterId']").val($("#semester").val());
+
+        $('#export-excel-2').submit();
     }
 
 //    function ExportExcelPDF() {

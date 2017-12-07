@@ -83,6 +83,32 @@ public class ExportController {
         return callable;
     }
 
+    @RequestMapping(value = "/exportExcelWithoutCallable")
+    @ResponseBody
+    public void exportFileWithoutCallable(@RequestParam Map<String, String> params, HttpServletRequest request, HttpServletResponse response) {
+
+        exportObject = createExportImplementation(Integer.parseInt(params.get("objectType")));
+
+        // get output stream of the response
+        OutputStream os;
+        try {
+            // set content attributes for the response
+            response.setContentType(mimeType);
+
+            // set headers for the response
+            String headerValue = String.format("attachment; filename=\"%s\"", exportObject.getFileName());
+            response.setHeader(headerKey, headerValue);
+
+            // write data
+            os = response.getOutputStream();
+            exportObject.writeData(os, params, request);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @RequestMapping(value = "/getStatusExport")
     @ResponseBody
     public JsonObject getStatus() {
@@ -112,7 +138,9 @@ public class ExportController {
                 "com.capstone.exporters.ExportStudentArrangementValidationImpl", // 12 = Export student arrangement validate
                 "com.capstone.exporters.ExportStudentOnlyNextImpl", // 13 = Export student only next subjects
                 "com.capstone.exporters.ExportAllCurriculumImpl", // 14 = Export student only next subjects
-                "com.capstone.exporters.ExportStudentArrangementBySlotImpl", // 14 = Export student arrangement by slot
+                "com.capstone.exporters.ExportStudentArrangementBySlotImpl", // 15 = Export student arrangement by slot
+                "com.capstone.exporters.ExportPDFGraduatedStudentsImpl", // 16 = Export PDF Graduated
+                "com.capstone.exporters.ExportExcelGraduatedStudentsImpl" // 17= export excel graduated
         };
 
         try {
