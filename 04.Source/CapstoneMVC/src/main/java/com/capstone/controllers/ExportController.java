@@ -58,7 +58,7 @@ public class ExportController {
 
                     IRealSemesterService service = new RealSemesterServiceImpl();
                     IProgramService programService = new ProgramServiceImpl();
-                    exportObject.setFileName(programService.getProgramById(programId).getName() + "_" + type + "_" + service.findSemesterById(semesterId).getSemester());
+                    exportObject.setFileName(programService.getProgramById(programId).getName() + "_" + type + "_" + service.findSemesterById(semesterId).getSemester() + ".xlsx");
                     String headerValue = String.format("attachment; filename=\"%s\"", exportObject.getFileName());
                     response.setHeader(headerKey, headerValue);
                 } else {
