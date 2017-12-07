@@ -61,7 +61,7 @@
         <div class="b-header">
             <div class="row">
                 <div class="col-md-9 title">
-                    <h1>Thiết lập học kỳ hiện hành</h1>
+                    <h1>Giả lập học kỳ hiện hành</h1>
                 </div>
             </div>
             <hr>

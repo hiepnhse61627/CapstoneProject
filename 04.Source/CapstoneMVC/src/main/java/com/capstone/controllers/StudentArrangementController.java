@@ -1,11 +1,6 @@
 package com.capstone.controllers;
 
-import com.capstone.entities.RealSemesterEntity;
-import com.capstone.entities.StudentEntity;
-import com.capstone.entities.StudentStatusEntity;
-import com.capstone.entities.SubjectEntity;
-import com.capstone.models.ReadAndSaveFileToServer;
-import com.capstone.models.Suggestion;
+import com.capstone.entities.*;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import com.google.gson.Gson;
@@ -26,7 +21,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.security.auth.Subject;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -34,8 +28,6 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.*;
 import java.util.concurrent.Callable;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Controller
@@ -52,11 +44,26 @@ public class StudentArrangementController {
     private boolean file1Done;
     private boolean file2Done;
     private boolean file3Done;
+    private boolean process1;
+    private boolean process2;
 
     @RequestMapping("/studentArrangement")
     public ModelAndView StudentArrangementIndex() {
         ModelAndView view = new ModelAndView("StudentArrangement");
         view.addObject("title", "Danh sách sinh viên theo lớp môn");
+
+        IRealSemesterService semesterService = new RealSemesterServiceImpl();
+        List<RealSemesterEntity> semesters = semesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+        view.addObject("semesters", semesters);
+
+        return view;
+    }
+
+    @RequestMapping("/studentArrangementBySlot")
+    public ModelAndView StudentArrangementBySlotIndex() {
+        ModelAndView view = new ModelAndView("StudentArrangementBySlot");
+        view.addObject("title", "Danh sách sinh viên lớp môn theo slot");
 
         IRealSemesterService semesterService = new RealSemesterServiceImpl();
         List<RealSemesterEntity> semesters = semesterService.getAllSemester();
@@ -83,12 +90,53 @@ public class StudentArrangementController {
             }
             List<List<String>> searchList = studentList.stream().filter(s ->
                     Ultilities.containsIgnoreCase(s.get(0), sSearch)
-                    || Ultilities.containsIgnoreCase(s.get(1), sSearch)
-                    || Ultilities.containsIgnoreCase(s.get(2), sSearch)
-                    || Ultilities.containsIgnoreCase(s.get(3), sSearch)).collect(Collectors.toList());
+                            || Ultilities.containsIgnoreCase(s.get(1), sSearch)
+                            || Ultilities.containsIgnoreCase(s.get(2), sSearch)
+                            || Ultilities.containsIgnoreCase(s.get(3), sSearch)).collect(Collectors.toList());
             if (!shiftType.equalsIgnoreCase("All")) {
                 searchList = searchList.stream().filter(s ->
-                    Ultilities.containsIgnoreCase(s.get(5), shiftType)).collect(Collectors.toList());
+                        Ultilities.containsIgnoreCase(s.get(5), shiftType)).collect(Collectors.toList());
+            }
+
+            List<List<String>> result = searchList.stream().skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
+
+            jsonObj.addProperty("iTotalRecords", studentList.size());
+            jsonObj.addProperty("iTotalDisplayRecords", searchList.size());
+            jsonObj.add("aaData", aaData);
+            jsonObj.addProperty("sEcho", params.get("sEcho"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jsonObj;
+    }
+
+    @RequestMapping("/studentArrangementBySlot/loadTable")
+    @ResponseBody
+    public JsonObject LoadStudentArrangementBySlotTable(@RequestParam Map<String, String> params, HttpServletRequest request) {
+        JsonObject jsonObj = new JsonObject();
+
+        int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
+        int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
+        String sSearch = params.get("sSearch").trim();
+        String shiftType = params.get("shiftType").trim();
+
+        try {
+            List<List<String>> studentList = (List<List<String>>) request.getSession().getAttribute("STUDENT_ARRANGEMENT_BY_SLOT_LIST");
+            if (studentList == null) {
+                studentList = new ArrayList<>();
+            }
+            List<List<String>> searchList = studentList.stream().filter(s ->
+                    Ultilities.containsIgnoreCase(s.get(0), sSearch)
+                            || Ultilities.containsIgnoreCase(s.get(1), sSearch)
+                            || Ultilities.containsIgnoreCase(s.get(2), sSearch)
+                            || Ultilities.containsIgnoreCase(s.get(3), sSearch)
+                            || Ultilities.containsIgnoreCase(s.get(4), sSearch))
+                    .collect(Collectors.toList());
+            if (!shiftType.equalsIgnoreCase("All")) {
+                searchList = searchList.stream().filter(s ->
+                        Ultilities.containsIgnoreCase(s.get(5), shiftType)).collect(Collectors.toList());
             }
 
             List<List<String>> result = searchList.stream().skip(iDisplayStart).limit(iDisplayLength).collect(Collectors.toList());
@@ -112,7 +160,8 @@ public class StudentArrangementController {
         Callable<JsonObject> callable = new Callable<JsonObject>() {
             @Override
             public JsonObject call() throws Exception {
-                JsonObject obj = ReadFile(fileSuggestion, request);;
+                JsonObject obj = ReadFile(fileSuggestion, request);
+                ;
 
                 return obj;
             }
@@ -131,7 +180,7 @@ public class StudentArrangementController {
         Callable<JsonObject> callable = new Callable<JsonObject>() {
             @Override
             public JsonObject call() throws Exception {
-                JsonObject obj = ReadFile(fileSuggestion, fileGoing, fileRelearn, semesterId, request);;
+                JsonObject obj = ReadFile(fileSuggestion, fileGoing, fileRelearn, semesterId, request);
 
                 return obj;
             }
@@ -403,6 +452,310 @@ public class StudentArrangementController {
         return jsonObj;
     }
 
+    private JsonObject ReadFile3(MultipartFile fileSuggestion, HttpServletRequest request) {
+        List<List<String>> displayList = new ArrayList<>();
+        ISubjectService subjectService = new SubjectServiceImpl();
+        JsonObject jsonObj = new JsonObject();
+
+        IStudentService studentService = new StudentServiceImpl();
+
+        this.totalStudents = 0;
+        this.countStudents = 0;
+        this.file1Done = false;
+        this.process1 = false;
+        this.process2 = false;
+
+        try {
+            List<StudentEntity> students = studentService.findAllStudents();
+            Map<String, StudentEntity> studentMap = new HashMap<>();
+            for (StudentEntity s : students) {
+                studentMap.put(s.getRollNumber(), s);
+            }
+
+            Map<String, SubjectList> studentSubjectSuggestion = this.getSubjectSuggestionList(fileSuggestion);
+
+            totalStudents = studentSubjectSuggestion.keySet().size();
+
+            Map<String, Map<String, List<StudentEntity>>> shiftMapForLAB = new HashMap<>();
+            shiftMapForLAB.put("AM", new HashMap<>());
+            shiftMapForLAB.put("PM", new HashMap<>());
+
+            List<StudentArrangementModel> studentList = new ArrayList<>();
+            for (String rollNumber : studentSubjectSuggestion.keySet()) {
+                SubjectList subjectList = studentSubjectSuggestion.get(rollNumber);
+
+                if (!subjectList.suggestionList.isEmpty()) {
+                    StudentEntity student = studentMap.get(rollNumber);
+                    StudentArrangementModel std = new StudentArrangementModel();
+                    std.student = studentMap.get(rollNumber);
+                    std.numOfSubjects = subjectList.suggestionList.size();
+
+                    List<SubjectCurriculumEntity> subjectCurriculumList = this.getSubjectCurriculumList(student);
+                    for (String subjectCode : subjectList.suggestionList) {
+                        if (Ultilities.containsIgnoreCase(subjectCode, "LAB")) {
+                            String otherShift = student.getShift().equals("AM") ? "PM" : "AM";
+                            Map<String, List<StudentEntity>> subjectMap = shiftMapForLAB.get(otherShift);
+                            List<StudentEntity> stdList = subjectMap.get(subjectCode);
+                            if (stdList == null) {
+                                stdList = new ArrayList<>();
+                                subjectMap.put(subjectCode, stdList);
+                            }
+                            stdList.add(student);
+                            --std.numOfSubjects;
+                        } else {
+                            int pos = -1;
+                            for (int i = 0; i < subjectCurriculumList.size(); ++i) {
+                                if (subjectCurriculumList.get(i).getSubjectId().getId().equals(subjectCode)) {
+                                    pos = i;
+                                    break;
+                                }
+                            }
+
+                            if (pos >= 0 && pos <= 4) {
+                                std.subjects[pos] = subjectCode;
+                            }
+                        }
+                    }
+
+                    studentList.add(std);
+                }
+            }
+            this.process1 = true;
+            System.out.println(process1);
+
+            // Create class for LAB
+            int count;
+            int classNumber;
+            for (String shift : shiftMapForLAB.keySet()) {
+                Map<String, List<StudentEntity>> subjectMap = shiftMapForLAB.get(shift);
+                for (String subjectCode : subjectMap.keySet()) {
+                    count = 0;
+                    classNumber = 1;
+
+                    SubjectEntity subject = subjectService.findSubjectById(subjectCode);
+
+                    List<StudentEntity> list = subjectMap.get(subjectCode);
+                    List<String> dataRow;
+                    for (StudentEntity student : list) {
+                        if (count == 25) {
+                            classNumber++;
+                            count = 0;
+                        }
+
+                        dataRow = new ArrayList<>();
+                        dataRow.add(subject.getId());
+                        dataRow.add(subject.getName());
+                        dataRow.add(student.getRollNumber());
+                        dataRow.add(student.getFullName());
+                        dataRow.add(subjectCode + "_" + shift + "_" + classNumber);
+                        dataRow.add(shift);
+                        displayList.add(dataRow);
+
+                        ++count;
+                    }
+                }
+            }
+
+            // Group by StudentKey
+            Map<StudentKey, List<StudentArrangementModel>> groupStudentsMap = new HashMap<>();
+            for (StudentArrangementModel student : studentList) {
+                StudentKey key = new StudentKey();
+                key.numOfSubjects = student.numOfSubjects;
+                key.termNumber = student.student.getTerm();
+                key.shift = student.student.getShift();
+                key.subject1 = student.subjects[0];
+                key.subject2 = student.subjects[1];
+                key.subject3 = student.subjects[2];
+                key.subject4 = student.subjects[3];
+                key.subject5 = student.subjects[4];
+
+                List<StudentArrangementModel> list = groupStudentsMap.get(key);
+                if (list == null) {
+                    list = new ArrayList<>();
+                    groupStudentsMap.put(key, list);
+                }
+                list.add(student);
+            }
+
+            // Sort list in map
+            for (StudentKey key : groupStudentsMap.keySet()) {
+                List<StudentArrangementModel> list = groupStudentsMap.get(key);
+                list.sort(new Comparator<StudentArrangementModel>() {
+                    @Override
+                    public int compare(StudentArrangementModel s1, StudentArrangementModel s2) {
+                        return s1.student.getTerm().compareTo(s2.student.getTerm());
+                    }
+                }.thenComparing(new Comparator<StudentArrangementModel>() {
+                    @Override
+                    public int compare(StudentArrangementModel s1, StudentArrangementModel s2) {
+                        return Integer.compare(s2.numOfSubjects, s1.numOfSubjects);
+                    }
+                }));
+            }
+
+            // Create class
+            for (StudentKey key : groupStudentsMap.keySet()) {
+                List<StudentArrangementModel> allList = groupStudentsMap.get(key);
+                List<StudentArrangementModel> amList = new ArrayList<>();
+                List<StudentArrangementModel> pmList = new ArrayList<>();
+
+                for (StudentArrangementModel std : allList) {
+                    if (std.student.getShift().equals("AM")) {
+                        amList.add(std);
+                    } else {
+                        pmList.add(std);
+                    }
+                }
+
+                for (int pos = 0; pos < 5; pos++) {
+                    String subjectCode = null;
+                    switch (pos) {
+                        case 0: subjectCode = key.subject1; break;
+                        case 1: subjectCode = key.subject2; break;
+                        case 2: subjectCode = key.subject3; break;
+                        case 3: subjectCode = key.subject4; break;
+                        case 4: subjectCode = key.subject5; break;
+                        default:
+                    }
+
+                    if (!subjectCode.isEmpty()) {
+                        this.arrangeStudentIntoSlot(displayList, amList, pos, "AM", subjectCode);
+                        this.arrangeStudentIntoSlot(displayList, pmList, pos, "PM", subjectCode);
+                    }
+                }
+            }
+            this.process2 = true;
+            System.out.println(process2);
+
+            request.getSession().setAttribute("STUDENT_ARRANGEMENT_BY_SLOT_LIST", displayList);
+            jsonObj.addProperty("success", true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            jsonObj.addProperty("success", false);
+            jsonObj.addProperty("message", e.getMessage());
+        }
+
+        return jsonObj;
+    }
+
+    private void arrangeStudentIntoSlot(List<List<String>> displayList, List<StudentArrangementModel> studentList,
+                                        int currentSubjectPosition, String shift, String subjectCode) {
+        if (studentList.isEmpty()) {
+            return;
+        }
+
+        String[] slotName = new String[] { "S21", "S22", "S23", "S31", "S32" } ;
+
+        // Create 5 slots
+        List<List<StudentArrangementModel>> studentsInSlot = new ArrayList<>();
+        for (int i = 1; i <= 5; ++i) {
+            studentsInSlot.add(new ArrayList<>());
+        }
+
+        for (StudentArrangementModel student : studentList) {
+            int slotNotLearnedPosition = -1;
+            for (int i = 0; i < 5; i++) {
+                if (student.slots[i] == null || student.slots[i] == false) {
+                    slotNotLearnedPosition = i;
+                    break;
+                }
+            }
+
+            studentsInSlot.get(slotNotLearnedPosition).add(student);
+        }
+
+        int ordinalNumber = 1;
+        while (!studentsInSlot.get(0).isEmpty() || !studentsInSlot.get(1).isEmpty()
+                || !studentsInSlot.get(2).isEmpty() || !studentsInSlot.get(3).isEmpty()
+                || !studentsInSlot.get(4).isEmpty()) {
+            // 3 phần tử đầu của list là 0,1,2 đại diện cho slot 1,2,3 của T2,T4,T6
+            // 2 phần tử cuối của list là 3,4 đại diện cho slot 1,2 của T3,T5
+            // Lấy số sv lớn nhất (ngày chẵn và ngày lẻ) và vị trí max của list
+            int maxStudentsOfEvenDays = 0;
+            int maxPositionOfEvenDays = 0;
+            for (int i = 0; i < 3; i++) {
+                if (maxStudentsOfEvenDays < studentsInSlot.get(i).size()) {
+                    maxStudentsOfEvenDays = studentsInSlot.size();
+                    maxPositionOfEvenDays = i;
+                }
+            }
+
+            int maxStudentsOfOddDays = 0;
+            int maxPositionOfOddDays = 0;
+            for (int i = 3; i < 5; i++) {
+                if (maxStudentsOfOddDays < studentsInSlot.get(i).size()) {
+                    maxStudentsOfOddDays = studentsInSlot.size();
+                    maxPositionOfOddDays = i;
+                }
+            }
+
+            // Nếu mà số sv lớn nhất của ngày chẵn lẻ bằng nhau -> so sánh slot, chọn vị trí có số slot nhỏ nhất
+            // Còn không thì chọn vị trí mà số sv là lớn nhất
+            int finalPosition = 0;
+            if (maxStudentsOfEvenDays == maxStudentsOfOddDays) {
+                if (maxPositionOfEvenDays <= maxPositionOfOddDays - 3) {
+                    finalPosition = maxPositionOfEvenDays;
+                } else {
+                    finalPosition = maxPositionOfOddDays;
+                }
+            } else {
+                if (maxStudentsOfEvenDays < maxStudentsOfOddDays) {
+                    finalPosition = maxPositionOfOddDays;
+                } else {
+                    finalPosition = maxPositionOfEvenDays;
+                }
+            }
+
+            // Chọn ra 25 sinh viên đầu danh sách để xếp lớp
+            ISubjectService subjectService = new SubjectServiceImpl();
+            SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
+            List<StudentArrangementModel> finalStudentList = studentsInSlot.get(finalPosition)
+                    .stream().skip(0).limit(25).collect(Collectors.toList());
+            String currentClass = subjectCode + "_" + shift + "_" + ordinalNumber + "_" + slotName[finalPosition];
+            for (StudentArrangementModel std : finalStudentList) {
+                std.slots[finalPosition] = true;
+                List<String> row = new ArrayList<>();
+                row.add(subjectEntity.getId());
+                row.add(subjectEntity.getName());
+                row.add(std.student.getRollNumber());
+                row.add(std.student.getFullName());
+                row.add(currentClass);
+                row.add(shift);
+
+                displayList.add(row);
+            }
+
+            studentsInSlot.get(finalPosition).removeAll(finalStudentList);
+            ++ordinalNumber;
+        }
+    }
+
+    private List<SubjectCurriculumEntity> getSubjectCurriculumList(StudentEntity student) {
+        List<SubjectCurriculumEntity> result = new ArrayList<>();
+
+        if (student.getDocumentStudentEntityList() != null) {
+            for (DocumentStudentEntity docStudent : student.getDocumentStudentEntityList()) {
+                if (docStudent.getCurriculumId() != null
+                        && docStudent.getCurriculumId().getSubjectCurriculumEntityList() != null) {
+                    for (SubjectCurriculumEntity sc : docStudent.getCurriculumId().getSubjectCurriculumEntityList()) {
+                        if (sc.getTermNumber() == student.getTerm()) {
+                            result.add(sc);
+                        }
+                    }
+                }
+            }
+        }
+
+        Collections.sort(result, new Comparator<SubjectCurriculumEntity>() {
+            @Override
+            public int compare(SubjectCurriculumEntity o1, SubjectCurriculumEntity o2) {
+                return o1.getOrdinalNumber().compareTo(o2.getOrdinalNumber());
+            }
+        });
+
+        return result;
+    }
+
     private void addStudentToSubjectMap(Map<String, StudentList> subjectMap,
                                         List<String> subjects, StudentEntity student, String status) {
         for (String subjectCode : subjects) {
@@ -658,6 +1011,22 @@ public class StudentArrangementController {
         return result;
     }
 
+    @RequestMapping(value = "/studentArrangementBySlot/import", method = RequestMethod.POST)
+    @ResponseBody
+    public Callable<JsonObject> importFileBySlot(
+            @RequestParam("file-suggestion") MultipartFile fileSuggestion, HttpServletRequest request) {
+        Callable<JsonObject> callable = new Callable<JsonObject>() {
+            @Override
+            public JsonObject call() throws Exception {
+                JsonObject obj = ReadFile3(fileSuggestion, request);
+
+                return obj;
+            }
+        };
+
+        return callable;
+    }
+
     @RequestMapping(value = "/studentArrangement/updateProgress")
     @ResponseBody
     public JsonObject UpdateProgress() {
@@ -668,6 +1037,8 @@ public class StudentArrangementController {
         jsonObj.addProperty("file1Done", this.file1Done);
         jsonObj.addProperty("file2Done", this.file2Done);
         jsonObj.addProperty("file3Done", this.file3Done);
+        jsonObj.addProperty("process1", this.process1);
+        jsonObj.addProperty("process2", this.process2);
 
         return jsonObj;
     }
@@ -692,6 +1063,63 @@ public class StudentArrangementController {
     private class SubjectList {
         public List<String> nextCourseList;
         public List<String> suggestionList;
+    }
+
+    private class StudentArrangementModel {
+        public StudentEntity student;
+        public int numOfSubjects; // In suggestion list
+        public String[] subjects;
+        public Boolean[] slots; // [0, 1, 2]: Slot 1,2,3 of Monday, Wednesday, Friday; [3, 4]: Slot 1,2 of Tuesday, Thursday
+
+        public StudentArrangementModel() {
+            this.subjects = new String[5];
+            this.slots = new Boolean[5];
+
+            for (int i = 0; i < 5; i++) {
+                this.subjects[i] = "";
+            }
+        }
+    }
+
+    private class StudentKey {
+        public int termNumber;
+        public int numOfSubjects;
+        public String shift;
+        public String subject1;
+        public String subject2;
+        public String subject3;
+        public String subject4;
+        public String subject5;
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            StudentKey that = (StudentKey) o;
+
+            if (termNumber != that.termNumber) return false;
+            if (numOfSubjects != that.numOfSubjects) return false;
+            if (!shift.equals(that.shift)) return false;
+            if (!subject1.equals(that.subject1)) return false;
+            if (!subject2.equals(that.subject2)) return false;
+            if (!subject3.equals(that.subject3)) return false;
+            if (!subject4.equals(that.subject4)) return false;
+            return subject5.equals(that.subject5);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = termNumber;
+            result = 31 * result + numOfSubjects;
+            result = 31 * result + shift.hashCode();
+            result = 31 * result + subject1.hashCode();
+            result = 31 * result + subject2.hashCode();
+            result = 31 * result + subject3.hashCode();
+            result = 31 * result + subject4.hashCode();
+            result = 31 * result + subject5.hashCode();
+            return result;
+        }
     }
 
 }
