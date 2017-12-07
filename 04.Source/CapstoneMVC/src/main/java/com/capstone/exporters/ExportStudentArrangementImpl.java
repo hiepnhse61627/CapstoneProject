@@ -176,14 +176,6 @@ public class ExportStudentArrangementImpl implements IExportObject {
             Cell cell;
             Row row;
             for (List<String> data : studentList) {
-                if (countStudentAM == 86) {
-                    System.out.println();
-                }
-
-                if (countStudentPM == 88) {
-                    System.out.println();
-                }
-
                 String rollNumber = data.get(2);
                 String studentName = data.get(3);
 

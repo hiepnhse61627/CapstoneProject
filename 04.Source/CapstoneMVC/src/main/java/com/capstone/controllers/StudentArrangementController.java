@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.persistence.criteria.CriteriaBuilder;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
@@ -521,7 +522,6 @@ public class StudentArrangementController {
                 }
             }
             this.process1 = true;
-            System.out.println(process1);
 
             // Create class for LAB
             int count;
@@ -593,6 +593,11 @@ public class StudentArrangementController {
                 }));
             }
 
+            // Shift, Subject, Slot, Ordinal number
+            Map<String, Map<String, Map<String, Integer>>> shiftOrdinalNumberMap = new HashMap<>();
+            shiftOrdinalNumberMap.put("AM", new HashMap<>());
+            shiftOrdinalNumberMap.put("PM", new HashMap<>());
+
             // Create class
             for (StudentKey key : groupStudentsMap.keySet()) {
                 List<StudentArrangementModel> allList = groupStudentsMap.get(key);
@@ -619,13 +624,24 @@ public class StudentArrangementController {
                     }
 
                     if (!subjectCode.isEmpty()) {
-                        this.arrangeStudentIntoSlot(displayList, amList, pos, "AM", subjectCode);
-                        this.arrangeStudentIntoSlot(displayList, pmList, pos, "PM", subjectCode);
+                        this.arrangeStudentIntoSlot(displayList, amList, shiftOrdinalNumberMap.get("AM"), pos, "AM", subjectCode);
+                        this.arrangeStudentIntoSlot(displayList, pmList, shiftOrdinalNumberMap.get("PM"), pos, "PM", subjectCode);
                     }
                 }
             }
             this.process2 = true;
-            System.out.println(process2);
+
+            displayList.sort(new Comparator<List<String>>() {
+                @Override
+                public int compare(List<String> l1, List<String> l2) {
+                    return l1.get(0).compareTo(l2.get(0));
+                }
+            }.thenComparing(new Comparator<List<String>>() {
+                @Override
+                public int compare(List<String> l1, List<String> l2) {
+                    return l1.get(4).compareTo(l2.get(4));
+                }
+            }));
 
             request.getSession().setAttribute("STUDENT_ARRANGEMENT_BY_SLOT_LIST", displayList);
             jsonObj.addProperty("success", true);
@@ -639,9 +655,16 @@ public class StudentArrangementController {
     }
 
     private void arrangeStudentIntoSlot(List<List<String>> displayList, List<StudentArrangementModel> studentList,
+                                        Map<String, Map<String, Integer>> subjectOrdinalNumberMap,
                                         int currentSubjectPosition, String shift, String subjectCode) {
         if (studentList.isEmpty()) {
             return;
+        }
+
+        Map<String, Integer> ordinalNumberMap = subjectOrdinalNumberMap.get(subjectCode);
+        if (ordinalNumberMap == null) {
+            ordinalNumberMap = new HashMap<>();
+            subjectOrdinalNumberMap.put(subjectCode, ordinalNumberMap);
         }
 
         String[] slotName = new String[] { "S21", "S22", "S23", "S31", "S32" } ;
@@ -664,7 +687,7 @@ public class StudentArrangementController {
             studentsInSlot.get(slotNotLearnedPosition).add(student);
         }
 
-        int ordinalNumber = 1;
+        Integer ordinalNumber;
         while (!studentsInSlot.get(0).isEmpty() || !studentsInSlot.get(1).isEmpty()
                 || !studentsInSlot.get(2).isEmpty() || !studentsInSlot.get(3).isEmpty()
                 || !studentsInSlot.get(4).isEmpty()) {
@@ -706,6 +729,15 @@ public class StudentArrangementController {
                 }
             }
 
+            ordinalNumber = ordinalNumberMap.get(slotName[finalPosition]);
+            if (ordinalNumber == null) {
+                ordinalNumber = 1;
+                ordinalNumberMap.put(slotName[finalPosition], ordinalNumber);
+            } else {
+                ordinalNumber++;
+                ordinalNumberMap.put(slotName[finalPosition], ordinalNumber);
+            }
+
             // Chọn ra 25 sinh viên đầu danh sách để xếp lớp
             ISubjectService subjectService = new SubjectServiceImpl();
             SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
@@ -726,7 +758,6 @@ public class StudentArrangementController {
             }
 
             studentsInSlot.get(finalPosition).removeAll(finalStudentList);
-            ++ordinalNumber;
         }
     }
 
