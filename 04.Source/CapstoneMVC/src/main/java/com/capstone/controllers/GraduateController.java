@@ -495,26 +495,26 @@ public class GraduateController {
             List<SubjectCurriculumEntity> subjects = new ArrayList<>();
 //            List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
 
-
-            int ojt = -1;
+//
+//            int ojt = -1;
 //            List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
-            List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentListByStudentId(student.getId());
+//            List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentListByStudentId(student.getId());
 //            List<String> tmp = new ArrayList<>();
-            for (DocumentStudentEntity doc : docs) {
-                if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
-                    List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
-                    for (SubjectCurriculumEntity s : list) {
-                        if (!subjects.contains(s)) {
-                            subjects.add(s);
-                            if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
-                                ojt = s.getTermNumber();
+//            for (DocumentStudentEntity doc : docs) {
+//                if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
+//                    List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
+//                    for (SubjectCurriculumEntity s : list) {
+//                        if (!subjects.contains(s)) {
+//                            subjects.add(s);
+//                            if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
+//                                ojt = s.getTermNumber();
 //                                break;
 //                                tmp.add(s.getSubjectId().getId());
-                            }
-                        }
-                    }
-                }
-            }
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 
 //            List<MarksEntity> marks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semester.getId()), tmp, student.getId());
 //            marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
@@ -532,26 +532,26 @@ public class GraduateController {
 //            }
 
             if (!req) {
-                List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
-                for (SubjectCurriculumEntity c : subjects) {
-                    if (ojt > 0) {
-                        if (c.getTermNumber() >= 0 && c.getTermNumber() < ojt) {
-                            processedSub.add(c);
-                        }
-                    } else {
-                        if (c.getTermNumber() >= 0) {
-                            processedSub.add(c);
-                        }
-                    }
-                }
+//                List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
+//                for (SubjectCurriculumEntity c : subjects) {
+//                    if (ojt > 0) {
+//                        if (c.getTermNumber() >= 0 && c.getTermNumber() < ojt) {
+//                            processedSub.add(c);
+//                        }
+//                    } else {
+//                        if (c.getTermNumber() >= 0) {
+//                            processedSub.add(c);
+//                        }
+//                    }
+//                }
 
-                int required = 0;
+                int required = student.getProgramId().getGraduateCredits();
 
-                for (SubjectCurriculumEntity s : processedSub) {
-                    if (s.getSubjectCredits() != null) {
-                        required += s.getSubjectCredits();
-                    }
-                }
+//                for (SubjectCurriculumEntity s : processedSub) {
+//                    if (s.getSubjectCredits() != null) {
+//                        required += s.getSubjectCredits();
+//                    }
+//                }
 
                 int percent = student.getProgramId().getCapstone();
 
