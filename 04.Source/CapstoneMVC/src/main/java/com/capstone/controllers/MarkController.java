@@ -125,4 +125,25 @@ public class MarkController {
         return jsonObj;
     }
 
+    @RequestMapping("/markPage/delete")
+    @ResponseBody
+    public JsonObject DeleteMark(@RequestParam Map<String, String> params) {
+        JsonObject jsonObj = new JsonObject();
+        IMarksService markService = new MarksServiceImpl();
+
+        int markId = Integer.parseInt(params.get("markId"));
+
+        try {
+            markService.deleteMark(markId);
+
+            jsonObj.addProperty("success", true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.writeLog(e);
+            jsonObj.addProperty("success", false);
+        }
+
+        return jsonObj;
+    }
+
 }

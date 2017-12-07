@@ -2,6 +2,7 @@ package com.capstone.services;
 
 import com.capstone.entities.MarksEntity;
 import com.capstone.jpa.exJpa.ExMarksEntityJpaController;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -43,6 +44,11 @@ public class MarksServiceImpl implements IMarksService {
     @Override
     public void updateMark(MarksEntity entity) throws Exception {
         marksEntityJpaController.edit(entity);
+    }
+
+    @Override
+    public void deleteMark(int markId) throws Exception {
+        marksEntityJpaController.destroy(markId);
     }
 
     @Override
