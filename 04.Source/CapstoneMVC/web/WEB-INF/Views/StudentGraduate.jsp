@@ -93,6 +93,7 @@
                             <tr>
                                 <th>MSSV</th>
                                 <th>Tên</th>
+                                <th>Kỳ</th>
                                 <th>Tín chỉ tích lũy</th>
                                 <th>Tín chỉ yêu cầu</th>
                             </tr>
@@ -254,7 +255,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3],
+                    "aTargets": [0, 1, 2, 3, 4],
                     "bSortable": false,
                     "sClass": "text-center",
                 },
@@ -265,7 +266,7 @@
                     }
                 },
                 {
-                    "aTargets": [4],
+                    "aTargets": [5],
                     "bVisible": false
                 }
             ],

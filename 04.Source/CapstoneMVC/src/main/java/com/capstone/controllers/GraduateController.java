@@ -279,11 +279,6 @@ public class GraduateController {
 
         boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
 
-        String type = params.get("type");
-
-        IStudentService studentService = new StudentServiceImpl();
-        IMarksService marksService = new MarksServiceImpl();
-
         List<StudentEntity> students;
         if (programId < 0) {
             students = studentService.findAllStudents();
@@ -291,30 +286,27 @@ public class GraduateController {
             students = studentService.getStudentByProgram(programId);
         }
 
-//        if (type.equals("Graduate")) {
-//            students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
-//        } else
-//        if (type.equals("OJT")) {
-//
-//        } else if (type.equals("SWP")) {
-//            students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
-//        }
-        if (programService.getProgramById(programId).getName().contains("SE")) {
-            students = students.stream().filter(c -> isOJT(c, semester)).collect(Collectors.toList());
-        } else if (programService.getProgramById(programId).getName().contains("BA")) {
-            students = students.stream().filter(c -> c.getTerm() == 5).collect(Collectors.toList());
-        } else {
-            students = students.stream().filter(c -> c.getTerm() == 6).collect(Collectors.toList());
-        }
+        EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
+        EntityManager em = fac.createEntityManager();
+
+//        IMarksService marksService = new MarksServiceImpl();
+
+        students = students.stream().filter(c -> isOJT(c, semester)).collect(Collectors.toList());
+
+       List<MarksEntity> map = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true AND a.subjectMarkComponentId.subjectId.type = 1 AND (LOWER(a.status) LIKE '%studying%' OR LOWER(a.status) LIKE '%pass%')", MarksEntity.class)
+                .getResultList()
+                .stream()
+                .filter(Ultilities.distinctByKey(c -> c.getStudentId().getId()))
+                .collect(Collectors.toList());
 
         int i = 1;
-//        StudentDetail detail = new StudentDetail();
         for (StudentEntity student : students) {
 
             List<SubjectCurriculumEntity> subjects = new ArrayList<>();
 
             int ojt = 1;
             List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+//            List<String> tmp = new ArrayList<>();
             for (DocumentStudentEntity doc : docs) {
                 if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
                     List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
@@ -323,523 +315,80 @@ public class GraduateController {
                             subjects.add(s);
                             if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
                                 ojt = s.getTermNumber();
+//                                tmp.add(s.getSubjectId().getId());
                             }
                         }
                     }
                 }
             }
-
-//            if (type.equals("OJT")) {
-//
-//            } else if (type.equals("SWP")) {
-//                subjects = subjects.stream().distinct().collect(Collectors.toList());
-//            }
-
-//            subjects = subjects.stream().filter(c -> c.getSubjectId().getType() != SubjectTypeEnum.OJT.getId()).distinct().collect(Collectors.toList());
-
-//                boolean aye = false;
-
-            // CHECK OJT DIEU KIEN DU THU KHAC NHAU
-//                Suggestion suggestion = detail.processSuggestion(student.getId(), semester.getSemester());
-//                List<List<String>> result2 = suggestion.getData();
-//                List<String> brea = new ArrayList<>();
-//                brea.add("break");
-//                brea.add("");
-//                int index = result2.indexOf(brea);
-//                if (index > -1) {
-//                    if (suggestion.isDuchitieu()) {
-//                        result2 = result2.subList(index + 1, result2.size());
-//                    } else {
-//                        result2 = result2.subList(0, index);
-//                    }
-//                }
-//                for (List<String> r : result2) {
-//                    SubjectCurriculumEntity s = subjects.stream().filter(c -> c.getSubjectId().getId().equals(r.get(0))).findFirst().get();
-//                    if (type.equals("OJT")) {
-//                        if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
-//                            aye = true;
-//                            break;
-//                        }
-//                    } else if (type.equals("SWP")) {
-//                        if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
-//                            aye = true;
-//                            break;
-//                        }
-//                    }
-//                }
-
-//                if (aye) {
 
             System.out.println(i + " - " + students.size());
 
-//            List<SubjectCurriculumEntity> processedSub = subjects;
-            List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
-            for (SubjectCurriculumEntity c : subjects) {
-                if (c.getTermNumber() >= 1 && c.getTermNumber() < ojt) {
-                    processedSub.add(c);
-                }
+//            List<MarksEntity> marks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semester.getId()), tmp, student.getId());
+//            marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
+//            marks = Ultilities.SortSemestersByMarks(marks);
+
+            boolean req = false;
+            if (map.stream().anyMatch(c -> c.getStudentId().getId() == student.getId())) {
+                req = true;
             }
-
-            List<String> tmp = new ArrayList<>();
-            for (SubjectCurriculumEntity s : processedSub) {
-                if (!tmp.contains(s.getSubjectId().getId())) tmp.add(s.getSubjectId().getId());
-            }
-
-            List<MarksEntity> marks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semesterId), tmp, student.getId());
-//            List<MarksEntity> marks = marksService.getMarkByConditions(semesterId, tmp, student.getId());
-            marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
-            marks = Ultilities.SortSemestersByMarks(marks);
-
-//            List<MarksEntity> finalMarks = marks;
-//            tmp.stream().filter(c -> !finalMarks.stream().anyMatch(a -> a
-//                    .getSubjectMarkComponentId()
-//                    .getSubjectId()
-//                    .getId()
-//                    .equals(c))).forEach(c -> System.out.println("môn" + c + " không có điểm"));
-
-            //            Map<String, List<MarksEntity>> map = marks.stream()
-//                    .collect(Collectors.groupingBy(c -> c.getSubjectMarkComponentId().getSubjectId().getId()));
 //            for (MarksEntity m : marks) {
-//                if (map.get(m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
-//                    List<MarksEntity> l = new ArrayList<>();
-//                    l.add(m);
-//                    map.put(m.getSubjectMarkComponentId().getSubjectId().getId(), l);
-//                } else {
-//                    map.get(m.getSubjectMarkComponentId().getSubjectId().getId()).add(m);
+//                if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("studying")) {
+//                    req = true;
+//                    break;
 //                }
 //            }
 
-            int required = 0;
-//            for (SubjectCurriculumEntity s : processedSub) {
-//                required += s.getSubjectCredits();
-//            }
-
-//            if (type.equals("OJT")) {
-//
-//            } else if (type.equals("SWP")) {
-//                required = student.getProgramId().getSpecializedCredits();
-//            }
-            for (SubjectCurriculumEntity s : processedSub) {
-                if (s.getSubjectCredits() != null) {
-                    required += s.getSubjectCredits();
+            if (!req) {
+                List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
+                for (SubjectCurriculumEntity c : subjects) {
+                    if (c.getTermNumber() >= 1 && c.getTermNumber() < ojt) {
+                        processedSub.add(c);
+                    }
                 }
-            }
 
-            int percent = 0;
-//            if (type.equals("Graduate")) {
-//                percent = student.getProgramId().getGraduate();
-//            } else
-//            if (type.equals("OJT")) {
-//                percent = student.getProgramId().getOjt();
-//            } else if (type.equals("SWP")) {
-//                percent = student.getProgramId().getCapstone();
-//            }
+                int required = 0;
 
-            percent = student.getProgramId().getOjt();
+                for (SubjectCurriculumEntity s : processedSub) {
+                    if (s.getSubjectCredits() != null) {
+                        required += s.getSubjectCredits();
+                    }
+                }
 
-//            int tongtinchi = student.getPassCredits();
-            int tongtinchi = 0;
-            for (SubjectCurriculumEntity sub : processedSub) {
-                List<MarksEntity> subMarks = marks
-                        .stream()
-                        .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub.getSubjectId().getId()))
-                        .collect(Collectors.toList());
-                if (subMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-                        c.getStatus().toLowerCase().contains("exempt"))) {
-                    tongtinchi += sub.getSubjectCredits();
+                int percent = student.getProgramId().getOjt();
+
+                int tongtinchi = student.getPassCredits();
+
+                List<String> t = new ArrayList<>();
+                t.add(student.getRollNumber());
+                t.add(student.getFullName());
+                t.add(String.valueOf(student.getTerm()));
+                t.add(String.valueOf(tongtinchi));
+                t.add(String.valueOf((int) ((required * percent * 1.0) / 100)));
+                t.add(String.valueOf(student.getId()));
+
+                if (isGraduate) {
+                    if (tongtinchi >= (int) ((required * percent * 1.0) / 100)) {
+                        data.add(t);
+                    }
                 } else {
-                    boolean dacong = false;
-                    List<SubjectEntity> replacers = sub.getSubjectId().getSubjectEntityList();
-                    for (SubjectEntity replacer : replacers) {
-                        List<MarksEntity> replaceMarks = marks
-                                .stream()
-                                .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
-                                .collect(Collectors.toList());
-                        if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-                                c.getStatus().toLowerCase().contains("exempt"))) {
-                            tongtinchi += sub.getSubjectCredits();
-                            dacong = true;
-                        }
+                    if (tongtinchi < (int) ((required * percent * 1.0) / 100)) {
+                        data.add(t);
                     }
-                    if (!dacong) {
-                        List<SubjectEntity> replacersFirst = sub.getSubjectId().getSubjectEntityList1();
-                        for (SubjectEntity repls : replacersFirst) {
-                            List<SubjectEntity> reps = repls.getSubjectEntityList();
-                            for (SubjectEntity replacer : reps) {
-                                List<MarksEntity> replaceMarks = marks
-                                        .stream()
-                                        .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
-                                        .collect(Collectors.toList());
-                                if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-                                        c.getStatus().toLowerCase().contains("exempt"))) {
-                                    tongtinchi += sub.getSubjectCredits();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            List<String> t = new ArrayList<>();
-            t.add(student.getRollNumber());
-            t.add(student.getFullName());
-            t.add(String.valueOf(tongtinchi));
-            t.add(String.valueOf((int)((required * percent * 1.0) / 100)));
-            t.add(String.valueOf(student.getId()));
-
-            if (isGraduate) {
-                if (tongtinchi >= (int)((required * percent * 1.0) / 100)) {
-                    data.add(t);
                 }
             } else {
-                if (tongtinchi < (int)((required * percent * 1.0) / 100)) {
-                    data.add(t);
-                }
+                System.out.println("dang hoc hoac da pass");
             }
 
             i++;
         }
+
         return data;
     }
-
-//    private List<List<String>> processGraduate(Map<String, String> params) {
-//        List<List<String>> data = new ArrayList<>();
-//
-//        int programId = Integer.parseInt(params.get("programId"));
-//        int semesterId = Integer.parseInt(params.get("semesterId"));
-//
-//        // get list semester to current semesterId
-//        List<RealSemesterEntity> semesters = getToCurrentSemester(semesterId);
-//        Set<Integer> semesterIds = semesters.stream().map(s -> s.getId()).collect(Collectors.toSet());
-//
-//        List<StudentEntity> studentEntityList = new ArrayList<>();
-//        studentEntityList = studentService.findStudentByProgramId(programId);
-//        studentEntityList = studentEntityList.stream().filter(s -> s.getTerm() == 9).collect(Collectors.toList());
-//
-//        for (StudentEntity student : studentEntityList) {
-//            List<SubjectEntity> subjectEntityList = getSubjectsInCurriculumns(student.getDocumentStudentEntityList());
-//            List<SubjectEntity> comparedList = new ArrayList<>();
-//            comparedList.addAll(subjectEntityList);
-//            for (SubjectEntity subjectEntity : subjectEntityList) {
-//                List<SubjectEntity> replaces = subjectEntity.getSubjectEntityList();
-//                if (replaces != null && !replaces.isEmpty()) {
-//                    comparedList.addAll(replaces);
-//                }
-//                List<SubjectEntity> replaces2 = subjectEntity.getSubjectEntityList1();
-//                if (replaces2 != null && !replaces2.isEmpty()) {
-//                    comparedList.addAll(replaces2);
-//                }
-//            }
-//            Set<String> subjectCdsInCurriculum = comparedList.stream().map(s -> s.getId()).collect(Collectors.toSet());
-//            // calculate credits in curriculum
-//            int creditsInCurriculum = countCreditsInCurriculumn(subjectEntityList);
-//            // get mark list from student
-//            List<MarksEntity> marksEntityList = student.getMarksEntityList();
-//            // filter passed marks
-//            List<MarksEntity> passedMarks = new ArrayList<>();
-//            for (MarksEntity marksEntity : marksEntityList) {
-//                if ((marksEntity.getStatus().toLowerCase().contains("pass") || marksEntity.getStatus().toLowerCase().contains("exempt"))
-//                        && (semesterIds.contains(marksEntity.getSemesterId().getId()))) {
-//                    passedMarks.add(marksEntity);
-//                }
-//            }
-//            // distinct passed Marks
-//            List<MarksEntity> distinctMarks = new ArrayList<>();
-//            for (MarksEntity mark : passedMarks) {
-//                if (!distinctMarks.stream().anyMatch(d -> d.getStudentId().getRollNumber().equalsIgnoreCase(mark.getStudentId().getRollNumber())
-//                        && d.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(mark.getSubjectMarkComponentId().getSubjectId().getId()))) {
-//                    distinctMarks.add(mark);
-//                }
-//            }
-//            // calculate student credits
-//            int studentCredits = 0;
-//            for (MarksEntity marksEntity : distinctMarks) {
-//                if (subjectCdsInCurriculum.contains(marksEntity.getSubjectMarkComponentId().getSubjectId().getId())) {
-//                    studentCredits += marksEntity.getSubjectMarkComponentId().getSubjectId().getCredits();
-//                }
-//            }
-//
-//            int percent = student.getProgramId().getGraduate();
-//            if (studentCredits >= ((creditsInCurriculum * percent * 1.0) / 100)) {
-//                System.out.println(studentCredits + "_____" + creditsInCurriculum);
-//                List<String> t = new ArrayList<>();
-//                t.add(student.getRollNumber());
-//                t.add(student.getFullName());
-//                t.add(String.valueOf(studentCredits));
-//                t.add(String.valueOf(studentCredits > creditsInCurriculum ? (studentCredits - creditsInCurriculum) : 0));
-//                data.add(t);
-//            }
-//        }
-//
-//        return data;
-//    }
-
-//    private List<SubjectEntity> getSubjectsInCurriculumns(List<DocumentStudentEntity> documentStudentEntityList) {
-//        List<SubjectEntity> subjectEntityList = new ArrayList<>();
-//        if (documentStudentEntityList != null && !documentStudentEntityList.isEmpty()) {
-//            for (DocumentStudentEntity documentStudentEntity : documentStudentEntityList) {
-//                CurriculumEntity curriculumEntity = documentStudentEntity.getCurriculumId();
-//                List<SubjectCurriculumEntity> subjectCurriculumEntityList = subjectCurriculumService.getSubjectCurriculums(curriculumEntity.getId());
-//                List<SubjectEntity> subjects = subjectCurriculumEntityList.stream().filter(s -> s.getTermNumber() != 0).map(s -> s.getSubjectId()).collect(Collectors.toList());
-//
-//                subjectEntityList.addAll(subjects);
-//            }
-//        }
-//        return subjectEntityList;
-//    }
-
-//    private Integer countCreditsInCurriculumn(List<SubjectEntity> subjectEntityList) {
-//        int credits = 0;
-//        if (subjectEntityList != null && !subjectEntityList.isEmpty()) {
-//            for (SubjectEntity subjectEntity : subjectEntityList) {
-//                credits += subjectEntity.getCredits();
-//            }
-//        }
-//        return credits;
-//	}
-
-//    /**
-//     * [This method processes (sort all semesters then iterate over the list, add semester to result list until reaching the current semester)
-//     *              and returns list semesters from the beginning to current semester]
-//     * @param currentSemesterId
-//     * @return listResult
-//     * @author HiepNH
-//     * @DateCreated 28/10/2017
-//     **/
-//    private List<RealSemesterEntity> getToCurrentSemester (Integer currentSemesterId) {
-//        List<RealSemesterEntity> semesters = semesterService.getAllSemester();
-//        semesters = Ultilities.SortSemesters(semesters);
-//        List<RealSemesterEntity> listResult = new ArrayList<>();
-//        for (RealSemesterEntity semester : semesters) {
-//            listResult.add(semester);
-//            if (semester.getId() == currentSemesterId) {
-//                break;
-//            }
-//        }
-//        return listResult;
-//    }
-
-//    private List<List<String>> proccessOJT(Map<String, String> params) {
-//        List<List<String>> data = new ArrayList<>();
-//
-//        try {
-//            int programId = Integer.parseInt(params.get("programId"));
-//            int semesterId = Integer.parseInt(params.get("semesterId"));
-//
-//            IStudentService studentService = new StudentServiceImpl();
-//            IMarksService marksService = new MarksServiceImpl();
-//
-//            List<StudentEntity> students = studentService.getStudentByProgram(programId);
-//            students = students.stream().filter(c -> c.getTerm() == 5).collect(Collectors.toList());
-//            int i = 1;
-//            for (StudentEntity student : students) {
-//                System.out.println((i++) + " - " + students.size());
-//
-//                List<SubjectCurriculumEntity> subjects = new ArrayList<>();
-//
-//                List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
-//                for (DocumentStudentEntity doc : docs) {
-//                    if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
-//                        List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
-//                        for (SubjectCurriculumEntity s : list ) {
-//                            if (!subjects.contains(s)) subjects.add(s);
-//                        }
-//                    }
-//                }
-//
-//                List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
-//                for (SubjectCurriculumEntity c : subjects) {
-//                    if (c.getTermNumber() >= 1 && c.getTermNumber() <= 5) {
-//                        processedSub.add(c);
-//                    }
-//                }
-//
-//                List<String> tmp = new ArrayList<>();
-//                for (SubjectCurriculumEntity s : processedSub) {
-//                    if (!tmp.contains(s.getSubjectId().getId())) tmp.add(s.getSubjectId().getId());
-//                }
-//
-//                List<MarksEntity> marks = marksService.getMarkByConditions(semesterId, tmp, student.getId());
-//
-//                int required = 0;
-//                for (SubjectCurriculumEntity s : processedSub) {
-//                    required += s.getSubjectId().getCredits();
-//                }
-//                int percent = student.getProgramId().getOjt();
-//                int tongtinchi = 0;
-//                List<String> datontai = new ArrayList<>();
-//                for (MarksEntity mark : marks) {
-//                    if (mark.getStatus().toLowerCase().contains("pass") || mark.getStatus().toLowerCase().contains("exempt")) {
-//                        if (!datontai.contains(mark.getSubjectMarkComponentId().getSubjectId().getId())) {
-//                            tongtinchi += mark.getSubjectMarkComponentId().getSubjectId().getCredits();
-//                            datontai.add(mark.getSubjectMarkComponentId().getSubjectId().getId());
-//                        }
-//                    }
-//                }
-//
-//                if (tongtinchi >= ((required * percent * 1.0) / 100)) {
-//                    List<String> t = new ArrayList<>();
-//                    t.add(student.getRollNumber());
-//                    t.add(student.getFullName());
-//                    t.add(String.valueOf(tongtinchi));
-//                    t.add(String.valueOf((tongtinchi > required) ? (tongtinchi - required) : 0));
-//                    data.add(t);
-//                }
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        return data;
-//    }
-
-//    private List<List<String>> processCapstone(Map<String, String> params) {
-//        List<List<String>> result = new ArrayList<>();
-//        IMarkComponentService markComponentService = new MarkComponentServiceImpl();
-//        IRealSemesterService semesterService = new RealSemesterServiceImpl();
-//        MarkComponentEntity markComponent = markComponentService.getMarkComponentByName(Enums.MarkComponent.AVERAGE.getValue());
-//
-//        int programId = Integer.parseInt(params.get("programId"));
-//        int semesterId = Integer.parseInt(params.get("semesterId"));
-//
-//        String strSemesterIds = "";
-//        if (semesterId > 0) {
-//            List<Integer> semesterIds = new ArrayList<>();
-//            List<RealSemesterEntity> semesterList = Ultilities.SortSemesters(semesterService.getAllSemester());
-//            for (RealSemesterEntity semester : semesterList) {
-//                semesterIds.add(semester.getId());
-//                if (semester.getId() == semesterId) {
-//                    break;
-//                }
-//            }
-//            strSemesterIds = Ultilities.parseIntegerListToString(semesterIds);
-//        }
-//
-//
-//        try {
-//            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-//            EntityManager em = emf.createEntityManager();
-//
-//            // Get students have more than 1 document_student
-//            String queryStr = "SELECT ds.StudentId" +
-//                    " FROM Document_Student ds" +
-//                    " INNER JOIN Curriculum c ON ds.CurriculumId = c.Id" +
-//                    " INNER JOIN Program p ON c.ProgramId = p.Id" +
-//                    " AND CurriculumId IS NOT NULL" +
-//                    " AND p.Name != 'PC'" +
-//                    ((programId > 0) ? " AND p.Id = ?" : "") +
-//                    " GROUP BY ds.StudentId" +
-//                    " HAVING COUNT(ds.CurriculumId) > 1";
-//            Query queryStudentIds = em.createNativeQuery(queryStr);
-//            if (programId > 0) queryStudentIds.setParameter(1, programId);
-//            List<Object> studentIds = queryStudentIds.getResultList();
-//            String strStudentIds = "";
-//            int count = 0;
-//            for (Object stId : studentIds) {
-//                strStudentIds += ((int) stId) + (count != studentIds.size() - 1 ? "," : "");
-//                count++;
-//            }
-//
-//            // Get subjects and credits that students learned
-//            queryStr = "SELECT m.StudentId, s.RollNumber, s.FullName, sub.Id, sub.Credits, sc.CurriculumId, p.Name, p.Capstone" +
-//                    " FROM Marks m" +
-//                    " INNER JOIN Subject_MarkComponent smc ON m.SubjectMarkComponentId = smc.Id" +
-//                    " INNER JOIN Subject sub ON smc.SubjectId = sub.Id" +
-//                    " INNER JOIN Document_Student ds ON m.StudentId = ds.StudentId" +
-//                    " INNER JOIN Student s ON ds.StudentId = s.Id" +
-//                    " INNER JOIN Curriculum c ON ds.CurriculumId = c.Id" +
-//                    " INNER JOIN Program p ON c.ProgramId = p.Id" +
-//                    " INNER JOIN Subject_Curriculum sc ON c.Id = sc.CurriculumId" +
-//                    " AND sub.Id = sc.SubjectId" +
-//                    " AND m.IsActivated = 1 AND (m.Status = 'Passed' OR m.Status = 'IsExempt')" +
-//                    " AND smc.MarkComponentId = ?" +
-//                    " AND ds.StudentId IN (" + strStudentIds + ")" +
-//                    (semesterId > 0 ? " AND m.SemesterId IN (" + strSemesterIds + ")" : "") +
-//                    " GROUP BY m.StudentId, s.RollNumber, s.FullName, sub.Id, sub.Credits, sc.CurriculumId, p.Name, p.Capstone" +
-//                    " ORDER BY m.StudentId";
-//            Query query = em.createNativeQuery(queryStr);
-//            query.setParameter(1, markComponent.getId());
-//            List<Object[]> searchList = query.getResultList();
-//
-//            Map<Integer, Credit_StudentModel> studentMap = new HashMap<>();
-//            for (Object[] data : searchList) {
-//                int studentId = (int) data[0];
-//                int subjectCredit = (int) data[4];
-//                int subjectCurriculumId = (int) data[5];
-//
-//                Credit_StudentModel student = studentMap.get(studentId);
-//                if (student == null) {
-//                    student = new Credit_StudentModel();
-//                    student.studentId = studentId;
-//                    student.rollNumber =  data[1].toString();
-//                    student.fullName = data[2].toString();
-//                    student.totalCredits = 0;
-//                    student.programName = data[6].toString();
-//                    student.capstonePercent = (int) data[7];
-//                    student.curriculumIds = new ArrayList<>();
-//                    studentMap.put(studentId, student);
-//                }
-//
-//                student.totalCredits += subjectCredit;
-//                boolean isExisted = false;
-//                for (Integer curriculumId : student.curriculumIds) {
-//                    if (curriculumId == subjectCurriculumId) {
-//                        isExisted = true;
-//                        break;
-//                    }
-//                }
-//                if (!isExisted) student.curriculumIds.add(subjectCurriculumId);
-//            }
-//
-//            // Get max credits for each student
-//            queryStr = "SELECT ds.StudentId, SUM(sub.Credits)" +
-//                    " FROM Document_Student ds" +
-//                    " INNER JOIN Curriculum c ON ds.CurriculumId = c.Id" +
-//                    " INNER JOIN Subject_Curriculum sc ON c.Id = sc.CurriculumId" +
-//                    " INNER JOIN Subject sub ON sc.SubjectId = sub.Id" +
-//                    " AND ds.StudentId IN (" + strStudentIds + ")" +
-//                    " GROUP BY ds.StudentId";
-//            query = em.createNativeQuery(queryStr);
-//            List<Object[]> studentMaxCredits = query.getResultList();
-//
-//            for (Object[] studentMaxCredit : studentMaxCredits) {
-//                int curStudentId = (int) studentMaxCredit[0];
-//                int maxCredits = (int) studentMaxCredit[1];
-//
-//                Credit_StudentModel student = studentMap.get(curStudentId);
-//                if (student != null) {
-//                    int capstoneCredits = Math.round(student.capstonePercent * maxCredits / 100);
-//                    if (student.totalCredits >= capstoneCredits) {
-//                        List<String> row = new ArrayList<>();
-//                        row.add(student.rollNumber);
-//                        row.add(student.fullName);
-//                        row.add(student.totalCredits + "");
-//                        row.add(student.totalCredits > capstoneCredits ? (student.totalCredits - capstoneCredits) + "" : "0");
-//                        result.add(row);
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        return result;
-//    }
-
-//    private class Credit_StudentModel {
-//        public int studentId;
-//        public String rollNumber;
-//        public String fullName;
-//        public int totalCredits;
-//        public String programName;
-//        public int capstonePercent;
-//        public List<Integer> curriculumIds;
-//    }
 
     private boolean isOJT(StudentEntity student, RealSemesterEntity semester) {
         int ojt = 9999;
         List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
-//        String subjectName = "";
         List<String> tmp = new ArrayList<>();
         for (DocumentStudentEntity doc : docs) {
             if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
@@ -847,7 +396,6 @@ public class GraduateController {
                 for (SubjectCurriculumEntity s : list) {
                     if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
                         ojt = s.getTermNumber();
-//                        subjectName = s.getSubjectId().getId();
                         tmp.add(s.getSubjectId().getId());
                         break;
                     }
@@ -855,24 +403,8 @@ public class GraduateController {
             }
         }
 
-        IMarksService service = new MarksServiceImpl();
-//        List<MarksEntity> marks = service.getStudentMarksById(student.getId());
-//        String finalSubjectName = subjectName;
-//        List<MarksEntity> processedMarks = marks.stream()
-//                .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(finalSubjectName))
-//                .collect(Collectors.toList());
-        int semesterId = Ultilities.GetSemesterIdBeforeThisId(semester.getId());
-        List<MarksEntity> marks = service.getMarkByConditions(semesterId, tmp, student.getId());
-        marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
-        marks = Ultilities.SortSemestersByMarks(marks);
         int require = ojt - 1 - Global.CompareSemesterGap(semester);
-//        if (student.getTerm() >= require) {
-
-        if (student.getRollNumber().equals("SE61790")) {
-            System.out.println();
-        }
-
-        if ((student.getTerm() >= require) && (marks.size() == 0 || !marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("studying")))) {
+        if (student.getTerm() >= require) {
             return true;
         } else {
             return false;
@@ -880,19 +412,15 @@ public class GraduateController {
     }
 
     private boolean isCapstone(StudentEntity student, RealSemesterEntity r1) {
-        IMarksService service = new MarksServiceImpl();
-
-        int capstone = 9999;
+        int ojt = 9999;
         List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
         List<String> tmp = new ArrayList<>();
-//        String subjectName = "";
         for (DocumentStudentEntity doc : docs) {
             if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
                 List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
                 for (SubjectCurriculumEntity s : list) {
                     if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
-                        capstone = s.getTermNumber();
-//                        subjectName = s.getSubjectId().getId();
+                        ojt = s.getTermNumber();
                         tmp.add(s.getSubjectId().getId());
                         break;
                     }
@@ -900,18 +428,8 @@ public class GraduateController {
             }
         }
 
-//        List<MarksEntity> marks = service.getStudentMarksById(student.getId());
-//        String finalSubjectName = subjectName;
-//        List<MarksEntity> processedMarks = marks.stream()
-//                .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(finalSubjectName))
-//                .collect(Collectors.toList());
-
-        List<MarksEntity> marks = service.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(r1.getId()), tmp, student.getId());
-        marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
-        marks = Ultilities.SortSemestersByMarks(marks);
-        int require = capstone - 1 - Global.CompareSemesterGap(r1);
-//        if (student.getTerm() == capstone - 1) {
-        if ((student.getTerm() >= require) && (marks.size() == 0 || !marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("studying")))) {
+        int require = ojt - 1 - Global.CompareSemesterGap(r1);
+        if (student.getTerm() >= require) {
             return true;
         } else {
             return false;
@@ -923,12 +441,11 @@ public class GraduateController {
 
         int programId = Integer.parseInt(params.get("programId"));
         int semesterId = Integer.parseInt(params.get("semesterId"));
+
+        IRealSemesterService service = new RealSemesterServiceImpl();
+        RealSemesterEntity semester = service.findSemesterById(semesterId);
+
         boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
-
-        String type = params.get("type");
-
-        IStudentService studentService = new StudentServiceImpl();
-        IMarksService marksService = new MarksServiceImpl();
 
         List<StudentEntity> students;
         if (programId < 0) {
@@ -937,34 +454,27 @@ public class GraduateController {
             students = studentService.getStudentByProgram(programId);
         }
 
-//        if (type.equals("Graduate")) {
-//            students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
-//        } else
-//        if (type.equals("OJT")) {
-//
-//        } else if (type.equals("SWP")) {
-//            students = students.stream().filter(c -> c.getTerm() >= 9).collect(Collectors.toList());
-//        }
-//        if (programService.getProgramById(programId).getName().contains("SE")) {
-//        } else if (programService.getProgramById(programId).getName().contains("BA")) {
-//            students = students.stream().filter(c -> c.getTerm() == 5).collect(Collectors.toList());
-//        } else {
-//            students = students.stream().filter(c -> c.getTerm() == 6).collect(Collectors.toList());
-//        }
+        EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
+        EntityManager em = fac.createEntityManager();
 
-        IRealSemesterService service = new RealSemesterServiceImpl();
-        RealSemesterEntity r1 = service.findSemesterById(semesterId);
+//        IMarksService marksService = new MarksServiceImpl();
 
-        students = students.stream().filter(c -> isCapstone(c, r1)).collect(Collectors.toList());
+        students = students.stream().filter(c -> isCapstone(c, semester)).collect(Collectors.toList());
+
+        List<MarksEntity> map = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true AND a.subjectMarkComponentId.subjectId.type = 2 AND (LOWER(a.status) LIKE '%studying%' OR LOWER(a.status) LIKE '%pass%')", MarksEntity.class)
+                .getResultList()
+                .stream()
+                .filter(Ultilities.distinctByKey(c -> c.getStudentId().getId()))
+                .collect(Collectors.toList());
 
         int i = 1;
-//        StudentDetail detail = new StudentDetail();
         for (StudentEntity student : students) {
 
             List<SubjectCurriculumEntity> subjects = new ArrayList<>();
 
-            int capstone = 1;
+            int ojt = 1;
             List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+//            List<String> tmp = new ArrayList<>();
             for (DocumentStudentEntity doc : docs) {
                 if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
                     List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
@@ -972,184 +482,75 @@ public class GraduateController {
                         if (!subjects.contains(s)) {
                             subjects.add(s);
                             if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
-                                capstone = s.getTermNumber();
+                                ojt = s.getTermNumber();
+//                                tmp.add(s.getSubjectId().getId());
                             }
                         }
                     }
                 }
             }
-
-//            if (type.equals("OJT")) {
-//
-//            } else if (type.equals("SWP")) {
-//                subjects = subjects.stream().distinct().collect(Collectors.toList());
-//            }
-
-//            subjects = subjects.stream().filter(c -> c.getSubjectId().getType() != SubjectTypeEnum.OJT.getId()).distinct().collect(Collectors.toList());
-
-//                boolean aye = false;
-
-            // CHECK OJT DIEU KIEN DU THU KHAC NHAU
-//                Suggestion suggestion = detail.processSuggestion(student.getId(), semester.getSemester());
-//                List<List<String>> result2 = suggestion.getData();
-//                List<String> brea = new ArrayList<>();
-//                brea.add("break");
-//                brea.add("");
-//                int index = result2.indexOf(brea);
-//                if (index > -1) {
-//                    if (suggestion.isDuchitieu()) {
-//                        result2 = result2.subList(index + 1, result2.size());
-//                    } else {
-//                        result2 = result2.subList(0, index);
-//                    }
-//                }
-//                for (List<String> r : result2) {
-//                    SubjectCurriculumEntity s = subjects.stream().filter(c -> c.getSubjectId().getId().equals(r.get(0))).findFirst().get();
-//                    if (type.equals("OJT")) {
-//                        if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
-//                            aye = true;
-//                            break;
-//                        }
-//                    } else if (type.equals("SWP")) {
-//                        if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
-//                            aye = true;
-//                            break;
-//                        }
-//                    }
-//                }
-
-//                if (aye) {
 
             System.out.println(i + " - " + students.size());
 
-//            List<SubjectCurriculumEntity> processedSub = subjects;
-            List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
-            for (SubjectCurriculumEntity c : subjects) {
-                if (c.getTermNumber() >= 1 && c.getTermNumber() < capstone) {
-                    processedSub.add(c);
-                }
+//            List<MarksEntity> marks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semester.getId()), tmp, student.getId());
+//            marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
+//            marks = Ultilities.SortSemestersByMarks(marks);
+
+            boolean req = false;
+            if (map.stream().anyMatch(c -> c.getStudentId().getId() == student.getId())) {
+                req = true;
             }
-
-            List<String> tmp = new ArrayList<>();
-            for (SubjectCurriculumEntity s : processedSub) {
-                if (!tmp.contains(s.getSubjectId().getId())) tmp.add(s.getSubjectId().getId());
-            }
-
-            List<MarksEntity> marks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semesterId), tmp, student.getId());
-//            List<MarksEntity> marks = marksService.getMarkByConditions(semesterId, tmp, student.getId());
-            marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
-            marks = Ultilities.SortSemestersByMarks(marks);
-
-//            List<MarksEntity> finalMarks = marks;
-//            tmp.stream().filter(c -> !finalMarks.stream().anyMatch(a -> a
-//                    .getSubjectMarkComponentId()
-//                    .getSubjectId()
-//                    .getId()
-//                    .equals(c))).forEach(c -> System.out.println("môn" + c + " không có điểm"));
-
-            //            Map<String, List<MarksEntity>> map = marks.stream()
-//                    .collect(Collectors.groupingBy(c -> c.getSubjectMarkComponentId().getSubjectId().getId()));
 //            for (MarksEntity m : marks) {
-//                if (map.get(m.getSubjectMarkComponentId().getSubjectId().getId()) == null) {
-//                    List<MarksEntity> l = new ArrayList<>();
-//                    l.add(m);
-//                    map.put(m.getSubjectMarkComponentId().getSubjectId().getId(), l);
-//                } else {
-//                    map.get(m.getSubjectMarkComponentId().getSubjectId().getId()).add(m);
+//                if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("studying")) {
+//                    req = true;
+//                    break;
 //                }
 //            }
 
-//            int required = 0;
-            int required = student.getProgramId().getGraduateCredits();
-//            for (SubjectCurriculumEntity s : processedSub) {
-//                required += s.getSubjectCredits();
-//            }
-
-//            if (type.equals("OJT")) {
-//
-//            } else if (type.equals("SWP")) {
-//                required = student.getProgramId().getSpecializedCredits();
-//            }
-//            for (SubjectCurriculumEntity s : processedSub) {
-//                if (s.getSubjectCredits() != null) {
-//                    required += s.getSubjectCredits();
-//                }
-//            }
-
-            int percent = 0;
-//            if (type.equals("Graduate")) {
-//                percent = student.getProgramId().getGraduate();
-//            } else
-//            if (type.equals("OJT")) {
-//                percent = student.getProgramId().getOjt();
-//            } else if (type.equals("SWP")) {
-//                percent = student.getProgramId().getCapstone();
-//            }
-
-            percent = student.getProgramId().getCapstone();
-
-//            int tongtinchi = student.getPassCredits();
-            int tongtinchi = 0;
-            for (SubjectCurriculumEntity sub : processedSub) {
-                List<MarksEntity> subMarks = marks
-                        .stream()
-                        .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub.getSubjectId().getId()))
-                        .collect(Collectors.toList());
-                if (subMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-                        c.getStatus().toLowerCase().contains("exempt"))) {
-                    tongtinchi += sub.getSubjectCredits();
-                } else {
-                    boolean dacong = false;
-                    List<SubjectEntity> replacers = sub.getSubjectId().getSubjectEntityList();
-                    for (SubjectEntity replacer : replacers) {
-                        List<MarksEntity> replaceMarks = marks
-                                .stream()
-                                .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
-                                .collect(Collectors.toList());
-                        if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-                                c.getStatus().toLowerCase().contains("exempt"))) {
-                            tongtinchi += sub.getSubjectCredits();
-                            dacong = true;
-                        }
-                    }
-                    if (!dacong) {
-                        List<SubjectEntity> replacersFirst = sub.getSubjectId().getSubjectEntityList1();
-                        for (SubjectEntity repls : replacersFirst) {
-                            List<SubjectEntity> reps = repls.getSubjectEntityList();
-                            for (SubjectEntity replacer : reps) {
-                                List<MarksEntity> replaceMarks = marks
-                                        .stream()
-                                        .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
-                                        .collect(Collectors.toList());
-                                if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-                                        c.getStatus().toLowerCase().contains("exempt"))) {
-                                    tongtinchi += sub.getSubjectCredits();
-                                }
-                            }
-                        }
+            if (!req) {
+                List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
+                for (SubjectCurriculumEntity c : subjects) {
+                    if (c.getTermNumber() >= 1 && c.getTermNumber() < ojt) {
+                        processedSub.add(c);
                     }
                 }
-            }
 
-            List<String> t = new ArrayList<>();
-            t.add(student.getRollNumber());
-            t.add(student.getFullName());
-            t.add(String.valueOf(tongtinchi));
-            t.add(String.valueOf((int)((required * percent * 1.0) / 100)));
-            t.add(String.valueOf(student.getId()));
+                int required = 0;
 
-            if (isGraduate) {
-                if (tongtinchi >= (int)((required * percent * 1.0) / 100)) {
-                    data.add(t);
+                for (SubjectCurriculumEntity s : processedSub) {
+                    if (s.getSubjectCredits() != null) {
+                        required += s.getSubjectCredits();
+                    }
+                }
+
+                int percent = student.getProgramId().getCapstone();
+
+                int tongtinchi = student.getPassCredits();
+
+                List<String> t = new ArrayList<>();
+                t.add(student.getRollNumber());
+                t.add(student.getFullName());
+                t.add(String.valueOf(student.getTerm()));
+                t.add(String.valueOf(tongtinchi));
+                t.add(String.valueOf((int) ((required * percent * 1.0) / 100)));
+                t.add(String.valueOf(student.getId()));
+
+                if (isGraduate) {
+                    if (tongtinchi >= (int) ((required * percent * 1.0) / 100)) {
+                        data.add(t);
+                    }
+                } else {
+                    if (tongtinchi < (int) ((required * percent * 1.0) / 100)) {
+                        data.add(t);
+                    }
                 }
             } else {
-                if (tongtinchi < (int)((required * percent * 1.0) / 100)) {
-                    data.add(t);
-                }
+                System.out.println("dang hoc hoac da pass");
             }
 
             i++;
         }
+
         return data;
     }
 }

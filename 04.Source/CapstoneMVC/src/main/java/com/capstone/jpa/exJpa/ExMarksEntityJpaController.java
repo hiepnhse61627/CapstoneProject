@@ -825,14 +825,19 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
         EntityManager em = getEntityManager();
 
-        String queryStr = "select a from MarksEntity a where a.isActivated = true and a.studentId.id = :id and a.semesterId.id IN :listSemester";
+        String queryStr = "select a from MarksEntity a where a.isActivated = true and a.semesterId.id IN :listSemester";
         if (subjects != null && !subjects.isEmpty()) {
             queryStr += " and a.subjectMarkComponentId.subjectId.id IN :sub";
+        }
+        if (studentId >= 0) {
+            queryStr += " and a.studentId.id = :id";
         }
 
         TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
         query.setParameter("listSemester", allSemesters);
-        query.setParameter("id", studentId);
+        if (studentId >= 0) {
+            query.setParameter("id", studentId);
+        }
         if (subjects != null && !subjects.isEmpty()) {
             query.setParameter("sub", subjects);
         }
@@ -861,7 +866,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         List<MarksEntity> marksEntities = new ArrayList<>();
         try {
             String sqlString = "SELECT m FROM MarksEntity m WHERE m.subjectMarkComponentId.subjectId.id = :subjectCd " +
-                                                             "AND m.semesterId.id = :semesterId";
+                    "AND m.semesterId.id = :semesterId";
             if (studentId != 0) {
                 sqlString += " AND m.studentId.id = :studentId";
             }
