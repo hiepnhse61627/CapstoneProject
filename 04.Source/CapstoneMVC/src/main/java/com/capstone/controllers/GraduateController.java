@@ -311,11 +311,11 @@ public class GraduateController {
                 System.out.println();
             }
 
-//            List<SubjectCurriculumEntity> subjects = new ArrayList<>();
-            List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
+            List<SubjectCurriculumEntity> subjects = new ArrayList<>();
+//            List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
 
 
-            int ojt = 1;
+            int ojt = -1;
 //            List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
             List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentListByStudentId(student.getId());
 //            List<String> tmp = new ArrayList<>();
@@ -323,11 +323,11 @@ public class GraduateController {
                 if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
                     List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
                     for (SubjectCurriculumEntity s : list) {
-                        if (!processedSub.contains(s)) {
-                            processedSub.add(s);
+                        if (!subjects.contains(s)) {
+                            subjects.add(s);
                             if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
-//                                ojt = s.getTermNumber();
-                                break;
+                                ojt = s.getTermNumber();
+//                                break;
 //                                tmp.add(s.getSubjectId().getId());
                             }
                         }
@@ -351,12 +351,18 @@ public class GraduateController {
 //            }
 
             if (!req) {
-//                List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
-//                for (SubjectCurriculumEntity c : subjects) {
-//                    if (c.getTermNumber() >= 1 && c.getTermNumber() < ojt) {
-//                        processedSub.add(c);
-//                    }
-//                }
+                List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
+                for (SubjectCurriculumEntity c : subjects) {
+                    if (ojt > 0) {
+                        if (c.getTermNumber() >= 0 && c.getTermNumber() < ojt) {
+                            processedSub.add(c);
+                        }
+                    } else {
+                        if (c.getTermNumber() >= 0) {
+                            processedSub.add(c);
+                        }
+                    }
+                }
 
                 int required = 0;
 
