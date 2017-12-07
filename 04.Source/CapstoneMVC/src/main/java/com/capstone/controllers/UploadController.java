@@ -1303,11 +1303,10 @@ public class UploadController {
                                             dacongList.add(replacer.getId());
 
                                             System.out.println(totalPassCredits + " - " + sub.getSubjectId().getId() + " - " + replacer.getId() + " - " + sub.getSubjectCredits());
-
-                                            dacong = true;
-                                            break;
                                         }
 
+                                        dacong = true;
+                                        break;
                                     }
                                 }
                                 if (!dacong) {
@@ -1325,10 +1324,9 @@ public class UploadController {
                                                 dacongList.add(repls.getId());
 
                                                 System.out.println(totalPassCredits + " - " + sub.getSubjectId().getId() + " - " + repls.getId() + " - " + sub.getSubjectCredits());
-
-                                                break;
                                             }
 
+                                            break;
                                         } else {
                                             List<SubjectEntity> reps = repls.getSubjectEntityList();
                                             for (SubjectEntity replacer : reps) {
@@ -1344,9 +1342,9 @@ public class UploadController {
                                                         dacongList.add(replacer.getId());
 
                                                         System.out.println(totalPassCredits + " - " + sub.getSubjectId().getId() + " - " + replacer.getId() + " - " + sub.getSubjectCredits());
-
-                                                        break;
                                                     }
+
+                                                    break;
                                                 }
                                             }
                                         }
