@@ -469,8 +469,14 @@ public class StudentArrangementController {
         try {
             List<StudentEntity> students = studentService.findAllStudents();
             Map<String, StudentEntity> studentMap = new HashMap<>();
-            for (StudentEntity s : students) {
-                studentMap.put(s.getRollNumber(), s);
+            for (StudentEntity student : students) {
+                studentMap.put(student.getRollNumber(), student);
+            }
+
+            List<SubjectEntity> subjects = subjectService.getAllSubjects();
+            Map<String, SubjectEntity> subjectMap = new HashMap<>();
+            for (SubjectEntity subject : subjects) {
+                subjectMap.put(subject.getId(), subject);
             }
 
             Map<String, SubjectList> studentSubjectSuggestion = this.getSubjectSuggestionList(fileSuggestion);
@@ -485,35 +491,37 @@ public class StudentArrangementController {
             for (String rollNumber : studentSubjectSuggestion.keySet()) {
                 SubjectList subjectList = studentSubjectSuggestion.get(rollNumber);
 
-                if (!subjectList.suggestionList.isEmpty()) {
+                if (!subjectList.nextCourseList.isEmpty()) {
                     StudentEntity student = studentMap.get(rollNumber);
                     StudentArrangementModel std = new StudentArrangementModel();
                     std.student = studentMap.get(rollNumber);
-                    std.numOfSubjects = subjectList.suggestionList.size();
+                    std.numOfSubjects = subjectList.nextCourseList.size();
 
                     List<SubjectCurriculumEntity> subjectCurriculumList = this.getSubjectCurriculumList(student);
-                    for (String subjectCode : subjectList.suggestionList) {
-                        if (Ultilities.containsIgnoreCase(subjectCode, "LAB")) {
-                            String otherShift = student.getShift().equals("AM") ? "PM" : "AM";
-                            Map<String, List<StudentEntity>> subjectMap = shiftMapForLAB.get(otherShift);
-                            List<StudentEntity> stdList = subjectMap.get(subjectCode);
-                            if (stdList == null) {
-                                stdList = new ArrayList<>();
-                                subjectMap.put(subjectCode, stdList);
-                            }
-                            stdList.add(student);
-                            --std.numOfSubjects;
-                        } else {
-                            int pos = -1;
-                            for (int i = 0; i < subjectCurriculumList.size(); ++i) {
-                                if (subjectCurriculumList.get(i).getSubjectId().getId().equals(subjectCode)) {
-                                    pos = i;
-                                    break;
+                    for (String subjectCode : subjectList.nextCourseList) {
+                        if (subjectMap.get(subjectCode).getType() == 0) {
+                            if (Ultilities.containsIgnoreCase(subjectCode, "LAB")) {
+                                String otherShift = student.getShift().equals("AM") ? "PM" : "AM";
+                                Map<String, List<StudentEntity>> subjectMapForLAB = shiftMapForLAB.get(otherShift);
+                                List<StudentEntity> stdList = subjectMapForLAB.get(subjectCode);
+                                if (stdList == null) {
+                                    stdList = new ArrayList<>();
+                                    subjectMapForLAB.put(subjectCode, stdList);
                                 }
-                            }
+                                stdList.add(student);
+                                --std.numOfSubjects;
+                            } else {
+                                int pos = -1;
+                                for (int i = 0; i < subjectCurriculumList.size(); ++i) {
+                                    if (subjectCurriculumList.get(i).getSubjectId().getId().equals(subjectCode)) {
+                                        pos = i;
+                                        break;
+                                    }
+                                }
 
-                            if (pos >= 0 && pos <= 4) {
-                                std.subjects[pos] = subjectCode;
+                                if (pos >= 0 && pos <= 5) {
+                                    std.subjects[pos] = subjectCode;
+                                }
                             }
                         }
                     }
@@ -527,14 +535,14 @@ public class StudentArrangementController {
             int count;
             int classNumber;
             for (String shift : shiftMapForLAB.keySet()) {
-                Map<String, List<StudentEntity>> subjectMap = shiftMapForLAB.get(shift);
-                for (String subjectCode : subjectMap.keySet()) {
+                Map<String, List<StudentEntity>> subjectMapForLAB = shiftMapForLAB.get(shift);
+                for (String subjectCode : subjectMapForLAB.keySet()) {
                     count = 0;
                     classNumber = 1;
 
-                    SubjectEntity subject = subjectService.findSubjectById(subjectCode);
+                    SubjectEntity subject = subjectMap.get(subjectCode);
 
-                    List<StudentEntity> list = subjectMap.get(subjectCode);
+                    List<StudentEntity> list = subjectMapForLAB.get(subjectCode);
                     List<String> dataRow;
                     for (StudentEntity student : list) {
                         if (count == 25) {
@@ -556,78 +564,71 @@ public class StudentArrangementController {
                 }
             }
 
-            // Group by StudentKey
-            Map<StudentKey, List<StudentArrangementModel>> groupStudentsMap = new HashMap<>();
-            for (StudentArrangementModel student : studentList) {
-                StudentKey key = new StudentKey();
-                key.numOfSubjects = student.numOfSubjects;
-                key.termNumber = student.student.getTerm();
-                key.shift = student.student.getShift();
-                key.subject1 = student.subjects[0];
-                key.subject2 = student.subjects[1];
-                key.subject3 = student.subjects[2];
-                key.subject4 = student.subjects[3];
-                key.subject5 = student.subjects[4];
-
-                List<StudentArrangementModel> list = groupStudentsMap.get(key);
-                if (list == null) {
-                    list = new ArrayList<>();
-                    groupStudentsMap.put(key, list);
-                }
-                list.add(student);
-            }
-
-            // Sort list in map
-            for (StudentKey key : groupStudentsMap.keySet()) {
-                List<StudentArrangementModel> list = groupStudentsMap.get(key);
-                list.sort(new Comparator<StudentArrangementModel>() {
-                    @Override
-                    public int compare(StudentArrangementModel s1, StudentArrangementModel s2) {
-                        return s1.student.getTerm().compareTo(s2.student.getTerm());
-                    }
-                }.thenComparing(new Comparator<StudentArrangementModel>() {
-                    @Override
-                    public int compare(StudentArrangementModel s1, StudentArrangementModel s2) {
-                        return Integer.compare(s2.numOfSubjects, s1.numOfSubjects);
-                    }
-                }));
-            }
-
             // Shift, Subject, Slot, Ordinal number
             Map<String, Map<String, Map<String, Integer>>> shiftOrdinalNumberMap = new HashMap<>();
             shiftOrdinalNumberMap.put("AM", new HashMap<>());
             shiftOrdinalNumberMap.put("PM", new HashMap<>());
 
-            // Create class
-            for (StudentKey key : groupStudentsMap.keySet()) {
-                List<StudentArrangementModel> allList = groupStudentsMap.get(key);
-                List<StudentArrangementModel> amList = new ArrayList<>();
-                List<StudentArrangementModel> pmList = new ArrayList<>();
-
-                for (StudentArrangementModel std : allList) {
-                    if (std.student.getShift().equals("AM")) {
-                        amList.add(std);
-                    } else {
-                        pmList.add(std);
+            for (int i = 0; i <= 5; i++) {
+                // Group by StudentKey
+                Map<StudentKey, List<StudentArrangementModel>> groupStudentsMap = new HashMap<>();
+                for (StudentArrangementModel student : studentList) {
+                    if (student.student.getRollNumber().equals("SA130031")) {
+                        System.out.println();
                     }
+                    StudentKey key = new StudentKey();
+                    key.numOfSubjects = student.numOfSubjects;
+                    key.termNumber = student.student.getTerm();
+                    key.shift = student.student.getShift();
+                    key.subject = student.subjects[i];
+
+                    List<StudentArrangementModel> list = groupStudentsMap.get(key);
+                    if (list == null) {
+                        list = new ArrayList<>();
+                        groupStudentsMap.put(key, list);
+                    }
+                    list.add(student);
                 }
 
-                for (int pos = 0; pos < 5; pos++) {
-                    String subjectCode = null;
-                    switch (pos) {
-                        case 0: subjectCode = key.subject1; break;
-                        case 1: subjectCode = key.subject2; break;
-                        case 2: subjectCode = key.subject3; break;
-                        case 3: subjectCode = key.subject4; break;
-                        case 4: subjectCode = key.subject5; break;
-                        default:
+                // Sort list in map
+                for (StudentKey key : groupStudentsMap.keySet()) {
+                    List<StudentArrangementModel> list = groupStudentsMap.get(key);
+                    list.sort(new Comparator<StudentArrangementModel>() {
+                        @Override
+                        public int compare(StudentArrangementModel s1, StudentArrangementModel s2) {
+                            return s1.student.getTerm().compareTo(s2.student.getTerm());
+                        }
+                    }.thenComparing(new Comparator<StudentArrangementModel>() {
+                        @Override
+                        public int compare(StudentArrangementModel s1, StudentArrangementModel s2) {
+                            return Integer.compare(s2.numOfSubjects, s1.numOfSubjects);
+                        }
+                    }));
+                }
+
+                // Create class
+                for (StudentKey key : groupStudentsMap.keySet()) {
+                    List<StudentArrangementModel> allList = groupStudentsMap.get(key);
+                    List<StudentArrangementModel> amList = new ArrayList<>();
+                    List<StudentArrangementModel> pmList = new ArrayList<>();
+
+                    for (StudentArrangementModel std : allList) {
+                        if (std.student.getShift().equals("AM")) {
+                            amList.add(std);
+                        } else {
+                            pmList.add(std);
+                        }
                     }
 
+                    String subjectCode = key.subject;
                     if (!subjectCode.isEmpty()) {
-                        this.arrangeStudentIntoSlot(displayList, amList, shiftOrdinalNumberMap.get("AM"), pos, "AM", subjectCode);
-                        this.arrangeStudentIntoSlot(displayList, pmList, shiftOrdinalNumberMap.get("PM"), pos, "PM", subjectCode);
+                        this.arrangeStudentIntoSlot(displayList, amList, shiftOrdinalNumberMap.get("AM"),
+                                subjectMap, "AM", subjectCode);
+                        this.arrangeStudentIntoSlot(displayList, pmList, shiftOrdinalNumberMap.get("PM"),
+                                subjectMap, "PM", subjectCode);
                     }
                 }
+
             }
             this.process2 = true;
 
@@ -656,7 +657,8 @@ public class StudentArrangementController {
 
     private void arrangeStudentIntoSlot(List<List<String>> displayList, List<StudentArrangementModel> studentList,
                                         Map<String, Map<String, Integer>> subjectOrdinalNumberMap,
-                                        int currentSubjectPosition, String shift, String subjectCode) {
+                                        Map<String, SubjectEntity> subjectMap,
+                                        String shift, String subjectCode) {
         if (studentList.isEmpty()) {
             return;
         }
@@ -667,17 +669,17 @@ public class StudentArrangementController {
             subjectOrdinalNumberMap.put(subjectCode, ordinalNumberMap);
         }
 
-        String[] slotName = new String[] { "S21", "S22", "S23", "S31", "S32" } ;
+        String[] slotName = new String[]{"S21", "S22", "S23", "S31", "S32", "S33"};
 
-        // Create 5 slots
+        // Create 6 slots
         List<List<StudentArrangementModel>> studentsInSlot = new ArrayList<>();
-        for (int i = 1; i <= 5; ++i) {
+        for (int i = 1; i <= 6; ++i) {
             studentsInSlot.add(new ArrayList<>());
         }
 
         for (StudentArrangementModel student : studentList) {
             int slotNotLearnedPosition = -1;
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i <= 5; i++) {
                 if (student.slots[i] == null || student.slots[i] == false) {
                     slotNotLearnedPosition = i;
                     break;
@@ -690,9 +692,9 @@ public class StudentArrangementController {
         Integer ordinalNumber;
         while (!studentsInSlot.get(0).isEmpty() || !studentsInSlot.get(1).isEmpty()
                 || !studentsInSlot.get(2).isEmpty() || !studentsInSlot.get(3).isEmpty()
-                || !studentsInSlot.get(4).isEmpty()) {
+                || !studentsInSlot.get(4).isEmpty() || !studentsInSlot.get(5).isEmpty()) {
             // 3 phần tử đầu của list là 0,1,2 đại diện cho slot 1,2,3 của T2,T4,T6
-            // 2 phần tử cuối của list là 3,4 đại diện cho slot 1,2 của T3,T5
+            // 2 phần tử cuối của list là 3,4,5 đại diện cho slot 1,2 của T3,T5
             // Lấy số sv lớn nhất (ngày chẵn và ngày lẻ) và vị trí max của list
             int maxStudentsOfEvenDays = 0;
             int maxPositionOfEvenDays = 0;
@@ -705,7 +707,7 @@ public class StudentArrangementController {
 
             int maxStudentsOfOddDays = 0;
             int maxPositionOfOddDays = 0;
-            for (int i = 3; i < 5; i++) {
+            for (int i = 3; i < 6; i++) {
                 if (maxStudentsOfOddDays < studentsInSlot.get(i).size()) {
                     maxStudentsOfOddDays = studentsInSlot.size();
                     maxPositionOfOddDays = i;
@@ -739,8 +741,7 @@ public class StudentArrangementController {
             }
 
             // Chọn ra 25 sinh viên đầu danh sách để xếp lớp
-            ISubjectService subjectService = new SubjectServiceImpl();
-            SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
+            SubjectEntity subjectEntity = subjectMap.get(subjectCode);
             List<StudentArrangementModel> finalStudentList = studentsInSlot.get(finalPosition)
                     .stream().skip(0).limit(25).collect(Collectors.toList());
             String currentClass = subjectCode + "_" + shift + "_" + ordinalNumber + "_" + slotName[finalPosition];
@@ -1103,10 +1104,10 @@ public class StudentArrangementController {
         public Boolean[] slots; // [0, 1, 2]: Slot 1,2,3 of Monday, Wednesday, Friday; [3, 4]: Slot 1,2 of Tuesday, Thursday
 
         public StudentArrangementModel() {
-            this.subjects = new String[5];
-            this.slots = new Boolean[5];
+            this.subjects = new String[6];
+            this.slots = new Boolean[6];
 
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 6; i++) {
                 this.subjects[i] = "";
             }
         }
@@ -1116,11 +1117,7 @@ public class StudentArrangementController {
         public int termNumber;
         public int numOfSubjects;
         public String shift;
-        public String subject1;
-        public String subject2;
-        public String subject3;
-        public String subject4;
-        public String subject5;
+        public String subject;
 
         @Override
         public boolean equals(Object o) {
@@ -1132,11 +1129,7 @@ public class StudentArrangementController {
             if (termNumber != that.termNumber) return false;
             if (numOfSubjects != that.numOfSubjects) return false;
             if (!shift.equals(that.shift)) return false;
-            if (!subject1.equals(that.subject1)) return false;
-            if (!subject2.equals(that.subject2)) return false;
-            if (!subject3.equals(that.subject3)) return false;
-            if (!subject4.equals(that.subject4)) return false;
-            return subject5.equals(that.subject5);
+            return subject.equals(that.subject);
         }
 
         @Override
@@ -1144,11 +1137,7 @@ public class StudentArrangementController {
             int result = termNumber;
             result = 31 * result + numOfSubjects;
             result = 31 * result + shift.hashCode();
-            result = 31 * result + subject1.hashCode();
-            result = 31 * result + subject2.hashCode();
-            result = 31 * result + subject3.hashCode();
-            result = 31 * result + subject4.hashCode();
-            result = 31 * result + subject5.hashCode();
+            result = 31 * result + subject.hashCode();
             return result;
         }
     }

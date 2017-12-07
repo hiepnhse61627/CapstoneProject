@@ -141,11 +141,11 @@ public class ExportStudentArrangementBySlotImpl implements IExportObject {
             this.createTitleForStatisticSheet(spreadsheet);
 
             spreadsheet.setColumnWidth(2, 4200);
-            spreadsheet.setColumnWidth(8, 4200);
-            spreadsheet.setColumnWidth(14, 4100);
-            spreadsheet.setColumnWidth(15, 4200);
-            spreadsheet.setColumnWidth(21, 4200);
-            spreadsheet.setColumnWidth(27, 4200);
+            spreadsheet.setColumnWidth(9, 4200);
+            spreadsheet.setColumnWidth(16, 4100);
+            spreadsheet.setColumnWidth(17, 4200);
+            spreadsheet.setColumnWidth(24, 4200);
+            spreadsheet.setColumnWidth(31, 4200);
 
             List<String> slotList = new ArrayList<>();
             slotList.add("S21");
@@ -153,6 +153,7 @@ public class ExportStudentArrangementBySlotImpl implements IExportObject {
             slotList.add("S23");
             slotList.add("S31");
             slotList.add("S32");
+            slotList.add("S33");
 
             int ordinalNumber = 1;
             int currentRow = 3;
@@ -162,10 +163,10 @@ public class ExportStudentArrangementBySlotImpl implements IExportObject {
             int totalStudentAM = 0;
             int totalStudentPM = 0;
             
-            int[] countClassAM = new int[5];
-            int[] countClassPM = new int[5];
-            int[] countStudentAM = new int[5];
-            int[] countStudentPM = new int[5];
+            int[] countClassAM = new int[6];
+            int[] countClassPM = new int[6];
+            int[] countStudentAM = new int[6];
+            int[] countStudentPM = new int[6];
 
             String previousSubject = "";
             String previousShift = "";
@@ -287,10 +288,10 @@ public class ExportStudentArrangementBySlotImpl implements IExportObject {
                     totalClassAM = 0;
                     totalClassPM = 0;
 
-                    countClassAM = new int[5];
-                    countClassPM = new int[5];
-                    countStudentAM = new int[5];
-                    countStudentPM = new int[5];
+                    countClassAM = new int[6];
+                    countClassPM = new int[6];
+                    countStudentAM = new int[6];
+                    countStudentPM = new int[6];
 
                     if (currentShift.equals("AM")) {
                         ++totalClassAM;
@@ -380,8 +381,15 @@ public class ExportStudentArrangementBySlotImpl implements IExportObject {
     }
 
     private void createTitleForStatisticSheet(SXSSFSheet spreadsheet){
+        List<String> slotList = new ArrayList<>();
+        slotList.add("S21");
+        slotList.add("S22");
+        slotList.add("S23");
+        slotList.add("S31");
+        slotList.add("S32");
+        slotList.add("S33");
+
         Row row = spreadsheet.createRow(0);
-        
 
         Cell titleCell = row.createCell(0);
         titleCell.setCellValue("SỐ LƯỢNG LỚP VÀ SINH VIÊN");
@@ -389,115 +397,60 @@ public class ExportStudentArrangementBySlotImpl implements IExportObject {
 
         row = spreadsheet.createRow(2);
 
-        Cell tableCell = row.createCell(0);
+        int colNum = 0;
+        Cell tableCell = row.createCell(colNum++);
         tableCell.setCellValue("STT");
         tableCell.setCellStyle(tableHeaderStyle);
 
-        tableCell = row.createCell(1);
+        tableCell = row.createCell(colNum++);
         tableCell.setCellValue("Môn");
         tableCell.setCellStyle(tableHeaderStyle);
 
-        tableCell = row.createCell(2);
+        tableCell = row.createCell(colNum++);
         tableCell.setCellValue("Số lớp buổi sáng");
         tableCell.setCellStyle(tableHeaderStyle);
 
-        tableCell = row.createCell(3);
-        tableCell.setCellValue("S21");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(4);
-        tableCell.setCellValue("S22");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(5);
-        tableCell.setCellValue("S23");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(6);
-        tableCell.setCellValue("S31");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(7);
-        tableCell.setCellValue("S32");
-        tableCell.setCellStyle(tableHeaderStyle);
+        for (String slotName : slotList) {
+            tableCell = row.createCell(colNum++);
+            tableCell.setCellValue(slotName);
+            tableCell.setCellStyle(tableHeaderStyle);
+        }
         
-        tableCell = row.createCell(8);
+        tableCell = row.createCell(colNum++); // 9
         tableCell.setCellValue("Số lớp buổi chiều");
         tableCell.setCellStyle(tableHeaderStyle);
 
-        tableCell = row.createCell(9);
-        tableCell.setCellValue("S21");
-        tableCell.setCellStyle(tableHeaderStyle);
+        for (String slotName : slotList) {
+            tableCell = row.createCell(colNum++);
+            tableCell.setCellValue(slotName);
+            tableCell.setCellStyle(tableHeaderStyle);
+        }
 
-        tableCell = row.createCell(10);
-        tableCell.setCellValue("S22");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(11);
-        tableCell.setCellValue("S23");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(12);
-        tableCell.setCellValue("S31");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(13);
-        tableCell.setCellValue("S32");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(14);
+        tableCell = row.createCell(colNum++); // 16
         tableCell.setCellValue("Tổng số lớp");
         tableCell.setCellStyle(tableHeaderStyle);
 
-        tableCell = row.createCell(15);
+        tableCell = row.createCell(colNum++); // 17
         tableCell.setCellValue("Số SV buổi sáng");
         tableCell.setCellStyle(tableHeaderStyle);
 
-        tableCell = row.createCell(16);
-        tableCell.setCellValue("S21");
-        tableCell.setCellStyle(tableHeaderStyle);
+        for (String slotName : slotList) {
+            tableCell = row.createCell(colNum++);
+            tableCell.setCellValue(slotName);
+            tableCell.setCellStyle(tableHeaderStyle);
+        }
 
-        tableCell = row.createCell(17);
-        tableCell.setCellValue("S22");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(18);
-        tableCell.setCellValue("S23");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(19);
-        tableCell.setCellValue("S31");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(20);
-        tableCell.setCellValue("S32");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(21);
+        tableCell = row.createCell(colNum++); // 24
         tableCell.setCellValue("Số SV buổi chiều");
         tableCell.setCellStyle(tableHeaderStyle);
 
-        tableCell = row.createCell(22);
-        tableCell.setCellValue("S21");
-        tableCell.setCellStyle(tableHeaderStyle);
+        for (String slotName : slotList) {
+            tableCell = row.createCell(colNum++);
+            tableCell.setCellValue(slotName);
+            tableCell.setCellStyle(tableHeaderStyle);
+        }
 
-        tableCell = row.createCell(23);
-        tableCell.setCellValue("S22");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(24);
-        tableCell.setCellValue("S23");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(25);
-        tableCell.setCellValue("S31");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(26);
-        tableCell.setCellValue("S32");
-        tableCell.setCellStyle(tableHeaderStyle);
-
-        tableCell = row.createCell(27);
+        tableCell = row.createCell(colNum); // 31
         tableCell.setCellValue("Tổng số SV");
         tableCell.setCellStyle(tableHeaderStyle);
     }
