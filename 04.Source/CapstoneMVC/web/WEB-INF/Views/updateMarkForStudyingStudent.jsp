@@ -39,11 +39,17 @@
             <div class="form-group">
                 <button type="button" onclick="Update()" class="btn btn-success">Update</button>
             </div>
+
+            <div class="form-group">
+                <button type="button" onclick="UpdateStudentCredits()" class="btn btn-success">Cập nhật tín chỉ</button>
+            </div>
         </div>
     </div>
 </section>
 
 <script>
+    var isRunning;
+
     function Update() {
         var form = new FormData();
         form.append('updateFile', $('#updateFile')[0].files[0]);
@@ -94,6 +100,56 @@
                 console.log("task running");
                 if (running) {
                     setTimeout("waitForTaskFinish(isRunning)", 50);
+                }
+            }
+        });
+    }
+
+    function UpdateStudentCredits() {
+        swal({
+            title: 'Đang xử lý',
+            html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>' +
+            '<div id="progress" class="form-group"></div>',
+            type: 'info',
+            onOpen: function () {
+                isrunning = true;
+                swal.showLoading();
+                $.ajax({
+                    type: 'POST',
+                    url: '/updateStudentCredits',
+                    processData: false,
+                    contentType: false,
+                    success: function (result) {
+                        if (result.success) {
+                            isrunning = false;
+                            swal(
+                                'Thành công!',
+                                'Đã cập nhật tín chỉ của sinh viên!',
+                                'success'
+                            );
+                        } else {
+                            swal('Đã xảy ra lỗi!', result.message, 'error');
+                        }
+                    }
+                });
+                UpdateStudentCreditsProgress(isrunning);
+            },
+            allowOutsideClick: false
+        });
+
+    }
+
+    function UpdateStudentCreditsProgress(running) {
+        $.ajax({
+            type: "GET",
+            url: "/marks/getStatus",
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                $('#progress').html(
+                    "<div>(" + result.updateStudentCurrentLine + "/" + result.updateStudentTotalLine + ")</div>");
+                if (running) {
+                    setTimeout("UpdateStudentCreditsProgress(isrunning)", 50);
                 }
             }
         });
