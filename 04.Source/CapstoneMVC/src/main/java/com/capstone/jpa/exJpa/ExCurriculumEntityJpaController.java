@@ -158,6 +158,9 @@ public class ExCurriculumEntityJpaController extends CurriculumEntityJpaControll
             query.setParameter("name", name);
 
             entity = query.getSingleResult();
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.out.println(name);
         } finally {
             em.close();
         }

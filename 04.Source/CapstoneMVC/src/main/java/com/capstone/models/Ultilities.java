@@ -325,6 +325,31 @@ public class Ultilities {
                                 }
                             }
                         }
+
+                        for (SubjectEntity replace : sub.getSubjectEntityList1()) {
+                            List<MarksEntity> replaced = map.get(replace.getId());
+                            if (replaced != null) {
+                                replaced = SortSemestersByMarks(replaced);
+                                for (MarksEntity marks : replaced) {
+                                    if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                        return false;
+                                    }
+                                }
+                            }
+
+                            for (SubjectEntity rep : replace.getSubjectEntityList()) {
+                                List<MarksEntity> reps = map.get(rep.getId());
+                                if (reps != null) {
+                                    reps = SortSemestersByMarks(reps);
+                                    for (MarksEntity marks : reps) {
+                                        if (marks.getStatus().toLowerCase().contains("pass") || marks.getStatus().toLowerCase().contains("exempt")) {
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
                         return true;
                     } else {
                         return false;
