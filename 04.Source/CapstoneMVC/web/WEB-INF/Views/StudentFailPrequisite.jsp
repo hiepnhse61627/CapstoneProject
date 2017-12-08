@@ -264,7 +264,7 @@
 
         if (table == null || table == 'undefined') {
             table = $('#table').dataTable({
-                "bServerSide": true,
+                "bServerSide": false,
                 "bFilter": true,
                 "bRetrieve": true,
                 "sScrollX": "100%",

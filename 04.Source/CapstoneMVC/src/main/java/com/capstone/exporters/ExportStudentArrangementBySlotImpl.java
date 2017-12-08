@@ -32,11 +32,6 @@ public class ExportStudentArrangementBySlotImpl implements IExportObject {
     }
 
     @Override
-    public void setFileName(String name) {
-
-    }
-
-    @Override
     public void writeData(OutputStream os, Map<String, String> params, HttpServletRequest request) throws Exception {
         // Mã môn, Tên môn, MSSV, Tên sinh viên, Lớp, Buổi
         List<List<String>> studentList = (List<List<String>>) request.getSession().getAttribute("STUDENT_ARRANGEMENT_BY_SLOT_LIST");
