@@ -207,12 +207,29 @@ public class Ultilities {
                                                             }
                                                         }
                                                     }
+
                                                     for (SubjectEntity replace : tmp.getSubjectMarkComponentId().getSubjectId().getSubjectEntityList1()) {
+//                                                        List<MarksEntity> replaced = service.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), replace.getId(), "0");
+//                                                        if (replaced != null) {
+//                                                            replaced = SortSemestersByMarks(replaced);
+//                                                            for (MarksEntity marks : replaced) {
+//                                                                tmp = marks;
+//                                                                if (marks.getStatus().toLowerCase().contains("pass")) {
+//                                                                    isPass = true;
+//                                                                    break;
+//                                                                }
+//                                                            }
+//
+//                                                            if (!isPass) {
+//                                                                failedRow = new FailPrequisiteModel(tmp, m.getSubjectMarkComponentId().getSubjectId().getId(), m.getSemesterId().getSemester());
+//                                                            }
+//                                                        }
+
                                                         for (SubjectEntity r : replace.getSubjectEntityList()) {
-                                                            List<MarksEntity> replaced = service.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), r.getId(), "0");
-                                                            if (replaced != null) {
-                                                                replaced = SortSemestersByMarks(replaced);
-                                                                for (MarksEntity marks : replaced) {
+                                                            List<MarksEntity> replaced2 = service.getAllMarksByStudentAndSubject(tmp.getStudentId().getId(), r.getId(), "0");
+                                                            if (replaced2 != null) {
+                                                                replaced2 = SortSemestersByMarks(replaced2);
+                                                                for (MarksEntity marks : replaced2) {
                                                                     tmp = marks;
                                                                     if (marks.getStatus().toLowerCase().contains("pass")) {
                                                                         isPass = true;
