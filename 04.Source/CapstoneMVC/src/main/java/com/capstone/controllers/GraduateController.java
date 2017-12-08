@@ -481,6 +481,12 @@ public class GraduateController {
                 .filter(Ultilities.distinctByKey(c -> c.getStudentId().getId()))
                 .collect(Collectors.toList());
 
+        List<MarksEntity> hasOJT = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true AND a.subjectMarkComponentId.subjectId.type = 1 AND LOWER(a.status) LIKE '%pass%'", MarksEntity.class)
+                .getResultList()
+                .stream()
+                .filter(Ultilities.distinctByKey(c -> c.getStudentId().getId()))
+                .collect(Collectors.toList());
+
         IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
 
         int i = 1;
@@ -496,25 +502,23 @@ public class GraduateController {
 //            List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
 
 //
-//            int ojt = -1;
+            int ojtCredits = 0;
 //            List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
-//            List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentListByStudentId(student.getId());
-//            List<String> tmp = new ArrayList<>();
-//            for (DocumentStudentEntity doc : docs) {
-//                if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
-//                    List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
-//                    for (SubjectCurriculumEntity s : list) {
-//                        if (!subjects.contains(s)) {
-//                            subjects.add(s);
-//                            if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
-//                                ojt = s.getTermNumber();
-//                                break;
-//                                tmp.add(s.getSubjectId().getId());
-//                            }
-//                        }
-//                    }
-//                }
-//            }
+            List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentListByStudentId(student.getId());
+            for (DocumentStudentEntity doc : docs) {
+                if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
+                    List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                    for (SubjectCurriculumEntity s : list) {
+                        if (!subjects.contains(s)) {
+                            subjects.add(s);
+                            if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
+                                ojtCredits = s.getSubjectCredits();
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
 
 //            List<MarksEntity> marks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semester.getId()), tmp, student.getId());
 //            marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
@@ -556,6 +560,9 @@ public class GraduateController {
                 int percent = student.getProgramId().getCapstone();
 
                 int tongtinchi = student.getPassCredits();
+                if (hasOJT.stream().anyMatch(c ->  c.getStudentId().getId() == student.getId())) {
+                    tongtinchi = tongtinchi - ojtCredits;
+                }
 
                 List<String> t = new ArrayList<>();
                 t.add(student.getRollNumber());
