@@ -114,17 +114,17 @@ public class StudentFailPrequisite {
 
             List<List<String>> parent = processData(params);
 
-            String search = params.get("sSearch").toLowerCase();
-            parent = parent.stream().filter(c -> c.get(0).toLowerCase().contains(search) ||
-                    c.get(1).toLowerCase().contains(search) ||
-                    c.get(8).toLowerCase().contains(search)).collect(Collectors.toList());
+//            String search = params.get("sSearch").toLowerCase();
+//            parent = parent.stream().filter(c -> c.get(0).toLowerCase().contains(search) ||
+//                    c.get(1).toLowerCase().contains(search) ||
+//                    c.get(8).toLowerCase().contains(search)).collect(Collectors.toList());
 
-            List<List<String>> displayList = new ArrayList<>();
-            if (!parent.isEmpty()) {
-                displayList = parent.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
-            }
+//            List<List<String>> displayList = new ArrayList<>();
+//            if (!parent.isEmpty()) {
+//                displayList = parent.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+//            }
 
-            JsonArray output = (JsonArray) new Gson().toJsonTree(displayList);
+            JsonArray output = (JsonArray) new Gson().toJsonTree(parent);
 
             jsonObj.addProperty("iTotalRecords", parent.size());
             jsonObj.addProperty("iTotalDisplayRecords", parent.size());
