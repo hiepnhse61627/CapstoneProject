@@ -1025,7 +1025,9 @@ public class StudentArrangementController {
             pos = -1;
             for (int i = 0; i < subjectList.size(); ++i) {
                 String subjectCode = subjectList.get(i);
+                SubjectEntity subjectEntity = subjectMap.get(subjectCode);
                 if (Ultilities.containsIgnoreCase(subjectCode, "VOV")
+                        || subjectEntity == null || subjectEntity.getType() == null
                         || subjectMap.get(subjectCode).getType() != 0) {
                     pos = i;
                     break;
