@@ -76,10 +76,6 @@
             <div class="form-group">
                 <button type="button" onclick="UpdateMarks()" class="btn btn-success">Update</button>
             </div>
-
-            <div class="form-group">
-                <button type="button" onclick="UpdateStudentCredits()" class="btn btn-success">Cập nhật tín chỉ</button>
-            </div>
         </div>
     </div>
 </section>
@@ -333,55 +329,6 @@
         });
     }
 
-    function UpdateStudentCredits() {
-        swal({
-            title: 'Đang xử lý',
-            html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>' +
-            '<div id="progress" class="form-group"></div>',
-            type: 'info',
-            onOpen: function () {
-                isrunning = true;
-                swal.showLoading();
-                $.ajax({
-                    type: 'POST',
-                    url: '/updateStudentCredits',
-                    processData: false,
-                    contentType: false,
-                    success: function (result) {
-                        if (result.success) {
-                            isrunning = false;
-                            swal(
-                                'Thành công!',
-                                'Đã cập nhật tín chỉ của sinh viên!',
-                                'success'
-                            );
-                        } else {
-                            swal('Đã xảy ra lỗi!', result.message, 'error');
-                        }
-                    }
-                });
-                UpdateStudentCreditsProgress(isrunning);
-            },
-            allowOutsideClick: false
-        });
-
-    }
-
-    function UpdateStudentCreditsProgress(running) {
-        $.ajax({
-            type: "GET",
-            url: "/marks/getStatus",
-            processData: false,
-            contentType: false,
-            success: function (result) {
-                $('#progress').html(
-                    "<div>(" + result.updateStudentCurrentLine + "/" + result.updateStudentTotalLine + ")</div>");
-                if (running) {
-                    setTimeout("UpdateStudentCreditsProgress(isrunning)", 50);
-                }
-            }
-        });
-    }
 
     function UpdateMarks() {
         var form = new FormData();

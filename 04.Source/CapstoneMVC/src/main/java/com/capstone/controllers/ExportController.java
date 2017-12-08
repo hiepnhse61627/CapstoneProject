@@ -140,7 +140,7 @@ public class ExportController {
                 "com.capstone.exporters.ExportAllCurriculumImpl", // 14 = Export student only next subjects
                 "com.capstone.exporters.ExportStudentArrangementBySlotImpl", // 15 = Export student arrangement by slot
                 "com.capstone.exporters.ExportPDFGraduatedStudentsImpl", // 16 = Export PDF Graduated
-                "com.capstone.exporters.ExportExcelGraduatedStudentsImpl" // 17= export excel graduated
+                "com.capstone.exporters.ExportExcelGraduatedStudentsImpl", // 17 = export excel graduated
         };
 
         try {
