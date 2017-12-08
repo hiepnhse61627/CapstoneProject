@@ -68,6 +68,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
 
             streamingWorkbook.write(os);
         } catch (Exception e) {
+            System.out.println(e.getMessage());
             e.printStackTrace();
         }
     }

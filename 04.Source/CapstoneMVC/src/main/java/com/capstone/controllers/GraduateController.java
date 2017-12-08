@@ -545,7 +545,7 @@ public class GraduateController {
 //                    }
 //                }
 
-                int required = student.getProgramId().getGraduateCredits();
+                int required = student.getProgramId().getSpecializedCredits();
 
 //                for (SubjectCurriculumEntity s : processedSub) {
 //                    if (s.getSubjectCredits() != null) {

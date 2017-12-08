@@ -690,10 +690,10 @@ public class StudentDetail {
             ICurriculumService curriculumService = new CurriculumServiceImpl();
             String prefix = student.getProgramId().getName();
             String studentClass = docs.get(0).getCurriculumId().getName().split("_")[1];
-            String nextCur = prefix +"_" + studentClass + "_OJT";
+            String nextCur = prefix + "_" + studentClass + "_OJT";
             CurriculumEntity nCur = curriculumService.getCurriculumByName(nextCur);
-            List<SubjectCurriculumEntity> cursubs = nCur.getSubjectCurriculumEntityList();
             if (nCur != null) {
+                List<SubjectCurriculumEntity> cursubs = nCur.getSubjectCurriculumEntityList();
                 for (SubjectCurriculumEntity s : cursubs) {
                     if (!listNextCurri.contains(s)) listNextCurri.add(s);
                 }
