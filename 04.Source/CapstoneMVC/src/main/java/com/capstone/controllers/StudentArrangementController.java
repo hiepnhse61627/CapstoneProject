@@ -206,7 +206,13 @@ public class StudentArrangementController {
                 studentMap.put(s.getRollNumber(), s);
             }
 
-            Map<String, SubjectList> studentSubjectSuggestion = this.getSubjectSuggestionList(fileSuggestion);
+            List<SubjectEntity> subjects = subjectService.getAllSubjects();
+            Map<String, SubjectEntity> allSubjectsMap = new HashMap<>();
+            for (SubjectEntity subject : subjects) {
+                allSubjectsMap.put(subject.getId(), subject);
+            }
+
+            Map<String, SubjectList> studentSubjectSuggestion = this.getSubjectSuggestionList(fileSuggestion, allSubjectsMap);
 
             totalStudents = studentSubjectSuggestion.keySet().size();
 
@@ -253,7 +259,7 @@ public class StudentArrangementController {
                     List<StudentEntity> studentList = subjectMap.get(subjectCode);
                     Collections.sort(studentList, new RollNumberComparator());
 
-                    SubjectEntity subject = subjectService.findSubjectById(subjectCode);
+                    SubjectEntity subject = allSubjectsMap.get(subjectCode);
 
                     List<String> dataRow = new ArrayList<>();
                     for (StudentEntity student : studentList) {
@@ -301,9 +307,15 @@ public class StudentArrangementController {
         this.file3Done = false;
 
         try {
-            Map<String, SubjectList> studentSubjectSuggestion = this.getSubjectSuggestionList(fileSuggestion);
-            List<String> goingList = this.getGoingListAlreadyPaying(fileGoing);
-            Map<String, List<String>> relearnList = this.getRelearnListAlreadyPaying(fileRelearn);
+            List<SubjectEntity> allSubjects = subjectService.getAllSubjects();
+            Map<String, SubjectEntity> allSubjectsMap = new HashMap<>();
+            for (SubjectEntity subject : allSubjects) {
+                allSubjectsMap.put(subject.getId(), subject);
+            }
+
+            Map<String, SubjectList> studentSubjectSuggestion = this.getSubjectSuggestionList(fileSuggestion, allSubjectsMap);
+            List<String> goingList = this.getGoingListAlreadyPaying(fileGoing, allSubjectsMap);
+            Map<String, List<String>> relearnList = this.getRelearnListAlreadyPaying(fileRelearn, allSubjectsMap);
 
             List<String> statusList = new ArrayList<>();
             statusList.add("HD");
@@ -479,7 +491,7 @@ public class StudentArrangementController {
                 subjectMap.put(subject.getId(), subject);
             }
 
-            Map<String, SubjectList> studentSubjectSuggestion = this.getSubjectSuggestionList(fileSuggestion);
+            Map<String, SubjectList> studentSubjectSuggestion = this.getSubjectSuggestionList(fileSuggestion, subjectMap);
 
             totalStudents = studentSubjectSuggestion.keySet().size();
 
@@ -499,32 +511,28 @@ public class StudentArrangementController {
 
                     List<SubjectCurriculumEntity> subjectCurriculumList = this.getSubjectCurriculumList(student);
                     for (String subjectCode : subjectList.nextCourseList) {
-                        if (subjectMap.get(subjectCode).getType() == 0) {
-                            if (Ultilities.containsIgnoreCase(subjectCode, "LAB")) {
-                                String otherShift = student.getShift().equals("AM") ? "PM" : "AM";
-                                Map<String, List<StudentEntity>> subjectMapForLAB = shiftMapForLAB.get(otherShift);
-                                List<StudentEntity> stdList = subjectMapForLAB.get(subjectCode);
-                                if (stdList == null) {
-                                    stdList = new ArrayList<>();
-                                    subjectMapForLAB.put(subjectCode, stdList);
-                                }
-                                stdList.add(student);
-                                --std.numOfSubjects;
-                            } else {
-                                int pos = -1;
-                                for (int i = 0; i < subjectCurriculumList.size(); ++i) {
-                                    if (subjectCurriculumList.get(i).getSubjectId().getId().equals(subjectCode)) {
-                                        pos = i;
-                                        break;
-                                    }
-                                }
-
-                                if (pos >= 0 && pos <= 5) {
-                                    std.subjects[pos] = subjectCode;
+                        if (Ultilities.containsIgnoreCase(subjectCode, "LAB")) {
+                            String otherShift = student.getShift().equals("AM") ? "PM" : "AM";
+                            Map<String, List<StudentEntity>> subjectMapForLAB = shiftMapForLAB.get(otherShift);
+                            List<StudentEntity> stdList = subjectMapForLAB.get(subjectCode);
+                            if (stdList == null) {
+                                stdList = new ArrayList<>();
+                                subjectMapForLAB.put(subjectCode, stdList);
+                            }
+                            stdList.add(student);
+                            --std.numOfSubjects;
+                        } else {
+                            int pos = -1;
+                            for (int i = 0; i < subjectCurriculumList.size(); ++i) {
+                                if (subjectCurriculumList.get(i).getSubjectId().getId().equals(subjectCode)) {
+                                    pos = i;
+                                    break;
                                 }
                             }
-                        } else {
-                            --std.numOfSubjects;
+
+                            if (pos >= 0 && pos <= 5) {
+                                std.subjects[pos] = subjectCode;
+                            }
                         }
                     }
 
@@ -804,7 +812,7 @@ public class StudentArrangementController {
         }
     }
 
-    private Map<String, SubjectList> getSubjectSuggestionList(MultipartFile file) {
+    private Map<String, SubjectList> getSubjectSuggestionList(MultipartFile file, Map<String, SubjectEntity> subjectMap) {
         Map<String, SubjectList> result = new HashMap<>();
 
         try {
@@ -856,12 +864,12 @@ public class StudentArrangementController {
                     if (rollNumber != null && subjectsInNextCourseStr != null && subjectsSuggestionStr != null) {
                         List<String> nextCourseList = this.changeSubjectStringToList(subjectsInNextCourseStr);
                         if (!nextCourseList.isEmpty()) {
-                            nextCourseList = this.removeVOVInSubjectList(nextCourseList);
+                            nextCourseList = this.removeVOVAndOJTAndCapstoneInSubjectList(nextCourseList, subjectMap);
                         }
 
                         List<String> suggestionList = this.changeSubjectStringToList(subjectsSuggestionStr);
                         if (!suggestionList.isEmpty()) {
-                            suggestionList = this.removeVOVInSubjectList(suggestionList);
+                            suggestionList = this.removeVOVAndOJTAndCapstoneInSubjectList(suggestionList, subjectMap);
                         }
 
                         SubjectList subjectList = new SubjectList();
@@ -883,7 +891,7 @@ public class StudentArrangementController {
         return result;
     }
 
-    private List<String> getGoingListAlreadyPaying(MultipartFile file) {
+    private List<String> getGoingListAlreadyPaying(MultipartFile file, Map<String, SubjectEntity> subjectMap) {
         List<String> result = new ArrayList<>();
 
         try {
@@ -932,7 +940,7 @@ public class StudentArrangementController {
         return result;
     }
 
-    private Map<String, List<String>> getRelearnListAlreadyPaying(MultipartFile file) {
+    private Map<String, List<String>> getRelearnListAlreadyPaying(MultipartFile file, Map<String, SubjectEntity> subjectMap) {
         Map<String, List<String>> result = new HashMap<>();
 
         try {
@@ -977,7 +985,7 @@ public class StudentArrangementController {
                     if (rollNumber != null && subjectsStr != null) {
                         List<String> subjectList = this.changeSubjectStringToList(subjectsStr);
                         if (!subjectList.isEmpty()) {
-                            subjectList = this.removeVOVInSubjectList(subjectList);
+                            subjectList = this.removeVOVAndOJTAndCapstoneInSubjectList(subjectList, subjectMap);
                         }
 
                         result.put(rollNumber, subjectList);
@@ -1011,12 +1019,14 @@ public class StudentArrangementController {
         return new LinkedList<String>(Arrays.asList(subjectArr));
     }
 
-    private List<String> removeVOVInSubjectList(List<String> subjectList) {
+    private List<String> removeVOVAndOJTAndCapstoneInSubjectList(List<String> subjectList, Map<String, SubjectEntity> subjectMap) {
         int pos;
         do {
             pos = -1;
             for (int i = 0; i < subjectList.size(); ++i) {
-                if (subjectList.get(i).contains("VOV")) {
+                String subjectCode = subjectList.get(i);
+                if (Ultilities.containsIgnoreCase(subjectCode, "VOV")
+                        || subjectMap.get(subjectCode).getType() != 0) {
                     pos = i;
                     break;
                 }
