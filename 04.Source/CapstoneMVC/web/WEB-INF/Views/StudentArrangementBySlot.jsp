@@ -216,7 +216,7 @@
     }
 
     function ExportExcel() {
-        $("input[name='objectType']").val(14);
+        $("input[name='objectType']").val(15);
 
         $("#export-excel").submit();
     }

@@ -523,6 +523,8 @@ public class StudentArrangementController {
                                     std.subjects[pos] = subjectCode;
                                 }
                             }
+                        } else {
+                            --std.numOfSubjects;
                         }
                     }
 
@@ -573,9 +575,6 @@ public class StudentArrangementController {
                 // Group by StudentKey
                 Map<StudentKey, List<StudentArrangementModel>> groupStudentsMap = new HashMap<>();
                 for (StudentArrangementModel student : studentList) {
-                    if (student.student.getRollNumber().equals("SA130031")) {
-                        System.out.println();
-                    }
                     StudentKey key = new StudentKey();
                     key.numOfSubjects = student.numOfSubjects;
                     key.termNumber = student.student.getTerm();
