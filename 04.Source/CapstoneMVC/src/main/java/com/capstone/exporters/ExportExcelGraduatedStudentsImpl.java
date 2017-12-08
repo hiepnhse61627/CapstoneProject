@@ -121,18 +121,27 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
                 // grade
                 XSSFCell gradeCell = row.createCell(8);
                 gradeCell.setCellStyle(cellStyle);
-                if (marksEntity.getAverageMark().intValue() >= 9) {
+                Double averageMark = marksEntity.getAverageMark();
+                if (averageMark >= 9) {
                     gradeCell.setCellValue("A+");
-                } else if (marksEntity.getAverageMark().intValue() >= 8 && marksEntity.getAverageMark().intValue() <= 9) {
+                } else if (averageMark >= 8.5) {
                     gradeCell.setCellValue("A");
-                } else if (marksEntity.getAverageMark().intValue() >= 7 && marksEntity.getAverageMark().intValue() <= 8) {
+                } else if (averageMark >= 8) {
+                    gradeCell.setCellValue("A-");
+                } else if (averageMark >= 7.5) {
+                    gradeCell.setCellValue("B+");
+                } else if (averageMark >= 7) {
                     gradeCell.setCellValue("B");
-                } else if (marksEntity.getAverageMark().intValue() >= 6 && marksEntity.getAverageMark().intValue() <= 7) {
+                } else if (averageMark >= 6.5) {
+                    gradeCell.setCellValue("B-");
+                } else if (averageMark >= 6) {
                     gradeCell.setCellValue("C+");
-                } else if (marksEntity.getAverageMark().intValue() >= 5 && marksEntity.getAverageMark().intValue() <= 6) {
+                } else if (averageMark >= 5.5) {
+                    gradeCell.setCellValue("C");
+                } else if (averageMark >= 5) {
                     gradeCell.setCellValue("C-");
                 } else {
-                    gradeCell.setCellValue("");
+                    gradeCell.setCellValue("F");
                 }
 
                 if (ordinalNumber < markSize) {
