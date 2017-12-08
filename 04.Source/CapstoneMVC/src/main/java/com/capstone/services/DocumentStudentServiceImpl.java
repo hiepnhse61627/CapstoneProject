@@ -3,6 +3,7 @@ package com.capstone.services;
 import com.capstone.entities.DocumentEntity;
 import com.capstone.entities.DocumentStudentEntity;
 import com.capstone.jpa.exJpa.ExDocumentStudentEntityJpaController;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -45,5 +46,14 @@ public class DocumentStudentServiceImpl implements IDocumentStudentService {
     @Override
     public List<DocumentStudentEntity> getDocumentStudentListByStudentId(Integer studentId) {
         return controller.getDocumentStudentListByStudentId(studentId);
+    }
+
+    @Override
+    public void deleteDocumentStudent(Integer entityId) {
+        try {
+            controller.destroy(entityId);
+        } catch (NonexistentEntityException e) {
+            e.printStackTrace();
+        }
     }
 }

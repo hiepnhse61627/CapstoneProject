@@ -102,6 +102,14 @@ public class UploadController {
         return mav;
     }
 
+    @RequestMapping(value = "/uploadStudentCurriculumsPage")
+    public ModelAndView goUploadStudentCurriculumsPage() {
+        ModelAndView mav = new ModelAndView("uploadStudentCurriculums");
+        mav.addObject("title", "Cập nhật khung chương trình cho sinh viên");
+
+        return mav;
+    }
+
     @RequestMapping("/getlinestatus")
     @ResponseBody
     public JsonObject getCurrentLine() {
@@ -289,8 +297,146 @@ public class UploadController {
         }
 
         jsonObject.addProperty("success", true);
-        jsonObject.addProperty("message", "Cập nhật khung chương trình cho sinh viên thành công !");
+        jsonObject.addProperty("message", "Thêm khung chương trình cho sinh viên thành công !");
         return jsonObject;
+    }
+
+    @RequestMapping(value = "/updateStudentCurriculums", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject updateStudentCurriculum(@RequestParam("file") MultipartFile file) {
+        JsonObject jsonObject = new JsonObject();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            String originalFileName = file.getOriginalFilename();
+            String extension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1, originalFileName.length());
+
+            Workbook workbook = null;
+            Sheet spreadsheet = null;
+            Row row = null;
+            if (extension.equals(xlsExcelExtension)) {
+                workbook = new HSSFWorkbook(is);
+                spreadsheet = workbook.getSheetAt(0);
+            } else if (extension.equals(xlsxExcelExtension)) {
+                workbook = new XSSFWorkbook(is);
+                spreadsheet = workbook.getSheetAt(0);
+            } else {
+                jsonObject.addProperty("success", false);
+                jsonObject.addProperty("message", "Chỉ chấp nhận file excel");
+                return jsonObject;
+            }
+
+            int excelDataIndexRow = 1;
+
+            int rollNumberIndex = 0;
+            int curriculumIndex1 = 13; // du bi
+            int curriculumIndex2 = 14; // chuyen nganh
+            int curriculumIndex3 = 15; // OJT
+            int curriculumIndex4 = 16; // chuyen nganh hep
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+            for (int rowIndex = excelDataIndexRow; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                System.out.println(rowIndex + " - " + spreadsheet.getLastRowNum());
+                row = spreadsheet.getRow(rowIndex);
+                if (row != null) {
+                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    Cell curriculumCell1 = row.getCell(curriculumIndex1);
+                    Cell curriculumCell2 = row.getCell(curriculumIndex2);
+                    Cell curriculumCell3 = row.getCell(curriculumIndex3);
+                    Cell curriculumCell4 = row.getCell(curriculumIndex4);
+
+                    if (rollNumberCell != null) {
+                        String rollNumberValue = rollNumberCell.getStringCellValue().trim().toUpperCase();
+                        StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumberValue);
+
+                        List<DocumentStudentEntity> oldDocumentStudentEntites = studentEntity.getDocumentStudentEntityList();
+                        for (DocumentStudentEntity old : oldDocumentStudentEntites) {
+                            documentStudentService.deleteDocumentStudent(old.getId());
+                        }
+
+                        if (studentEntity != null) {
+                            // start save document student
+                            DocumentEntity documentEntity = documentService.getAllDocuments().get(0);
+                            List<DocumentStudentEntity> documentStudentEntityList = new ArrayList<>();
+
+                            if (curriculumCell4 != null) {
+                                if (!curriculumCell4.getStringCellValue().isEmpty()) {
+                                    System.out.println(curriculumCell4.getStringCellValue().trim());
+                                    CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCell4.getStringCellValue().trim());
+                                    DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
+                                    documentStudentEntity.setStudentId(studentEntity);
+                                    documentStudentEntity.setDocumentId(documentEntity);
+                                    documentStudentEntity.setCurriculumId(curriculumEntity);
+
+                                    documentStudentEntityList.add(documentStudentEntity);
+                                }
+                            }
+
+                            if (curriculumCell3 != null) {
+                                if (!curriculumCell3.getStringCellValue().isEmpty()) {
+                                    System.out.println(curriculumCell3.getStringCellValue().trim());
+                                    CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCell3.getStringCellValue().trim());
+                                    DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
+                                    documentStudentEntity.setStudentId(studentEntity);
+                                    documentStudentEntity.setDocumentId(documentEntity);
+                                    documentStudentEntity.setCurriculumId(curriculumEntity);
+
+                                    documentStudentEntityList.add(documentStudentEntity);
+                                }
+                            }
+
+                            if (curriculumCell2 != null) {
+                                if (!curriculumCell2.getStringCellValue().isEmpty()) {
+                                    System.out.println(curriculumCell2.getStringCellValue().trim());
+                                    CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCell2.getStringCellValue().trim());
+                                    DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
+                                    documentStudentEntity.setStudentId(studentEntity);
+                                    documentStudentEntity.setDocumentId(documentEntity);
+                                    documentStudentEntity.setCurriculumId(curriculumEntity);
+
+                                    documentStudentEntityList.add(documentStudentEntity);
+                                }
+                            }
+
+                            if (curriculumCell1 != null) {
+                                if (!curriculumCell1.getStringCellValue().isEmpty()) {
+                                    System.out.println(curriculumCell1.getStringCellValue().trim());
+                                    CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumCell1.getStringCellValue().trim());
+                                    DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
+                                    documentStudentEntity.setStudentId(studentEntity);
+                                    documentStudentEntity.setDocumentId(documentEntity);
+                                    documentStudentEntity.setCurriculumId(curriculumEntity);
+
+                                    documentStudentEntityList.add(documentStudentEntity);
+                                }
+                            }
+
+                            // save document List
+                            Calendar calendar = Calendar.getInstance();
+                            calendar.setTime(new Date());
+                            for (DocumentStudentEntity documentStudentEntity : documentStudentEntityList) {
+                                documentStudentEntity.setCreatedDate(calendar.getTime());
+                                calendar.add(Calendar.MONTH, -4);
+
+                                documentStudentService.createDocumentStudent(documentStudentEntity);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", ex.getMessage());
+
+            return jsonObject;
+        }
+
+        jsonObject.addProperty("success", true);
+        jsonObject.addProperty("message", "Cập nhật khung chương trình cho sinh viên thành công !");
+        return  jsonObject;
     }
 
     private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile, String semesterId) {
