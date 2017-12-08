@@ -5,6 +5,7 @@ import com.capstone.jpa.CurriculumEntityJpaController;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaBuilder;
 import java.util.ArrayList;
@@ -148,7 +149,6 @@ public class ExCurriculumEntityJpaController extends CurriculumEntityJpaControll
     }
 
     public CurriculumEntity getCurriculumByName(String name) {
-        CurriculumEntity entity = null;
         EntityManager em = null;
 
         try {
@@ -157,15 +157,19 @@ public class ExCurriculumEntityJpaController extends CurriculumEntityJpaControll
                     "SELECT c FROM CurriculumEntity c WHERE c.name = :name", CurriculumEntity.class);
             query.setParameter("name", name);
 
-            entity = query.getSingleResult();
+            List<CurriculumEntity> list = query.getResultList();
+            if (list.size() > 0) {
+                return list.get(0);
+            } else {
+                return null;
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            System.out.println(name);
         } finally {
             em.close();
         }
 
-        return entity;
+        return null;
     }
 
     public CurriculumEntity createCurriculum(CurriculumEntity entity) {
