@@ -289,7 +289,9 @@ public class GraduateController {
         EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = fac.createEntityManager();
 
-//        IMarksService marksService = new MarksServiceImpl();
+        IMarksService marksService = new MarksServiceImpl();
+        List<MarksEntity> totalMarks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semester.getId()), null, -1);
+        totalMarks = Ultilities.SortSemestersByMarks(totalMarks);
 
         students = students.stream().filter(c -> isOJT(c, semester)).collect(Collectors.toList());
 //        students = students.stream().filter(c -> c.getTerm() >= 5).collect(Collectors.toList());
@@ -335,20 +337,10 @@ public class GraduateController {
                 }
             }
 
-//            List<MarksEntity> marks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semester.getId()), tmp, student.getId());
-//            marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
-//            marks = Ultilities.SortSemestersByMarks(marks);
-
             boolean req = false;
             if (map.stream().anyMatch(c -> c.getStudentId().getId() == student.getId())) {
                 req = true;
             }
-//            for (MarksEntity m : marks) {
-//                if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("studying")) {
-//                    req = true;
-//                    break;
-//                }
-//            }
 
             if (!req) {
                 List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
@@ -374,7 +366,53 @@ public class GraduateController {
 
                 int percent = student.getProgramId().getOjt();
 
-                int tongtinchi = student.getPassCredits();
+//                int tongtinchi = student.getPassCredits();
+                int tongtinchi = 0;
+                List<String> tmp = processedSub.stream().map(c -> c.getSubjectId().getId()).distinct().collect(Collectors.toList());
+//                List<MarksEntity> marks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semester.getId()), tmp, student.getId());
+//                marks = Ultilities.SortSemestersByMarks(marks);
+                List<MarksEntity> marks = totalMarks
+                        .stream()
+                        .filter(c -> c.getStudentId().getId() == student.getId())
+                        .filter(c -> tmp.stream().anyMatch(a -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(a)))
+                        .collect(Collectors.toList());
+                for (SubjectCurriculumEntity subject : processedSub) {
+                    List<MarksEntity> subMarks = marks.stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(subject.getSubjectId().getId())).collect(Collectors.toList());
+                    if (subMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+                        tongtinchi += subject.getSubjectCredits();
+                    } else {
+                        boolean hasAdded = false;
+                        for (SubjectEntity sub1 : subject.getSubjectId().getSubjectEntityList()) {
+                            List<MarksEntity> subMarks1 = marks.stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub1.getId())).collect(Collectors.toList());
+                            if (subMarks1.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+                                tongtinchi += subject.getSubjectCredits();
+                                hasAdded = true;
+                                break;
+                            }
+                        }
+                        if (!hasAdded) {
+                            for (SubjectEntity sub1 : subject.getSubjectId().getSubjectEntityList1()) {
+                                List<MarksEntity> subMarks1 = marks.stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub1.getId())).collect(Collectors.toList());
+                                if (subMarks1.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+                                    tongtinchi += subject.getSubjectCredits();
+//                                    hasAdded = true;
+                                    break;
+                                }
+
+                                for (SubjectEntity sub2 : sub1.getSubjectEntityList()) {
+                                    List<MarksEntity> subMarks2 = marks.stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub2.getId())).collect(Collectors.toList());
+                                    if (subMarks2.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+                                        tongtinchi += subject.getSubjectCredits();
+                                        hasAdded = true;
+                                        break;
+                                    }
+                                }
+
+                                if (hasAdded) break;
+                            }
+                        }
+                    }
+                }
 
                 List<String> t = new ArrayList<>();
                 t.add(student.getRollNumber());
@@ -499,12 +537,9 @@ public class GraduateController {
             }
 
             List<SubjectCurriculumEntity> subjects = new ArrayList<>();
-//            List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
 
-//
             SubjectEntity capstoneSubject = null;
             int ojtCredits = 0;
-//            List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
             List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentListByStudentId(student.getId());
             for (DocumentStudentEntity doc : docs) {
                 if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
@@ -522,42 +557,13 @@ public class GraduateController {
                 }
             }
 
-//            List<MarksEntity> marks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semester.getId()), tmp, student.getId());
-//            marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
-//            marks = Ultilities.SortSemestersByMarks(marks);
-
             boolean req = false;
             if (map.stream().anyMatch(c -> c.getStudentId().getId() == student.getId())) {
                 req = true;
             }
-//            for (MarksEntity m : marks) {
-//                if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("studying")) {
-//                    req = true;
-//                    break;
-//                }
-//            }
 
             if (!req) {
-//                List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
-//                for (SubjectCurriculumEntity c : subjects) {
-//                    if (ojt > 0) {
-//                        if (c.getTermNumber() >= 0 && c.getTermNumber() < ojt) {
-//                            processedSub.add(c);
-//                        }
-//                    } else {
-//                        if (c.getTermNumber() >= 0) {
-//                            processedSub.add(c);
-//                        }
-//                    }
-//                }
-
                 int required = student.getProgramId().getSpecializedCredits();
-
-//                for (SubjectCurriculumEntity s : processedSub) {
-//                    if (s.getSubjectCredits() != null) {
-//                        required += s.getSubjectCredits();
-//                    }
-//                }
 
                 int percent = student.getProgramId().getCapstone();
 
