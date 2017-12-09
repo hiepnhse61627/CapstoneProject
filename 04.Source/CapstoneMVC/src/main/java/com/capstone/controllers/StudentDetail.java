@@ -189,18 +189,18 @@ public class StudentDetail {
                         }
                         if (!deleted) {
                             for (SubjectEntity s : replacers2) {
-                               for (SubjectEntity ss: s.getSubjectEntityList()) {
-                                   List<MarksEntity> rep = list
-                                           .stream()
-                                           .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(ss.getId()))
-                                           .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt")).collect(Collectors.toList());
-                                   if (!rep.isEmpty()) {
-                                       iterator.remove();
-                                       deleted = true;
-                                       break;
-                                   }
-                               }
-                               if (deleted) break;
+                                for (SubjectEntity ss : s.getSubjectEntityList()) {
+                                    List<MarksEntity> rep = list
+                                            .stream()
+                                            .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(ss.getId()))
+                                            .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt")).collect(Collectors.toList());
+                                    if (!rep.isEmpty()) {
+                                        iterator.remove();
+                                        deleted = true;
+                                        break;
+                                    }
+                                }
+                                if (deleted) break;
                             }
                         }
                     }
@@ -479,7 +479,7 @@ public class StudentDetail {
                                 }
                                 if (!deleted) {
                                     for (SubjectEntity s : replacers2) {
-                                        for (SubjectEntity ss: s.getSubjectEntityList()) {
+                                        for (SubjectEntity ss : s.getSubjectEntityList()) {
                                             List<MarksEntity> rep = marks
                                                     .stream()
                                                     .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(ss.getId()))
@@ -653,7 +653,7 @@ public class StudentDetail {
                         }
                         if (!deleted) {
                             for (SubjectEntity s : replacers2) {
-                                for (SubjectEntity ss: s.getSubjectEntityList()) {
+                                for (SubjectEntity ss : s.getSubjectEntityList()) {
                                     List<MarksEntity> rep = marks
                                             .stream()
                                             .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(ss.getId()))
@@ -734,6 +734,15 @@ public class StudentDetail {
                                 processedData.add(replaces.getId());
                             }
                         }
+                        if (!entity.getSubjectEntityList1().isEmpty()) {
+                            for (SubjectEntity replaces : entity.getSubjectEntityList1()) {
+                                processedData.add(replaces.getId());
+
+                                for (SubjectEntity r : replaces.getSubjectEntityList()) {
+                                    processedData.add(r.getId());
+                                }
+                            }
+                        }
                         if (!processedData.isEmpty()) {
                             List<MarksEntity> list29 = marks
                                     .stream()
@@ -773,7 +782,7 @@ public class StudentDetail {
                                 }
                                 if (!deleted) {
                                     for (SubjectEntity s : replacers2) {
-                                        for (SubjectEntity ss: s.getSubjectEntityList()) {
+                                        for (SubjectEntity ss : s.getSubjectEntityList()) {
                                             List<MarksEntity> rep = marks
                                                     .stream()
                                                     .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(ss.getId()))
@@ -836,6 +845,15 @@ public class StudentDetail {
                                     processedData.add(replaces.getId());
                                 }
                             }
+                            if (!entity.getSubjectEntityList1().isEmpty()) {
+                                for (SubjectEntity replaces : entity.getSubjectEntityList1()) {
+                                    processedData.add(replaces.getId());
+
+                                    for (SubjectEntity r : replaces.getSubjectEntityList()) {
+                                        processedData.add(r.getId());
+                                    }
+                                }
+                            }
                         }
                         boolean failed = false;
                         if (!processedData.isEmpty()) {
@@ -878,7 +896,7 @@ public class StudentDetail {
                                 }
                                 if (!deleted) {
                                     for (SubjectEntity s : replacers2) {
-                                        for (SubjectEntity ss: s.getSubjectEntityList()) {
+                                        for (SubjectEntity ss : s.getSubjectEntityList()) {
                                             List<MarksEntity> rep = marks
                                                     .stream()
                                                     .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(ss.getId()))
@@ -925,6 +943,15 @@ public class StudentDetail {
                             processedData.add(replaces.getId());
                         }
                     }
+                    if (!entity.getSubjectEntityList1().isEmpty()) {
+                        for (SubjectEntity replaces : entity.getSubjectEntityList1()) {
+                            processedData.add(replaces.getId());
+
+                            for (SubjectEntity r : replaces.getSubjectEntityList()) {
+                                processedData.add(r.getId());
+                            }
+                        }
+                    }
                 }
                 boolean failed = false;
                 if (!processedData.isEmpty()) {
@@ -967,7 +994,7 @@ public class StudentDetail {
                         }
                         if (!deleted) {
                             for (SubjectEntity s : replacers2) {
-                                for (SubjectEntity ss: s.getSubjectEntityList()) {
+                                for (SubjectEntity ss : s.getSubjectEntityList()) {
                                     List<MarksEntity> rep = marks
                                             .stream()
                                             .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(ss.getId()))
@@ -1177,7 +1204,48 @@ public class StudentDetail {
                     }
 
                     if (student.getPassCredits() >= required) {
-                        suggestion.setDuchitieu(true);
+                        List<String> processedData = new ArrayList<>();
+                        if (subject.getPrequisiteEntity() != null) {
+                            String preSubs = subject.getPrequisiteEntity().getPrequisiteSubs();
+                            String[] rows = preSubs == null ? (subject.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : subject.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
+                            for (String row : rows) {
+                                row = row.replaceAll("\\(", "").replaceAll("\\)", "");
+                                String[] cells = row.split(",");
+                                for (String cell : cells) {
+                                    cell = cell.trim();
+                                    SubjectEntity c = subjectService.findSubjectById(cell);
+                                    if (c != null) processedData.add(cell);
+                                }
+                                if (!subject.getSubjectEntityList().isEmpty()) {
+                                    for (SubjectEntity replaces : subject.getSubjectEntityList()) {
+                                        processedData.add(replaces.getId());
+                                    }
+                                }
+                                if (!subject.getSubjectEntityList1().isEmpty()) {
+                                    for (SubjectEntity replaces : subject.getSubjectEntityList1()) {
+                                        processedData.add(replaces.getId());
+
+                                        for (SubjectEntity r : replaces.getSubjectEntityList()) {
+                                            processedData.add(r.getId());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        boolean failed = false;
+                        if (!processedData.isEmpty()) {
+                            List<MarksEntity> list3 = marks
+                                    .stream()
+                                    .filter(c -> processedData.stream().anyMatch(b -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(b)))
+                                    .collect(Collectors.toList());
+                            failed = Ultilities.IsFailedSpecial(list3, subject.getPrequisiteEntity());
+                        }
+
+                        if (failed) {
+                            suggestion.setDuchitieu(false);
+                        } else {
+                            suggestion.setDuchitieu(true);
+                        }
                     } else {
                         suggestion.setDuchitieu(false);
                     }
@@ -1301,6 +1369,15 @@ public class StudentDetail {
                             processedData.add(replaces.getId());
                         }
                     }
+                    if (!entity.getSubjectEntityList1().isEmpty()) {
+                        for (SubjectEntity replaces : entity.getSubjectEntityList1()) {
+                            processedData.add(replaces.getId());
+
+                            for (SubjectEntity r : replaces.getSubjectEntityList()) {
+                                processedData.add(r.getId());
+                            }
+                        }
+                    }
                 }
                 boolean failed = false;
                 if (!processedData.isEmpty()) {
@@ -1343,7 +1420,7 @@ public class StudentDetail {
                         }
                         if (!deleted) {
                             for (SubjectEntity s : replacers2) {
-                                for (SubjectEntity ss: s.getSubjectEntityList()) {
+                                for (SubjectEntity ss : s.getSubjectEntityList()) {
                                     List<MarksEntity> rep = marks
                                             .stream()
                                             .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(ss.getId()))
