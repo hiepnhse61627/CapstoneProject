@@ -88,24 +88,6 @@
                 <div class="form-group">
                     <div class="row">
                         <div class="title">
-                            <h4>Chọn học kỳ:</h4>
-                        </div>
-                        <div class="my-content">
-                            <div class="col-md-12">
-                                <select id="cb-semester" class="select">
-                                    <option value="-1">- Chọn học kỳ -</option>
-                                    <c:forEach var="s" items="${semesters}">
-                                        <option value="${s.id}">${s.semester}</option>
-                                    </c:forEach>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <div class="row">
-                        <div class="title">
                             <h4>Nhập danh sách kế hoạch dự kiến:</h4>
                         </div>
                         <div class="my-content">
@@ -122,6 +104,24 @@
                     </div>
                 </div>
                 <hr>
+
+                <div class="form-group">
+                    <div class="row">
+                        <div class="title">
+                            <h4>Chọn học kỳ:</h4>
+                        </div>
+                        <div class="my-content">
+                            <div class="col-md-12">
+                                <select id="cb-semester" class="select">
+                                    <option value="-1">- Chọn học kỳ -</option>
+                                    <c:forEach var="s" items="${semesters}">
+                                        <option value="${s.id}">${s.semester}</option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="form-group">
                     <div class="row">
@@ -299,11 +299,11 @@
     }
 
     function ImportFile() {
-        if ($('#cb-semester').val() == '-1') {
-            swal('', 'Xin chọn học kỳ', 'warning');
-            return;
-        } else if (typeof($('#file-suggestion')[0].files[0]) == 'undefined' || $('#file-suggestion')[0].files[0] == null) {
+        if (typeof($('#file-suggestion')[0].files[0]) == 'undefined' || $('#file-suggestion')[0].files[0] == null) {
             swal('', 'Xin nhập danh sách kế hoạch dự kiến', 'warning');
+            return;
+        } else if ($('#cb-semester').val() == '-1' && $('#cb-file-going').prop('checked') && $('#cb-file-relearn').prop('checked')) {
+            swal('', 'Xin chọn học kỳ', 'warning');
             return;
         } else if ($('#cb-file-going').prop('checked') && (typeof($('#file-going')[0].files[0]) == 'undefined' || $('#file-going')[0].files[0] == null)) {
             swal('', 'Xin nhập danh sách sinh viên học đi', 'warning');

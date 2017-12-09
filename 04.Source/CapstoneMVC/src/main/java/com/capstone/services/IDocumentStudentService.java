@@ -12,4 +12,5 @@ public interface IDocumentStudentService {
     List<DocumentStudentEntity> getDocumentStudentByIdList(List<Integer> idList);
     List<DocumentStudentEntity> getDocumentStudentByByStudentId(List<Integer> idList);
     List<DocumentStudentEntity> getDocumentStudentListByStudentId(Integer studentId);
+    void deleteDocumentStudent(Integer entityId);
 }
