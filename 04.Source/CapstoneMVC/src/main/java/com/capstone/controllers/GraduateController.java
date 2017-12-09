@@ -494,7 +494,7 @@ public class GraduateController {
 
             System.out.println(i + " - " + students.size());
 
-            if (student.getRollNumber().equals("SE61107")) {
+            if (student.getRollNumber().equals("SE61261")) {
                 System.out.println();
             }
 
@@ -582,12 +582,29 @@ public class GraduateController {
                             String preSubs = capstoneSubject.getPrequisiteEntity().getPrequisiteSubs();
                             String[] rows = preSubs == null ? (capstoneSubject.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : capstoneSubject.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
                             for (String row : rows) {
-                                row = row.replaceAll("\\(", "").replaceAll("\\)", "");
+                                row = row.replaceAll("\\(", "").replaceAll("\\)", "").trim();
                                 String[] cells = row.split(",");
                                 for (String cell : cells) {
                                     cell = cell.trim();
                                     SubjectEntity c = subjectService.findSubjectById(cell);
-                                    if (c != null) processedData.add(cell);
+                                    if (c != null) {
+                                        processedData.add(cell);
+
+                                        if (!c.getSubjectEntityList().isEmpty()) {
+                                            for (SubjectEntity replaces : c.getSubjectEntityList()) {
+                                                processedData.add(replaces.getId());
+                                            }
+                                        }
+                                        if (!c.getSubjectEntityList1().isEmpty()) {
+                                            for (SubjectEntity replaces : c.getSubjectEntityList1()) {
+                                                processedData.add(replaces.getId());
+
+                                                for (SubjectEntity r : replaces.getSubjectEntityList()) {
+                                                    processedData.add(r.getId());
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                                 if (!capstoneSubject.getSubjectEntityList().isEmpty()) {
                                     for (SubjectEntity replaces : capstoneSubject.getSubjectEntityList()) {
@@ -619,6 +636,7 @@ public class GraduateController {
                         if (!failed) {
                             data.add(t);
                         }
+//                        data.add(t);
                     }
                 } else {
                     if (tongtinchi < (int) ((required * percent * 1.0) / 100)) {

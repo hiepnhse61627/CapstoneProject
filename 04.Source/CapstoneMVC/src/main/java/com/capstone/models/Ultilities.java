@@ -274,7 +274,7 @@ public class Ultilities {
         String[] rows = prequisite.getPrequisiteSubs() == null ? prequisite.getNewPrequisiteSubs().split("OR") : prequisite.getPrequisiteSubs().split("OR");
         int totalRow = 0;
         for (String row : rows) {
-            row = row.replaceAll("\\(", "").replaceAll("\\)", "");
+            row = row.replaceAll("\\(", "").replaceAll("\\)", "").trim();
             String[] cells = row.split(",");
             int totalCell = 0;
             for (String cell : cells) {
