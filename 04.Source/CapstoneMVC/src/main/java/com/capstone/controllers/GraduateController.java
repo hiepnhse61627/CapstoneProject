@@ -578,7 +578,7 @@ public class GraduateController {
                     ISubjectService subjectService = new SubjectServiceImpl();
                     if (tongtinchi >= (int) ((required * percent * 1.0) / 100)) {
                         List<String> processedData = new ArrayList<>();
-                        if (capstoneSubject.getPrequisiteEntity() != null) {
+                        if (capstoneSubject != null && capstoneSubject.getPrequisiteEntity() != null) {
                             String preSubs = capstoneSubject.getPrequisiteEntity().getPrequisiteSubs();
                             String[] rows = preSubs == null ? (capstoneSubject.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : capstoneSubject.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
                             for (String row : rows) {
@@ -621,7 +621,11 @@ public class GraduateController {
                                     }
                                 }
                             }
+                        } else {
+                            System.out.println("khong check dc do an => cho vao` de sau nay tinh");
+//                            data.add(t);
                         }
+
                         boolean failed = false;
                         processedData = processedData.stream().distinct().collect(Collectors.toList());
                         if (!processedData.isEmpty()) {
