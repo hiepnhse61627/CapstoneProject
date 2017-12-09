@@ -64,7 +64,8 @@
     <div class="overlay">
         <div class="register-logo">
             <div class="my-logo">
-                <img src="/Resources/plugins/dist/img/logo/logo-fpt-1.png">
+                <%--<img src="/Resources/plugins/dist/img/logo/logo-fpt-1.png">--%>
+                <img src="/Resources/plugins/dist/img/logo/STPM.png">
             </div>
         </div>
 

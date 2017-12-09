@@ -56,7 +56,8 @@
     <div class="overlay">
         <div class="login-logo">
             <div class="my-logo">
-                <img src="/Resources/plugins/dist/img/logo/logo-fpt-1.png">
+                <%--<img src="/Resources/plugins/dist/img/logo/logo-fpt-1.png">--%>
+                <img src="/Resources/plugins/dist/img/logo/STPM.png">
             </div>
         </div>
         <!-- /.login-logo -->

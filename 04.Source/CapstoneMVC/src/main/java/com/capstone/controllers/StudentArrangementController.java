@@ -771,13 +771,14 @@ public class StudentArrangementController {
 
     private List<SubjectCurriculumEntity> getSubjectCurriculumList(StudentEntity student) {
         List<SubjectCurriculumEntity> result = new ArrayList<>();
+        int nextTerm = student.getTerm() + 1;
 
         if (student.getDocumentStudentEntityList() != null) {
             for (DocumentStudentEntity docStudent : student.getDocumentStudentEntityList()) {
                 if (docStudent.getCurriculumId() != null
                         && docStudent.getCurriculumId().getSubjectCurriculumEntityList() != null) {
                     for (SubjectCurriculumEntity sc : docStudent.getCurriculumId().getSubjectCurriculumEntityList()) {
-                        if (sc.getTermNumber() == student.getTerm()) {
+                        if (sc.getTermNumber() == nextTerm) {
                             result.add(sc);
                         }
                     }
