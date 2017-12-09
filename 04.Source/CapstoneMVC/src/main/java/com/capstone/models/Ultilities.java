@@ -25,7 +25,7 @@ public class Ultilities {
     public static List<String> notexist = new ArrayList<>();
 
     public static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
-        Map<Object,Boolean> seen = new ConcurrentHashMap<>();
+        Map<Object, Boolean> seen = new ConcurrentHashMap<>();
         return t -> seen.putIfAbsent(keyExtractor.apply(t), Boolean.TRUE) == null;
     }
 
@@ -271,54 +271,63 @@ public class Ultilities {
 
     public static boolean IsFailedSpecial(List<MarksEntity> list, PrequisiteEntity prequisite) {
         ISubjectService subjectService = new SubjectServiceImpl();
-        String[] row = prequisite.getPrequisiteSubs() == null ? prequisite.getNewPrequisiteSubs().split(",") : prequisite.getPrequisiteSubs().split(",");
-        int total = 0;
-        for (String sub : row) {
-            List<MarksEntity> m = list.stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub)).collect(Collectors.toList());
-            if (m.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
-                total++;
-            } else {
-                SubjectEntity s = subjectService.findSubjectById(sub);
+        String[] rows = prequisite.getPrequisiteSubs() == null ? prequisite.getNewPrequisiteSubs().split("OR") : prequisite.getPrequisiteSubs().split("OR");
+        int totalRow = 0;
+        for (String row : rows) {
+            row = row.replaceAll("\\(", "").replaceAll("\\)", "");
+            String[] cells = row.split(",");
+            int totalCell = 0;
+            for (String cell : cells) {
+                cell = cell.trim();
+                SubjectEntity s = subjectService.findSubjectById(cell);
                 if (s != null) {
-                    List<SubjectEntity> l1 = s.getSubjectEntityList();
-                    boolean pass = false;
-                    for (SubjectEntity s1 : l1) {
-                        List<MarksEntity> marks = list.stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(s1.getId())).collect(Collectors.toList());
-                        if (marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
-                            pass = true;
-                            total++;
-                            break;
-                        }
-                    }
-                    if (!pass) {
-                        List<SubjectEntity> l2 = s.getSubjectEntityList1();
-                        for (SubjectEntity s1 : l2) {
+                    List<MarksEntity> m = list.stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(s.getId())).collect(Collectors.toList());
+                    if (m.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+                        totalCell++;
+                    } else {
+                        List<SubjectEntity> l1 = s.getSubjectEntityList();
+                        boolean pass = false;
+                        for (SubjectEntity s1 : l1) {
                             List<MarksEntity> marks = list.stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(s1.getId())).collect(Collectors.toList());
                             if (marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
                                 pass = true;
-                                total++;
+                                totalCell++;
                                 break;
                             }
                         }
                         if (!pass) {
+                            List<SubjectEntity> l2 = s.getSubjectEntityList1();
                             for (SubjectEntity s1 : l2) {
-                                for (SubjectEntity s2 : s1.getSubjectEntityList()) {
-                                    List<MarksEntity> marks = list.stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(s2.getId())).collect(Collectors.toList());
-                                    if (marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
-                                        pass = true;
-                                        total++;
-                                        break;
-                                    }
+                                List<MarksEntity> marks = list.stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(s1.getId())).collect(Collectors.toList());
+                                if (marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+                                    pass = true;
+                                    totalCell++;
+                                    break;
                                 }
-                                if (pass) break;
+                            }
+                            if (!pass) {
+                                for (SubjectEntity s1 : l2) {
+                                    for (SubjectEntity s2 : s1.getSubjectEntityList()) {
+                                        List<MarksEntity> marks = list.stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(s2.getId())).collect(Collectors.toList());
+                                        if (marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+                                            pass = true;
+                                            totalCell++;
+                                            break;
+                                        }
+                                    }
+                                    if (pass) break;
+                                }
                             }
                         }
                     }
                 }
             }
+            if (totalCell == cells.length) {
+                totalRow++;
+            }
         }
 
-        if (total == row.length) {
+        if (totalRow > 0) {
             return false;
         } else {
             return true;
@@ -721,7 +730,7 @@ public class Ultilities {
 
     public static DocumentStudentEntity GetLatestDoc(List<DocumentStudentEntity> docs) {
         docs.sort(Comparator.comparingLong(c -> {
-            DocumentStudentEntity d = (DocumentStudentEntity)c;
+            DocumentStudentEntity d = (DocumentStudentEntity) c;
             return d.getCreatedDate().getTime();
         }).reversed());
         return docs.get(0);

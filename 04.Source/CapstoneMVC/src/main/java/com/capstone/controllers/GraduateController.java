@@ -606,10 +606,12 @@ public class GraduateController {
                             }
                         }
                         boolean failed = false;
+                        processedData = processedData.stream().distinct().collect(Collectors.toList());
                         if (!processedData.isEmpty()) {
+                            List<String> finalProcessedData = processedData;
                             List<MarksEntity> list3 = markService.getAllMarksByStudent(student.getId())
                                     .stream()
-                                    .filter(c -> processedData.stream().anyMatch(b -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(b)))
+                                    .filter(c -> finalProcessedData.stream().anyMatch(b -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(b)))
                                     .collect(Collectors.toList());
                             failed = Ultilities.IsFailedSpecial(list3, capstoneSubject.getPrequisiteEntity());
                         }
