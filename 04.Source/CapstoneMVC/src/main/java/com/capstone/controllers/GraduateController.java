@@ -547,8 +547,10 @@ public class GraduateController {
                     for (SubjectCurriculumEntity s : list) {
                         if (!subjects.contains(s)) {
                             subjects.add(s);
-                            if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
+                            if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
                                 ojtCredits = s.getSubjectCredits();
+                            }
+                            if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
                                 capstoneSubject = s.getSubjectId();
                                 break;
                             }
