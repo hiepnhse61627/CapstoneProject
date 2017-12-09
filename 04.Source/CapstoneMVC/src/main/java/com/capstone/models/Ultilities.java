@@ -269,6 +269,62 @@ public class Ultilities {
         return result;
     }
 
+    public static boolean IsFailedSpecial(List<MarksEntity> list, PrequisiteEntity prequisite) {
+        ISubjectService subjectService = new SubjectServiceImpl();
+        String[] row = prequisite.getPrequisiteSubs() == null ? prequisite.getNewPrequisiteSubs().split(",") : prequisite.getPrequisiteSubs().split(",");
+        int total = 0;
+        for (String sub : row) {
+            List<MarksEntity> m = list.stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub)).collect(Collectors.toList());
+            if (m.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+                total++;
+            } else {
+                SubjectEntity s = subjectService.findSubjectById(sub);
+                if (s != null) {
+                    List<SubjectEntity> l1 = s.getSubjectEntityList();
+                    boolean pass = false;
+                    for (SubjectEntity s1 : l1) {
+                        List<MarksEntity> marks = list.stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(s1.getId())).collect(Collectors.toList());
+                        if (marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+                            pass = true;
+                            total++;
+                            break;
+                        }
+                    }
+                    if (!pass) {
+                        List<SubjectEntity> l2 = s.getSubjectEntityList1();
+                        for (SubjectEntity s1 : l2) {
+                            List<MarksEntity> marks = list.stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(s1.getId())).collect(Collectors.toList());
+                            if (marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+                                pass = true;
+                                total++;
+                                break;
+                            }
+                        }
+                        if (!pass) {
+                            for (SubjectEntity s1 : l2) {
+                                for (SubjectEntity s2 : s1.getSubjectEntityList()) {
+                                    List<MarksEntity> marks = list.stream().filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(s2.getId())).collect(Collectors.toList());
+                                    if (marks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt"))) {
+                                        pass = true;
+                                        total++;
+                                        break;
+                                    }
+                                }
+                                if (pass) break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (total == row.length) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     public static boolean HasFailedPrequisitesOfOneStudent(List<MarksEntity> list, PrequisiteEntity prequisite) {
         ISubjectService subjectService = new SubjectServiceImpl();
 

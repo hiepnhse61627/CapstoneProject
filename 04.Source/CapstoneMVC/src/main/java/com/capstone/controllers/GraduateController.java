@@ -294,13 +294,13 @@ public class GraduateController {
         students = students.stream().filter(c -> isOJT(c, semester)).collect(Collectors.toList());
 //        students = students.stream().filter(c -> c.getTerm() >= 5).collect(Collectors.toList());
 
-       List<MarksEntity> map = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true AND a.subjectMarkComponentId.subjectId.type = 1 AND (LOWER(a.status) LIKE '%studying%' OR LOWER(a.status) LIKE '%pass%')", MarksEntity.class)
+        List<MarksEntity> map = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true AND a.subjectMarkComponentId.subjectId.type = 1 AND (LOWER(a.status) LIKE '%studying%' OR LOWER(a.status) LIKE '%pass%')", MarksEntity.class)
                 .getResultList()
                 .stream()
                 .filter(Ultilities.distinctByKey(c -> c.getStudentId().getId()))
                 .collect(Collectors.toList());
 
-       IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
+        IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
 
         int i = 1;
         for (StudentEntity student : students) {
@@ -502,6 +502,7 @@ public class GraduateController {
 //            List<SubjectCurriculumEntity> processedSub = new ArrayList<>();
 
 //
+            SubjectEntity capstoneSubject = null;
             int ojtCredits = 0;
 //            List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
             List<DocumentStudentEntity> docs = documentStudentService.getDocumentStudentListByStudentId(student.getId());
@@ -513,6 +514,7 @@ public class GraduateController {
                             subjects.add(s);
                             if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
                                 ojtCredits = s.getSubjectCredits();
+                                capstoneSubject = s.getSubjectId();
                                 break;
                             }
                         }
@@ -560,7 +562,7 @@ public class GraduateController {
                 int percent = student.getProgramId().getCapstone();
 
                 int tongtinchi = student.getPassCredits();
-                if (hasOJT.stream().anyMatch(c ->  c.getStudentId().getId() == student.getId())) {
+                if (hasOJT.stream().anyMatch(c -> c.getStudentId().getId() == student.getId())) {
                     tongtinchi = tongtinchi - ojtCredits;
                 }
 
@@ -573,8 +575,48 @@ public class GraduateController {
                 t.add(String.valueOf(student.getId()));
 
                 if (isGraduate) {
+                    ISubjectService subjectService = new SubjectServiceImpl();
                     if (tongtinchi >= (int) ((required * percent * 1.0) / 100)) {
-                        data.add(t);
+                        List<String> processedData = new ArrayList<>();
+                        if (capstoneSubject.getPrequisiteEntity() != null) {
+                            String preSubs = capstoneSubject.getPrequisiteEntity().getPrequisiteSubs();
+                            String[] rows = preSubs == null ? (capstoneSubject.getPrequisiteEntity().getNewPrequisiteSubs() == null ? new String[0] : capstoneSubject.getPrequisiteEntity().getNewPrequisiteSubs().split("OR")) : preSubs.split("OR");
+                            for (String row : rows) {
+                                row = row.replaceAll("\\(", "").replaceAll("\\)", "");
+                                String[] cells = row.split(",");
+                                for (String cell : cells) {
+                                    cell = cell.trim();
+                                    SubjectEntity c = subjectService.findSubjectById(cell);
+                                    if (c != null) processedData.add(cell);
+                                }
+                                if (!capstoneSubject.getSubjectEntityList().isEmpty()) {
+                                    for (SubjectEntity replaces : capstoneSubject.getSubjectEntityList()) {
+                                        processedData.add(replaces.getId());
+                                    }
+                                }
+                                if (!capstoneSubject.getSubjectEntityList1().isEmpty()) {
+                                    for (SubjectEntity replaces : capstoneSubject.getSubjectEntityList1()) {
+                                        processedData.add(replaces.getId());
+
+                                        for (SubjectEntity r : replaces.getSubjectEntityList()) {
+                                            processedData.add(r.getId());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        boolean failed = false;
+                        if (!processedData.isEmpty()) {
+                            List<MarksEntity> list3 = markService.getAllMarksByStudent(student.getId())
+                                    .stream()
+                                    .filter(c -> processedData.stream().anyMatch(b -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(b)))
+                                    .collect(Collectors.toList());
+                            failed = Ultilities.IsFailedSpecial(list3, capstoneSubject.getPrequisiteEntity());
+                        }
+
+                        if (!failed) {
+                            data.add(t);
+                        }
                     }
                 } else {
                     if (tongtinchi < (int) ((required * percent * 1.0) / 100)) {
