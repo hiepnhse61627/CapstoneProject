@@ -1,11 +1,9 @@
 package com.capstone.controllers;
 
+import com.capstone.entities.StudentEntity;
 import com.capstone.exporters.ExportStatusReport;
 import com.capstone.exporters.IExportObject;
-import com.capstone.services.IProgramService;
-import com.capstone.services.IRealSemesterService;
-import com.capstone.services.ProgramServiceImpl;
-import com.capstone.services.RealSemesterServiceImpl;
+import com.capstone.services.*;
 import com.google.gson.JsonObject;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -59,6 +57,14 @@ public class ExportController {
                     IRealSemesterService service = new RealSemesterServiceImpl();
                     IProgramService programService = new ProgramServiceImpl();
                     exportObject.setFileName(programService.getProgramById(programId).getName() + "_" + type + "_" + service.findSemesterById(semesterId).getSemester() + ".xlsx");
+                    String headerValue = String.format("attachment; filename=\"%s\"", exportObject.getFileName());
+                    response.setHeader(headerKey, headerValue);
+                } else if(params.get("objectType").equals("18")) {
+                    Integer studentId = Integer.valueOf(params.get("studentId"));
+                    IStudentService studentService = new StudentServiceImpl();
+
+                    StudentEntity studentEntity = studentService.findStudentById(studentId);
+                    exportObject.setFileName("IAT-" + studentEntity.getRollNumber() + ".xlsx");
                     String headerValue = String.format("attachment; filename=\"%s\"", exportObject.getFileName());
                     response.setHeader(headerKey, headerValue);
                 } else {
@@ -141,6 +147,7 @@ public class ExportController {
                 "com.capstone.exporters.ExportStudentArrangementBySlotImpl", // 15 = Export student arrangement by slot
                 "com.capstone.exporters.ExportPDFGraduatedStudentsImpl", // 16 = Export PDF Graduated
                 "com.capstone.exporters.ExportExcelGraduatedStudentsImpl", // 17 = export excel graduated
+                "com.capstone.exporters.ExportInterimAcademicTranscriptImpl" // 18 = export interim academic transcript
         };
 
         try {

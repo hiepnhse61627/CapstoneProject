@@ -153,7 +153,6 @@
                     <h1>Thông tin sinh viên</h1>
                 </div>
                 <div class="col-md-3 text-right">
-
                     <a href="/studentList" class="btn btn-danger btn-with-icon">
                         <i class="fa fa-arrow-left"></i>
                         <div class="m-l-3">QUAY LẠI</div>
@@ -272,6 +271,7 @@
                 <div class="row">
                     <div class="title">
                         <h4>Thông tin điểm</h4>
+                        <button class="btn btn-success" onclick="ExportExcel()">Xuất bảng điểm quá trình</button>
                     </div>
 
                     <div class="my-content">
@@ -350,6 +350,10 @@
     </div>
 </div>
 
+<form id="export-excel" action="/exportExcel" hidden>
+    <input name="objectType"/>
+    <input name="studentId"/>
+</form>
 
 <script>
     var oldFullName;
@@ -599,6 +603,13 @@
             "bAutoWidth": false,
         });
         $("#markDetail").modal();
+    }
+
+    function ExportExcel() {
+        $("input[name='objectType']").val(18);
+        $("input[name='studentId']").val('${student.id}');
+
+        $("#export-excel").submit();
     }
 </script>
 
