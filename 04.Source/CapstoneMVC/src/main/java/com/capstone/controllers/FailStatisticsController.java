@@ -46,6 +46,8 @@ public class FailStatisticsController {
         ModelAndView modelAndView = new ModelAndView("FailStatistics");
 
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester().stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+        semesters = Ultilities.SortSemesters(semesters);
+        Collections.reverse(semesters);
         modelAndView.addObject("semesters", semesters);
 
         return modelAndView;
@@ -87,6 +89,7 @@ public class FailStatisticsController {
         List<MarksEntity> listPaid = intersectionOfTwoLists(listFailed, listPassed);
         List<MarksEntity> listFailedAtTheEndSemester = listFailedAtTheEndOfSemester(semester);
         Integer numberOfStudentPaidFailedSubject = countNumberOfStudentsPaidFailedSubjectInSemester(semester);
+        Integer numberOfStudentRegisterRelearn = countNumberOfStudentsRegisterPayFailedSubjectInSemester(semester);
 
         ArrayList<ArrayList<String>> resultList = new ArrayList<>();
         ArrayList<String> record = new ArrayList<>();
@@ -94,6 +97,7 @@ public class FailStatisticsController {
         record.add(String.valueOf(listPaid.size()));
         record.add(String.valueOf(listFailedAtTheEndSemester.size() - listFailed.size() + listPaid.size()));
         record.add(String.valueOf(numberOfStudentPaidFailedSubject));
+        record.add(String.valueOf(numberOfStudentRegisterRelearn));
         record.add(String.valueOf(listFailedAtTheEndSemester.size()));
         resultList.add(record);
 

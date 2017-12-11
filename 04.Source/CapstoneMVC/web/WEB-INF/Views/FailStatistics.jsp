@@ -40,7 +40,8 @@
                                     <th>Số nợ đầu kỳ</th>
                                     <th>Số nợ đầu kỳ đã trả được trong kỳ</th>
                                     <th>Số nợ phát sinh trong kỳ</th>
-                                    <th>Số sinh viên trả nợ ngay trong kỳ</th>
+                                    <th>Số lượt trả nợ trong kỳ</th>
+                                    <th>Số lượt đăng ký học lại trong kỳ</th>
                                     <th>Số nợ cuối kỳ</th>
                                 </tr>
                             </thead>
@@ -94,8 +95,15 @@
         return this;
     };
 
-    $(document).ready(function () {
-        $('.select').select2();
+    function RefreshTable() {
+        if (table != null) {
+            table._fnPageChange(0);
+            table._fnAjaxUpdate();
+        }
+    }
+
+//    $(document).ready(function () {
+//        $('.select').select2();
 
         table = $('#table').dataTable({
             "bServerSide": true,
@@ -126,24 +134,17 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4],
+                    "aTargets": [0, 1, 2, 3, 4, 5],
                     "bSortable": false,
                 },
                 {
-                    "aTargets": [0, 1, 2, 3, 4],
+                    "aTargets": [0, 1, 2, 3, 4, 5],
                     "sClass": "text-center",
                 }
             ],
             "bAutoWidth": false,
         }).fnSetFilteringDelay(1000);
-    });
-
-    function RefreshTable() {
-        if (table != null) {
-            table._fnPageChange(0);
-            table._fnAjaxUpdate();
-        }
-    }
+//    });
 
     function ExportExcel() {
         $("input[name='objectType']").val(10);
