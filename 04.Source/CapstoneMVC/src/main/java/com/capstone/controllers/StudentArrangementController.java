@@ -597,24 +597,22 @@ public class StudentArrangementController {
                     list.add(student);
                 }
 
-                // Sort list in map
-                for (StudentKey key : groupStudentsMap.keySet()) {
-                    List<StudentArrangementModel> list = groupStudentsMap.get(key);
-                    list.sort(new Comparator<StudentArrangementModel>() {
-                        @Override
-                        public int compare(StudentArrangementModel s1, StudentArrangementModel s2) {
-                            return s1.student.getTerm().compareTo(s2.student.getTerm());
-                        }
-                    }.thenComparing(new Comparator<StudentArrangementModel>() {
-                        @Override
-                        public int compare(StudentArrangementModel s1, StudentArrangementModel s2) {
-                            return Integer.compare(s2.numOfSubjects, s1.numOfSubjects);
-                        }
-                    }));
-                }
+                // Sort key
+                List<StudentKey> keyList = new ArrayList<>(groupStudentsMap.keySet());
+                keyList.sort(new Comparator<StudentKey>() {
+                    @Override
+                    public int compare(StudentKey k1, StudentKey k2) {
+                        return Integer.compare(k1.termNumber, k2.termNumber);
+                    }
+                }.thenComparing(new Comparator<StudentKey>() {
+                    @Override
+                    public int compare(StudentKey k1, StudentKey k2) {
+                        return Integer.compare(k2.numOfSubjects, k1.numOfSubjects);
+                    }
+                }));
 
                 // Create class
-                for (StudentKey key : groupStudentsMap.keySet()) {
+                for (StudentKey key : keyList) {
                     List<StudentArrangementModel> allList = groupStudentsMap.get(key);
                     List<StudentArrangementModel> amList = new ArrayList<>();
                     List<StudentArrangementModel> pmList = new ArrayList<>();
@@ -678,6 +676,7 @@ public class StudentArrangementController {
 
         String[] slotName = new String[]{"S21", "S22", "S23", "S31", "S32", "S33"};
 
+        Integer ordinalNumber;
         // Create 6 slots
         List<List<StudentArrangementModel>> studentsInSlot = new ArrayList<>();
         for (int i = 1; i <= 6; ++i) {
@@ -685,88 +684,81 @@ public class StudentArrangementController {
         }
 
         for (StudentArrangementModel student : studentList) {
-            int slotNotLearnedPosition = -1;
             for (int i = 0; i <= 5; i++) {
                 if (student.slots[i] == null || student.slots[i] == false) {
-                    slotNotLearnedPosition = i;
-                    break;
+                    studentsInSlot.get(i).add(student);
                 }
             }
-
-            studentsInSlot.get(slotNotLearnedPosition).add(student);
         }
 
-        Integer ordinalNumber;
-        while (!studentsInSlot.get(0).isEmpty() || !studentsInSlot.get(1).isEmpty()
-                || !studentsInSlot.get(2).isEmpty() || !studentsInSlot.get(3).isEmpty()
-                || !studentsInSlot.get(4).isEmpty() || !studentsInSlot.get(5).isEmpty()) {
-            // 3 phần tử đầu của list là 0,1,2 đại diện cho slot 1,2,3 của T2,T4,T6
-            // 2 phần tử cuối của list là 3,4,5 đại diện cho slot 1,2 của T3,T5
-            // Lấy số sv lớn nhất (ngày chẵn và ngày lẻ) và vị trí max của list
-            int maxStudentsOfEvenDays = 0;
-            int maxPositionOfEvenDays = 0;
-            for (int i = 0; i < 3; i++) {
-                if (maxStudentsOfEvenDays < studentsInSlot.get(i).size()) {
-                    maxStudentsOfEvenDays = studentsInSlot.size();
-                    maxPositionOfEvenDays = i;
-                }
+        // 3 phần tử đầu của list là 0,1,2 đại diện cho slot 1,2,3 của T2,T4,T6
+        // 2 phần tử cuối của list là 3,4,5 đại diện cho slot 1,2 của T3,T5
+        // Lấy số sv lớn nhất (ngày chẵn và ngày lẻ) và vị trí max của list
+        int maxStudentsOfEvenDays = 0;
+        int maxPositionOfEvenDays = 0;
+        for (int i = 0; i < 3; i++) {
+            if (maxStudentsOfEvenDays < studentsInSlot.get(i).size()) {
+                maxStudentsOfEvenDays = studentsInSlot.get(i).size();
+                maxPositionOfEvenDays = i;
             }
-
-            int maxStudentsOfOddDays = 0;
-            int maxPositionOfOddDays = 0;
-            for (int i = 3; i < 6; i++) {
-                if (maxStudentsOfOddDays < studentsInSlot.get(i).size()) {
-                    maxStudentsOfOddDays = studentsInSlot.size();
-                    maxPositionOfOddDays = i;
-                }
-            }
-
-            // Nếu mà số sv lớn nhất của ngày chẵn lẻ bằng nhau -> so sánh slot, chọn vị trí có số slot nhỏ nhất
-            // Còn không thì chọn vị trí mà số sv là lớn nhất
-            int finalPosition = 0;
-            if (maxStudentsOfEvenDays == maxStudentsOfOddDays) {
-                if (maxPositionOfEvenDays <= maxPositionOfOddDays - 3) {
-                    finalPosition = maxPositionOfEvenDays;
-                } else {
-                    finalPosition = maxPositionOfOddDays;
-                }
-            } else {
-                if (maxStudentsOfEvenDays < maxStudentsOfOddDays) {
-                    finalPosition = maxPositionOfOddDays;
-                } else {
-                    finalPosition = maxPositionOfEvenDays;
-                }
-            }
-
-            ordinalNumber = ordinalNumberMap.get(slotName[finalPosition]);
-            if (ordinalNumber == null) {
-                ordinalNumber = 1;
-                ordinalNumberMap.put(slotName[finalPosition], ordinalNumber);
-            } else {
-                ordinalNumber++;
-                ordinalNumberMap.put(slotName[finalPosition], ordinalNumber);
-            }
-
-            // Chọn ra 25 sinh viên đầu danh sách để xếp lớp
-            SubjectEntity subjectEntity = subjectMap.get(subjectCode);
-            List<StudentArrangementModel> finalStudentList = studentsInSlot.get(finalPosition)
-                    .stream().skip(0).limit(25).collect(Collectors.toList());
-            String currentClass = subjectCode + "_" + shift + "_" + ordinalNumber + "_" + slotName[finalPosition];
-            for (StudentArrangementModel std : finalStudentList) {
-                std.slots[finalPosition] = true;
-                List<String> row = new ArrayList<>();
-                row.add(subjectEntity.getId());
-                row.add(subjectEntity.getName());
-                row.add(std.student.getRollNumber());
-                row.add(std.student.getFullName());
-                row.add(currentClass);
-                row.add(shift);
-
-                displayList.add(row);
-            }
-
-            studentsInSlot.get(finalPosition).removeAll(finalStudentList);
         }
+
+        int maxStudentsOfOddDays = 0;
+        int maxPositionOfOddDays = 0;
+        for (int i = 3; i < 6; i++) {
+            if (maxStudentsOfOddDays < studentsInSlot.get(i).size()) {
+                maxStudentsOfOddDays = studentsInSlot.get(i).size();
+                maxPositionOfOddDays = i;
+            }
+        }
+
+        // Nếu mà số sv lớn nhất của ngày chẵn lẻ bằng nhau -> so sánh slot, chọn vị trí có số slot nhỏ nhất
+        // Còn không thì chọn vị trí mà số sv là lớn nhất
+        int finalPosition = 0;
+        if (maxStudentsOfEvenDays == maxStudentsOfOddDays) {
+            if (maxPositionOfEvenDays <= maxPositionOfOddDays - 3) {
+                finalPosition = maxPositionOfEvenDays;
+            } else {
+                finalPosition = maxPositionOfOddDays;
+            }
+        } else {
+            if (maxStudentsOfEvenDays < maxStudentsOfOddDays) {
+                finalPosition = maxPositionOfOddDays;
+            } else {
+                finalPosition = maxPositionOfEvenDays;
+            }
+        }
+
+        ordinalNumber = ordinalNumberMap.get(slotName[finalPosition]);
+        if (ordinalNumber == null) {
+            ordinalNumber = 1;
+            ordinalNumberMap.put(slotName[finalPosition], ordinalNumber);
+        } else {
+            ordinalNumber++;
+            ordinalNumberMap.put(slotName[finalPosition], ordinalNumber);
+        }
+
+        // Chọn ra 25 sinh viên đầu danh sách để xếp lớp
+        SubjectEntity subjectEntity = subjectMap.get(subjectCode);
+        List<StudentArrangementModel> finalStudentList = studentsInSlot.get(finalPosition)
+                .stream().skip(0).limit(25).collect(Collectors.toList());
+        String currentClass = subjectCode + "_" + shift + "_" + ordinalNumber + "_" + slotName[finalPosition];
+        for (StudentArrangementModel std : finalStudentList) {
+            std.slots[finalPosition] = true;
+            List<String> row = new ArrayList<>();
+            row.add(subjectEntity.getId());
+            row.add(subjectEntity.getName());
+            row.add(std.student.getRollNumber());
+            row.add(std.student.getFullName());
+            row.add(currentClass);
+            row.add(shift);
+
+            displayList.add(row);
+        }
+
+        studentList.removeAll(finalStudentList);
+        this.arrangeStudentIntoSlot(displayList, studentList, subjectOrdinalNumberMap, subjectMap, shift, subjectCode);
+//        studentsInSlot.get(finalPosition).removeAll(finalStudentList);
     }
 
     private List<SubjectCurriculumEntity> getSubjectCurriculumList(StudentEntity student) {
