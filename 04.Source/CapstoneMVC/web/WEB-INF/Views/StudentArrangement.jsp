@@ -26,7 +26,7 @@
                 </div>
                 <div class="col-md-5 text-right">
                     <button type="button" class="btn btn-success" onclick="ExportExcel()">Xuất dữ liệu</button>
-                    <button type="button" class="btn btn-success" onclick="ExportValidationExcel()">Xuất file kiểm tra</button>
+                    <%--<button type="button" class="btn btn-success" onclick="ExportValidationExcel()">Xuất file kiểm tra</button>--%>
                     <button type="button" class="btn btn-warning" onclick="ShowImportModal()">Nhập dữ liệu</button>
                 </div>
             </div>
@@ -105,6 +105,17 @@
                 </div>
                 <hr>
 
+                <div class="form-group m-b-5">
+                    <div class="row">
+                        <div class="title">
+                            <h4 class="text-left f-chocolate">Sử dụng xếp lớp nâng cao:</h4>
+                            <div class="text-left m-l-5">
+                                <input type="checkbox" id="cb-advance">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <div class="row">
                         <div class="title">
@@ -126,10 +137,7 @@
                 <div class="form-group">
                     <div class="row">
                         <div class="title">
-                            <h4 class="text-left">Nhập danh sách sinh viên học đi:</h4>
-                            <div class="text-left m-l-10">
-                                <input type="checkbox" id="cb-file-going" /> Sử dụng file
-                            </div>
+                            <h4>Nhập danh sách sinh viên học đi:</h4>
                         </div>
                         <div class="my-content">
                             <div class="col-md-12">
@@ -148,10 +156,7 @@
                 <div class="form-group">
                     <div class="row">
                         <div class="title">
-                            <h4 class="text-left">Nhập danh sách sinh viên học lại:</h4>
-                            <div class="text-left m-l-10">
-                                <input type="checkbox" id="cb-file-relearn" /> Sử dụng file
-                            </div>
+                            <h4>Nhập danh sách sinh viên học lại:</h4>
                         </div>
                         <div class="my-content">
                             <div class="col-md-12">
@@ -223,6 +228,11 @@
 
     $(document).ready(function () {
         $('.select').select2();
+        $("#cb-advance").iCheck({
+            checkboxClass: 'icheckbox_square-blue',
+            radioClass: 'iradio_square-blue',
+            increaseArea: '20%' // optional
+        });
         $('#cb-shift-type').on('change', function() {
             RefreshTable();
         });
@@ -302,13 +312,13 @@
         if (typeof($('#file-suggestion')[0].files[0]) == 'undefined' || $('#file-suggestion')[0].files[0] == null) {
             swal('', 'Xin nhập danh sách kế hoạch dự kiến', 'warning');
             return;
-        } else if ($('#cb-semester').val() == '-1' && $('#cb-file-going').prop('checked') && $('#cb-file-relearn').prop('checked')) {
+        } else if ($('#cb-semester').val() == '-1' && $('#cb-advance').prop('checked')) {
             swal('', 'Xin chọn học kỳ', 'warning');
             return;
-        } else if ($('#cb-file-going').prop('checked') && (typeof($('#file-going')[0].files[0]) == 'undefined' || $('#file-going')[0].files[0] == null)) {
+        } else if ($('#cb-advance').prop('checked') && (typeof($('#file-going')[0].files[0]) == 'undefined' || $('#file-going')[0].files[0] == null)) {
             swal('', 'Xin nhập danh sách sinh viên học đi', 'warning');
             return;
-        } else if ($('#cb-file-relearn').prop('checked') && (typeof($('#file-relearn')[0].files[0]) == 'undefined' || $('#file-relearn')[0].files[0] == null)) {
+        } else if ($('#cb-advance').prop('checked') && (typeof($('#file-relearn')[0].files[0]) == 'undefined' || $('#file-relearn')[0].files[0] == null)) {
             swal('', 'Xin nhập danh sách sinh viên học lại', 'warning');
             return;
         }
@@ -316,18 +326,16 @@
         var form = new FormData();
         form.append('semesterId', $('#cb-semester').val());
         form.append('file-suggestion', $('#file-suggestion')[0].files[0]);
-        if ($('#cb-file-going').prop('checked')) {
+        if ($('#cb-advance').prop('checked')) {
             form.append('file-going', $('#file-going')[0].files[0]);
-        }
-        if ($('#cb-file-relearn').prop('checked')) {
             form.append('file-relearn', $('#file-relearn')[0].files[0]);
         }
 
         var url = "";
-        if ($('#cb-file-going').prop('checked') && $('#cb-file-relearn').prop('checked')) {
-            url = "/studentArrangement/import2";
+        if ($('#cb-advance').prop('checked')) {
+            url = "/studentArrangement/import2"; // Use 3 files
         } else {
-            url = "/studentArrangement/import1";
+            url = "/studentArrangement/import1"; // Use 1 file (expected subject list)
         }
 
         swal({
@@ -358,7 +366,7 @@
                         }
                     }
                 });
-                if ($('#cb-file-going').prop('checked') && $('#cb-file-relearn').prop('checked')) {
+                if ($('#cb-advance').prop('checked')) {
                     updateProgressFullFile(isRunning);
                 } else {
                     updateProgressOneFile(isRunning);
