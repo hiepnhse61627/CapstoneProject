@@ -156,7 +156,7 @@ public class ExportStudentOnlyNextImpl implements IExportObject {
 
     public List<List<String>> processSuggestion(int stuId, String semester) {
         StudentDetail detail = new StudentDetail();
-        Suggestion suggestion = detail.processSuggestion(stuId, semester);
+        Suggestion suggestion = detail.processSuggestion(stuId, semester, 7);
         List<List<String>> result = suggestion.getData();
 
         List<String> brea = new ArrayList<>();

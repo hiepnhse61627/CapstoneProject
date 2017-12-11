@@ -309,11 +309,18 @@ public class StudentDetail {
 
         int stuId = Integer.parseInt(params.get("stuId"));
         String semester = Global.getTemporarySemester().getSemester();
+        int total = 7;
+        if (params.get("total") != null) {
+            total = Integer.parseInt(params.get("total"));
+            if (total < 1) {
+                total = 7;
+            }
+        }
 
         try {
             List<List<String>> result = processNext(stuId, semester, true, true);
 
-            Suggestion suggestion = processSuggestion(stuId, semester);
+            Suggestion suggestion = processSuggestion(stuId, semester, total);
             List<List<String>> result2 = suggestion.getData();
 
             List<String> brea = new ArrayList<>();
@@ -548,9 +555,16 @@ public class StudentDetail {
 
         int stuId = Integer.parseInt(params.get("stuId"));
         String semester = Global.getTemporarySemester().getSemester();
+        int total = 7;
+        if (params.get("total") != null) {
+            total = Integer.parseInt(params.get("total"));
+            if (total < 1) {
+                total = 7;
+            }
+        }
 
         try {
-            Suggestion suggestion = processSuggestion(stuId, semester);
+            Suggestion suggestion = processSuggestion(stuId, semester, total);
             List<List<String>> result = suggestion.getData();
 
             List<String> brea = new ArrayList<>();
@@ -581,7 +595,7 @@ public class StudentDetail {
         return data;
     }
 
-    public Suggestion processSuggestion(int stuId, String semester) {
+    public Suggestion processSuggestion(int stuId, String semester, int totalDisplay) {
         Suggestion suggestion = new Suggestion();
 
         IMarksService marksService = new MarksServiceImpl();
@@ -1112,7 +1126,7 @@ public class StudentDetail {
             /*-----------------------------get Subject List--------------------------------------------------------*/
         List<List<String>> others = new ArrayList<>();
         if (sorted.size() >= 5) {
-            sorted = sorted.stream().limit(7).collect(Collectors.toList());
+            sorted = sorted.stream().limit(totalDisplay).collect(Collectors.toList());
 
             if (!sorted.isEmpty()) {
                 sorted.forEach(m -> {
@@ -1129,7 +1143,7 @@ public class StudentDetail {
                 tmp.add(subject.getName());
                 others.add(tmp);
             }
-            if (nextSubjects.size() > (7 - others.size())) {
+            if (nextSubjects.size() > (totalDisplay - others.size())) {
                 for (int i = 0; i < nextSubjects.size(); i++) {
                     ArrayList<String> tmp = new ArrayList<>();
                     tmp.add(nextSubjects.get(i).getId());
@@ -1294,7 +1308,7 @@ public class StudentDetail {
         if (Global.SemesterGap() > 0) {
             trim = others;
         } else {
-            trim = others.stream().limit(7).collect(Collectors.toList());
+            trim = others.stream().limit(totalDisplay).collect(Collectors.toList());
         }
         for (List<String> o : trim) {
             suggestion.getData().add(o);
