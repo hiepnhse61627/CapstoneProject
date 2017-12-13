@@ -1127,7 +1127,7 @@ public class StudentDetail {
             /*-----------------------------get Subject List--------------------------------------------------------*/
         List<List<String>> others = new ArrayList<>();
         if (sorted.size() >= 5) {
-            sorted = sorted.stream().limit(totalDisplay).collect(Collectors.toList());
+//            sorted = sorted.stream().limit(totalDisplay).collect(Collectors.toList());
 
             if (!sorted.isEmpty()) {
                 sorted.forEach(m -> {
@@ -1167,14 +1167,15 @@ public class StudentDetail {
                 others.add(tmp);
             }
         }
+        List<List<String>> others2 = others.stream().limit(totalDisplay).collect(Collectors.toList());
 
         // check ojt and syb pass or not
         docs = student.getDocumentStudentEntityList();
         if (!docs.isEmpty()) {
             ProgramEntity program = student.getProgramId();
-            Iterator<List<String>> itr = others.iterator();
+            Iterator<List<String>> itr = others2.iterator();
 
-            List<List<String>> tmp2 = others.subList(0, others.size());
+            List<List<String>> tmp2 = others2.subList(0, others2.size());
             for (List<String> str : tmp2) {
                 SubjectEntity subject = subjectService.findSubjectById(str.get(0));
 
@@ -1310,12 +1311,12 @@ public class StudentDetail {
         }
 
         if (suggestion.getData() == null) suggestion.setData(new ArrayList<>());
-        List<List<String>> trim;
-        if (Global.SemesterGap() > 0) {
-            trim = others;
-        } else {
-            trim = others.stream().limit(totalDisplay).collect(Collectors.toList());
-        }
+        List<List<String>> trim = others2;
+//        if (Global.SemesterGap() > 0) {
+//            trim = others2;
+//        } else {
+//            trim = others2.stream().limit(totalDisplay).collect(Collectors.toList());
+//        }
         for (List<String> o : trim) {
             suggestion.getData().add(o);
         }
