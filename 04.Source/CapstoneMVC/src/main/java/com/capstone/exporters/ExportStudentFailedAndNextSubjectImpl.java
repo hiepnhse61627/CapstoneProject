@@ -55,6 +55,13 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
 
             int stu = Integer.parseInt(params.get("studentId"));
             String semester = params.get("semesterId");
+            int total = 7;
+            if (params.get("total") != null) {
+                total = Integer.parseInt(params.get("total"));
+                if (total < 1) {
+                    total = 7;
+                }
+            }
 
             if (stu < 0) {
                 students = studentService.findAllStudents();
@@ -64,7 +71,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 students.add(student);
             }
 
-            writeDataToTable(streamingWorkbook, streamingSheet, students, semester);
+            writeDataToTable(streamingWorkbook, streamingSheet, students, semester, total);
 
             streamingWorkbook.write(os);
         } catch (Exception e) {
@@ -73,7 +80,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
         }
     }
 
-    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, List<StudentEntity> students, String semester) throws Exception {
+    private void writeDataToTable(SXSSFWorkbook workbook, SXSSFSheet spreadsheet, List<StudentEntity> students, String semester, int total) throws Exception {
         if (students != null && !students.isEmpty()) {
             // style
             CellStyle cellStyle = workbook.createCellStyle();
@@ -197,7 +204,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 }
 
                 // current subject
-                List<List<String>> suggestSubjects = processSuggestion(student.getId(), semester);
+                List<List<String>> suggestSubjects = processSuggestion(student.getId(), semester, total);
                 if (suggestSubjects != null && !suggestSubjects.isEmpty()) {
                     String next = "";
                     for (List<String> subjects2 : suggestSubjects) {
@@ -245,9 +252,9 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
         return detail.processNotStart(stuId, semester);
     }
 
-    public List<List<String>> processSuggestion(int stuId, String semester) {
+    public List<List<String>> processSuggestion(int stuId, String semester, int totalDisplay) {
         StudentDetail detail = new StudentDetail();
-        Suggestion suggestion = detail.processSuggestion(stuId, semester);
+        Suggestion suggestion = detail.processSuggestion(stuId, semester, totalDisplay);
         List<List<String>> result = suggestion.getData();
 
         List<String> brea = new ArrayList<>();

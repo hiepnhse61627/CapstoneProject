@@ -309,11 +309,18 @@ public class StudentDetail {
 
         int stuId = Integer.parseInt(params.get("stuId"));
         String semester = Global.getTemporarySemester().getSemester();
+        int total = 7;
+        if (params.get("total") != null) {
+            total = Integer.parseInt(params.get("total"));
+            if (total < 1) {
+                total = 7;
+            }
+        }
 
         try {
             List<List<String>> result = processNext(stuId, semester, true, true);
 
-            Suggestion suggestion = processSuggestion(stuId, semester);
+            Suggestion suggestion = processSuggestion(stuId, semester, total);
             List<List<String>> result2 = suggestion.getData();
 
             List<String> brea = new ArrayList<>();
@@ -548,9 +555,16 @@ public class StudentDetail {
 
         int stuId = Integer.parseInt(params.get("stuId"));
         String semester = Global.getTemporarySemester().getSemester();
+        int total = 7;
+        if (params.get("total") != null) {
+            total = Integer.parseInt(params.get("total"));
+            if (total < 1) {
+                total = 7;
+            }
+        }
 
         try {
-            Suggestion suggestion = processSuggestion(stuId, semester);
+            Suggestion suggestion = processSuggestion(stuId, semester, total);
             List<List<String>> result = suggestion.getData();
 
             List<String> brea = new ArrayList<>();
@@ -581,7 +595,7 @@ public class StudentDetail {
         return data;
     }
 
-    public Suggestion processSuggestion(int stuId, String semester) {
+    public Suggestion processSuggestion(int stuId, String semester, int totalDisplay) {
         Suggestion suggestion = new Suggestion();
 
         IMarksService marksService = new MarksServiceImpl();
@@ -788,7 +802,7 @@ public class StudentDetail {
                                                     .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(ss.getId()))
                                                     .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt")).collect(Collectors.toList());
                                             if (!rep.isEmpty()) {
-                                                iterator.remove();
+                                                iteratorPre1quisite.remove();
                                                 deleted = true;
                                                 break;
                                             }
@@ -1111,8 +1125,8 @@ public class StudentDetail {
 
             /*-----------------------------get Subject List--------------------------------------------------------*/
         List<List<String>> others = new ArrayList<>();
-        if (sorted.size() >= 5) {
-            sorted = sorted.stream().limit(7).collect(Collectors.toList());
+        if (sorted.size() >= totalDisplay) {
+            sorted = sorted.stream().limit(totalDisplay).collect(Collectors.toList());
 
             if (!sorted.isEmpty()) {
                 sorted.forEach(m -> {
@@ -1129,7 +1143,7 @@ public class StudentDetail {
                 tmp.add(subject.getName());
                 others.add(tmp);
             }
-            if (nextSubjects.size() > (7 - others.size())) {
+            if (nextSubjects.size() > (totalDisplay - others.size())) {
                 for (int i = 0; i < nextSubjects.size(); i++) {
                     ArrayList<String> tmp = new ArrayList<>();
                     tmp.add(nextSubjects.get(i).getId());
@@ -1174,16 +1188,21 @@ public class StudentDetail {
                 }
 
                 if (exist) {
-                    List<SubjectCurriculumEntity> curSubs = new ArrayList<>();
-                    for (DocumentStudentEntity doc : docs) {
-                        if (doc.getCurriculumId() != null) {
-                            curSubs.addAll(doc.getCurriculumId().getSubjectCurriculumEntityList());
-                        }
-                    }
+//                    List<SubjectCurriculumEntity> curSubs = new ArrayList<>();
+//                    for (DocumentStudentEntity doc : docs) {
+//                        if (doc.getCurriculumId() != null) {
+//                            curSubs.addAll(doc.getCurriculumId().getSubjectCurriculumEntityList());
+//                        }
+//                    }
 //                    int total = 0; // total total tin chi
                     int total = 0;
 
+                    studentSubs = studentSubs.stream().filter(Ultilities.distinctByKey(c -> c.getSubjectId().getId())).collect(Collectors.toList());
+                    studentSubs.sort(Comparator.comparingInt(c -> ((SubjectCurriculumEntity)c).getTermNumber()).thenComparingInt(a -> ((SubjectCurriculumEntity)a).getOrdinalNumber()));
                     for (SubjectCurriculumEntity m : studentSubs) {
+                        if (m.getSubjectId().getType() == SubjectTypeEnum.OJT.getId() || m.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
+                            break;
+                        }
                         Integer num = m.getSubjectCredits();
                         total += (num == null ? 0 : num);
                     }
@@ -1294,7 +1313,7 @@ public class StudentDetail {
         if (Global.SemesterGap() > 0) {
             trim = others;
         } else {
-            trim = others.stream().limit(7).collect(Collectors.toList());
+            trim = others.stream().limit(totalDisplay).collect(Collectors.toList());
         }
         for (List<String> o : trim) {
             suggestion.getData().add(o);
