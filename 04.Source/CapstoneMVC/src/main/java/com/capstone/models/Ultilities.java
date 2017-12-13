@@ -82,6 +82,16 @@ public class Ultilities {
         return newSet;
     }
 
+    public static List<MarksEntity> FilterStudentsOnlyPassAndFailAndStudying(List<MarksEntity> set) {
+        List<MarksEntity> newSet = set.stream()
+                .filter(c -> c.getStatus().toLowerCase().contains("pass") ||
+                                c.getStatus().toLowerCase().contains("fail") ||
+                                c.getStatus().toLowerCase().contains("study"))
+                .collect(Collectors.toList());
+        newSet = SortSemestersByMarks(newSet);
+        return newSet;
+    }
+
     public static List<MarksEntity> FilterStudentsOnlyPassAndFailAndStudyiAndNotStartg(List<MarksEntity> set) {
         List<MarksEntity> newSet = set;
 // .stream()

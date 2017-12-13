@@ -408,7 +408,7 @@ public class StudentDetail {
                         .stream()
                         .filter(c -> curriculumSubjects.stream().anyMatch(b -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(b)))
                         .collect(Collectors.toList());
-                existList = Ultilities.FilterStudentsOnlyPassAndFail(existList);
+                existList = Ultilities.FilterStudentsOnlyPassAndFailAndStudying(existList);
                 Iterator<SubjectCurriculumEntity> iterator = list.iterator();
                 while (iterator.hasNext()) {
                     SubjectCurriculumEntity cur = iterator.next();
@@ -721,7 +721,7 @@ public class StudentDetail {
                     .stream()
                     .filter(c -> tt.stream().anyMatch(b -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(b)))
                     .collect(Collectors.toList());
-            existList = Ultilities.FilterStudentsOnlyPassAndFail(existList);
+            existList = Ultilities.FilterStudentsOnlyPassAndFailAndStudying(existList);
             Iterator<SubjectCurriculumEntity> iteratorPre1quisite = listNextCurri.iterator();
             while (iteratorPre1quisite.hasNext()) {
                 SubjectCurriculumEntity cur = iteratorPre1quisite.next();
@@ -835,7 +835,7 @@ public class StudentDetail {
                     .stream()
                     .filter(c -> curriculumSubjects.stream().anyMatch(b -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(b)))
                     .collect(Collectors.toList());
-            existList = Ultilities.FilterStudentsOnlyPassAndFail(existList);
+            existList = Ultilities.FilterStudentsOnlyPassAndFailAndStudying(existList);
             Iterator<SubjectEntity> iterator3 = nextSubjects.iterator();
             while (iterator3.hasNext()) {
                 SubjectEntity entity = iterator3.next();
@@ -1126,7 +1126,7 @@ public class StudentDetail {
 
             /*-----------------------------get Subject List--------------------------------------------------------*/
         List<List<String>> others = new ArrayList<>();
-        if (sorted.size() >= totalDisplay) {
+        if (sorted.size() >= 5) {
             sorted = sorted.stream().limit(totalDisplay).collect(Collectors.toList());
 
             if (!sorted.isEmpty()) {
