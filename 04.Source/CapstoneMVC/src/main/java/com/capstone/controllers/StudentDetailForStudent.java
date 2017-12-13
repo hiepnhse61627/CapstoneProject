@@ -145,7 +145,7 @@ public class StudentDetailForStudent {
         int stuId = Integer.parseInt(params.get("stuId"));
 
         try {
-            Suggestion suggestion = detail.processSuggestion(stuId, getSemester());
+            Suggestion suggestion = detail.processSuggestion(stuId, getSemester(), 7);
             List<List<String>> result = suggestion.getData();
 
             List<String> brea = new ArrayList<>();
@@ -212,7 +212,7 @@ public class StudentDetailForStudent {
         try {
             List<List<String>> result = detail.processNext(stuId, getSemester(), true, true);
 
-            Suggestion suggestion = detail.processSuggestion(stuId, getSemester());
+            Suggestion suggestion = detail.processSuggestion(stuId, getSemester(), 7);
             List<List<String>> result2 = suggestion.getData();
 
             List<String> brea = new ArrayList<>();

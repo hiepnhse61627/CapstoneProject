@@ -45,6 +45,11 @@
                             <div class="left-content m-r-5">
                                 <label class="p-t-8">Chọn sinh viên:</label>
                             </div>
+                            <div class="left-content m-r-5">
+                                <div class="col-md-12">
+                                    <input id="total" type="number" min="0" value="7" class="form-control"/>
+                                </div>
+                            </div>
                             <div class="right-content width-60 width-m-70">
                                 <div class="width-40 float-left m-r-5">
                                     <select id="cb-student" class="select"> </select>
@@ -216,6 +221,7 @@
     <input name="objectType"/>
     <input name="studentId"/>
     <input name="semesterId"/>
+    <input name="total"/>
 </form>
 
 <div id="markDetail" class="modal fade" role="dialog">
@@ -455,7 +461,7 @@
             "sAjaxSource": "/getStudentNotNextCourse",
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "stuId", "value": $('#cb-student').val()})
-//                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
+                    aoData.push({"name": "total", "value": $('#total').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -553,7 +559,7 @@
             "sAjaxSource": "/getStudentNextCourseSuggestion",
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "stuId", "value": $('#cb-student').val()})
-//                    aoData.push({"name": "semesterId", "value": $('#semester').val()})
+                    aoData.push({"name": "total", "value": $('#total').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -642,6 +648,7 @@
     function ExportExcel() {
         $("input[name='objectType']").val(2);
         $("input[name='studentId']").val("-1");
+        $("input[name='total']").val($('#total').val());
         $("#export-excel").submit();
 
         Call();
@@ -650,6 +657,7 @@
     function ExportExcel2() {
         $("input[name='objectType']").val(13);
         $("input[name='studentId']").val("-1");
+        $("input[name='total']").val($('#total').val());
         $("#export-excel").submit();
 
         Call();
@@ -659,13 +667,11 @@
     function ExportExcelForOneStudent() {
         $("input[name='objectType']").val(2);
         $("input[name='studentId']").val($('#cb-student').val());
-//        $("input[name='semesterId']").val($('#semester').val())
+        $("input[name='total']").val($('#total').val());
         $("#export-excel").submit();
 
         Call();
     }
-
-    var alert;
 
     function Call() {
         swal({
