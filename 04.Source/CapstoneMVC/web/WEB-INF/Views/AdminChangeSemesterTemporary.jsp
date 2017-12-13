@@ -75,6 +75,7 @@
                         <tr>
                             <th>STT</th>
                             <th>Học kỳ</th>
+                            <th>Thiết lập học kì hiện tại</th>
                             <th>Thiết lập tạm thời</th>
                         </tr>
                         </thead>
@@ -83,6 +84,17 @@
                             <tr>
                                 <td>${count.count}</td>
                                 <td>${semester.semester}</td>
+                                <td>
+                                    <c:choose>
+                                        <c:when test="${semester.id eq currentSemester}">
+                                            <input type="radio" id="rd1-${semester.id}" name="radio2" value="${semester.id}" checked/>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <input type="radio" id="rd1-${semester.id}" name="radio2" value="${semester.id}"/>
+                                        </c:otherwise>
+                                    </c:choose>
+                                    <label for="rd1-${semester.id}">Chọn</label>
+                                </td>
                                 <td>
                                     <c:choose>
                                         <c:when test="${semester.id eq temporarySemester}">
@@ -106,14 +118,27 @@
 
 <script>
     $(document).ready(function () {
-        $('input[type="radio"]').click(function () {
+        $('input[name="radio"]').click(function () {
             if ($(this).is(':checked')) {
                 $.ajax({
                     type: "POST",
                     url: "/admin/changesemster",
                     data: {"semesterId": $(this).val()},
                     success: function (result) {
-//                        console.log(result);
+                        console.log(result);
+                    }
+                });
+            }
+        });
+
+        $('input[name="radio2"]').click(function () {
+            if ($(this).is(':checked')) {
+                $.ajax({
+                    type: "POST",
+                    url: "/admin/changecurrentsemster",
+                    data: {"semesterId": $(this).val()},
+                    success: function (result) {
+                        console.log(result);
                     }
                 });
             }
