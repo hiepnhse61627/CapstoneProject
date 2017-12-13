@@ -802,7 +802,7 @@ public class StudentDetail {
                                                     .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(ss.getId()))
                                                     .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("exempt")).collect(Collectors.toList());
                                             if (!rep.isEmpty()) {
-                                                iterator.remove();
+                                                iteratorPre1quisite.remove();
                                                 deleted = true;
                                                 break;
                                             }
@@ -1125,7 +1125,7 @@ public class StudentDetail {
 
             /*-----------------------------get Subject List--------------------------------------------------------*/
         List<List<String>> others = new ArrayList<>();
-        if (sorted.size() >= 5) {
+        if (sorted.size() >= totalDisplay) {
             sorted = sorted.stream().limit(totalDisplay).collect(Collectors.toList());
 
             if (!sorted.isEmpty()) {
@@ -1188,16 +1188,21 @@ public class StudentDetail {
                 }
 
                 if (exist) {
-                    List<SubjectCurriculumEntity> curSubs = new ArrayList<>();
-                    for (DocumentStudentEntity doc : docs) {
-                        if (doc.getCurriculumId() != null) {
-                            curSubs.addAll(doc.getCurriculumId().getSubjectCurriculumEntityList());
-                        }
-                    }
+//                    List<SubjectCurriculumEntity> curSubs = new ArrayList<>();
+//                    for (DocumentStudentEntity doc : docs) {
+//                        if (doc.getCurriculumId() != null) {
+//                            curSubs.addAll(doc.getCurriculumId().getSubjectCurriculumEntityList());
+//                        }
+//                    }
 //                    int total = 0; // total total tin chi
                     int total = 0;
 
+                    studentSubs = studentSubs.stream().filter(Ultilities.distinctByKey(c -> c.getSubjectId().getId())).collect(Collectors.toList());
+                    studentSubs.sort(Comparator.comparingInt(c -> ((SubjectCurriculumEntity)c).getTermNumber()).thenComparingInt(a -> ((SubjectCurriculumEntity)a).getOrdinalNumber()));
                     for (SubjectCurriculumEntity m : studentSubs) {
+                        if (m.getSubjectId().getType() == SubjectTypeEnum.OJT.getId() || m.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
+                            break;
+                        }
                         Integer num = m.getSubjectCredits();
                         total += (num == null ? 0 : num);
                     }
