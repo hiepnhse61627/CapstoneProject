@@ -370,7 +370,8 @@ public class StudentDetail {
                 if (doc.getCurriculumId() != null) {
                     List<SubjectCurriculumEntity> cursubs = doc.getCurriculumId().getSubjectCurriculumEntityList();
                     for (SubjectCurriculumEntity s : cursubs) {
-                        if (s.getTermNumber() == (student.getTerm() + 1 - Global.SemesterGap())) {
+                        int gap =  Global.SemesterGap();
+                        if (s.getTermNumber() == (student.getTerm() + 1 - gap)) {
                             if (!list.contains(s)) list.add(s);
                         }
                     }

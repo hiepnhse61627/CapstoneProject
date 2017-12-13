@@ -48,6 +48,9 @@ public class Global {
     public static int SemesterGap() {
         int indexCurrent = sortedList.indexOf(currentSemester);
         int indexTemporary = sortedList.indexOf(temporarySemester);
+        if (indexCurrent < indexTemporary) {
+            return 0;
+        }
         return indexCurrent - indexTemporary;
     }
 
@@ -57,6 +60,7 @@ public class Global {
                 .stream()
                 .filter(c -> c.getIsActivated() == true)
                 .filter(c -> sortedList.indexOf(c.getSemesterId()) <= sortedList.indexOf(temporarySemester))
+                .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("fail") || c.getStatus().toLowerCase().contains("exempt"))
                 .collect(Collectors.toList());
         if (currentSemester.getId().intValue() != temporarySemester.getId().intValue()) {
             for (MarksEntity mark : removeMarks) {

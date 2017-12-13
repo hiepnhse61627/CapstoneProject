@@ -47,6 +47,7 @@ public class AdminController {
         view.addObject("title", "Set semester");
         view.addObject("semesters", Global.getSortedList());
         view.addObject("temporarySemester", Global.getTemporarySemester().getId());
+        view.addObject("currentSemester", Global.getCurrentSemester().getId());
         return view;
     }
 
@@ -126,6 +127,25 @@ public class AdminController {
             IRealSemesterService service = new RealSemesterServiceImpl();
             RealSemesterEntity tem = service.findSemesterById(semesterId);
             Global.setTemporarySemester(tem);
+            System.out.println("Temporary " + Global.getTemporarySemester().getSemester());
+            data.addProperty("success", true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return data;
+    }
+
+    @RequestMapping(value = "/changecurrentsemster", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject SetCurrentSemester(@RequestParam int semesterId) {
+        JsonObject data = new JsonObject();
+
+        try {
+            IRealSemesterService service = new RealSemesterServiceImpl();
+            RealSemesterEntity tem = service.findSemesterById(semesterId);
+            Global.setCurrentSemester(tem);
+            System.out.println("Current " + Global.getCurrentSemester().getSemester());
             data.addProperty("success", true);
         } catch (Exception e) {
             e.printStackTrace();
