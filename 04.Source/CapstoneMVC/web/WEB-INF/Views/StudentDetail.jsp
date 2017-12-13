@@ -29,7 +29,7 @@
                         <i class="glyphicon glyphicon-open"></i>
                         <div>Xuất dữ liêu chỉ học đi</div>
                     </button>
-                    <button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
+                    <button type="button" style="margin-top: 4px;" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
                         <i class="glyphicon glyphicon-open"></i>
                         <div>XUẤT DỮ LIỆU</div>
                     </button>

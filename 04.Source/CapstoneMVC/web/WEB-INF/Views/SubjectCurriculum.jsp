@@ -11,14 +11,14 @@
     <div class="box">
         <div class="b-header">
             <div class="row">
-                <div class="col-md-9 title">
+                <div class="col-md-8 title">
                     <h1>Các khung chương trình</h1>
                 </div>
-                <div class="col-md-3 text-right">
-                    <input class="btn btn-warning" type="button" value="Nhập dữ liệu" onclick="ShowImportModal()"/>
-                    <a class="btn btn-primary" onclick="ExportExcel()">Xuất tất cả</a>
-                    <a class="btn btn-success" href="/createcurriculum">Tạo mới</a>
-                </div>
+                    <div class="col-md-4" style="text-align: right">
+                        <input class="btn btn-warning" type="button" value="Nhập dữ liệu" onclick="ShowImportModal()"/>
+                        <a class="btn btn-primary" onclick="ExportExcel()">Xuất tất cả</a>
+                        <a class="btn btn-success" href="/createcurriculum">Tạo mới</a>
+                    </div>
             </div>
             <hr>
         </div>
