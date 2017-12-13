@@ -54,6 +54,7 @@ public class StudentList {
     private ModelAndView GetStudentInfoData(ModelAndView view, int studentId) {
         IStudentService studentService = new StudentServiceImpl();
         IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
+        IStudentStatusService studentStatusService = new StudentStatusServiceImpl();
 
         StudentEntity student = studentService.findStudentById(studentId);
 
@@ -67,6 +68,13 @@ public class StudentList {
         view.addObject("program", student.getProgramId() != null ? student.getProgramId().getName() : "N/A");
         CurriculumEntity cur = Lists.reverse(student.getDocumentStudentEntityList()).get(0).getCurriculumId();
         view.addObject("curriculum", cur != null ? cur.getName() : "N/A");
+
+        // Giaa lap hoc ky
+        RealSemesterEntity gialap = Global.getTemporarySemester();
+
+        StudentStatusEntity studentStatusEntity = studentStatusService.getStudentStatusBySemesterIdAndStudentId(gialap.getId(), studentId);
+        String studentStatus = studentStatusEntity != null ? studentStatusEntity.getStatus() : "N/A";
+        view.addObject("status", studentStatus);
 
         return view;
     }

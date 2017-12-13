@@ -255,6 +255,15 @@
                                            value="${student.term}"/>
                                 </div>
                             </div>
+                            <div class="my-input-group width-40 p-l-30 text-left">
+                                <div class="left-content" style="width: 85px">
+                                    <label class="p-t-8">Trạng thái:</label>
+                                </div>
+                                <div class="right-content">
+                                    <input id="status" disabled type="text" class="form-control"
+                                           value="${status}"/>
+                                </div>
+                            </div>
                         </div>
                         <div class="row m-0">
                             <button style="display: none" id="change" type="button" class="btn btn-primary" onclick="return EditStudent($('#rollNumber').val(),$('#studentName').val()
