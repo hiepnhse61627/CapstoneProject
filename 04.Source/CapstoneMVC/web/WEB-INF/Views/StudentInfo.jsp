@@ -76,7 +76,6 @@
         width: 12%;
         padding-right: 10px;
         text-align: right;
-        /*color: #de2121;*/
         color: chocolate;
     }
 
@@ -149,11 +148,15 @@
     <div class="box">
         <div class="b-header">
             <div class="row">
-                <div class="col-md-9 title">
+                <div class="col-md-6 title">
                     <h1>Thông tin sinh viên</h1>
                 </div>
-                <div class="col-md-3 text-right">
-                    <a href="/studentList" class="btn btn-danger btn-with-icon">
+                <div class="col-md-6 text-right">
+                    <a onclick="ExportExcel()" class="btn btn-warning btn-with-icon text-right m-l-5">
+                        <i class="glyphicon glyphicon-open"></i>
+                        <div class="m-l-3">XUẤT BẢNG ĐIỂM QUÁ TRÌNH</div>
+                    </a>
+                    <a href="/studentList" class="btn btn-danger btn-with-icon text-right">
                         <i class="fa fa-arrow-left"></i>
                         <div class="m-l-3">QUAY LẠI</div>
                     </a>
@@ -170,9 +173,6 @@
                         <button class="btn btn-primary text-left" id="btnEdit" onclick="onEdit()">
                             <i class="glyphicon glyphicon-pencil btn-icon"></i>
                         </button>
-                        <a class="btn btn-warning" onclick='GetAllStudentMarks(${student.id})'>
-                            <i class="glyphicon glyphicon-pencil btn-icon"></i>
-                        </a>
                         <button class="btn btn-success text-left m-r-5" id="btnSubmit" onclick="EditStudent()" style="display: none">
                             <i class="fa fa-check btn-icon"></i>
                         </button>
@@ -279,8 +279,8 @@
             <div class="form-group">
                 <div class="row">
                     <div class="title">
-                        <h4>Thông tin điểm</h4>
-                        <button class="btn btn-success" onclick="ExportExcel()">Xuất bảng điểm quá trình</button>
+                        <h4 class="text-left m-r-10 m-t-5">Thông tin điểm</h4>
+                        <button class="btn btn-success text-left" style="margin-top: -3px" onclick="GetAllStudentMarks(${student.id})">Xem chi tiết điểm</button>
                     </div>
 
                     <div class="my-content">

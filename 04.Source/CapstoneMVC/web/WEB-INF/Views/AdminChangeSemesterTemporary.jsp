@@ -16,10 +16,15 @@
         vertical-align: middle;
     }
 
-    .table > thead > tr > th:first-child,
-    .table > tbody > tr > td:first-child,
-    .table > thead > tr > th:last-child,
-    .table > tbody > tr > td:last-child {
+    .table > thead > tr > th:nth-child(1),
+    .table > thead > tr > th:nth-child(3),
+    .table > thead > tr > th:nth-child(4) {
+        text-align: center;
+    }
+
+    .table > tbody > tr > td:nth-child(1),
+    .table > tbody > tr > td:nth-child(3),
+    .table > tbody > tr > td:nth-child(4) {
         text-align: center;
     }
 
@@ -87,10 +92,10 @@
                                 <td>
                                     <c:choose>
                                         <c:when test="${semester.id eq currentSemester}">
-                                            <input type="radio" id="rd1-${semester.id}" name="radio2" value="${semester.id}" checked/>
+                                            <input type="radio" id="rd1-${semester.id}" name="radio1" value="${semester.id}" checked/>
                                         </c:when>
                                         <c:otherwise>
-                                            <input type="radio" id="rd1-${semester.id}" name="radio2" value="${semester.id}"/>
+                                            <input type="radio" id="rd1-${semester.id}" name="radio1" value="${semester.id}"/>
                                         </c:otherwise>
                                     </c:choose>
                                     <label for="rd1-${semester.id}">Chọn</label>
@@ -98,13 +103,13 @@
                                 <td>
                                     <c:choose>
                                         <c:when test="${semester.id eq temporarySemester}">
-                                            <input type="radio" id="rd-${semester.id}" name="radio" value="${semester.id}" checked/>
+                                            <input type="radio" id="rd2-${semester.id}" name="radio2" value="${semester.id}" checked/>
                                         </c:when>
                                         <c:otherwise>
-                                            <input type="radio" id="rd-${semester.id}" name="radio" value="${semester.id}"/>
+                                            <input type="radio" id="rd2-${semester.id}" name="radio2" value="${semester.id}"/>
                                         </c:otherwise>
                                     </c:choose>
-                                    <label for="rd-${semester.id}">Chọn</label>
+                                    <label for="rd2-${semester.id}">Chọn</label>
                                 </td>
                             </tr>
                         </c:forEach>
@@ -118,11 +123,11 @@
 
 <script>
     $(document).ready(function () {
-        $('input[name="radio"]').click(function () {
+        $('input[name="radio1"]').click(function () {
             if ($(this).is(':checked')) {
                 $.ajax({
                     type: "POST",
-                    url: "/admin/changesemster",
+                    url: "/admin/changecurrentsemster",
                     data: {"semesterId": $(this).val()},
                     success: function (result) {
                         console.log(result);
@@ -135,7 +140,7 @@
             if ($(this).is(':checked')) {
                 $.ajax({
                     type: "POST",
-                    url: "/admin/changecurrentsemster",
+                    url: "/admin/changesemster",
                     data: {"semesterId": $(this).val()},
                     success: function (result) {
                         console.log(result);
