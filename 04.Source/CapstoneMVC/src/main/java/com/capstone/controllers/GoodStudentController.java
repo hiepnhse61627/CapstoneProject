@@ -65,9 +65,8 @@ public class GoodStudentController {
         return jsonObject;
     }
 
+    // Return [RollNumber, FullName, Semester, Curriculum, Term, AverageMark]
     public List<List<String>> getGoodStudentList(Map<String, String> params) {
-        // Cột trả về MSSV,	Tên sinh viên, Học kỳ, Khóa, Kỳ, Điểm trung bình
-
         IMarksService marksService = new MarksServiceImpl();
         IStudentService studentService = new StudentServiceImpl();
         IRealSemesterService semesterService = new RealSemesterServiceImpl();
@@ -78,11 +77,15 @@ public class GoodStudentController {
 
         int semesterId = Integer.parseInt(params.get("semesterId"));
 
+        // Get MarkComponentEntity with name is AVERAGE
         MarkComponentEntity markComponent = markComponentService.getMarkComponentByName(
                 Enums.MarkComponent.AVERAGE.getValue());
 
+        // Get all semesters
         List<RealSemesterEntity> semesterList = semesterService.getAllSemester();
         semesterList = Ultilities.SortSemesters(semesterList);
+
+        // Put semesters into map [Key: SemesterId, Value: OrdinalNumber]
         Map<Integer, Integer> semesterPositionMap = new HashMap<>();
         for (int i = 0; i < semesterList.size(); i++) {
             semesterPositionMap.put(semesterList.get(i).getId(), i);
@@ -91,6 +94,7 @@ public class GoodStudentController {
         Map<Integer, Map<Integer, List<GoodStudentMarkModel>>> studentList = new HashMap<>();
         Map<Integer, List<DocumentStudentEntity>> docStudentMap = new HashMap<>();
 
+        // Get student's marks in current curriculum
         String queryStr = "SELECT m.StudentId, m.SemesterId, smc.SubjectId, sc.SubjectCredits," +
                 " m.AverageMark, m.Status, sc.TermNumber, ds.CurriculumId" +
                 " FROM Marks m" +
@@ -116,6 +120,8 @@ public class GoodStudentController {
         List<Object[]> searchList = query.getResultList();
 
         if (!searchList.isEmpty()) {
+            // Set values of searchList to GoodStudentMarkModel, depend on semester create HashMap for each model
+            // Map[Key: StudentId, Value: Map[Key: SemesterId, Value: GoodStudentMarkModel]]
             Map<Integer, Map<Integer, List<GoodStudentMarkModel>>> studentMarkList = new HashMap<>();
             for (Object[] m : searchList) {
                 int studentId = (int) m[0];
@@ -141,7 +147,7 @@ public class GoodStudentController {
                 semesterMarkList.get(semesId).add(markModel);
             }
 
-            // Get DocumentStudent List
+            // Get DocumentStudentEntity list
             String idStr = "(" + Ultilities.parseIntegerListToString(studentMarkList.keySet()) + ")";
             queryStr = "SELECT ds.* FROM Document_Student ds" +
                     " INNER JOIN Student s ON ds.StudentId = s.Id" +
@@ -153,6 +159,7 @@ public class GoodStudentController {
             Query queryDocStudent = em.createNativeQuery(queryStr, DocumentStudentEntity.class);
             List<DocumentStudentEntity> docStudentList = queryDocStudent.getResultList();
 
+            // Depend on StudentId, create Map[Key: StudentId, Value: List<DocumentStudent>]
             List<Integer> curriculumList = new ArrayList<>();
             docStudentMap = new HashMap<>();
             for (DocumentStudentEntity docStudent : docStudentList) {
@@ -165,33 +172,18 @@ public class GoodStudentController {
                 curriculumList.add(docStudent.getCurriculumId().getId());
             }
 
-            idStr = "(" + Ultilities.parseIntegerListToString(curriculumList) + ")";
-            queryStr = "SELECT sc.* FROM Subject_Curriculum sc WHERE sc.CurriculumId IN " + idStr;
-            Query querySubjectCurriculum =
-                    em.createNativeQuery(queryStr, SubjectCurriculumEntity.class);
-            List<SubjectCurriculumEntity> subjectCurriculumList = querySubjectCurriculum.getResultList();
-
-            // Change SubjectCurriculum List to HashMap
-            Map<Integer, List<SubjectCurriculumEntity>> subjectCurriculumMap = new HashMap<>();
-            for (SubjectCurriculumEntity sc : subjectCurriculumList) {
-                int currentCurriId = sc.getCurriculumId().getId();
-                if (subjectCurriculumMap.get(currentCurriId) != null) {
-                    subjectCurriculumMap.get(currentCurriId).add(sc);
-                } else {
-                    List<SubjectCurriculumEntity> newList = new ArrayList<>();
-                    newList.add(sc);
-                    subjectCurriculumMap.put(currentCurriId, newList);
-                }
-            }
-
-            // Validate student mark list
+            // Validate studentMarkList
             for (Integer studentId : studentMarkList.keySet()) {
+                // Get all student's subjects in curriculum, except OJT Curriculum
                 List<SubjectCurriculumEntity> allStudentSubjects = new ArrayList<>();
                 for (DocumentStudentEntity docStudent : docStudentMap.get(studentId)) {
-                    List<SubjectCurriculumEntity> subjectCurriList = subjectCurriculumMap
-                            .get(docStudent.getCurriculumId().getId());
-                    if (subjectCurriList != null && !subjectCurriList.isEmpty()) {
-                        allStudentSubjects.addAll(subjectCurriList);
+                    if (docStudent.getCurriculumId() != null
+                            && !docStudent.getCurriculumId().getName().contains("OJT")) {
+                        List<SubjectCurriculumEntity> subjectCurriculumList = docStudent.getCurriculumId()
+                                .getSubjectCurriculumEntityList();
+                        if (subjectCurriculumList != null && !subjectCurriculumList.isEmpty()) {
+                            allStudentSubjects.addAll(subjectCurriculumList);
+                        }
                     }
                 }
 
@@ -201,6 +193,7 @@ public class GoodStudentController {
                 for (Integer semesId : semesterMarkList.keySet()) {
                     List<GoodStudentMarkModel> markList = semesterMarkList.get(semesId);
 
+                    // Validation
                     if (checkSubjectsAreLearnedAgain(semesterPositionMap, semesterMarkList, semesId)
                             && validateMarkList(markList, allStudentSubjects)) {
                         if (studentList.get(studentId) == null) {
@@ -290,38 +283,37 @@ public class GoodStudentController {
     private boolean validateMarkList(List<GoodStudentMarkModel> markList, List<SubjectCurriculumEntity> subCurricumlumList) {
         boolean isValidate = true;
 
+        // Get subjects in curriculum, have the same Term as marks in markList
         List<SubjectCurriculumEntity> subjectInCurrentTerm = new ArrayList<>();
-        if (!markList.isEmpty()) {
-            GoodStudentMarkModel mark = markList.get(markList.size() - 1);
-            int currentTerm = mark.getTerm();
+        GoodStudentMarkModel m = markList.get(markList.size() - 1);
+        int currentTerm = m.getTerm();
 
-            if (currentTerm <= 0) {
-                isValidate = false;
-            }
+        if (currentTerm <= 0) {
+            isValidate = false;
+        }
 
-            for (SubjectCurriculumEntity sc : subCurricumlumList) {
-                if (sc.getTermNumber() == currentTerm) {
-                    subjectInCurrentTerm.add(sc);
-                }
+        for (SubjectCurriculumEntity sc : subCurricumlumList) {
+            if (sc.getTermNumber() == currentTerm) {
+                subjectInCurrentTerm.add(sc);
             }
         }
 
+        // Check if student's learned subjects is more or less than subjects in curriculum
         if (markList.size() != subjectInCurrentTerm.size()) {
             isValidate = false;
         }
 
-        // Check Mark is not fail, and Subject is not OJT
+        // Check marks is not fail
         if (isValidate) {
             for (GoodStudentMarkModel mark : markList) {
-                if (!Ultilities.containsIgnoreCase(mark.getStatus(), "pass")
-                        || Ultilities.containsIgnoreCase(mark.getSubjectId(), "OJ")) {
+                if (!Ultilities.containsIgnoreCase(mark.getStatus(), "pass")) {
                     isValidate = false;
                     break;
                 }
             }
         }
 
-        // Check Subject in SubjectCurriculum
+        // Check subjects exist in curriculum
         if (isValidate) {
             for (GoodStudentMarkModel mark : markList) {
                 boolean isFound = false;
