@@ -38,7 +38,6 @@ public class StudentArrangementController {
 
     private final String xlsExcelExtension = "xls";
     private final String xlsxExcelExtension = "xlsx";
-    private final String folder = "DSSV-XepLop";
 
     private int totalStudents;
     private int countStudents;
@@ -161,9 +160,7 @@ public class StudentArrangementController {
         Callable<JsonObject> callable = new Callable<JsonObject>() {
             @Override
             public JsonObject call() throws Exception {
-                JsonObject obj = ReadFile(fileSuggestion, request);
-                ;
-
+                JsonObject obj = ReadFile1(fileSuggestion, request);
                 return obj;
             }
         };
@@ -181,8 +178,7 @@ public class StudentArrangementController {
         Callable<JsonObject> callable = new Callable<JsonObject>() {
             @Override
             public JsonObject call() throws Exception {
-                JsonObject obj = ReadFile(fileSuggestion, fileGoing, fileRelearn, semesterId, request);
-
+                JsonObject obj = ReadFile2(fileSuggestion, fileGoing, fileRelearn, semesterId, request);
                 return obj;
             }
         };
@@ -190,7 +186,7 @@ public class StudentArrangementController {
         return callable;
     }
 
-    private JsonObject ReadFile(MultipartFile fileSuggestion, HttpServletRequest request) {
+    private JsonObject ReadFile1(MultipartFile fileSuggestion, HttpServletRequest request) {
         JsonObject jsonObj = new JsonObject();
         IStudentService studentService = new StudentServiceImpl();
         ISubjectService subjectService = new SubjectServiceImpl();
@@ -200,20 +196,22 @@ public class StudentArrangementController {
         this.file1Done = false;
 
         try {
+            // Get all students and put into Map[Key: RollNumber, Value: StudentEntity]
             List<StudentEntity> students = studentService.findAllStudents();
             Map<String, StudentEntity> studentMap = new HashMap<>();
             for (StudentEntity s : students) {
                 studentMap.put(s.getRollNumber(), s);
             }
 
+            // Get all subjects and put into Map[Key: SubjectId, Value: SubjectEntity]
             List<SubjectEntity> subjects = subjectService.getAllSubjects();
             Map<String, SubjectEntity> allSubjectsMap = new HashMap<>();
             for (SubjectEntity subject : subjects) {
                 allSubjectsMap.put(subject.getId(), subject);
             }
 
+            // Read fileSuggestion
             Map<String, SubjectList> studentSubjectSuggestion = this.getSubjectSuggestionList(fileSuggestion, allSubjectsMap);
-
             totalStudents = studentSubjectSuggestion.keySet().size();
 
             Map<String, Map<String, List<StudentEntity>>> shiftMap = new HashMap<>();
@@ -223,31 +221,35 @@ public class StudentArrangementController {
             int count = 0;
             for (String rollNumber : studentSubjectSuggestion.keySet()) {
                 StudentEntity curStudent = studentMap.get(rollNumber);
-                if (curStudent != null) {
-                    SubjectList subjectList = studentSubjectSuggestion.get(rollNumber);
-                    if (!subjectList.suggestionList.isEmpty()) {
-                        count = 1;
+                SubjectList subjectList = studentSubjectSuggestion.get(rollNumber);
 
-                        Map<String, List<StudentEntity>> subjectMap = shiftMap.get(curStudent.getShift());
-                        for (String subjectCode : subjectList.suggestionList) {
-                            if (count > 6) {
-                                subjectMap = shiftMap.get(curStudent.getShift().equals("AM") ? "PM" : "AM");
-                            }
+                // Create course classes base on suggestionList
+                // If the number of subjects is more than 6
+                // the remaining subjects will be created in course classes of other shift
+                if (!subjectList.suggestionList.isEmpty()) {
+                    count = 1;
 
-                            List<StudentEntity> studentList = subjectMap.get(subjectCode);
-                            if (studentList == null) {
-                                studentList = new ArrayList<>();
-                                subjectMap.put(subjectCode, studentList);
-                            }
-                            studentList.add(curStudent);
-
-                            ++count;
+                    Map<String, List<StudentEntity>> subjectMap = shiftMap.get(curStudent.getShift());
+                    for (String subjectCode : subjectList.suggestionList) {
+                        if (count > 6) {
+                            subjectMap = shiftMap.get(curStudent.getShift().equals("AM") ? "PM" : "AM");
                         }
+
+                        List<StudentEntity> studentList = subjectMap.get(subjectCode);
+                        if (studentList == null) {
+                            studentList = new ArrayList<>();
+                            subjectMap.put(subjectCode, studentList);
+                        }
+                        studentList.add(curStudent);
+
+                        ++count;
                     }
                 }
+
                 countStudents++;
             }
 
+            // Create list for display
             int classNumber = 0;
             List<List<String>> result = new ArrayList<>();
             for (String shift : shiftMap.keySet()) {
@@ -294,7 +296,7 @@ public class StudentArrangementController {
         return jsonObj;
     }
 
-    private JsonObject ReadFile(MultipartFile fileSuggestion, MultipartFile fileGoing,
+    private JsonObject ReadFile2(MultipartFile fileSuggestion, MultipartFile fileGoing,
                                 MultipartFile fileRelearn, int semesterId, HttpServletRequest request) {
         JsonObject jsonObj = new JsonObject();
         IStudentStatusService studentStatusService = new StudentStatusServiceImpl();
@@ -307,12 +309,14 @@ public class StudentArrangementController {
         this.file3Done = false;
 
         try {
+            // Get all subjects and put into Map[Key: SubjectId, Value: SubjectEntity]
             List<SubjectEntity> allSubjects = subjectService.getAllSubjects();
             Map<String, SubjectEntity> allSubjectsMap = new HashMap<>();
             for (SubjectEntity subject : allSubjects) {
                 allSubjectsMap.put(subject.getId(), subject);
             }
 
+            // Read files
             Map<String, SubjectList> studentSubjectSuggestion = this.getSubjectSuggestionList(fileSuggestion, allSubjectsMap);
             List<String> goingList = this.getGoingListAlreadyPaying(fileGoing, allSubjectsMap);
             Map<String, List<String>> relearnList = this.getRelearnListAlreadyPaying(fileRelearn, allSubjectsMap);
@@ -347,7 +351,12 @@ public class StudentArrangementController {
             }
             this.totalStudents = studentList.size();
 
+            // Map[Key: Shift, Value: Map[Key: SubjectCode, Value: StudentList]]
             Map<String, Map<String, StudentList>> shiftMap = new HashMap<>();
+
+            // Create course classes
+            // Based on student's status (HD, HL), first create student's going list, then student's relearned list after that
+            // and subjects in relearned list must be in suggestion list
             for (StudentStatusEntity studentStatus : studentList) {
                 String curStudentRollNumber = studentStatus.getStudentId().getRollNumber();
                 String curStudentStatus = studentStatus.getStatus();
@@ -398,6 +407,7 @@ public class StudentArrangementController {
                 ++this.countStudents;
             }
 
+            // Create list for display
             List<List<String>> result = new ArrayList<>();
             int classNumber = 0;
             int count;
@@ -479,22 +489,33 @@ public class StudentArrangementController {
         this.process2 = false;
 
         try {
+            // Get all students and put into Map[Key: RollNumber, Value: StudentEntity]
             List<StudentEntity> students = studentService.findAllStudents();
             Map<String, StudentEntity> studentMap = new HashMap<>();
             for (StudentEntity student : students) {
                 studentMap.put(student.getRollNumber(), student);
             }
 
+            // Get all subjects and put into Map[Key: SubjectId, Value: SubjectEntity]
             List<SubjectEntity> subjects = subjectService.getAllSubjects();
             Map<String, SubjectEntity> subjectMap = new HashMap<>();
             for (SubjectEntity subject : subjects) {
                 subjectMap.put(subject.getId(), subject);
             }
 
+            // Read fileSuggestion
             Map<String, SubjectList> studentSubjectSuggestion = this.getSubjectSuggestionList(fileSuggestion, subjectMap);
-
             totalStudents = studentSubjectSuggestion.keySet().size();
 
+            // Create course classes for LAB
+            // All subjects will be created course classes into slots, except OJT, Capstone, Vovinam
+            // LAB is special won't be created into slots, if student's shift is AM, LAB will be learned in PM
+            // LAB class name: LAB_Shift_OrdinalNumber
+            // Other subjects: SubjectCode_Shift_OrdinalNumber_Slot
+            // [Slot]: S21, S22, S23, S31, S32, S33
+            // S21: Monday, Wednesday, Friday - Slot 1...
+            // S31: Tuesday, Thursday - Slot 1...
+            // Subjects will be created in order as subject's OrdinalNumber in curriculum
             Map<String, Map<String, List<StudentEntity>>> shiftMapForLAB = new HashMap<>();
             shiftMapForLAB.put("AM", new HashMap<>());
             shiftMapForLAB.put("PM", new HashMap<>());
@@ -579,6 +600,7 @@ public class StudentArrangementController {
             shiftOrdinalNumberMap.put("AM", new HashMap<>());
             shiftOrdinalNumberMap.put("PM", new HashMap<>());
 
+            // Create course classes for other subjects
             for (int i = 0; i <= 5; i++) {
                 // Group by StudentKey
                 Map<StudentKey, List<StudentArrangementModel>> groupStudentsMap = new HashMap<>();
@@ -693,7 +715,7 @@ public class StudentArrangementController {
 
         // 3 phần tử đầu của list là 0,1,2 đại diện cho slot 1,2,3 của T2,T4,T6
         // 2 phần tử cuối của list là 3,4,5 đại diện cho slot 1,2 của T3,T5
-        // Lấy số sv lớn nhất (ngày chẵn và ngày lẻ) và vị trí max của list
+        // Lấy số sv lớn nhất (của ngày chẵn và ngày lẻ) và vị trí có số sv nhiều nhất trong list
         int maxStudentsOfEvenDays = 0;
         int maxPositionOfEvenDays = 0;
         for (int i = 0; i < 3; i++) {
@@ -758,7 +780,6 @@ public class StudentArrangementController {
 
         studentList.removeAll(finalStudentList);
         this.arrangeStudentIntoSlot(displayList, studentList, subjectOrdinalNumberMap, subjectMap, shift, subjectCode);
-//        studentsInSlot.get(finalPosition).removeAll(finalStudentList);
     }
 
     private List<SubjectCurriculumEntity> getSubjectCurriculumList(StudentEntity student) {
@@ -1104,8 +1125,11 @@ public class StudentArrangementController {
     private class StudentArrangementModel {
         public StudentEntity student;
         public int numOfSubjects; // In suggestion list
-        public String[] subjects;
-        public Boolean[] slots; // [0, 1, 2]: Slot 1,2,3 of Monday, Wednesday, Friday; [3, 4]: Slot 1,2 of Tuesday, Thursday
+        public String[] subjects; // Based on subject's OrdinalNumber in curriculum
+
+        // [0, 1, 2]: Slot 1,2,3 of Monday, Wednesday, Friday
+        // [3, 4, 5]: Slot 1,2,3 of Tuesday, Thursday
+        public Boolean[] slots;
 
         public StudentArrangementModel() {
             this.subjects = new String[6];

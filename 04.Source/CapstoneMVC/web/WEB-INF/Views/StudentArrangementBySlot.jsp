@@ -96,7 +96,7 @@
                                 <input type="file" accept=".xlsx, .xls" id="file-suggestion"/>
                             </div>
                             <div class="col-md-12 m-t-5">
-                                Bấm vào <a class="link" href="/Resources/FileTemplates/SubjectList_Upload_Template.xls">Template</a>
+                                Bấm vào <a class="link" href="/Resources/FileTemplates/Kehoachhocdihoclai.xlsx">Template</a>
                                 để tải
                                 về bản mẫu
                             </div>

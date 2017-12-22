@@ -9,7 +9,10 @@
                     <h1>Danh sách môn học</h1>
                 </div>
                 <div class="col-md-3 text-right">
-                    <input class="btn btn-primary" type="button" value="Tạo môn học" onclick="CreateNewSubject()"/>
+                    <button type="button" class="btn btn-success btn-with-icon" onclick="CreateNewSubject()">
+                        <i class="fa fa-plus"></i>
+                        <div style="margin-top: -3px">TẠO MÔN HỌC</div>
+                    </button>
                 </div>
             </div>
             <hr>
