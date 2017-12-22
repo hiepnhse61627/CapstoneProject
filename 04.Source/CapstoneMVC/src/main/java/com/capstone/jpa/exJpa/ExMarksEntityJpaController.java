@@ -182,7 +182,12 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             queryStr += " and a.subjectMarkComponentId.subjectId.id IN :sub";
         }
         if (!searchKey.equals("")) {
-            queryStr += "  and a.studentId.id = :student";
+            try {
+                Integer.parseInt(searchKey);
+                queryStr += "  and a.studentId.id = :student";
+            } catch (Exception e) {
+                queryStr += "  and a.studentId.rollNumber = :student";
+            }
         }
 
         TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
@@ -191,7 +196,11 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             query.setParameter("sub", allSubs);
         }
         if (!searchKey.equals("")) {
-            query.setParameter("student", Integer.parseInt(searchKey));
+            try {
+                query.setParameter("student", Integer.parseInt(searchKey));
+            } catch (Exception e) {
+                query.setParameter("student", searchKey);
+            }
         }
         marks = query.getResultList();
 

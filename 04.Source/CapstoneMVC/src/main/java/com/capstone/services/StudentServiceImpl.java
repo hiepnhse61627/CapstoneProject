@@ -2,10 +2,12 @@ package com.capstone.services;
 
 import com.capstone.entities.DocumentStudentEntity;
 import com.capstone.entities.StudentEntity;
+import com.capstone.entities.StudentStatusEntity;
 import com.capstone.jpa.exJpa.ExStudentEntityJpaController;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.util.ArrayList;
 import java.util.List;
 
 public class StudentServiceImpl implements IStudentService {
@@ -89,6 +91,39 @@ public class StudentServiceImpl implements IStudentService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public List<StudentEntity> getStudentFailedMoreThanRequiredCredits(Integer credits) {
+        List<StudentEntity> students = findAllStudents();
+        List<StudentEntity> onGoingStudents = new ArrayList<>();
+        List<StudentEntity> resultList = new ArrayList<>();
+
+        if (students != null && !students.isEmpty()) {
+            for (StudentEntity student : students) {
+                List<StudentStatusEntity> studentStatusList = student.getStudentStatusEntityList();
+                if (studentStatusList != null && !studentStatusList.isEmpty()) {
+                    for (StudentStatusEntity studentStatus : studentStatusList) {
+                        if (!studentStatus.getStatus().equals("G")) {
+                            onGoingStudents.add(student);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!onGoingStudents.isEmpty()) {
+            for (StudentEntity student : onGoingStudents) {
+                Integer passFailCredits = student.getPassFailCredits();
+                Integer passCredits = student.getPassCredits();
+                if (passFailCredits - passCredits >= credits) {
+                    resultList.add(student);
+                }
+            }
+        }
+
+        return resultList;
     }
 
     @Override

@@ -36,6 +36,7 @@ public class StudentController {
     private String searchKey = "";
 
     IMarksService marksService = new MarksServiceImpl();
+    IStudentService studentService = new StudentServiceImpl();
 
     @RequestMapping("/create")
     public String Index() {
@@ -372,6 +373,50 @@ public class StudentController {
             Logger.writeLog(e);
             jsonObject.addProperty("success", false);
         }
+
+        return jsonObject;
+    }
+
+    @RequestMapping("/studentsFailedCreditsPage")
+    public ModelAndView goStudentsFailedCreditsPage() {
+        ModelAndView mav = new ModelAndView("studentsFailedCredits");
+        mav.addObject("title", "Danh sách sinh viên nợ tín chỉ");
+
+        return mav;
+    }
+
+    @RequestMapping("/studentsFailedCredits")
+    @ResponseBody
+    public JsonObject studentFailedCredits(@RequestParam Map<String, String> params) {
+        JsonObject jsonObject = new JsonObject();
+
+        Integer credits = Integer.valueOf(params.get("credits"));
+        List<StudentEntity> students = studentService.getStudentFailedMoreThanRequiredCredits(credits);
+
+        List<List<String>> results = new ArrayList<>();
+
+        for (StudentEntity student : students) {
+            List<String> studentInfo = new ArrayList<>();
+            studentInfo.add(student.getRollNumber());
+            studentInfo.add(student.getFullName());
+            studentInfo.add(String.valueOf(student.getPassFailCredits()));
+            studentInfo.add(String.valueOf(student.getPassCredits()));
+            studentInfo.add(String.valueOf(student.getPassFailCredits() - student.getPassCredits()));
+
+            results.add(studentInfo);
+        }
+
+        List<List<String>> displayList = new ArrayList<>();
+        if (!results.isEmpty()) {
+            displayList = results.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+        }
+
+        JsonArray aaData = (JsonArray) new Gson().toJsonTree(displayList);
+
+        jsonObject.addProperty("iTotalRecords", results.size());
+        jsonObject.addProperty("iTotalDisplayRecords",  results.size());
+        jsonObject.add("aaData", aaData);
+        jsonObject.addProperty("sEcho", params.get("sEcho"));
 
         return jsonObject;
     }

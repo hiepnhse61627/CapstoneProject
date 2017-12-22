@@ -147,7 +147,8 @@ public class ExportController {
                 "com.capstone.exporters.ExportStudentArrangementBySlotImpl", // 15 = Export student arrangement by slot
                 "com.capstone.exporters.ExportPDFGraduatedStudentsImpl", // 16 = Export PDF Graduated
                 "com.capstone.exporters.ExportExcelGraduatedStudentsImpl", // 17 = export excel graduated
-                "com.capstone.exporters.ExportInterimAcademicTranscriptImpl" // 18 = export interim academic transcript
+                "com.capstone.exporters.ExportInterimAcademicTranscriptImpl", // 18 = export interim academic transcript
+                "com.capstone.exporters.ExportStudentsFailedMoreThanRequiredCreditsImpl" // 19 = export students failed more than required credits
         };
 
         try {
