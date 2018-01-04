@@ -82,13 +82,14 @@ public class ExportCloseSemesterController {
         response.addHeader("Content-Disposition", "attachment; filename=\"" + semester +".zip\"");
         ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream());
 
-        //simple file list, just for tests
+        //get files
         File file = new File(realPath);
         if (file.exists() && file.isDirectory()) {
             File[] files = file.listFiles();
 
             //packing files
             for (File f : files) {
+
                 //new zip entry and copying inputstream with f to zipOutputStream, after all closing streams
                 zipOutputStream.putNextEntry(new ZipEntry(f.getName()));
                 FileInputStream fileInputStream = new FileInputStream(f);
