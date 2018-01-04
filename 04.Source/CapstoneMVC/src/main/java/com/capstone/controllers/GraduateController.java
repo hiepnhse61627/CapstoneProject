@@ -30,6 +30,7 @@ public class GraduateController {
     IStudentService studentService = new StudentServiceImpl();
     ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
 
+    // home page
     @RequestMapping("/graduate")
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("StudentGraduate");
@@ -46,6 +47,7 @@ public class GraduateController {
         return view;
     }
 
+    // middle thing to split into 3 other method to process, all return 2 dimentional list string
     @RequestMapping("/processgraduate")
     @ResponseBody
     public JsonObject GetGraduateStudents(@RequestParam Map<String, String> params) {
@@ -82,6 +84,7 @@ public class GraduateController {
         return obj;
     }
 
+    // get graduate students
     public List<List<String>> processGraduate(Map<String, String> params) {
         List<List<String>> data = new ArrayList<>();
 
@@ -268,6 +271,7 @@ public class GraduateController {
         return map;
     }
 
+    // get OJT students
     public List<List<String>> proccessOJT(Map<String, String> params) {
         List<List<String>> data = new ArrayList<>();
 
@@ -441,6 +445,7 @@ public class GraduateController {
         return data;
     }
 
+    // finda all atudents match OJT term
     private boolean isOJT(StudentEntity student, RealSemesterEntity semester) {
         int ojt = 6;
         List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
@@ -464,6 +469,7 @@ public class GraduateController {
         }
     }
 
+    // finda all atudents match Capstone term
     private boolean isCapstone(StudentEntity student, RealSemesterEntity r1) {
         int ojt = 9;
         List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
@@ -487,6 +493,8 @@ public class GraduateController {
         }
     }
 
+
+    // get all records of capstone students
     public List<List<String>> processCapstone(Map<String, String> params) {
         List<List<String>> data = new ArrayList<>();
 
