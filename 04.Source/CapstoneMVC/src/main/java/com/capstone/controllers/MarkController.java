@@ -37,6 +37,7 @@ public class MarkController {
         return view;
     }
 
+    // get all mark records available in database
     @RequestMapping("/markPage/getMarkList")
     @ResponseBody
     public JsonObject GetMarkList(@RequestParam Map<String, String> params) {
@@ -99,6 +100,7 @@ public class MarkController {
         return jsonObj;
     }
 
+    // edit mark's details
     @RequestMapping("/markPage/edit")
     @ResponseBody
     public JsonObject EditMark(@RequestParam Map<String, String> params) {
@@ -125,6 +127,7 @@ public class MarkController {
         return jsonObj;
     }
 
+    // delete a record
     @RequestMapping("/markPage/delete")
     @ResponseBody
     public JsonObject DeleteMark(@RequestParam Map<String, String> params) {
