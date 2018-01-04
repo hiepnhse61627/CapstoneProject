@@ -63,6 +63,7 @@ public class LoginController implements ServletContextAware {
         return "Register";
     }
 
+    // Sign up
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject Register(@RequestBody CredentialsEntity user) {
@@ -83,11 +84,13 @@ public class LoginController implements ServletContextAware {
                 return obj;
             }
 
+            // list of acceptable domains
             String[] domains = {"fpt.edu.vn"};
 
             String domain = user.getEmail().substring(user.getEmail().indexOf('@') + 1).toLowerCase();
             if (Arrays.asList(domains).contains(domain)) {
 
+                // encoding password with BCrypt which is defined in security.xml
                 PasswordEncoder encoder = new BCryptPasswordEncoder();
                 String encodedPass = encoder.encode(user.getPassword());
                 System.out.println("New password: " + encodedPass);
@@ -128,6 +131,7 @@ public class LoginController implements ServletContextAware {
         return "redirect:/login?logout";
     }
 
+    // sign in with google API
     @RequestMapping(value = "/auth/google")
     public String Google(@RequestParam Map<String, String> params, HttpServletRequest request, HttpServletResponse response) {
         try {
@@ -136,6 +140,7 @@ public class LoginController implements ServletContextAware {
             con.setRequestMethod("POST");
             con.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
 
+            // because google does not accept IP address as url, we need to use xip.io as proxy to bypass google until we have a proper address
             String url = request.getHeader("host");
             if (!url.contains("localhost") && !url.contains("xip.io")) {
                 url += ".xip.io";
@@ -145,6 +150,7 @@ public class LoginController implements ServletContextAware {
             }
             System.out.println(url);
 
+            // google required parameters (see document for more info)
             String POST_PARAMS = "code=" + params.get("code") +
                     "&client_id=415843400023-vlpk1t8gu558gmt597aqtumvkco0lmme.apps.googleusercontent.com" +
                     "&client_secret=TEORfSizWyVpF4c-p8ziwBvu" +
@@ -169,7 +175,8 @@ public class LoginController implements ServletContextAware {
                 }
                 in.close();
 
-                // print result
+                // store result into class
+                // because google return base64 data, we need to decode them
                 GoogleProfile profile = new Gson().fromJson(data.toString(), GoogleProfile.class);
                 String[] split_string = profile.getId_token().split("\\.");
                 byte[] valueDecoded = Base64.decodeBase64(split_string[1].getBytes());
