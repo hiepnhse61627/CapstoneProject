@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/admin")
 public class AdminController {
 
+    // home page of admin
     @RequestMapping("/index")
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("AdminHomePage");
@@ -41,6 +42,7 @@ public class AdminController {
         return view;
     }
 
+    // simulate change semester page
     @RequestMapping("/change")
     public ModelAndView ChangeSemester() {
         ModelAndView view = new ModelAndView("AdminChangeSemesterTemporary");
@@ -51,6 +53,7 @@ public class AdminController {
         return view;
     }
 
+    // get all the users account data then search
     @RequestMapping(value = "/getUsers")
     @ResponseBody
     public JsonObject GetUsers(@RequestParam Map<String, String> params) {
@@ -98,6 +101,7 @@ public class AdminController {
         return data;
     }
 
+    // edit user details page
     @RequestMapping(value = "/edit", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject ShowEdit(@RequestParam int userId) {
@@ -118,6 +122,7 @@ public class AdminController {
         return data;
     }
 
+    // trigger when user click on temporary semester radio button
     @RequestMapping(value = "/changesemster", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject SetTemporarySemester(@RequestParam int semesterId) {
@@ -136,6 +141,7 @@ public class AdminController {
         return data;
     }
 
+    // trigger when user click on current semester radio button
     @RequestMapping(value = "/changecurrentsemster", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject SetCurrentSemester(@RequestParam int semesterId) {
@@ -154,6 +160,7 @@ public class AdminController {
         return data;
     }
 
+    // save new user details
     @RequestMapping(value = "/save", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject Save(@RequestBody CredentialsEntity cred) {
@@ -188,6 +195,7 @@ public class AdminController {
         return data;
     }
 
+    // get all user roles to a list
     private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user){
         List<GrantedAuthority> authorities = new ArrayList<>();
         String[] roles = user.getRole().split(",");
