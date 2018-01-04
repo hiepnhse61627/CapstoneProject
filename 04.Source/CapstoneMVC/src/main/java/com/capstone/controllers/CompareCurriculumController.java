@@ -26,17 +26,23 @@ import java.util.stream.Collectors;
 @RequestMapping("/managerrole")
 public class CompareCurriculumController {
 
+    //home page
     @RequestMapping("/curriculumcompare")
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("CompareCurriculum");
         view.addObject("title", "So sánh khung");
         ICurriculumService curriculumService = new CurriculumServiceImpl();
         List<CurriculumEntity> list2 = curriculumService.getAllCurriculums();
+
+        // sort using Java 8 lambda mode
+        // below works as sorting array by curriculum name in default ascending way
+        // Collections.reverse or Lists.reverse to reverse the list to get descending array
         list2.sort(Comparator.comparing(c -> c.getName()));
         view.addObject("curs", list2);
         return view;
     }
 
+    // get all subjects inside a curricuulum
     public List<SubjectEntity> GetCurrentCurriculumSubjects(int curId) {
         List<SubjectEntity> result = new ArrayList<>();
         try {
@@ -58,6 +64,7 @@ public class CompareCurriculumController {
         return result;
     }
 
+    // return json: compare both curriculum to get both side subjects
     @RequestMapping("/curriculumcompare/getcurrent")
     @ResponseBody
     public JsonObject GetCurrent(@RequestParam int curId, @RequestParam int newId) {
@@ -93,6 +100,7 @@ public class CompareCurriculumController {
         return result;
     }
 
+    // return json: compare both curriculum to get uniquesubjects
     @RequestMapping("/curriculumcompare/getnew")
     @ResponseBody
     public JsonObject GetNew(@RequestParam int curId, @RequestParam int newId) {

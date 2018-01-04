@@ -42,15 +42,15 @@ public class CourseController {
         return view;
     }
 
+    // get all course and return json
     @RequestMapping(value = "/course/loadTable")
     @ResponseBody
     public JsonObject LoadCourseTable(@RequestParam Map<String, String> params) {
         JsonObject jsonObj = new JsonObject();
 
         try {
-            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-            EntityManager em = emf.createEntityManager();
-
+//            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+//            EntityManager em = emf.createEntityManager();
 
             DatatableModel model = new DatatableModel();
             model.sSearch = params.get("sSearch");
@@ -85,6 +85,7 @@ public class CourseController {
         return jsonObj;
     }
 
+    // create course return json success or not
     @RequestMapping(value = "/course/create")
     @ResponseBody
     public JsonObject CreateCourse(@RequestParam Map<String, String> params) {
@@ -109,14 +110,15 @@ public class CourseController {
         return jsonObj;
     }
 
+    // edit course return json success or not
     @RequestMapping(value = "/course/edit")
     @ResponseBody
     public JsonObject EditCourse(@RequestParam Map<String, String> params) {
         JsonObject jsonObj = new JsonObject();
 
         try {
-            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-            EntityManager em = emf.createEntityManager();
+//            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+//            EntityManager em = emf.createEntityManager();
 
             CourseEntity model = new CourseEntity();
             model.setId(Integer.parseInt(params.get("courseId")));
@@ -133,14 +135,15 @@ public class CourseController {
         return jsonObj;
     }
 
+    // delete course return json success or not
     @RequestMapping(value = "/course/delete")
     @ResponseBody
     public JsonObject DeleteCourse(int courseId) {
         JsonObject jsonObj = new JsonObject();
 
         try {
-            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-            EntityManager em = emf.createEntityManager();
+//            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+//            EntityManager em = emf.createEntityManager();
 
             int countMarks = markService.countMarksByCourseId(courseId);
 

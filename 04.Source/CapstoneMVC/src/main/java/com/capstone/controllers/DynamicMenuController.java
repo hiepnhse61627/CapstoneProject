@@ -30,7 +30,7 @@ public class DynamicMenuController {
 //        return view;
 //    }
 
-
+    // dynamic load menu list to view
     @RequestMapping(value = "/loadMenuList")
     @Scope("session")
     @ResponseBody
