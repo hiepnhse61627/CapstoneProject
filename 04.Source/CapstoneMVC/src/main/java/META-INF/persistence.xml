@@ -30,6 +30,11 @@
             <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
             <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
             <!--<property name="javax.persistence.jdbc.password" value="08051996Nb"/>-->
+            <!--DANHDC-->
+            <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://localhost\SQLEXPRESS2:1433;database=CapstoneProject;"/>-->
+            <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
+            <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
+            <!--<property name="javax.persistence.jdbc.password" value="danh123456"/>-->
             <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;database=CapstoneProject;"/>
             <property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
             <property name="javax.persistence.jdbc.user" value="sa"/>
