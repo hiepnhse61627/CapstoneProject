@@ -39,6 +39,8 @@ public class CourseEntity implements Serializable {
     private String subjectCode;
 @OneToMany(mappedBy = "courseId")
     private List<MarksEntity> marksEntityList;
+    @OneToMany(mappedBy = "courseId")
+    private List<ScheduleEntity> scheduleEntityCollection;
 
     public CourseEntity() {
     }
@@ -79,6 +81,13 @@ public class CourseEntity implements Serializable {
         this.marksEntityList = marksEntityList;
     }
 
+    public List<ScheduleEntity> getScheduleEntityList() {
+        return scheduleEntityCollection;
+    }
+
+    public void setScheduleEntityList(List<ScheduleEntity> scheduleEntityCollection) {
+        this.scheduleEntityCollection = scheduleEntityCollection;
+    }
     @Override
     public int hashCode() {
         int hash = 0;
