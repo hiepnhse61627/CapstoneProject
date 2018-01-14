@@ -47,6 +47,7 @@ public class UploadController {
     @Autowired
     ServletContext context;
 
+    IRoomService roomService = new RoomServiceImpl();
     IEmployeeService employeeService = new EmployeeServiceImpl();
     IStudentService studentService = new StudentServiceImpl();
     ISubjectService subjectService = new SubjectServiceImpl();
@@ -815,6 +816,14 @@ public class UploadController {
         return mav;
     }
 
+    @RequestMapping(value = "/importRoomsPage")
+    public ModelAndView goImportRoomsPage() {
+        ModelAndView mav = new ModelAndView("importRooms");
+        mav.addObject("title", "Nhập danh sách phòng");
+
+        return mav;
+    }
+
     @RequestMapping(value = "/updateMarkForStudyingStudentPage")
     public ModelAndView goUpdateMarkForStudyingStudentPage() {
         ModelAndView mav = new ModelAndView("updateMarkForStudyingStudent");
@@ -1402,6 +1411,72 @@ public class UploadController {
 
         jsonObject.addProperty("success", true);
         jsonObject.addProperty("message", "Import giảng viên thành công !");
+        return jsonObject;
+    }
+
+    @RequestMapping(value = "/uploadRooms", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject importRooms(@RequestParam("file") MultipartFile file) {
+        JsonObject jsonObject = new JsonObject();
+        List<RoomEntity> roomEntities = new ArrayList<RoomEntity>();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+            int excelDataIndex = 1;
+            int lastRow = spreadsheet.getLastRowNum();
+            this.totalLine = lastRow - startRowNumber + 1;
+
+            int nameIndex = 1;
+            int capacityIndex = 2;
+            int noteIndex = 3;
+
+            this.currentLine = 0;
+            for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+
+                Cell nameCell = row.getCell(nameIndex);
+
+                String name="";
+
+                if(nameCell.getCellType() != Cell.CELL_TYPE_STRING){
+                    name = String.valueOf((int) nameCell.getNumericCellValue());
+                }else{
+                    name=nameCell.getStringCellValue().trim();
+                }
+
+                if (nameCell != null && !name.equals("") ) {
+                    if (roomService.findRoomsByName(name).size() == 0) {
+                        RoomEntity roomEntity = new RoomEntity();
+
+                        Cell capacityCell = row.getCell(capacityIndex);
+                        Cell noteCell = row.getCell(noteIndex);
+
+                        roomEntity.setName(name);
+                        roomEntity.setCapacity((int)capacityCell.getNumericCellValue());
+                        roomEntity.setNote(noteCell.getStringCellValue());
+                        roomEntity.setIsAvailable(true);
+
+                        roomEntities.add(roomEntity);
+
+                    }
+                }
+                this.currentLine++;
+            }
+            roomService.createRoomList(roomEntities);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+        jsonObject.addProperty("success", true);
+        jsonObject.addProperty("message", "Import phòng thành công !");
         return jsonObject;
     }
 

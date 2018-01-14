@@ -72,7 +72,7 @@ public class ScheduleEntityJpaController implements Serializable {
                 empId = em.merge(empId);
             }
             if (roomId != null) {
-                roomId.getScheduleEntityCollection().add(scheduleEntity);
+                roomId.getScheduleEntityList().add(scheduleEntity);
                 roomId = em.merge(roomId);
             }
             em.getTransaction().commit();
@@ -144,11 +144,11 @@ public class ScheduleEntityJpaController implements Serializable {
                 empIdNew = em.merge(empIdNew);
             }
             if (roomIdOld != null && !roomIdOld.equals(roomIdNew)) {
-                roomIdOld.getScheduleEntityCollection().remove(scheduleEntity);
+                roomIdOld.getScheduleEntityList().remove(scheduleEntity);
                 roomIdOld = em.merge(roomIdOld);
             }
             if (roomIdNew != null && !roomIdNew.equals(roomIdOld)) {
-                roomIdNew.getScheduleEntityCollection().add(scheduleEntity);
+                roomIdNew.getScheduleEntityList().add(scheduleEntity);
                 roomIdNew = em.merge(roomIdNew);
             }
             em.getTransaction().commit();
@@ -197,7 +197,7 @@ public class ScheduleEntityJpaController implements Serializable {
             }
             RoomEntity roomId = scheduleEntity.getRoomId();
             if (roomId != null) {
-                roomId.getScheduleEntityCollection().remove(scheduleEntity);
+                roomId.getScheduleEntityList().remove(scheduleEntity);
                 roomId = em.merge(roomId);
             }
             em.remove(scheduleEntity);

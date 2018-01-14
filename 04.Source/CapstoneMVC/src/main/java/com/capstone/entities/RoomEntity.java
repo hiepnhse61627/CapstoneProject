@@ -17,10 +17,12 @@ import javax.persistence.*;
 @Entity
 @Table(name = "Room")
 @NamedQueries({
-    @NamedQuery(name = "RoomEntity.findAll", query = "SELECT r FROM RoomEntity r"),
-    @NamedQuery(name = "RoomEntity.findById", query = "SELECT r FROM RoomEntity r WHERE r.id = :id"),
-    @NamedQuery(name = "RoomEntity.findByName", query = "SELECT r FROM RoomEntity r WHERE r.name = :name"),
-    @NamedQuery(name = "RoomEntity.findByCapacity", query = "SELECT r FROM RoomEntity r WHERE r.capacity = :capacity")})
+        @NamedQuery(name = "RoomEntity.findAll", query = "SELECT r FROM RoomEntity r"),
+        @NamedQuery(name = "RoomEntity.findById", query = "SELECT r FROM RoomEntity r WHERE r.id = :id"),
+        @NamedQuery(name = "RoomEntity.findByName", query = "SELECT r FROM RoomEntity r WHERE r.name = :name"),
+        @NamedQuery(name = "RoomEntity.findByIsAvailable", query = "SELECT r FROM RoomEntity r WHERE r.isAvailable = :isAvailable"),
+        @NamedQuery(name = "RoomEntity.findByCapacity", query = "SELECT r FROM RoomEntity r WHERE r.capacity = :capacity"),
+        @NamedQuery(name = "RoomEntity.findByNote", query = "SELECT r FROM RoomEntity r WHERE r.note = :note")})
 public class RoomEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -30,10 +32,14 @@ public class RoomEntity implements Serializable {
     private Integer id;
     @Column(name = "Name")
     private String name;
+    @Column(name = "IsAvailable")
+    private Boolean isAvailable;
     @Column(name = "Capacity")
     private Integer capacity;
+    @Column(name = "Note")
+    private String note;
     @OneToMany(mappedBy = "roomId")
-    private List<ScheduleEntity> scheduleEntityCollection;
+    private List<ScheduleEntity> scheduleEntityList;
 
     public RoomEntity() {
     }
@@ -58,6 +64,14 @@ public class RoomEntity implements Serializable {
         this.name = name;
     }
 
+    public Boolean getIsAvailable() {
+        return isAvailable;
+    }
+
+    public void setIsAvailable(Boolean isAvailable) {
+        this.isAvailable = isAvailable;
+    }
+
     public Integer getCapacity() {
         return capacity;
     }
@@ -66,12 +80,20 @@ public class RoomEntity implements Serializable {
         this.capacity = capacity;
     }
 
-    public List<ScheduleEntity> getScheduleEntityCollection() {
-        return scheduleEntityCollection;
+    public String getNote() {
+        return note;
     }
 
-    public void setScheduleEntityCollection(List<ScheduleEntity> scheduleEntityCollection) {
-        this.scheduleEntityCollection = scheduleEntityCollection;
+    public void setNote(String note) {
+        this.note = note;
+    }
+
+    public List<ScheduleEntity> getScheduleEntityList() {
+        return scheduleEntityList;
+    }
+
+    public void setScheduleEntityList(List<ScheduleEntity> scheduleEntityList) {
+        this.scheduleEntityList = scheduleEntityList;
     }
 
     @Override
@@ -96,7 +118,7 @@ public class RoomEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "jpaentitygen.RoomEntity[ id=" + id + " ]";
+        return "javaapplication93.RoomEntity[ id=" + id + " ]";
     }
-    
+
 }

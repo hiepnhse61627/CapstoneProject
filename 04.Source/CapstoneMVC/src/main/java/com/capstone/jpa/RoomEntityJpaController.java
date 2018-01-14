@@ -38,26 +38,26 @@ public class RoomEntityJpaController implements Serializable {
     }
 
     public void create(RoomEntity roomEntity) throws PreexistingEntityException, Exception {
-        if (roomEntity.getScheduleEntityCollection() == null) {
-            roomEntity.setScheduleEntityCollection(new ArrayList<ScheduleEntity>());
+        if (roomEntity.getScheduleEntityList() == null) {
+            roomEntity.setScheduleEntityList(new ArrayList<ScheduleEntity>());
         }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
             List<ScheduleEntity> attachedScheduleEntityCollection = new ArrayList<ScheduleEntity>();
-            for (ScheduleEntity scheduleEntityCollectionScheduleEntityToAttach : roomEntity.getScheduleEntityCollection()) {
+            for (ScheduleEntity scheduleEntityCollectionScheduleEntityToAttach : roomEntity.getScheduleEntityList()) {
                 scheduleEntityCollectionScheduleEntityToAttach = em.getReference(scheduleEntityCollectionScheduleEntityToAttach.getClass(), scheduleEntityCollectionScheduleEntityToAttach.getId());
                 attachedScheduleEntityCollection.add(scheduleEntityCollectionScheduleEntityToAttach);
             }
-            roomEntity.setScheduleEntityCollection(attachedScheduleEntityCollection);
+            roomEntity.setScheduleEntityList(attachedScheduleEntityCollection);
             em.persist(roomEntity);
-            for (ScheduleEntity scheduleEntityCollectionScheduleEntity : roomEntity.getScheduleEntityCollection()) {
+            for (ScheduleEntity scheduleEntityCollectionScheduleEntity : roomEntity.getScheduleEntityList()) {
                 RoomEntity oldRoomIdOfScheduleEntityCollectionScheduleEntity = scheduleEntityCollectionScheduleEntity.getRoomId();
                 scheduleEntityCollectionScheduleEntity.setRoomId(roomEntity);
                 scheduleEntityCollectionScheduleEntity = em.merge(scheduleEntityCollectionScheduleEntity);
                 if (oldRoomIdOfScheduleEntityCollectionScheduleEntity != null) {
-                    oldRoomIdOfScheduleEntityCollectionScheduleEntity.getScheduleEntityCollection().remove(scheduleEntityCollectionScheduleEntity);
+                    oldRoomIdOfScheduleEntityCollectionScheduleEntity.getScheduleEntityList().remove(scheduleEntityCollectionScheduleEntity);
                     oldRoomIdOfScheduleEntityCollectionScheduleEntity = em.merge(oldRoomIdOfScheduleEntityCollectionScheduleEntity);
                 }
             }
@@ -80,15 +80,15 @@ public class RoomEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             RoomEntity persistentRoomEntity = em.find(RoomEntity.class, roomEntity.getId());
-            List<ScheduleEntity> scheduleEntityCollectionOld = persistentRoomEntity.getScheduleEntityCollection();
-            List<ScheduleEntity> scheduleEntityCollectionNew = roomEntity.getScheduleEntityCollection();
+            List<ScheduleEntity> scheduleEntityCollectionOld = persistentRoomEntity.getScheduleEntityList();
+            List<ScheduleEntity> scheduleEntityCollectionNew = roomEntity.getScheduleEntityList();
             List<ScheduleEntity> attachedScheduleEntityCollectionNew = new ArrayList<ScheduleEntity>();
             for (ScheduleEntity scheduleEntityCollectionNewScheduleEntityToAttach : scheduleEntityCollectionNew) {
                 scheduleEntityCollectionNewScheduleEntityToAttach = em.getReference(scheduleEntityCollectionNewScheduleEntityToAttach.getClass(), scheduleEntityCollectionNewScheduleEntityToAttach.getId());
                 attachedScheduleEntityCollectionNew.add(scheduleEntityCollectionNewScheduleEntityToAttach);
             }
             scheduleEntityCollectionNew = attachedScheduleEntityCollectionNew;
-            roomEntity.setScheduleEntityCollection(scheduleEntityCollectionNew);
+            roomEntity.setScheduleEntityList(scheduleEntityCollectionNew);
             roomEntity = em.merge(roomEntity);
             for (ScheduleEntity scheduleEntityCollectionOldScheduleEntity : scheduleEntityCollectionOld) {
                 if (!scheduleEntityCollectionNew.contains(scheduleEntityCollectionOldScheduleEntity)) {
@@ -102,7 +102,7 @@ public class RoomEntityJpaController implements Serializable {
                     scheduleEntityCollectionNewScheduleEntity.setRoomId(roomEntity);
                     scheduleEntityCollectionNewScheduleEntity = em.merge(scheduleEntityCollectionNewScheduleEntity);
                     if (oldRoomIdOfScheduleEntityCollectionNewScheduleEntity != null && !oldRoomIdOfScheduleEntityCollectionNewScheduleEntity.equals(roomEntity)) {
-                        oldRoomIdOfScheduleEntityCollectionNewScheduleEntity.getScheduleEntityCollection().remove(scheduleEntityCollectionNewScheduleEntity);
+                        oldRoomIdOfScheduleEntityCollectionNewScheduleEntity.getScheduleEntityList().remove(scheduleEntityCollectionNewScheduleEntity);
                         oldRoomIdOfScheduleEntityCollectionNewScheduleEntity = em.merge(oldRoomIdOfScheduleEntityCollectionNewScheduleEntity);
                     }
                 }
@@ -136,7 +136,7 @@ public class RoomEntityJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The roomEntity with id " + id + " no longer exists.", enfe);
             }
-            Collection<ScheduleEntity> scheduleEntityCollection = roomEntity.getScheduleEntityCollection();
+            Collection<ScheduleEntity> scheduleEntityCollection = roomEntity.getScheduleEntityList();
             for (ScheduleEntity scheduleEntityCollectionScheduleEntity : scheduleEntityCollection) {
                 scheduleEntityCollectionScheduleEntity.setRoomId(null);
                 scheduleEntityCollectionScheduleEntity = em.merge(scheduleEntityCollectionScheduleEntity);
