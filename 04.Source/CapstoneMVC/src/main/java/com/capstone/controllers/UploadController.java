@@ -19,6 +19,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.servlet.ServletContext;
 import java.io.*;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -46,6 +47,8 @@ public class UploadController {
     @Autowired
     ServletContext context;
 
+    IRoomService roomService = new RoomServiceImpl();
+    IEmployeeService employeeService = new EmployeeServiceImpl();
     IStudentService studentService = new StudentServiceImpl();
     ISubjectService subjectService = new SubjectServiceImpl();
     IRealSemesterService realSemesterService = new RealSemesterServiceImpl();
@@ -805,6 +808,22 @@ public class UploadController {
         return mav;
     }
 
+    @RequestMapping(value = "/importEmployeesPage")
+    public ModelAndView goImportEmployeesPage() {
+        ModelAndView mav = new ModelAndView("importEmployees");
+        mav.addObject("title", "Nhập danh sách giảng viên");
+
+        return mav;
+    }
+
+    @RequestMapping(value = "/importRoomsPage")
+    public ModelAndView goImportRoomsPage() {
+        ModelAndView mav = new ModelAndView("importRooms");
+        mav.addObject("title", "Nhập danh sách phòng");
+
+        return mav;
+    }
+
     @RequestMapping(value = "/updateMarkForStudyingStudentPage")
     public ModelAndView goUpdateMarkForStudyingStudentPage() {
         ModelAndView mav = new ModelAndView("updateMarkForStudyingStudent");
@@ -1299,6 +1318,168 @@ public class UploadController {
         jsonObject.addProperty("message", "Import sinh viên đang học thành công !");
         return jsonObject;
     }
+
+
+    @RequestMapping(value = "/uploadEmployees", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject importEmployees(@RequestParam("file") MultipartFile file) {
+        JsonObject jsonObject = new JsonObject();
+        List<EmployeeEntity> employeeEntities = new ArrayList<EmployeeEntity>();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+            int excelDataIndex = 1;
+            int lastRow = spreadsheet.getLastRowNum();
+            this.totalLine = lastRow - startRowNumber + 1;
+
+            int codeIndex = 2;
+            int fullNameIndex = 3;
+            int positionIndex = 8;
+            int emailEDUIndex = 11;
+            int emailFEIndex = 12;
+            int emailPersonalIndex = 10;
+            int genderIndex = 4;
+            int addressIndex = 6;
+            int contractIndex = 7;
+            int dobIndex = 5;
+            int phoneIndex = 9;
+
+
+            this.currentLine = 0;
+            for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+
+                Cell codeCell = row.getCell(codeIndex);
+                if (codeCell != null && !codeCell.getStringCellValue().trim().equals("") ) {
+                    EmployeeEntity employeeEntity = employeeService.findEmployeeByCode(codeCell.getStringCellValue().trim());
+                    if (employeeEntity == null) {
+                        employeeEntity = new EmployeeEntity();
+
+                        Cell fullNameCell = row.getCell(fullNameIndex);
+                        Cell positionCell = row.getCell(positionIndex);
+                        Cell emailEDUCell = row.getCell(emailEDUIndex);
+                        Cell emailFECell = row.getCell(emailFEIndex);
+                        Cell emailPersonalCell = row.getCell(emailPersonalIndex);
+                        Cell genderCell = row.getCell(genderIndex);
+                        Cell addressCell = row.getCell(addressIndex);
+                        Cell dobCell = row.getCell(dobIndex);
+                        Cell phoneCell = row.getCell(phoneIndex);
+                        Cell contractCell = row.getCell(contractIndex);
+
+                        employeeEntity.setCode(codeCell.getStringCellValue());
+                        employeeEntity.setFullName(fullNameCell.getStringCellValue());
+                        employeeEntity.setPosition(positionCell.getStringCellValue());
+                        employeeEntity.setEmailEDU(emailEDUCell.getStringCellValue());
+                        employeeEntity.setEmailFE(emailFECell.getStringCellValue());
+                        employeeEntity.setPersonalEmail(emailPersonalCell.getStringCellValue());
+
+                        boolean gender = genderCell.getStringCellValue().equals("Nam") ? true : false;
+                        employeeEntity.setGender(gender);
+
+                        employeeEntity.setAddress(addressCell.getStringCellValue());
+
+                        String formattedDate="";
+                        if(dobCell.getCellType() != Cell.CELL_TYPE_STRING){
+                            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                            formattedDate = df.format(dobCell.getDateCellValue());
+                        }else{
+                            formattedDate = dobCell.getStringCellValue();
+                        }
+
+                        employeeEntity.setDateOfBirth(formattedDate);
+                        employeeEntity.setPhone(phoneCell.getStringCellValue());
+                        employeeEntity.setContract(contractCell.getStringCellValue());
+
+                        employeeEntities.add(employeeEntity);
+
+                    }
+                }
+                this.currentLine++;
+            }
+            employeeService.createEmployeeList(employeeEntities);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+        jsonObject.addProperty("success", true);
+        jsonObject.addProperty("message", "Import giảng viên thành công !");
+        return jsonObject;
+    }
+
+    @RequestMapping(value = "/uploadRooms", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject importRooms(@RequestParam("file") MultipartFile file) {
+        JsonObject jsonObject = new JsonObject();
+        List<RoomEntity> roomEntities = new ArrayList<RoomEntity>();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+            int excelDataIndex = 1;
+            int lastRow = spreadsheet.getLastRowNum();
+            this.totalLine = lastRow - startRowNumber + 1;
+
+            int nameIndex = 1;
+            int capacityIndex = 2;
+            int noteIndex = 3;
+
+            this.currentLine = 0;
+            for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+
+                Cell nameCell = row.getCell(nameIndex);
+
+                String name="";
+
+                if(nameCell.getCellType() != Cell.CELL_TYPE_STRING){
+                    name = String.valueOf((int) nameCell.getNumericCellValue());
+                }else{
+                    name=nameCell.getStringCellValue().trim();
+                }
+
+                if (nameCell != null && !name.equals("") ) {
+                    if (roomService.findRoomsByName(name).size() == 0) {
+                        RoomEntity roomEntity = new RoomEntity();
+
+                        Cell capacityCell = row.getCell(capacityIndex);
+                        Cell noteCell = row.getCell(noteIndex);
+
+                        roomEntity.setName(name);
+                        roomEntity.setCapacity((int)capacityCell.getNumericCellValue());
+                        roomEntity.setNote(noteCell.getStringCellValue());
+                        roomEntity.setIsAvailable(true);
+
+                        roomEntities.add(roomEntity);
+
+                    }
+                }
+                this.currentLine++;
+            }
+            roomService.createRoomList(roomEntities);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+        jsonObject.addProperty("success", true);
+        jsonObject.addProperty("message", "Import phòng thành công !");
+        return jsonObject;
+    }
+
 
     @RequestMapping(value = "/updateMarkForStudyingStudent", method = RequestMethod.POST)
     @ResponseBody
