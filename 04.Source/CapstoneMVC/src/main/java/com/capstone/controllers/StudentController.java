@@ -385,6 +385,49 @@ public class StudentController {
         return mav;
     }
 
+    @RequestMapping("/studentFailCreditsPage")
+    public ModelAndView goStudentFailCreditPage(){
+        ModelAndView mav = new ModelAndView("StudentFailCredit");
+        mav.addObject("title","Danh sách sinh viên đang nợ tín chỉ");
+        return mav;
+    }
+
+    @RequestMapping("/studentFailCredits")
+    @ResponseBody
+    public JsonObject studentFailCredits(@RequestParam Map<String, String> params){
+        JsonObject jsonObject = new JsonObject();
+
+        Integer numbersOfCredit = Integer.valueOf(params.get("numOfCredits"));
+        List<StudentFailedSubject> students = studentService.getStudentFailCreditsByCredits(numbersOfCredit);
+
+        List<List<String>> results = new ArrayList<>();
+        for (StudentFailedSubject student : students) {
+            List<String> studentInfo = new ArrayList<>();
+            studentInfo.add(student.getStudentCode());
+            studentInfo.add(student.getStudentName());
+            studentInfo.add(student.getSubjectFailed());
+            studentInfo.add(student.getSubjectRelearned());
+            studentInfo.add(String.valueOf(student.getFailedCredit()));
+            results.add(studentInfo);
+        }
+
+        List<List<String>> displayList = new ArrayList<>();
+        if (!results.isEmpty()) {
+//            displayList = results.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+            displayList = results.stream().collect(Collectors.toList());
+        }
+
+        JsonArray aaData = (JsonArray) new Gson().toJsonTree(displayList);
+
+        jsonObject.addProperty("iTotalRecords", results.size());
+        jsonObject.addProperty("iTotalDisplayRecords",  results.size());
+        jsonObject.add("aaData", aaData);
+        jsonObject.addProperty("sEcho", params.get("sEcho"));
+
+        return jsonObject;
+    }
+
+
     @RequestMapping("/studentsFailedCredits")
     @ResponseBody
     public JsonObject studentFailedCredits(@RequestParam Map<String, String> params) {
