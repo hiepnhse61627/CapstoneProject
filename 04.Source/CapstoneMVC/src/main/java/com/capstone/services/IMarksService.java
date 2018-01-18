@@ -40,4 +40,6 @@ public interface IMarksService {
     // ----- Manager function ----
     List<Object[]> getTotalStudentsGroupBySemesterAndSubject(int semesterId);
     List<List<String>> getAverageSubjectLearnedByStudent(int programId);
+    List<MarksEntity> getMarksByStudentIdAndSemester(int studentId, int semesterId);
+    List<MarksEntity> getMarksByStudentAndSubjectIdList(int studentId, List<String> subjIdList);
 }

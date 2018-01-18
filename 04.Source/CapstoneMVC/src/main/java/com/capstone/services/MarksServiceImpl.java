@@ -168,4 +168,14 @@ public class MarksServiceImpl implements IMarksService {
     public List<List<String>> getAverageSubjectLearnedByStudent(int programId) {
          return marksEntityJpaController.getAverageSubjectLearnedByStudent(programId);
     }
+
+    @Override
+    public List<MarksEntity> getMarksByStudentIdAndSemester(int studentId, int semesterId) {
+        return marksEntityJpaController.getMarksByStudentIdAndSemester(studentId, semesterId);
+    }
+
+    @Override
+    public List<MarksEntity> getMarksByStudentAndSubjectIdList(int studentId, List<String> subjIdList) {
+        return marksEntityJpaController.getMarksByStudentAndSubjectIdList(studentId, subjIdList);
+    }
 }

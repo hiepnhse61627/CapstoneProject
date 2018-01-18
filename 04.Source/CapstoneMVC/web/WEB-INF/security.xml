@@ -64,6 +64,18 @@
                      data-source-ref="dataSource"/>
     </http>
 
+    <!--setup to use custom spring annotations-->
+    <!--<global-method-security pre-post-annotations="enabled">-->
+
+        <!--<expression-handler ref="expressionHandler" />-->
+    <!--</global-method-security>-->
+
+    <!--setup to use custom spring annotations-->
+    <!--<beans:bean id="expressionHandler" class="com.capstone.services.customSecurity.MyCustomMethodSecurityExpressionHandler">-->
+    <!--</beans:bean>-->
+    <!--<beans:bean id="mySecurity" class="com.capstone.services.customSecurity.MySecurity">-->
+    <!--</beans:bean>-->
+
     <authentication-manager>
         <authentication-provider user-service-ref="customService">
             <password-encoder hash="bcrypt"/>

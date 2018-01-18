@@ -1,18 +1,18 @@
 package com.capstone.controllers;
 
-import com.capstone.entities.MarksEntity;
-import com.capstone.entities.StudentEntity;
-import com.capstone.entities.SubjectEntity;
+import com.capstone.entities.*;
 import com.capstone.models.*;
 import com.capstone.services.*;
 
+import com.capstone.services.customSecurity.MySecurity;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -200,7 +200,7 @@ public class StudentController {
 
                                     if (!isPass) {
                                         for (SubjectEntity rep : replace.getSubjectEntityList1()) {
-                                            for (SubjectEntity r: rep.getSubjectEntityList()) {
+                                            for (SubjectEntity r : rep.getSubjectEntityList()) {
                                                 List<MarksEntity> repd = subject.get(r.getId());
                                                 if (repd != null) {
                                                     for (MarksEntity marks : repd) {
@@ -227,7 +227,7 @@ public class StudentController {
 
                             if (totalFail == sub.getSubjectEntityList().size()
                                     && !resultList.stream().anyMatch(r -> r.getStudentId().getRollNumber().equalsIgnoreCase(studentRollNumber)
-                                                                     && r.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(subjectCd))) {
+                                    && r.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(subjectCd))) {
                                 resultList.add(failedRow);
                             }
                         }
@@ -377,8 +377,14 @@ public class StudentController {
         return jsonObject;
     }
 
+
     @RequestMapping("/studentsFailedCreditsPage")
     public ModelAndView goStudentsFailedCreditsPage() {
+//        if (!MySecurity.hasPermission("studentsFailedCreditsPage")) {
+//            ModelAndView errPage = new ModelAndView("PermissionError");
+//            errPage.addObject("title", "Lỗi");
+//            return errPage;
+//        }
         ModelAndView mav = new ModelAndView("studentsFailedCredits");
         mav.addObject("title", "Danh sách sinh viên nợ tín chỉ");
 
@@ -414,10 +420,25 @@ public class StudentController {
         JsonArray aaData = (JsonArray) new Gson().toJsonTree(displayList);
 
         jsonObject.addProperty("iTotalRecords", results.size());
-        jsonObject.addProperty("iTotalDisplayRecords",  results.size());
+        jsonObject.addProperty("iTotalDisplayRecords", results.size());
         jsonObject.add("aaData", aaData);
         jsonObject.addProperty("sEcho", params.get("sEcho"));
 
         return jsonObject;
+    }
+
+    @RequestMapping("/studentsStudyResults")
+    public ModelAndView studentsStudyInformation() {
+        ModelAndView view = new ModelAndView("StudentsStudyInformations");
+        view.addObject("title", "Thông tin kết quả học tập theo kì");
+
+        IRealSemesterService semesterService = new RealSemesterServiceImpl();
+        List<RealSemesterEntity> semesterList = semesterService.getAllSemester();
+        semesterList = Ultilities.SortSemesters(semesterList);
+        semesterList = Lists.reverse(semesterList);
+
+        view.addObject("semesterList", semesterList);
+
+        return view;
     }
 }

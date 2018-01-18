@@ -436,7 +436,7 @@ public class UploadController {
 
         jsonObject.addProperty("success", true);
         jsonObject.addProperty("message", "Cập nhật khung chương trình cho sinh viên thành công !");
-        return  jsonObject;
+        return jsonObject;
     }
 
     private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile, String semesterId) {
@@ -1342,6 +1342,13 @@ public class UploadController {
                     Cell averageMarkCell = row.getCell(averageMarkIndex);
                     Cell statusCell = row.getCell(statusIndex);
 
+                    if (rollNumberCell.getStringCellValue().trim().equalsIgnoreCase("SE62824") || currentLine == 11443) {
+                        System.out.println("hehe");
+                    }
+                    if ((semesterNameCell.getStringCellValue() == null)) {
+                        break;
+                    }
+
                     if ((semesterNameCell != null) && (rollNumberCell != null)
                             && (subjectCodeCell != null) && (averageMarkCell != null) && (statusCell != null)) {
                         String semesterValue = semesterNameCell.getStringCellValue().trim().toLowerCase();
@@ -1356,11 +1363,16 @@ public class UploadController {
                                             && m.getSubjectMarkComponentId().getSubjectId().getId().toLowerCase().equals(subjectCodeValue)).collect(Collectors.toList());
 
                             if (foundMarks != null && !foundMarks.isEmpty()) {
-                                MarksEntity foundMark = foundMarks.get(0);
-                                foundMark.setAverageMark(averageMarkValue);
-                                foundMark.setStatus(statusValue);
+                                for (int i = 0; i < foundMarks.size(); i++) {
+                                    MarksEntity foundMark = foundMarks.get(i);
+                                    if (foundMark.getStatus().equalsIgnoreCase("Studying")) {
+                                        foundMark.setAverageMark(averageMarkValue);
+                                        foundMark.setStatus(statusValue);
+                                        marksService.updateMark(foundMark);
+                                        break;
+                                    }
+                                }
 
-                                marksService.updateMark(foundMark);
                             }
                         }
                     }

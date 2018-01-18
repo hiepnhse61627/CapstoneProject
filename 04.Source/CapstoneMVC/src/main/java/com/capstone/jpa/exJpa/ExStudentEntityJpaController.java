@@ -3,15 +3,14 @@ package com.capstone.jpa.exJpa;
 import com.capstone.entities.*;
 import com.capstone.jpa.StudentEntityJpaController;
 import com.capstone.models.Logger;
-import com.capstone.services.CurriculumServiceImpl;
-import com.capstone.services.DocumentStudentServiceImpl;
-import com.capstone.services.ICurriculumService;
+import com.capstone.services.*;
 
 import javax.persistence.*;
 import javax.persistence.criteria.*;
 import javax.swing.text.Document;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ExStudentEntityJpaController extends StudentEntityJpaController {
 
@@ -329,6 +328,25 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
             e.printStackTrace();
         }
 
+        return result;
+    }
+
+    public List<StudentEntity> findStudentBySemesterId(int semesterId) {
+        EntityManager em = getEntityManager();
+        List<StudentEntity> result = null;
+        try {
+
+            Query query = em.createQuery("SELECT a FROM StudentStatusEntity a WHERE a.semesterId.id = :semesterId");
+            query.setParameter("semesterId", semesterId);
+            List<StudentStatusEntity> studentStatusList = query.getResultList();
+
+            result = studentStatusList.stream().map(q -> q.getStudentId()).collect(Collectors.toList());
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            if (em != null)
+                em.close();
+        }
         return result;
     }
 }

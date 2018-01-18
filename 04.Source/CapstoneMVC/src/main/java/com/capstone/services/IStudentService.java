@@ -24,4 +24,5 @@ public interface IStudentService {
     List<StudentEntity> findStudentByProgramId(Integer programId);
     void updateStudent(StudentEntity entity);
     List<StudentEntity> getStudentFailedMoreThanRequiredCredits(Integer credits);
+    List<StudentEntity> findStudentsBySemesterId(int semesterId);
 }

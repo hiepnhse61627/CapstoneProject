@@ -1,6 +1,7 @@
 package com.capstone.services;
 
 import com.capstone.entities.DocumentStudentEntity;
+import com.capstone.entities.MarksEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.entities.StudentStatusEntity;
 import com.capstone.jpa.exJpa.ExStudentEntityJpaController;
@@ -9,6 +10,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class StudentServiceImpl implements IStudentService {
 
@@ -124,6 +126,11 @@ public class StudentServiceImpl implements IStudentService {
         }
 
         return resultList;
+    }
+
+    @Override
+    public List<StudentEntity> findStudentsBySemesterId(int semesterId) {
+        return studentEntityJpaController.findStudentBySemesterId(semesterId);
     }
 
     @Override

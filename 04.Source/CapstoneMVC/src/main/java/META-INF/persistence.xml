@@ -20,16 +20,19 @@
         <class>com.capstone.entities.ProgramEntity</class>
         <class>com.capstone.entities.DynamicMenuEntity</class>
         <class>com.capstone.entities.OldRollNumberEntity</class>
+        <class>com.capstone.entities.CredentialsRolesEntity</class>
+        <class>com.capstone.entities.RolesAuthorityEntity</class>
+        <class>com.capstone.entities.RolesEntity</class>
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
-            <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://10.82.3.47:1433;databaseName=CapstoneProject"/>-->
-            <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
-            <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
-            <!--<property name="javax.persistence.jdbc.password" value="Kh@nhKT123456&amp;"/>-->
-            <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;database=CapstoneProject;"/>
-            <property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://10.82.3.47:1433;databaseName=CapstoneProject"/>
             <property name="javax.persistence.jdbc.user" value="sa"/>
-            <property name="javax.persistence.jdbc.password" value="sa"/>
+            <property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+            <property name="javax.persistence.jdbc.password" value="Kh@nhKT123456&amp;"/>
+            <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;database=CapstoneProject;"/>-->
+            <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
+            <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
+            <!--<property name="javax.persistence.jdbc.password" value="."/>-->
         </properties>
     </persistence-unit>
 </persistence>
