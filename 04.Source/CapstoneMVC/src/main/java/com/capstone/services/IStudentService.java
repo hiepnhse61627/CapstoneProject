@@ -2,6 +2,7 @@ package com.capstone.services;
 
 import com.capstone.entities.DocumentStudentEntity;
 import com.capstone.entities.StudentEntity;
+import com.capstone.models.StudentFailedSubject;
 
 import java.util.List;
 
@@ -25,4 +26,5 @@ public interface IStudentService {
     void updateStudent(StudentEntity entity);
     List<StudentEntity> getStudentFailedMoreThanRequiredCredits(Integer credits);
     List<StudentEntity> findStudentsBySemesterId(int semesterId);
+    List<StudentFailedSubject> getStudentFailCreditsByCredits(int numOfCredit);
 }

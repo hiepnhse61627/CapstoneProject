@@ -9,6 +9,7 @@
           <element id="jpa-descriptors" facet="spring-mvc-quickstart/jpa/JPA" />
         </element>
         <element id="directory" name="lib">
+          <element id="library" level="project" name="JPA 2.1-JPA 2.1" />
           <element id="library" level="project" name="Maven: opensymphony:sitemesh:2.4.2" />
           <element id="library" level="project" name="Maven: org.eclipse.persistence:eclipselink:2.5.0" />
           <element id="library" level="project" name="Maven: org.eclipse.persistence:javax.persistence:2.1.0" />
@@ -71,7 +72,7 @@
           <element id="library" level="project" name="Maven: org.springframework:spring-jdbc:4.3.9.RELEASE" />
           <element id="library" level="project" name="Maven: org.springframework:spring-tx:4.3.9.RELEASE" />
           <element id="library" level="project" name="Maven: com.h2database:h2:1.4.195" />
-          <element id="library" level="project" name="Maven: com.aspose:aspose-cells:16.11.0" />
+          <element id="library" level="project" name="Maven: com.aspose:aspose-cells:17.12" />
           <element id="library" level="project" name="Maven: org.springframework:spring-context-support:4.3.11.RELEASE" />
           <element id="library" level="project" name="Maven: com.sun.mail:javax.mail:1.6.0" />
           <element id="library" level="project" name="Maven: javax.activation:activation:1.1" />

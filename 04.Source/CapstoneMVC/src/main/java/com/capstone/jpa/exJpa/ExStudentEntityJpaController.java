@@ -3,7 +3,9 @@ package com.capstone.jpa.exJpa;
 import com.capstone.entities.*;
 import com.capstone.jpa.StudentEntityJpaController;
 import com.capstone.models.Logger;
-import com.capstone.services.*;
+import com.capstone.services.CurriculumServiceImpl;
+import com.capstone.services.DocumentStudentServiceImpl;
+import com.capstone.services.ICurriculumService;
 
 import javax.persistence.*;
 import javax.persistence.criteria.*;
@@ -347,6 +349,51 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
             if (em != null)
                 em.close();
         }
+        return result;
+    }
+
+    public List<Object[]> getSubjectMarkComByStudent(StudentEntity studentEntity){
+        EntityManager em = getEntityManager();
+        List<Object[]> result = null;
+
+        try{
+            String queryStr = "SELECT m.StudentId, sm.SubjectId, r.Semester, m.Status FROM Marks m  " +
+                    "Inner Join Subject_MarkComponent sm " +
+                    "On m.SubjectMarkComponentId = sm.Id " +
+                    "Inner Join RealSemester r "+
+                    "On m.SemesterId = r.Id "+
+                    "AND m.StudentId = ?";
+            Query query  = em.createNativeQuery(queryStr);
+            query.setParameter(1, studentEntity.getId());
+            result = query.getResultList();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    public List<Object[]> getSubjectsWithCreditsByStudent(int studentId){
+        EntityManager em = getEntityManager();
+        List<Object[]> result = null;
+
+        try{
+            String queryStr = "Select SubjectId, SubjectCredits, b.CurriculumId From " +
+                    "(SELECT CurriculumId From Document_Student Where StudentId= ?) As a " +
+                    "Inner Join " +
+                    "(Select sc.SubjectId, sc.SubjectCredits, sc.CurriculumId " +
+                    "From Subject_Curriculum sc " +
+                    "Inner Join Subject s on sc.SubjectId = s.Id) As b " +
+                    "on a.CurriculumId =b.CurriculumId";
+            Query query  = em.createNativeQuery(queryStr);
+            query.setParameter(1, studentId);
+            result = query.getResultList();
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return result;
     }
 }
