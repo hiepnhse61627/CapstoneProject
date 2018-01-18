@@ -47,6 +47,7 @@ public class UploadController {
     @Autowired
     ServletContext context;
 
+    IScheduleService scheduleService = new ScheduleServiceImpl();
     IDaySlotService daySlotService = new DaySlotServiceImpl();
     ISlotService slotService = new SlotServiceImpl();
     IRoomService roomService = new RoomServiceImpl();
@@ -844,7 +845,10 @@ public class UploadController {
     public ModelAndView goImportSchedulesPage() {
         ModelAndView mav = new ModelAndView("importSchedules");
         mav.addObject("title", "Nhập danh sách lịch học");
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
 
+        mav.addObject("semesters", semesters);
         return mav;
     }
 //    @RequestMapping(value = "/threadmili", method = RequestMethod.POST)
@@ -1493,9 +1497,18 @@ public class UploadController {
 
     @RequestMapping(value = "/uploadSchedules", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject importSchedules(@RequestParam("file") MultipartFile file) {
+    public JsonObject importSchedules(@RequestParam("file") MultipartFile file, @RequestParam("semesterId") String semesterIdStr) {
         JsonObject jsonObject = new JsonObject();
         List<DaySlotEntity> daySlotEntities = new ArrayList<DaySlotEntity>();
+        List<ScheduleEntity> scheduleEntities = new ArrayList<ScheduleEntity>();
+        List<SlotEntity> slots = null;
+        List<RoomEntity> rooms = null;
+        EmployeeEntity employee = null;
+        CourseEntity course = null;
+        int count1 = 0;
+        int count2 = 0;
+
+        Set<String> errorCourse = new HashSet<>();
 
         try {
             InputStream is = file.getInputStream();
@@ -1508,19 +1521,24 @@ public class UploadController {
             int lastRow = spreadsheet.getLastRowNum();
             this.totalLine = lastRow - startRowNumber + 1;
 
+            int courseIndex = 1;
             int dateIndex = 2;
             int slotNameIndex = 3;
+            int roomNameIndex = 4;
+            int employeeIndex = 5;
 
             this.currentLine = 0;
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
+                    Cell courseCell = row.getCell(courseIndex);
                     Cell dateCell = row.getCell(dateIndex);
                     Cell slotNameCell = row.getCell(slotNameIndex);
+                    Cell roomNameCell = row.getCell(roomNameIndex);
+                    Cell employeeeCell = row.getCell(employeeIndex);
 
                     if (dateCell != null && !dateCell.toString().equals("") && slotNameCell != null && !slotNameCell.toString().equals("")) {
                         String formattedDate = "";
-
                         if (dateCell.getCellType() != Cell.CELL_TYPE_STRING) {
                             DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
                             formattedDate = df.format(dateCell.getDateCellValue());
@@ -1541,7 +1559,7 @@ public class UploadController {
                             slotName = "Slot " + slotName;
                         }
 
-                        List<SlotEntity> slots = slotService.findSlotsByName(slotName);
+                        slots = slotService.findSlotsByName(slotName);
                         if (slots.size() != 0) {
                             if (daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)) == null) {
                                 DaySlotEntity daySlotEntity = new DaySlotEntity();
@@ -1551,6 +1569,48 @@ public class UploadController {
 
                                 daySlotEntities.add(daySlotEntity);
                             }
+                            Integer semesterId = Integer.parseInt(semesterIdStr.trim());
+                            RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterById(semesterId);
+                            course = courseService.findCourseBySemesterAndSubjectCode(realSemesterEntity.getSemester(), courseCell.getStringCellValue());
+
+                            String roomName = "";
+                            if (roomNameCell.getCellType() != Cell.CELL_TYPE_STRING) {
+                                roomName = String.valueOf((int) roomNameCell.getNumericCellValue());
+                            } else {
+                                roomName = roomNameCell.getStringCellValue().trim();
+                            }
+                            rooms = roomService.findRoomsByName(roomName);
+
+//                            if (course != null) {
+//                                count2++;
+//                            }else{
+//                                count1++;
+//                                errorCourse.add(courseCell.getStringCellValue());
+//                            }
+
+                            if (course != null && rooms.size() > 0) {
+                                if (!course.getSubjectCode().contains("VOV")) {
+                                    employee = employeeService.findEmployeeByShortName(employeeeCell.getStringCellValue());
+                                }
+                                if (currentLine == 12988) {
+                                    System.out.println("haha");
+                                }
+
+                                if (scheduleService.findScheduleByDateSlotAndRoom(daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)), rooms.get(0)) == null) {
+                                    ScheduleEntity scheduleEntity = new ScheduleEntity();
+
+                                    scheduleEntity.setCourseId(course);
+                                    scheduleEntity.setDateId(daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)));
+                                    scheduleEntity.setRoomId(rooms.get(0));
+
+                                    if (employee != null) {
+                                        scheduleEntity.setEmpId(employee);
+                                    }
+                                    scheduleEntities.add(scheduleEntity);
+                                }
+
+
+                            }
                         }
 
                     }
@@ -1559,6 +1619,8 @@ public class UploadController {
 
             }
             daySlotService.createDaySlotList(daySlotEntities);
+            scheduleService.createScheduleList(scheduleEntities);
+
             jsonObject.addProperty("success", true);
             jsonObject.addProperty("message", "Import lịch học thành công !");
         } catch (Exception ex) {

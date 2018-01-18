@@ -106,6 +106,27 @@ public class ExEmployeeEntityJpaController extends EmployeeEntityJpaController {
         }
     }
 
+    public EmployeeEntity findEmployeesByShortName(String searchValue) {
+        EntityManager em = getEntityManager();
+        EmployeeEntity result = null;
+
+        try {
+            String queryStr = "SELECT s FROM EmployeeEntity s" +
+                    " WHERE s.emailFE LIKE :shortName OR  s.emailEDU LIKE :shortName";
+            TypedQuery<EmployeeEntity> query = em.createQuery(queryStr, EmployeeEntity.class);
+            query.setParameter("shortName", "%" + searchValue + "%");
+
+            result = query.getSingleResult();
+
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
+    }
+
     public List<EmployeeEntity> findEmployeesByFullName(String searchValue) {
         EntityManager em = getEntityManager();
         List<EmployeeEntity> result = null;

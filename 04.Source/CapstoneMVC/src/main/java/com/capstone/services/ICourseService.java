@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface ICourseService {
     CourseEntity findCourseBySemesterAndSubjectCode(String semesterName, String subjectCode);
+    CourseEntity findCourseBySubjectCode(String subjectCode);
     void createCourseList(List<CourseEntity> courseEntityList);
     CourseEntity createCourse(CourseEntity entity);
     void updateCourse(CourseEntity model);
