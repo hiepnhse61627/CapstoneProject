@@ -108,15 +108,35 @@ public class ExEmployeeEntityJpaController extends EmployeeEntityJpaController {
 
     public EmployeeEntity findEmployeesByShortName(String searchValue) {
         EntityManager em = getEntityManager();
-        EmployeeEntity result = null;
-
+        List<EmployeeEntity> results = null;
+        EmployeeEntity aEmployee = null;
         try {
             String queryStr = "SELECT s FROM EmployeeEntity s" +
                     " WHERE s.emailFE LIKE :shortName OR  s.emailEDU LIKE :shortName";
             TypedQuery<EmployeeEntity> query = em.createQuery(queryStr, EmployeeEntity.class);
             query.setParameter("shortName", "%" + searchValue + "%");
 
-            result = query.getSingleResult();
+            results = query.getResultList();
+
+            if (results.size() > 1) {
+                for (EmployeeEntity emp : results) {
+                    if (emp.getEmailFE().substring(emp.getEmailFE().indexOf(searchValue) + searchValue.length()).indexOf("@") == 0
+                            || emp.getEmailEDU().substring(emp.getEmailEDU().indexOf(searchValue) + searchValue.length()).indexOf("@") == 0) {
+                        aEmployee = emp;
+                    } else {
+                        if (Character.isDigit(emp.getEmailFE().substring(emp.getEmailEDU().indexOf(searchValue) + searchValue.length()).substring(0, 1).charAt(0))
+                                || Character.isDigit(emp.getEmailFE().substring(emp.getEmailFE().indexOf(searchValue) + searchValue.length()).substring(0, 1).charAt(0))) {
+                            aEmployee = emp;
+                        }
+                    }
+                }
+            } else {
+                if (results.size() == 1) {
+                    aEmployee = results.get(0);
+
+                }
+            }
+
 
         } finally {
             if (em != null) {
@@ -124,7 +144,7 @@ public class ExEmployeeEntityJpaController extends EmployeeEntityJpaController {
             }
         }
 
-        return result;
+        return aEmployee;
     }
 
     public List<EmployeeEntity> findEmployeesByFullName(String searchValue) {

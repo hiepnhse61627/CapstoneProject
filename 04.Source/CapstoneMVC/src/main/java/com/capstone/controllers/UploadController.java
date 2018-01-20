@@ -1368,13 +1368,13 @@ public class UploadController {
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
 
-                Cell codeCell = row.getCell(codeIndex);
-                if (codeCell != null && !codeCell.getStringCellValue().trim().equals("")) {
-                    EmployeeEntity employeeEntity = employeeService.findEmployeeByCode(codeCell.getStringCellValue().trim());
-                    if (employeeEntity == null) {
-                        employeeEntity = new EmployeeEntity();
+                Cell fullNameCell = row.getCell(fullNameIndex);
+                if (fullNameCell != null && !fullNameCell.getStringCellValue().trim().equals("")) {
+                    List<EmployeeEntity> employeeList = employeeService.findEmployeesByFullName(fullNameCell.getStringCellValue().trim());
+                    if (employeeList.size() == 0) {
+                        EmployeeEntity employeeEntity = new EmployeeEntity();
 
-                        Cell fullNameCell = row.getCell(fullNameIndex);
+                        Cell codeCell = row.getCell(codeIndex);
                         Cell positionCell = row.getCell(positionIndex);
                         Cell emailEDUCell = row.getCell(emailEDUIndex);
                         Cell emailFECell = row.getCell(emailFEIndex);
@@ -1385,29 +1385,54 @@ public class UploadController {
                         Cell phoneCell = row.getCell(phoneIndex);
                         Cell contractCell = row.getCell(contractIndex);
 
-                        employeeEntity.setCode(codeCell.getStringCellValue());
+                        if (codeCell != null && !codeCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setCode(codeCell.getStringCellValue());
+                        }
+
                         employeeEntity.setFullName(fullNameCell.getStringCellValue());
-                        employeeEntity.setPosition(positionCell.getStringCellValue());
-                        employeeEntity.setEmailEDU(emailEDUCell.getStringCellValue());
-                        employeeEntity.setEmailFE(emailFECell.getStringCellValue());
-                        employeeEntity.setPersonalEmail(emailPersonalCell.getStringCellValue());
+
+                        if (positionCell != null && !positionCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setPosition(positionCell.getStringCellValue());
+                        }
+
+                        if (emailEDUCell != null && !emailEDUCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setEmailEDU(emailEDUCell.getStringCellValue());
+                        }
+
+                        if (emailFECell != null && !emailFECell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setEmailFE(emailFECell.getStringCellValue());
+                        }
+
+                        if (emailPersonalCell != null && !emailPersonalCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setPersonalEmail(emailPersonalCell.getStringCellValue());
+                        }
 
                         boolean gender = genderCell.getStringCellValue().equals("Nam") ? true : false;
                         employeeEntity.setGender(gender);
 
-                        employeeEntity.setAddress(addressCell.getStringCellValue());
+                        if (addressCell != null && !addressCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setAddress(addressCell.getStringCellValue());
+                        }
 
                         String formattedDate = "";
-                        if (dobCell.getCellType() != Cell.CELL_TYPE_STRING && !dobCell.toString().equals("")) {
-                            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-                            formattedDate = df.format(dobCell.getDateCellValue());
-                        } else {
-                            formattedDate = dobCell.getStringCellValue();
+                        if (dobCell != null && !dobCell.toString().equals("")) {
+                            if (dobCell.getCellType() != Cell.CELL_TYPE_STRING) {
+                                DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                                formattedDate = df.format(dobCell.getDateCellValue());
+                            } else {
+                                formattedDate = dobCell.getStringCellValue();
+                            }
                         }
 
                         employeeEntity.setDateOfBirth(formattedDate);
-                        employeeEntity.setPhone(phoneCell.getStringCellValue());
-                        employeeEntity.setContract(contractCell.getStringCellValue());
+
+                        if (phoneCell != null && !phoneCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setPhone(phoneCell.getStringCellValue());
+                        }
+
+                        if (contractCell != null && !contractCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setPhone(phoneCell.getStringCellValue());
+                        }
 
                         employeeEntities.add(employeeEntity);
 
@@ -1531,11 +1556,14 @@ public class UploadController {
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
+                    if (currentLine == 2811) {
+                        System.out.println("haha");
+                    }
                     Cell courseCell = row.getCell(courseIndex);
                     Cell dateCell = row.getCell(dateIndex);
                     Cell slotNameCell = row.getCell(slotNameIndex);
                     Cell roomNameCell = row.getCell(roomNameIndex);
-                    Cell employeeeCell = row.getCell(employeeIndex);
+                    Cell employeeCell = row.getCell(employeeIndex);
 
                     if (dateCell != null && !dateCell.toString().equals("") && slotNameCell != null && !slotNameCell.toString().equals("")) {
                         String formattedDate = "";
@@ -1589,11 +1617,8 @@ public class UploadController {
 //                            }
 
                             if (course != null && rooms.size() > 0) {
-                                if (!course.getSubjectCode().contains("VOV")) {
-                                    employee = employeeService.findEmployeeByShortName(employeeeCell.getStringCellValue());
-                                }
-                                if (currentLine == 12988) {
-                                    System.out.println("haha");
+                                if (!course.getSubjectCode().contains("VOV") || !course.getSubjectCode().contains("LAB")) {
+                                    employee = employeeService.findEmployeeByShortName(employeeCell.getStringCellValue());
                                 }
 
                                 if (scheduleService.findScheduleByDateSlotAndRoom(daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)), rooms.get(0)) == null) {
