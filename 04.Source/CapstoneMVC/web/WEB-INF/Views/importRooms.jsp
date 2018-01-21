@@ -14,6 +14,11 @@
             <div class="form-group">
                 <div class="row">
                     <div class="title">
+                        Bấm vào <a class="link" href="/Resources/FileTemplates/Room.xlsx">Template</a>
+                        để tải
+                        về bản mẫu
+                    </div>
+                    <div class="title">
                         <label>Chọn file:</label>
                     </div>
                     <div class="my-content">

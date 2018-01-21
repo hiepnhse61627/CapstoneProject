@@ -47,6 +47,7 @@ public class UploadController {
     @Autowired
     ServletContext context;
 
+    IScheduleService scheduleService = new ScheduleServiceImpl();
     IDaySlotService daySlotService = new DaySlotServiceImpl();
     ISlotService slotService = new SlotServiceImpl();
     IRoomService roomService = new RoomServiceImpl();
@@ -844,7 +845,10 @@ public class UploadController {
     public ModelAndView goImportSchedulesPage() {
         ModelAndView mav = new ModelAndView("importSchedules");
         mav.addObject("title", "Nhập danh sách lịch học");
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
 
+        mav.addObject("semesters", semesters);
         return mav;
     }
 //    @RequestMapping(value = "/threadmili", method = RequestMethod.POST)
@@ -1364,13 +1368,13 @@ public class UploadController {
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
 
-                Cell codeCell = row.getCell(codeIndex);
-                if (codeCell != null && !codeCell.getStringCellValue().trim().equals("")) {
-                    EmployeeEntity employeeEntity = employeeService.findEmployeeByCode(codeCell.getStringCellValue().trim());
-                    if (employeeEntity == null) {
-                        employeeEntity = new EmployeeEntity();
+                Cell fullNameCell = row.getCell(fullNameIndex);
+                if (fullNameCell != null && !fullNameCell.getStringCellValue().trim().equals("")) {
+                    List<EmployeeEntity> employeeList = employeeService.findEmployeesByFullName(fullNameCell.getStringCellValue().trim());
+                    if (employeeList.size() == 0) {
+                        EmployeeEntity employeeEntity = new EmployeeEntity();
 
-                        Cell fullNameCell = row.getCell(fullNameIndex);
+                        Cell codeCell = row.getCell(codeIndex);
                         Cell positionCell = row.getCell(positionIndex);
                         Cell emailEDUCell = row.getCell(emailEDUIndex);
                         Cell emailFECell = row.getCell(emailFEIndex);
@@ -1381,29 +1385,54 @@ public class UploadController {
                         Cell phoneCell = row.getCell(phoneIndex);
                         Cell contractCell = row.getCell(contractIndex);
 
-                        employeeEntity.setCode(codeCell.getStringCellValue());
+                        if (codeCell != null && !codeCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setCode(codeCell.getStringCellValue());
+                        }
+
                         employeeEntity.setFullName(fullNameCell.getStringCellValue());
-                        employeeEntity.setPosition(positionCell.getStringCellValue());
-                        employeeEntity.setEmailEDU(emailEDUCell.getStringCellValue());
-                        employeeEntity.setEmailFE(emailFECell.getStringCellValue());
-                        employeeEntity.setPersonalEmail(emailPersonalCell.getStringCellValue());
+
+                        if (positionCell != null && !positionCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setPosition(positionCell.getStringCellValue());
+                        }
+
+                        if (emailEDUCell != null && !emailEDUCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setEmailEDU(emailEDUCell.getStringCellValue());
+                        }
+
+                        if (emailFECell != null && !emailFECell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setEmailFE(emailFECell.getStringCellValue());
+                        }
+
+                        if (emailPersonalCell != null && !emailPersonalCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setPersonalEmail(emailPersonalCell.getStringCellValue());
+                        }
 
                         boolean gender = genderCell.getStringCellValue().equals("Nam") ? true : false;
                         employeeEntity.setGender(gender);
 
-                        employeeEntity.setAddress(addressCell.getStringCellValue());
+                        if (addressCell != null && !addressCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setAddress(addressCell.getStringCellValue());
+                        }
 
                         String formattedDate = "";
-                        if (dobCell.getCellType() != Cell.CELL_TYPE_STRING && !dobCell.toString().equals("")) {
-                            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-                            formattedDate = df.format(dobCell.getDateCellValue());
-                        } else {
-                            formattedDate = dobCell.getStringCellValue();
+                        if (dobCell != null && !dobCell.toString().equals("")) {
+                            if (dobCell.getCellType() != Cell.CELL_TYPE_STRING) {
+                                DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                                formattedDate = df.format(dobCell.getDateCellValue());
+                            } else {
+                                formattedDate = dobCell.getStringCellValue();
+                            }
                         }
 
                         employeeEntity.setDateOfBirth(formattedDate);
-                        employeeEntity.setPhone(phoneCell.getStringCellValue());
-                        employeeEntity.setContract(contractCell.getStringCellValue());
+
+                        if (phoneCell != null && !phoneCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setPhone(phoneCell.getStringCellValue());
+                        }
+
+                        if (contractCell != null && !contractCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setPhone(phoneCell.getStringCellValue());
+                        }
 
                         employeeEntities.add(employeeEntity);
 
@@ -1493,9 +1522,18 @@ public class UploadController {
 
     @RequestMapping(value = "/uploadSchedules", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject importSchedules(@RequestParam("file") MultipartFile file) {
+    public JsonObject importSchedules(@RequestParam("file") MultipartFile file, @RequestParam("semesterId") String semesterIdStr) {
         JsonObject jsonObject = new JsonObject();
         List<DaySlotEntity> daySlotEntities = new ArrayList<DaySlotEntity>();
+        List<ScheduleEntity> scheduleEntities = new ArrayList<ScheduleEntity>();
+        List<SlotEntity> slots = null;
+        List<RoomEntity> rooms = null;
+        EmployeeEntity employee = null;
+        CourseEntity course = null;
+        int count1 = 0;
+        int count2 = 0;
+
+        Set<String> errorCourse = new HashSet<>();
 
         try {
             InputStream is = file.getInputStream();
@@ -1508,19 +1546,27 @@ public class UploadController {
             int lastRow = spreadsheet.getLastRowNum();
             this.totalLine = lastRow - startRowNumber + 1;
 
+            int courseIndex = 1;
             int dateIndex = 2;
             int slotNameIndex = 3;
+            int roomNameIndex = 4;
+            int employeeIndex = 5;
 
             this.currentLine = 0;
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
+                    if (currentLine == 2811) {
+                        System.out.println("haha");
+                    }
+                    Cell courseCell = row.getCell(courseIndex);
                     Cell dateCell = row.getCell(dateIndex);
                     Cell slotNameCell = row.getCell(slotNameIndex);
+                    Cell roomNameCell = row.getCell(roomNameIndex);
+                    Cell employeeCell = row.getCell(employeeIndex);
 
                     if (dateCell != null && !dateCell.toString().equals("") && slotNameCell != null && !slotNameCell.toString().equals("")) {
                         String formattedDate = "";
-
                         if (dateCell.getCellType() != Cell.CELL_TYPE_STRING) {
                             DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
                             formattedDate = df.format(dateCell.getDateCellValue());
@@ -1541,7 +1587,7 @@ public class UploadController {
                             slotName = "Slot " + slotName;
                         }
 
-                        List<SlotEntity> slots = slotService.findSlotsByName(slotName);
+                        slots = slotService.findSlotsByName(slotName);
                         if (slots.size() != 0) {
                             if (daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)) == null) {
                                 DaySlotEntity daySlotEntity = new DaySlotEntity();
@@ -1551,6 +1597,45 @@ public class UploadController {
 
                                 daySlotEntities.add(daySlotEntity);
                             }
+                            Integer semesterId = Integer.parseInt(semesterIdStr.trim());
+                            RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterById(semesterId);
+                            course = courseService.findCourseBySemesterAndSubjectCode(realSemesterEntity.getSemester(), courseCell.getStringCellValue());
+
+                            String roomName = "";
+                            if (roomNameCell.getCellType() != Cell.CELL_TYPE_STRING) {
+                                roomName = String.valueOf((int) roomNameCell.getNumericCellValue());
+                            } else {
+                                roomName = roomNameCell.getStringCellValue().trim();
+                            }
+                            rooms = roomService.findRoomsByName(roomName);
+
+//                            if (course != null) {
+//                                count2++;
+//                            }else{
+//                                count1++;
+//                                errorCourse.add(courseCell.getStringCellValue());
+//                            }
+
+                            if (course != null && rooms.size() > 0) {
+                                if (!course.getSubjectCode().contains("VOV") || !course.getSubjectCode().contains("LAB")) {
+                                    employee = employeeService.findEmployeeByShortName(employeeCell.getStringCellValue());
+                                }
+
+                                if (scheduleService.findScheduleByDateSlotAndRoom(daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)), rooms.get(0)) == null) {
+                                    ScheduleEntity scheduleEntity = new ScheduleEntity();
+
+                                    scheduleEntity.setCourseId(course);
+                                    scheduleEntity.setDateId(daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)));
+                                    scheduleEntity.setRoomId(rooms.get(0));
+
+                                    if (employee != null) {
+                                        scheduleEntity.setEmpId(employee);
+                                    }
+                                    scheduleEntities.add(scheduleEntity);
+                                }
+
+
+                            }
                         }
 
                     }
@@ -1559,6 +1644,8 @@ public class UploadController {
 
             }
             daySlotService.createDaySlotList(daySlotEntities);
+            scheduleService.createScheduleList(scheduleEntities);
+
             jsonObject.addProperty("success", true);
             jsonObject.addProperty("message", "Import lịch học thành công !");
         } catch (Exception ex) {

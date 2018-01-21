@@ -11,6 +11,7 @@ public interface IEmployeeService {
     void createEmployeeList(List<EmployeeEntity> employeeEntityList);
     EmployeeEntity findEmployeeById(int id);
     EmployeeEntity findEmployeeByCode(String code);
+    EmployeeEntity findEmployeeByShortName(String name);
     List<EmployeeEntity> findEmployeesByFullName(String searchValue);
     List<EmployeeEntity> findAllEmployees();
     void saveEmployee(EmployeeEntity emp) throws Exception;

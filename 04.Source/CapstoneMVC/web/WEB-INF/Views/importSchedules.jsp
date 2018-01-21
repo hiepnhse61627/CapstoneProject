@@ -14,6 +14,11 @@
             <div class="form-group">
                 <div class="row">
                     <div class="title">
+                        Bấm vào <a class="link" href="/Resources/FileTemplates/Schedule.xlsx">Template</a>
+                        để tải
+                        về bản mẫu
+                    </div>
+                    <div class="title">
                         <label>Chọn file:</label>
                     </div>
                     <div class="my-content">
@@ -22,6 +27,18 @@
                             <input type="file" accept=".xlsx, .xls" id="file" name="file" />
                         </div>
                     </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="left-content m-r-5">
+                    <label>Chọn học kỳ để nhập thời khóa biểu:</label>
+                </div>
+                <div class="right-content width-30 width-m-70">
+                    <select id="semester" class="select form-control">
+                        <c:forEach var="semester" items="${semesters}">
+                            <option value="${semester.id}">${semester.semester}</option>
+                        </c:forEach>
+                    </select>
                 </div>
             </div>
             <div class="form-group">
@@ -35,6 +52,7 @@
     function Add() {
         var form = new FormData();
         form.append('file', $('#file')[0].files[0]);
+        form.append('semesterId', $('#semester').val());
 
         swal({
             title: 'Đang xử lý',

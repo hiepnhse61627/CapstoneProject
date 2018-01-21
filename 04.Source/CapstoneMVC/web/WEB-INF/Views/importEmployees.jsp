@@ -14,12 +14,17 @@
             <div class="form-group">
                 <div class="row">
                     <div class="title">
+                        Bấm vào <a class="link" href="/Resources/FileTemplates/DanhSachGV.xlsx">Template</a>
+                        để tải
+                        về bản mẫu
+                    </div>
+                    <div class="title">
                         <label>Chọn file:</label>
                     </div>
                     <div class="my-content">
                         <div class="col-md-12">
                             <label for="file" hidden></label>
-                            <input type="file" accept=".xlsx, .xls" id="file" name="file" />
+                            <input type="file" accept=".xlsx, .xls" id="file" name="file"/>
                         </div>
                     </div>
                 </div>
