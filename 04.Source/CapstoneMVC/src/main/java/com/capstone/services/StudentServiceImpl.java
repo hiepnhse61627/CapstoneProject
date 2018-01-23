@@ -297,6 +297,21 @@ public class StudentServiceImpl implements IStudentService {
         return studentFailedSubjects;
     }
 
+    @Override
+    public List<StudentEntity> getStudentsFromMarksBySemester(int semesterId) {
+        return studentEntityJpaController.getStudentsFromMarksBySemester(semesterId);
+    }
+
+    @Override
+    public List<StudentEntity> getStudentBySemesterIdAndStatus(int semesterId, List<String> statusList) {
+        return studentEntityJpaController.getStudentBySemesterIdAndStatus(semesterId, statusList);
+    }
+
+    @Override
+    public List<StudentEntity> getStudentBySemesterIdAndProgram(int semesterId, int programId) {
+        return studentEntityJpaController.getStudentBySemesterIdAndProgram(semesterId, programId);
+    }
+
 
     private int getSeasonNumber(String season) {
         int number;

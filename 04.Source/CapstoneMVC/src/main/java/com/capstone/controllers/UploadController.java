@@ -1,5 +1,7 @@
 package com.capstone.controllers;
 
+import com.capstone.exporters.ExportConvert2StudentQuantityByClassAndSubject;
+import com.capstone.exporters.IExportObject;
 import com.capstone.models.*;
 import com.capstone.services.*;
 import com.google.gson.JsonObject;
@@ -17,6 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.*;
 
 import java.text.DateFormat;
@@ -2470,6 +2475,159 @@ public class UploadController {
 //        obj.addProperty("success", true);
 //        return obj;
 //    }
+    @RequestMapping(value = "/convertToStudentQuantityPerClass")
+    public ModelAndView StudentQuantityPerClass() {
+        ModelAndView mav = new ModelAndView("Convert2StudentQuantityByClassAndSubject");
+        mav.addObject("title", "Số lượng sinh viên theo lớp môn");
+
+
+        return mav;
+    }
+
+    @RequestMapping(value = "/convertToStudentQuantity", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goConvert2StudentQuantityByClassAndSubject(@RequestParam("file") MultipartFile file,
+                                                                 HttpServletRequest request, HttpServletResponse response) {
+        JsonObject jsonObject = new JsonObject();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+            int excelDataIndex = 1;
+            int lastRow = spreadsheet.getLastRowNum();
+            this.totalLine = lastRow - startRowNumber + 1;
+
+
+            int rollNumberIndex = -1;
+            int subjectCodeIndex = -1;
+            int classNameIndex = -1;
+
+            //dynamic search and assign index column
+            for (Row r : spreadsheet) {
+                for (Cell cell : r) {
+                    if (cell.getCellTypeEnum() == CellType.STRING) {
+                        String cellValue = cell.getStringCellValue().trim();
+                        switch (cellValue) {
+                            case "RollNumber":
+                                rollNumberIndex = cell.getColumnIndex();
+                                break;
+                            case "SubjectCode":
+                                subjectCodeIndex = cell.getColumnIndex();
+                                break;
+                            case "GroupName":
+                                classNameIndex = cell.getColumnIndex();
+                                break;
+                        }
+
+                    }
+                }
+            }
+            if (rollNumberIndex != -1 && subjectCodeIndex != -1 && classNameIndex != -1) {
+
+                //classList: contains Map<SubjectCode, Map<ClassName, StudentQuantity>>
+                Map<String, Map<String, Integer>> combineList = new HashMap<>();
+
+                //use for sorting, !!!!not need right now!!!!!
+//                List<String> subjectCodeList = new ArrayList<>();
+
+
+                this.currentLine = 1;
+                String markComponentName = Enums.MarkComponent.AVERAGE.getValue();
+                for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                    row = spreadsheet.getRow(rowIndex);
+
+                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    Cell classNameCell = row.getCell(classNameIndex);
+                    Cell subjectCodeCell = row.getCell(subjectCodeIndex);
+
+                    //check if cell is empty or null to end the loop
+                    if (rollNumberCell == null || rollNumberCell.getCellTypeEnum() == CellType.BLANK
+                            || classNameCell == null || classNameCell.getCellTypeEnum() == CellType.BLANK
+                            || subjectCodeCell == null || subjectCodeCell.getCellTypeEnum() == CellType.BLANK) {
+                        break;
+                    } else {
+                        String rollNumberValue = rollNumberCell.getStringCellValue();
+                        String classNameValue = classNameCell.getStringCellValue();
+                        String subjectCodeValue = subjectCodeCell.getStringCellValue();
+
+                        Map<String, Integer> classesInSubject = combineList.get(subjectCodeValue);
+                        if (classesInSubject == null) {
+                            combineList.put(subjectCodeValue, new HashMap<String, Integer>());
+                        } else {
+                            Integer studentQuantity = classesInSubject.get(classNameValue);
+                            if (studentQuantity == null) {
+                                //if not found any class, add class with initiate student quantity =1
+                                classesInSubject.put(classNameValue, 1);
+                            } else {
+                                //if class is founded, increase number of student by 1
+                                ++studentQuantity;
+                                classesInSubject.put(classNameValue, studentQuantity);
+                            }
+                        }
+                    }
+                    System.out.println("convert" + currentLine);
+                    this.currentLine++;
+                }
+                HttpSession session = request.getSession();
+                        session.setAttribute("studentQuantityConverList", combineList);
+
+                //!!!!!!Export file
+//                ExportConvert2StudentQuantityByClassAndSubject exportObject =
+//                        new ExportConvert2StudentQuantityByClassAndSubject();
+//                exportObject.setCombineList(combineList);
+//
+//                // get output stream of the response
+//                OutputStream os = null;
+//                String path = System.getProperty("java.io.tmpdir");
+//                String fileName = path+"/"+exportObject.getFileName();
+//                try {
+//                    // set content attributes for the response
+////                    String mimeType = "application/octet-stream";
+////                    String headerKey = "Content-Disposition";
+////                    response.setContentType(mimeType);
+////
+////                    // set headers for the response
+////                    String headerValue = String.format("attachment; filename=\"%s\"", exportObject.getFileName());
+////                    response.setHeader(headerKey, headerValue);
+//
+//                    // write data
+//
+//                    os = new FileOutputStream(fileName);
+//
+//                    //not used params, create to satisfied parameter
+//                    Map<String, String> params = new HashMap<>();
+//                    exportObject.writeData(os, params, request);
+//                    File myfile = new File(fileName);
+//                    if(myfile.exists()){
+//                        System.out.println("haha");
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+                //!!!!!End of Export file
+                jsonObject.addProperty("success", true);
+                jsonObject.addProperty("message", "Convert thành công !");
+//                jsonObject.addProperty("downloadPath", fileName);
+            } else {
+                jsonObject.addProperty("success", false);
+                jsonObject.addProperty("message", "File không đúng định dạng !");
+            }
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("fail", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+
+        return jsonObject;
+    }
 
 
 }

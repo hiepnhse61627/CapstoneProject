@@ -392,15 +392,15 @@ public class StudentController {
     }
 
     @RequestMapping("/studentFailCreditsPage")
-    public ModelAndView goStudentFailCreditPage(){
+    public ModelAndView goStudentFailCreditPage() {
         ModelAndView mav = new ModelAndView("StudentFailCredit");
-        mav.addObject("title","Danh sách sinh viên đang nợ tín chỉ");
+        mav.addObject("title", "Danh sách sinh viên đang nợ tín chỉ");
         return mav;
     }
 
     @RequestMapping("/studentFailCredits")
     @ResponseBody
-    public JsonObject studentFailCredits(@RequestParam Map<String, String> params){
+    public JsonObject studentFailCredits(@RequestParam Map<String, String> params) {
         JsonObject jsonObject = new JsonObject();
 
         Integer numbersOfCredit = Integer.valueOf(params.get("numOfCredits"));
@@ -426,7 +426,7 @@ public class StudentController {
         JsonArray aaData = (JsonArray) new Gson().toJsonTree(displayList);
 
         jsonObject.addProperty("iTotalRecords", results.size());
-        jsonObject.addProperty("iTotalDisplayRecords",  results.size());
+        jsonObject.addProperty("iTotalDisplayRecords", results.size());
         jsonObject.add("aaData", aaData);
         jsonObject.addProperty("sEcho", params.get("sEcho"));
 
@@ -484,4 +484,151 @@ public class StudentController {
 
         return view;
     }
+
+    //Sinh viên không được xếp lớp
+    @RequestMapping("/studentsNotBeingArrangePage")
+    public ModelAndView studentsNotBeingArrangeClass() {
+        ModelAndView view = new ModelAndView("StudentsAreNotBeingArrangedClass");
+        view.addObject("title", "Danh sách sinh viên không được xếp lớp");
+
+        IRealSemesterService semesterService = new RealSemesterServiceImpl();
+        List<RealSemesterEntity> semesterList = semesterService.getAllSemester();
+        semesterList = Ultilities.SortSemesters(semesterList);
+        semesterList = Lists.reverse(semesterList);
+
+        view.addObject("semesterList", semesterList);
+
+        return view;
+    }
+
+    @RequestMapping("/studentsNotBeingArrangeData")
+    @ResponseBody
+    public JsonObject getStudentsNotBeingArrangeClassData(@RequestParam Map<String, String> params) {
+
+        JsonObject jsonObject = new JsonObject();
+
+        Integer semesterId = Integer.valueOf(params.get("semesterId"));
+        StudentStatusServiceImpl statusService = new StudentStatusServiceImpl();
+        List<String> statusList = new ArrayList<>();
+        statusList.add("HD");
+        statusList.add("HL");
+
+        // [A] get students with status ['HD' : Học đi, 'HL': Học lại] from status table
+        List<StudentEntity> studentsFromStatus =
+                studentService.getStudentBySemesterIdAndStatus(semesterId, statusList);
+
+        //[B] get students From Marks table
+        List<StudentEntity> studentsFromMarks = studentService.getStudentsFromMarksBySemester(semesterId);
+
+        //list of students are not being arranged class,
+        // use [A] left outer join [B], filter all rows of A that not match B
+        List<StudentEntity> notArrangedClass = studentsFromStatus.stream().filter(q ->
+                !studentsFromMarks.stream().anyMatch(a -> a.getId() == q.getId())).collect(Collectors.toList());
+
+
+        List<List<String>> results = new ArrayList<>();
+        for (StudentEntity student : notArrangedClass) {
+            List<String> studentInfo = new ArrayList<>();
+            //MSSV
+            studentInfo.add(student.getRollNumber());
+            //Tên
+            studentInfo.add(student.getFullName());
+            //Ngành
+            studentInfo.add(student.getProgramId().getName());
+            //Kì học
+            studentInfo.add(student.getTerm() + "");
+            //Trạng thái
+            StudentStatusEntity studentStatus = statusService.getStudentStatusBySemesterIdAndStudentId(semesterId, student.getId());
+            studentInfo.add(studentStatus.getStatus());
+
+            studentInfo.add("-");
+            results.add(studentInfo);
+        }
+
+        List<List<String>> displayList = new ArrayList<>();
+        if (!results.isEmpty()) {
+//            displayList = results.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+            displayList = results;
+        }
+
+        JsonArray aaData = (JsonArray) new Gson().toJsonTree(displayList);
+
+        jsonObject.addProperty("iTotalRecords", displayList.size());
+        jsonObject.addProperty("iTotalDisplayRecords", displayList.size());
+        jsonObject.add("aaData", aaData);
+        jsonObject.addProperty("sEcho", params.get("sEcho"));
+
+        return jsonObject;
+    }
+
+    @RequestMapping("/studentsBySemesterAndProgramPage")
+    public ModelAndView StudentsBySemesterPage() {
+        ModelAndView view = new ModelAndView("StudentBySemester");
+        view.addObject("title", "Danh sách thông tin sinh viên theo kỳ và ngành");
+
+        IRealSemesterService semesterService = new RealSemesterServiceImpl();
+        ProgramServiceImpl programService = new ProgramServiceImpl();
+        List<ProgramEntity> programList = programService.getAllPrograms();
+
+        List<RealSemesterEntity> semesterList = semesterService.getAllSemester();
+        semesterList = Ultilities.SortSemesters(semesterList);
+        semesterList = Lists.reverse(semesterList);
+
+        view.addObject("programList", programList);
+        view.addObject("semesterList", semesterList);
+
+        return view;
+    }
+
+
+    @RequestMapping("/studentsBySemesterAndProgramData")
+    @ResponseBody
+    public JsonObject getstudentsBySemesterAndProgramData(@RequestParam Map<String, String> params) {
+
+        JsonObject jsonObject = new JsonObject();
+
+        Integer semesterId = Integer.parseInt(params.get("semesterId"));
+        Integer programId = Integer.parseInt(params.get("programId"));
+        StudentStatusServiceImpl statusService = new StudentStatusServiceImpl();
+        StudentServiceImpl studentService = new StudentServiceImpl();
+        List<StudentEntity> studentList = studentService
+                .getStudentBySemesterIdAndProgram(semesterId, programId);
+
+
+        List<List<String>> results = new ArrayList<>();
+        for (StudentEntity student : studentList) {
+            List<String> studentInfo = new ArrayList<>();
+            //MSSV
+            studentInfo.add(student.getRollNumber());
+            //Tên
+            studentInfo.add(student.getFullName());
+            //Ngành
+            studentInfo.add(student.getProgramId().getName());
+            //Kì học
+            studentInfo.add(student.getTerm() + "");
+            //Trạng thái
+            StudentStatusEntity studentStatus = statusService.getStudentStatusBySemesterIdAndStudentId(semesterId, student.getId());
+            studentInfo.add(studentStatus.getStatus());
+
+            results.add(studentInfo);
+        }
+
+        List<List<String>> displayList = new ArrayList<>();
+
+        //comment saving for serverSide DataTable
+        if (!results.isEmpty()) {
+//            displayList = results.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+            displayList = results;
+        }
+
+        JsonArray aaData = (JsonArray) new Gson().toJsonTree(displayList);
+
+        jsonObject.addProperty("iTotalRecords", displayList.size());
+        jsonObject.addProperty("iTotalDisplayRecords", displayList.size());
+        jsonObject.add("aaData", aaData);
+        jsonObject.addProperty("sEcho", params.get("sEcho"));
+
+        return jsonObject;
+    }
+
 }
