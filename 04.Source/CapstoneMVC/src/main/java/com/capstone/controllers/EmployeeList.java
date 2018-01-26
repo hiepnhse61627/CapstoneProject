@@ -7,6 +7,7 @@ import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -197,63 +198,104 @@ public class EmployeeList {
         return jsonObj;
     }
 
-//    @RequestMapping(value = "/studentList/getAllMarks", method = RequestMethod.POST)
-//    @ResponseBody
-//    public JsonObject GetAllStudentMarks(int studentId) {
-//        JsonObject jsonObj = new JsonObject();
-//
-//        try {
-//            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-//            EntityManager em = emf.createEntityManager();
-//
-//            // Lấy thông tin sv
-//            String queryStr = "SELECT s FROM StudentEntity s WHERE s.id = :sId";
-//            TypedQuery<StudentEntity> queryStudent = em.createQuery(queryStr, StudentEntity.class);
-//            queryStudent.setParameter("sId", studentId);
-//            StudentEntity student = queryStudent.getSingleResult();
-//
-//            StudentMarkModel model = new StudentMarkModel();
-//            model.setStudentId(studentId);
-//            model.setStudentName(student.getFullName());
-//            model.setRollNumber(student.getRollNumber());
-//
-//            // Lấy danh sách điểm
-//            queryStr = "SELECT m FROM MarksEntity m WHERE m.isActivated = true and m.studentId.id = :sId";
-//            TypedQuery<MarksEntity> query = em.createQuery(queryStr, MarksEntity.class);
-//            query.setParameter("sId", studentId);
-//
-//            List<MarksEntity> markList = query.getResultList();
-//            markList = Ultilities.FilterStudentsOnlyPassAndFail(markList);
-//
-//            List<MarkModel> markListModel = new ArrayList<>();
-//            for (MarksEntity m : markList) {
-//                MarkModel data = new MarkModel();
-//                data.setSemester(m.getSemesterId().getSemester());
-//                data.setSubject(m.getSubjectMarkComponentId() != null ? m.getSubjectMarkComponentId().getSubjectId().getId() : "N/A");
-//                data.setStatus(m.getStatus());
-//                data.setAverageMark(m.getAverageMark());
-//
-//                markListModel.add(data);
-//            }
-//            model.setMarkList(markListModel);
-//
-//            String result = new Gson().toJson(model);
-//
-//            jsonObj.addProperty("success", true);
-//            jsonObj.addProperty("studentMarkDetail", result);
-//            em.close();
-//        } catch (Exception e) {
-//            jsonObj.addProperty("success", false);
-//            jsonObj.addProperty("error", e.getMessage());
-//        }
-//
-//        return jsonObj;
-//    }
+    @RequestMapping(value = "/getEmployeeInfo", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject getEmployeeInfoByEmail(@RequestBody String body) {
+        JsonParser parser = new JsonParser();
+        JsonObject obj = (JsonObject) parser.parse(body);
+        String email = obj.get("email").getAsString();
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
 
-//    private class StudentDetailModel {
-//        public int term;
-//        public List<MarkModel> markList;
-//    }
+            String queryStr = "SELECT s FROM EmployeeEntity s" +
+                    " WHERE s.emailEDU LIKE :email OR s.emailFE LIKE :email";
+            Query query = em.createQuery(queryStr);
+            query.setParameter("email", "%" + email + "%");
+
+            EmployeeEntity emp = (EmployeeEntity) query.getSingleResult();
+
+            Gson gson = new Gson();
+            obj = new JsonObject();
+
+            List<ScheduleModel> scheduleModelList = new ArrayList<>();
+            for (ScheduleEntity schedule : emp.getScheduleEntityList()) {
+                ScheduleModel model = new ScheduleModel();
+                model.setCourseName(schedule.getCourseId().getSubjectCode());
+                model.setDate(schedule.getDateId().getDate());
+                model.setRoom(schedule.getRoomId().getName());
+                model.setSlot(schedule.getDateId().getSlotId().getSlotName());
+                model.setStartTime(schedule.getDateId().getSlotId().getStartTime());
+                model.setEndTime(schedule.getDateId().getSlotId().getEndTime());
+                scheduleModelList.add(model);
+            }
+            emp.setScheduleEntityList(null);
+
+            obj.add("employee", parser.parse(gson.toJson(emp)));
+
+
+            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+            for (ScheduleModel scheduleModel : scheduleModelList) {
+                Date aDate = df.parse(scheduleModel.getDate());
+
+            }
+
+            ScheduleModel tmpModel;
+            for (int i = 0; i < scheduleModelList.size() - 1; i++) {
+                for (int j = 0; j < scheduleModelList.size() - i - 1; j++) {
+                    Date aDate = df.parse(scheduleModelList.get(j).getDate());
+                    Date aDate2 = df.parse(scheduleModelList.get(j + 1).getDate());
+
+                    if (aDate.compareTo(aDate2) > 0) {
+                        tmpModel = scheduleModelList.get(j + 1);
+                        scheduleModelList.set(j + 1, scheduleModelList.get(j));
+                        scheduleModelList.set(j, tmpModel);
+                    }
+
+                    if (aDate.compareTo(aDate2) == 0) {
+                        String slot1 = scheduleModelList.get(j).getSlot();
+                        String slot2 = scheduleModelList.get(j + 1).getSlot();
+
+                        if (slot1.compareTo(slot2) > 0) {
+                            tmpModel = scheduleModelList.get(j + 1);
+                            scheduleModelList.set(j + 1, scheduleModelList.get(j));
+                            scheduleModelList.set(j, tmpModel);
+                        }
+                    }
+                }
+            }
+
+//            String date = "";
+//            for (ScheduleModel model : scheduleModelList) {
+//
+//                if (model.getDate().equals(date)) {
+//                    model.setDate("");
+//                } else {
+//                    date = model.getDate();
+//                }
+//
+//            }
+
+//            for (int i = 0; i < scheduleModelList.size() - 1; i++) {
+//                for (int j = 0; j < scheduleModelList.size() - i - 1; j++) {
+//                    String slot1 = scheduleModelList.get(j).getSlot();
+//                    String slot2 = scheduleModelList.get(j + 1).getSlot();
+//
+//                    if (slot1.compareTo(slot2)>=0) {
+//                        tmpModel = scheduleModelList.get(j + 1);
+//                        scheduleModelList.set(j + 1, scheduleModelList.get(j));
+//                        scheduleModelList.set(j, tmpModel);
+//                    }
+//                }
+//            }
+
+            obj.add("scheduleList", parser.parse(gson.toJson(scheduleModelList)));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return obj;
+    }
+
 }
 
 
