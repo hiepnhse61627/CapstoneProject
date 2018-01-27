@@ -34,6 +34,34 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         super(emf);
     }
 
+    public List<MarksEntity> findMarksByProperties(int semesterId, int studentId) {
+        EntityManager em = null;
+        try {
+            em = getEntityManager();
+            String sqlString = "SELECT m FROM MarksEntity m " +
+                    "WHERE m.studentId.id = :studentId " +
+                    "AND m.semesterId.id = :semesterId " +
+                    "AND m.isActivated = TRUE";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("studentId", studentId);
+            query.setParameter("semesterId", semesterId);
+
+            List<MarksEntity> result = (List<MarksEntity>) query.getResultList();
+
+            return result;
+        } catch (NoResultException nrEx) {
+            System.out.println("No records were found with student Id: " + studentId);
+            return null;
+        } catch (NonUniqueResultException nuEx) {
+            System.out.println("Many records were found with: " + studentId);
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
     public List<MarksEntity> findMarksByProperties(MarksEntity marksEntity) {
         EntityManager em = null;
         try {
