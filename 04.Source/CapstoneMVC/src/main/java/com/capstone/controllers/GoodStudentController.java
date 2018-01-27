@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.*;
+import javax.security.auth.Subject;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -96,7 +97,7 @@ public class GoodStudentController {
 
         // Get student's marks in current curriculum
         String queryStr = "SELECT m.StudentId, m.SemesterId, smc.SubjectId, sc.SubjectCredits," +
-                " m.AverageMark, m.Status, sc.TermNumber, ds.CurriculumId" +
+                " m.AverageMark, m.Status, s.Term, ds.CurriculumId" +
                 " FROM Marks m" +
                 " INNER JOIN Student s ON m.StudentId = s.Id" +
                 " INNER JOIN Subject_MarkComponent smc ON m.SubjectMarkComponentId = smc.Id" +
@@ -187,15 +188,14 @@ public class GoodStudentController {
                     }
                 }
 
-                Map<Integer, List<GoodStudentMarkModel>>
-                        semesterMarkList = studentMarkList.get(studentId);
+                Map<Integer, List<GoodStudentMarkModel>> semesterMarkList = studentMarkList.get(studentId);
 
                 for (Integer semesId : semesterMarkList.keySet()) {
                     List<GoodStudentMarkModel> markList = semesterMarkList.get(semesId);
 
                     // Validation
-                    if (checkSubjectsAreLearnedAgain(semesterPositionMap, semesterMarkList, semesId)
-                            && validateMarkList(markList, allStudentSubjects)) {
+                    if (/*checkSubjectsAreLearnedAgain(semesterPositionMap, semesterMarkList, semesId) &&*/
+                            validateMarkList(studentId, markList, allStudentSubjects, marksService, semesId)) {
                         if (studentList.get(studentId) == null) {
                             studentList.put(studentId, new HashMap<>());
                         }
@@ -280,8 +280,12 @@ public class GoodStudentController {
         return isValidate;
     }
 
-    private boolean validateMarkList(List<GoodStudentMarkModel> markList, List<SubjectCurriculumEntity> subCurricumlumList) {
+    private boolean validateMarkList(int studentId, List<GoodStudentMarkModel> markList,
+                                     List<SubjectCurriculumEntity> subCurricumlumList, IMarksService marksService,
+                                     int semesterId) {
         boolean isValidate = true;
+
+        List<GoodStudentMarkModel> curriculumSubjectMarks = new ArrayList<>();
 
         // Get subjects in curriculum, have the same Term as marks in markList
         List<SubjectCurriculumEntity> subjectInCurrentTerm = new ArrayList<>();
@@ -298,33 +302,65 @@ public class GoodStudentController {
             }
         }
 
+        //Fix this
         // Check if student's learned subjects is more or less than subjects in curriculum
-        if (markList.size() != subjectInCurrentTerm.size()) {
-            isValidate = false;
-        }
-
-        // Check marks is not fail
-        if (isValidate) {
-            for (GoodStudentMarkModel mark : markList) {
-                if (!Ultilities.containsIgnoreCase(mark.getStatus(), "pass")) {
-                    isValidate = false;
-                    break;
-                }
-            }
-        }
+//        if (markList.size() != subjectInCurrentTerm.size()) {
+//            isValidate = false;
+//        }
 
         // Check subjects exist in curriculum
         if (isValidate) {
             for (GoodStudentMarkModel mark : markList) {
-                boolean isFound = false;
+                int isFound = -1;
                 for (SubjectCurriculumEntity sc : subjectInCurrentTerm) {
                     if (mark.getSubjectId().equals(sc.getSubjectId().getId())) {
-                        isFound = true;
+                        curriculumSubjectMarks.add(mark);
+                        isFound = subjectInCurrentTerm.indexOf(sc);
                         break;
                     }
                 }
 
-                if (!isFound) {
+                if (isFound != -1) {
+                    subjectInCurrentTerm.remove(isFound);
+                }
+            }
+        }
+
+        if(isValidate && !subjectInCurrentTerm.isEmpty()) {
+            List<MarksEntity> semesterMarks = marksService.findMarksByProperties(semesterId, studentId);
+            List<SubjectEntity> subjectEntityInCurrentTerm = subjectInCurrentTerm.stream().map(q -> q.getSubjectId()).collect(Collectors.toList());
+            for (SubjectEntity entity : subjectEntityInCurrentTerm) {
+                for (SubjectEntity subject : entity.getSubjectEntityList()) {
+                    outLoop:
+                    for (MarksEntity mark : semesterMarks) {
+                        if(mark.getCourseId().getSubjectCode().equalsIgnoreCase(subject.getId())) {
+                            GoodStudentMarkModel model = new GoodStudentMarkModel();
+                            SubjectCurriculumEntity temp = subjectInCurrentTerm.stream().filter(q -> q.getSubjectId().getId().equalsIgnoreCase(entity.getId())).findFirst().get();
+
+                            model.setCredits(temp.getSubjectCredits());
+                            model.setCurriculumId(temp.getCurriculumId().getId());
+                            model.setMark(mark.getAverageMark());
+                            model.setStatus(mark.getStatus());
+                            model.setSubjectId(subject.getId());
+                            model.setTerm(currentTerm);
+                            model.setMarkId(mark.getId());
+
+                            curriculumSubjectMarks.add(model);
+                            subjectInCurrentTerm.remove(temp);
+
+                            break outLoop;
+                        }
+                    }
+                }
+            }
+
+            isValidate &= subjectInCurrentTerm.isEmpty();
+        }
+
+        // Check marks is not fail
+        if (isValidate) {
+            for (GoodStudentMarkModel mark : curriculumSubjectMarks) {
+                if (!Ultilities.containsIgnoreCase(mark.getStatus(), "pass")) {
                     isValidate = false;
                     break;
                 }
@@ -333,7 +369,9 @@ public class GoodStudentController {
 
         // Average mark >= 8
         if (isValidate) {
-            isValidate = this.calculateAverageMark(markList) >= 8;
+            isValidate = this.calculateAverageMark(curriculumSubjectMarks) >= 8;
+            markList.clear();
+            markList.addAll(curriculumSubjectMarks);
         }
 
         return isValidate;
