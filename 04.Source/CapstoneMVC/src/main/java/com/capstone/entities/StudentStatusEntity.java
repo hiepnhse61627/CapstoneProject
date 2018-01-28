@@ -19,13 +19,12 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 
 /**
- *
  * @author hiepnhse61627
  */
 @Entity
 @Table(name = "Student_Status", catalog = "CapstoneProject", schema = "dbo")
 @NamedQueries({
-    @NamedQuery(name = "StudentStatusEntity.findAll", query = "SELECT s FROM StudentStatusEntity s")})
+        @NamedQuery(name = "StudentStatusEntity.findAll", query = "SELECT s FROM StudentStatusEntity s")})
 public class StudentStatusEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -36,6 +35,8 @@ public class StudentStatusEntity implements Serializable {
     private Integer id;
     @Column(name = "Status", length = 50)
     private String status;
+    @Column(name = "Term")
+    private String term;
     @JoinColumn(name = "SemesterId", referencedColumnName = "Id")
     @ManyToOne
     private RealSemesterEntity semesterId;
@@ -64,6 +65,14 @@ public class StudentStatusEntity implements Serializable {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getTerm() {
+        return term;
+    }
+
+    public void setTerm(String term) {
+        this.term = term;
     }
 
     public RealSemesterEntity getSemesterId() {
@@ -106,5 +115,5 @@ public class StudentStatusEntity implements Serializable {
     public String toString() {
         return "com.capstone.entities.StudentStatusEntity[ id=" + id + " ]";
     }
-    
+
 }

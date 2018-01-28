@@ -1,6 +1,7 @@
 package com.capstone.services;
 
 import com.capstone.entities.MarksEntity;
+import com.capstone.entities.StudentEntity;
 import com.capstone.jpa.exJpa.ExMarksEntityJpaController;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 
@@ -177,5 +178,10 @@ public class MarksServiceImpl implements IMarksService {
     @Override
     public List<MarksEntity> getMarksByStudentAndSubjectIdList(int studentId, List<String> subjIdList) {
         return marksEntityJpaController.getMarksByStudentAndSubjectIdList(studentId, subjIdList);
+    }
+
+    @Override
+    public List<StudentEntity> getOjtStudentsFromSelectedSemesterAndBeforeFromMarks(int semesterId) {
+        return marksEntityJpaController.getOjtStudentsFromSelectedSemesterAndBeforeFromMarks(semesterId);
     }
 }

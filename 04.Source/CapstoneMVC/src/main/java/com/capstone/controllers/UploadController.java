@@ -4,6 +4,8 @@ import com.capstone.exporters.ExportConvert2StudentQuantityByClassAndSubject;
 import com.capstone.exporters.IExportObject;
 import com.capstone.models.*;
 import com.capstone.services.*;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
@@ -2475,8 +2477,8 @@ public class UploadController {
 //        obj.addProperty("success", true);
 //        return obj;
 //    }
-    @RequestMapping(value = "/convertToStudentQuantityPerClass")
-    public ModelAndView StudentQuantityPerClass() {
+    @RequestMapping(value = "/convertToStudentQuantityPage")
+    public ModelAndView convertToStudentQuantityPage() {
         ModelAndView mav = new ModelAndView("Convert2StudentQuantityByClassAndSubject");
         mav.addObject("title", "Số lượng sinh viên theo lớp môn");
 
@@ -2573,44 +2575,9 @@ public class UploadController {
                     this.currentLine++;
                 }
                 HttpSession session = request.getSession();
-                        session.setAttribute("studentQuantityConverList", combineList);
+                session.setAttribute("studentQuantityConverList", combineList);
 
-                //!!!!!!Export file
-//                ExportConvert2StudentQuantityByClassAndSubject exportObject =
-//                        new ExportConvert2StudentQuantityByClassAndSubject();
-//                exportObject.setCombineList(combineList);
-//
-//                // get output stream of the response
-//                OutputStream os = null;
-//                String path = System.getProperty("java.io.tmpdir");
-//                String fileName = path+"/"+exportObject.getFileName();
-//                try {
-//                    // set content attributes for the response
-////                    String mimeType = "application/octet-stream";
-////                    String headerKey = "Content-Disposition";
-////                    response.setContentType(mimeType);
-////
-////                    // set headers for the response
-////                    String headerValue = String.format("attachment; filename=\"%s\"", exportObject.getFileName());
-////                    response.setHeader(headerKey, headerValue);
-//
-//                    // write data
-//
-//                    os = new FileOutputStream(fileName);
-//
-//                    //not used params, create to satisfied parameter
-//                    Map<String, String> params = new HashMap<>();
-//                    exportObject.writeData(os, params, request);
-//                    File myfile = new File(fileName);
-//                    if(myfile.exists()){
-//                        System.out.println("haha");
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-                //!!!!!End of Export file
+
                 jsonObject.addProperty("success", true);
                 jsonObject.addProperty("message", "Convert thành công !");
 //                jsonObject.addProperty("downloadPath", fileName);
@@ -2621,10 +2588,66 @@ public class UploadController {
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             Logger.writeLog(ex);
-            jsonObject.addProperty("fail", false);
+            jsonObject.addProperty("success", false);
             jsonObject.addProperty("message", ex.getMessage());
         }
 
+
+        return jsonObject;
+    }
+
+
+    @RequestMapping(value = "/convertToStudentQuantityData")
+    @ResponseBody
+    public JsonObject StudentQuantityPerClass(@RequestParam Map<String, String> params, HttpServletRequest request) {
+        JsonObject jsonObject = new JsonObject();
+
+        ModelAndView mav = new ModelAndView("Convert2StudentQuantityByClassAndSubject");
+        mav.addObject("title", "Số lượng sinh viên theo lớp môn");
+        try {
+            HttpSession session = request.getSession();
+            Map<String, Map<String, Integer>> combineList = (Map<String, Map<String, Integer>>)
+                    session.getAttribute("studentQuantityConverList");
+
+
+            List<List<String>> result = new ArrayList<>();
+            for (Map.Entry<String, Map<String, Integer>> combine : combineList.entrySet()) {
+
+
+
+                Map<String, Integer> classesAndStudentsQuantityList = combine.getValue();
+
+                //Map<ClassName, StudentQuantity>
+                for (Map.Entry<String, Integer> item :
+                        classesAndStudentsQuantityList.entrySet()) {
+                    List<String> classInfo = new ArrayList<>();
+
+                    //Subject name
+                    classInfo.add(combine.getKey());
+                    //Class name
+                    classInfo.add(item.getKey());
+                    //Student Quantity
+                    classInfo.add(item.getValue()+"");
+
+                    result.add(classInfo);
+                }
+
+            }
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
+
+            jsonObject.addProperty("iTotalRecords", result.size());
+            jsonObject.addProperty("iTotalDisplayRecords", result.size());
+            jsonObject.add("aaData", aaData);
+            jsonObject.addProperty("sEcho", params.get("sEcho"));
+
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            Logger.writeLog(e);
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", e.getMessage());
+        }
 
         return jsonObject;
     }

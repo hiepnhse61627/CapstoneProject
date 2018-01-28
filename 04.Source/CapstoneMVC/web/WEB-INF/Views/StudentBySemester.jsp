@@ -50,7 +50,7 @@
                         </div>
                         <div class="my-input-group">
                             <div class="left-content m-r-5">
-                                <label class="p-t-8">Học kỳ:</label>
+                                <label class="p-t-8">Ngành:</label>
                             </div>
                             <div class="right-content width-30 width-m-70">
                                 <select id="program" class="select form-control">
@@ -126,7 +126,7 @@
                 },
             ],
             "autoWidth": false,
-            dom: 'Bfrtip',
+             dom: 'Bfrtip',
             lengthMenu: [[10,25,50],[ '10 dòng', '25 dòng', '50 dòng', 'Tất cả' ]],
             buttons: [
                 {
