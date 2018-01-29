@@ -10,6 +10,8 @@ import com.capstone.models.*;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -280,6 +282,21 @@ public class StudentServiceImpl implements IStudentService {
         return studentFailedSubjects;
     }
 
+    @Override
+    public List<StudentEntity> getStudentsFromMarksBySemester(int semesterId) {
+        return studentEntityJpaController.getStudentsFromMarksBySemester(semesterId);
+    }
+
+    @Override
+    public List<StudentEntity> getStudentBySemesterIdAndStatus(int semesterId, List<String> statusList) {
+        return studentEntityJpaController.getStudentBySemesterIdAndStatus(semesterId, statusList);
+    }
+
+    @Override
+    public List<StudentEntity> getStudentBySemesterIdAndProgram(int semesterId, int programId) {
+        return studentEntityJpaController.getStudentBySemesterIdAndProgram(semesterId, programId);
+    }
+
 
     private int getSeasonNumber(String season) {
         int number = 0;
@@ -331,6 +348,11 @@ public class StudentServiceImpl implements IStudentService {
         }
 
         return resultList;
+    }
+
+    @Override
+    public List<StudentEntity> findStudentsBySemesterId(int semesterId) {
+        return studentEntityJpaController.findStudentBySemesterId(semesterId);
     }
 
     @Override

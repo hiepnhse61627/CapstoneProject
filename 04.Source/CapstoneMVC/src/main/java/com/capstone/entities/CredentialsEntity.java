@@ -6,15 +6,8 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
-import javax.persistence.Basic;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.util.Collection;
 
 /**
  *
@@ -48,6 +41,8 @@ public class CredentialsEntity implements Serializable {
     private String role;
     @Column(name = "StudentRollNumber", length = 50)
     private String studentRollNumber;
+    @OneToMany(mappedBy = "credentialsId")
+    private Collection<CredentialsRolesEntity> credentialsRolesEntityCollection;
 
     public CredentialsEntity() {
     }
@@ -124,6 +119,14 @@ public class CredentialsEntity implements Serializable {
 
     public void setStudentRollNumber(String studentRollNumber) {
         this.studentRollNumber = studentRollNumber;
+    }
+
+    public Collection<CredentialsRolesEntity> getCredentialsRolesEntityCollection() {
+        return credentialsRolesEntityCollection;
+    }
+
+    public void setCredentialsRolesEntityCollection(Collection<CredentialsRolesEntity> credentialsRolesEntityCollection) {
+        this.credentialsRolesEntityCollection = credentialsRolesEntityCollection;
     }
 
     @Override

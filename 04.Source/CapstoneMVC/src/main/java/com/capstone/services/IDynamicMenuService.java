@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface IDynamicMenuService {
     List<DynamicMenuEntity> getAllMenu();
+    DynamicMenuEntity findDynamicMenuByLink(String link);
 }

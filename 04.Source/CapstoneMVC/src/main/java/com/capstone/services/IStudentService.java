@@ -26,7 +26,11 @@ public interface IStudentService {
     List<StudentEntity> findStudentByProgramId(Integer programId);
     void updateStudent(StudentEntity entity);
     List<StudentEntity> getStudentFailedMoreThanRequiredCredits(Integer credits);
+    List<StudentEntity> findStudentsBySemesterId(int semesterId);
     List<StudentFailedSubject> getStudentFailCreditsByCredits(int numOfCredit);
+    List<StudentEntity> getStudentsFromMarksBySemester(int semesterId);
+    List<StudentEntity> getStudentBySemesterIdAndStatus(int semesterId, List<String> statusList);
+    List<StudentEntity> getStudentBySemesterIdAndProgram(int semesterId, int programId);
     List<StudentFailedSubject> getSubjectsFailedBySemester(Integer selectedSemester);
     List<StudentFailedSubject> getSubjectsSlotsFailedBySemester(Integer selectedSemester);
 }

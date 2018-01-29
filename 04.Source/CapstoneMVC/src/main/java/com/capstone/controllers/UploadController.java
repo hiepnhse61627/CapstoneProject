@@ -1,5 +1,7 @@
 package com.capstone.controllers;
 
+import com.capstone.exporters.ExportConvert2StudentQuantityByClassAndSubject;
+import com.capstone.exporters.IExportObject;
 import com.capstone.models.*;
 import com.capstone.services.*;
 import com.google.gson.JsonObject;
@@ -17,6 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.*;
 
 import java.text.DateFormat;
@@ -47,6 +52,9 @@ public class UploadController {
     @Autowired
     ServletContext context;
 
+    IScheduleService scheduleService = new ScheduleServiceImpl();
+    IDaySlotService daySlotService = new DaySlotServiceImpl();
+    ISlotService slotService = new SlotServiceImpl();
     IRoomService roomService = new RoomServiceImpl();
     IEmployeeService employeeService = new EmployeeServiceImpl();
     IStudentService studentService = new StudentServiceImpl();
@@ -439,7 +447,7 @@ public class UploadController {
 
         jsonObject.addProperty("success", true);
         jsonObject.addProperty("message", "Cập nhật khung chương trình cho sinh viên thành công !");
-        return  jsonObject;
+        return jsonObject;
     }
 
     private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile, String semesterId) {
@@ -808,6 +816,20 @@ public class UploadController {
         return mav;
     }
 
+    @RequestMapping(value = "/updateMarkForStudyingStudentPage")
+    public ModelAndView goUpdateMarkForStudyingStudentPage() {
+        ModelAndView mav = new ModelAndView("updateMarkForStudyingStudent");
+        mav.addObject("title", "Cập nhật điểm cho sinh viên đang học");
+
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+        semesters = semesters.stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+
+        mav.addObject("semesters", semesters);
+
+        return mav;
+    }
+
     @RequestMapping(value = "/importEmployeesPage")
     public ModelAndView goImportEmployeesPage() {
         ModelAndView mav = new ModelAndView("importEmployees");
@@ -824,20 +846,16 @@ public class UploadController {
         return mav;
     }
 
-    @RequestMapping(value = "/updateMarkForStudyingStudentPage")
-    public ModelAndView goUpdateMarkForStudyingStudentPage() {
-        ModelAndView mav = new ModelAndView("updateMarkForStudyingStudent");
-        mav.addObject("title", "Cập nhật điểm cho sinh viên đang học");
-
+    @RequestMapping(value = "/importSchedulesPage")
+    public ModelAndView goImportSchedulesPage() {
+        ModelAndView mav = new ModelAndView("importSchedules");
+        mav.addObject("title", "Nhập danh sách lịch học");
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
         semesters = Ultilities.SortSemesters(semesters);
-        semesters = semesters.stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
 
         mav.addObject("semesters", semesters);
-
         return mav;
     }
-
 //    @RequestMapping(value = "/threadmili", method = RequestMethod.POST)
 //    @ResponseBody
 //    public JsonObject Threadmili(@RequestParam boolean thread) {
@@ -1307,15 +1325,16 @@ public class UploadController {
                 this.currentLine++;
             }
             marksService.createMarks(marksEntities);
+            jsonObject.addProperty("success", true);
+            jsonObject.addProperty("message", "Import sinh viên đang học thành công !");
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             Logger.writeLog(ex);
-            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("fail", false);
             jsonObject.addProperty("message", ex.getMessage());
         }
 
-        jsonObject.addProperty("success", true);
-        jsonObject.addProperty("message", "Import sinh viên đang học thành công !");
+
         return jsonObject;
     }
 
@@ -1354,13 +1373,13 @@ public class UploadController {
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
 
-                Cell codeCell = row.getCell(codeIndex);
-                if (codeCell != null && !codeCell.getStringCellValue().trim().equals("") ) {
-                    EmployeeEntity employeeEntity = employeeService.findEmployeeByCode(codeCell.getStringCellValue().trim());
-                    if (employeeEntity == null) {
-                        employeeEntity = new EmployeeEntity();
+                Cell fullNameCell = row.getCell(fullNameIndex);
+                if (fullNameCell != null && !fullNameCell.getStringCellValue().trim().equals("")) {
+                    List<EmployeeEntity> employeeList = employeeService.findEmployeesByFullName(fullNameCell.getStringCellValue().trim());
+                    if (employeeList.size() == 0) {
+                        EmployeeEntity employeeEntity = new EmployeeEntity();
 
-                        Cell fullNameCell = row.getCell(fullNameIndex);
+                        Cell codeCell = row.getCell(codeIndex);
                         Cell positionCell = row.getCell(positionIndex);
                         Cell emailEDUCell = row.getCell(emailEDUIndex);
                         Cell emailFECell = row.getCell(emailFEIndex);
@@ -1371,29 +1390,54 @@ public class UploadController {
                         Cell phoneCell = row.getCell(phoneIndex);
                         Cell contractCell = row.getCell(contractIndex);
 
-                        employeeEntity.setCode(codeCell.getStringCellValue());
+                        if (codeCell != null && !codeCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setCode(codeCell.getStringCellValue());
+                        }
+
                         employeeEntity.setFullName(fullNameCell.getStringCellValue());
-                        employeeEntity.setPosition(positionCell.getStringCellValue());
-                        employeeEntity.setEmailEDU(emailEDUCell.getStringCellValue());
-                        employeeEntity.setEmailFE(emailFECell.getStringCellValue());
-                        employeeEntity.setPersonalEmail(emailPersonalCell.getStringCellValue());
+
+                        if (positionCell != null && !positionCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setPosition(positionCell.getStringCellValue());
+                        }
+
+                        if (emailEDUCell != null && !emailEDUCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setEmailEDU(emailEDUCell.getStringCellValue());
+                        }
+
+                        if (emailFECell != null && !emailFECell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setEmailFE(emailFECell.getStringCellValue());
+                        }
+
+                        if (emailPersonalCell != null && !emailPersonalCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setPersonalEmail(emailPersonalCell.getStringCellValue());
+                        }
 
                         boolean gender = genderCell.getStringCellValue().equals("Nam") ? true : false;
                         employeeEntity.setGender(gender);
 
-                        employeeEntity.setAddress(addressCell.getStringCellValue());
+                        if (addressCell != null && !addressCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setAddress(addressCell.getStringCellValue());
+                        }
 
-                        String formattedDate="";
-                        if(dobCell.getCellType() != Cell.CELL_TYPE_STRING){
-                            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-                            formattedDate = df.format(dobCell.getDateCellValue());
-                        }else{
-                            formattedDate = dobCell.getStringCellValue();
+                        String formattedDate = "";
+                        if (dobCell != null && !dobCell.toString().equals("")) {
+                            if (dobCell.getCellType() != Cell.CELL_TYPE_STRING) {
+                                DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                                formattedDate = df.format(dobCell.getDateCellValue());
+                            } else {
+                                formattedDate = dobCell.getStringCellValue();
+                            }
                         }
 
                         employeeEntity.setDateOfBirth(formattedDate);
-                        employeeEntity.setPhone(phoneCell.getStringCellValue());
-                        employeeEntity.setContract(contractCell.getStringCellValue());
+
+                        if (phoneCell != null && !phoneCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setPhone(phoneCell.getStringCellValue());
+                        }
+
+                        if (contractCell != null && !contractCell.getStringCellValue().trim().equals("")) {
+                            employeeEntity.setPhone(phoneCell.getStringCellValue());
+                        }
 
                         employeeEntities.add(employeeEntity);
 
@@ -1402,15 +1446,16 @@ public class UploadController {
                 this.currentLine++;
             }
             employeeService.createEmployeeList(employeeEntities);
+            jsonObject.addProperty("success", true);
+            jsonObject.addProperty("message", "Import giảng viên thành công !");
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             Logger.writeLog(ex);
-            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("fail", false);
             jsonObject.addProperty("message", ex.getMessage());
         }
 
-        jsonObject.addProperty("success", true);
-        jsonObject.addProperty("message", "Import giảng viên thành công !");
+
         return jsonObject;
     }
 
@@ -1441,15 +1486,15 @@ public class UploadController {
 
                 Cell nameCell = row.getCell(nameIndex);
 
-                String name="";
+                String name = "";
 
-                if(nameCell.getCellType() != Cell.CELL_TYPE_STRING){
+                if (nameCell.getCellType() != Cell.CELL_TYPE_STRING) {
                     name = String.valueOf((int) nameCell.getNumericCellValue());
-                }else{
-                    name=nameCell.getStringCellValue().trim();
+                } else {
+                    name = nameCell.getStringCellValue().trim();
                 }
 
-                if (nameCell != null && !name.equals("") ) {
+                if (nameCell != null && !name.equals("")) {
                     if (roomService.findRoomsByName(name).size() == 0) {
                         RoomEntity roomEntity = new RoomEntity();
 
@@ -1457,7 +1502,7 @@ public class UploadController {
                         Cell noteCell = row.getCell(noteIndex);
 
                         roomEntity.setName(name);
-                        roomEntity.setCapacity((int)capacityCell.getNumericCellValue());
+                        roomEntity.setCapacity((int) capacityCell.getNumericCellValue());
                         roomEntity.setNote(noteCell.getStringCellValue());
                         roomEntity.setIsAvailable(true);
 
@@ -1468,18 +1513,156 @@ public class UploadController {
                 this.currentLine++;
             }
             roomService.createRoomList(roomEntities);
+            jsonObject.addProperty("success", true);
+            jsonObject.addProperty("message", "Import phòng thành công !");
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             Logger.writeLog(ex);
-            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("fail", false);
             jsonObject.addProperty("message", ex.getMessage());
         }
 
-        jsonObject.addProperty("success", true);
-        jsonObject.addProperty("message", "Import phòng thành công !");
         return jsonObject;
     }
 
+    @RequestMapping(value = "/uploadSchedules", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject importSchedules(@RequestParam("file") MultipartFile file, @RequestParam("semesterId") String semesterIdStr) {
+        JsonObject jsonObject = new JsonObject();
+        List<DaySlotEntity> daySlotEntities = new ArrayList<DaySlotEntity>();
+        List<ScheduleEntity> scheduleEntities = new ArrayList<ScheduleEntity>();
+        List<SlotEntity> slots = null;
+        List<RoomEntity> rooms = null;
+        EmployeeEntity employee = null;
+        CourseEntity course = null;
+        int count1 = 0;
+        int count2 = 0;
+
+        Set<String> errorCourse = new HashSet<>();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+            int excelDataIndex = 1;
+            int lastRow = spreadsheet.getLastRowNum();
+            this.totalLine = lastRow - startRowNumber + 1;
+
+            int courseIndex = 1;
+            int dateIndex = 2;
+            int slotNameIndex = 3;
+            int roomNameIndex = 4;
+            int employeeIndex = 5;
+
+            this.currentLine = 0;
+            for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+                if (row != null) {
+                    if (currentLine == 2811) {
+                        System.out.println("haha");
+                    }
+                    Cell courseCell = row.getCell(courseIndex);
+                    Cell dateCell = row.getCell(dateIndex);
+                    Cell slotNameCell = row.getCell(slotNameIndex);
+                    Cell roomNameCell = row.getCell(roomNameIndex);
+                    Cell employeeCell = row.getCell(employeeIndex);
+
+                    if (dateCell != null && !dateCell.toString().equals("") && slotNameCell != null && !slotNameCell.toString().equals("")) {
+                        String formattedDate = "";
+                        if (dateCell.getCellType() != Cell.CELL_TYPE_STRING) {
+                            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                            formattedDate = df.format(dateCell.getDateCellValue());
+                        } else {
+                            DateFormat df = new SimpleDateFormat("M/d/yyyy HH:mm:ss");
+                            DateFormat df2 = new SimpleDateFormat("dd/MM/yyyy");
+
+                            formattedDate = df2.format(df.parse(dateCell.getStringCellValue()));
+                        }
+
+                        String slotName = "";
+                        if (slotNameCell.getCellType() != Cell.CELL_TYPE_STRING) {
+                            slotName = String.valueOf((int) slotNameCell.getNumericCellValue());
+                        } else {
+                            slotName = slotNameCell.getStringCellValue().trim();
+                        }
+                        if (!slotName.contains("Slot")) {
+                            slotName = "Slot " + slotName;
+                        }
+
+                        slots = slotService.findSlotsByName(slotName);
+                        if (slots.size() != 0) {
+                            if (daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)) == null) {
+                                DaySlotEntity daySlotEntity = new DaySlotEntity();
+
+                                daySlotEntity.setDate(formattedDate);
+                                daySlotEntity.setSlotId(slots.get(0));
+
+                                daySlotEntities.add(daySlotEntity);
+                            }
+                            Integer semesterId = Integer.parseInt(semesterIdStr.trim());
+                            RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterById(semesterId);
+                            course = courseService.findCourseBySemesterAndSubjectCode(realSemesterEntity.getSemester(), courseCell.getStringCellValue());
+
+                            String roomName = "";
+                            if (roomNameCell.getCellType() != Cell.CELL_TYPE_STRING) {
+                                roomName = String.valueOf((int) roomNameCell.getNumericCellValue());
+                            } else {
+                                roomName = roomNameCell.getStringCellValue().trim();
+                            }
+                            rooms = roomService.findRoomsByName(roomName);
+
+//                            if (course != null) {
+//                                count2++;
+//                            }else{
+//                                count1++;
+//                                errorCourse.add(courseCell.getStringCellValue());
+//                            }
+
+                            if (course != null && rooms.size() > 0) {
+                                if (!course.getSubjectCode().contains("VOV") || !course.getSubjectCode().contains("LAB")) {
+                                    employee = employeeService.findEmployeeByShortName(employeeCell.getStringCellValue());
+                                }
+
+                                if (scheduleService.findScheduleByDateSlotAndRoom(daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)), rooms.get(0)) == null) {
+                                    ScheduleEntity scheduleEntity = new ScheduleEntity();
+
+                                    scheduleEntity.setCourseId(course);
+                                    scheduleEntity.setDateId(daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)));
+                                    scheduleEntity.setRoomId(rooms.get(0));
+
+                                    if (employee != null) {
+                                        scheduleEntity.setEmpId(employee);
+                                    }
+                                    scheduleEntities.add(scheduleEntity);
+                                }
+
+
+                            }
+                        }
+
+                    }
+                    this.currentLine++;
+                }
+
+            }
+            daySlotService.createDaySlotList(daySlotEntities);
+            scheduleService.createScheduleList(scheduleEntities);
+
+            jsonObject.addProperty("success", true);
+            jsonObject.addProperty("message", "Import lịch học thành công !");
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("fail", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+
+        return jsonObject;
+    }
 
     @RequestMapping(value = "/updateMarkForStudyingStudent", method = RequestMethod.POST)
     @ResponseBody
@@ -1523,6 +1706,13 @@ public class UploadController {
                     Cell averageMarkCell = row.getCell(averageMarkIndex);
                     Cell statusCell = row.getCell(statusIndex);
 
+                    if (rollNumberCell.getStringCellValue().trim().equalsIgnoreCase("SE62824") || currentLine == 11443) {
+                        System.out.println("hehe");
+                    }
+                    if ((semesterNameCell.getStringCellValue() == null)) {
+                        break;
+                    }
+
                     if ((semesterNameCell != null) && (rollNumberCell != null)
                             && (subjectCodeCell != null) && (averageMarkCell != null) && (statusCell != null)) {
                         String semesterValue = semesterNameCell.getStringCellValue().trim().toLowerCase();
@@ -1537,26 +1727,32 @@ public class UploadController {
                                             && m.getSubjectMarkComponentId().getSubjectId().getId().toLowerCase().equals(subjectCodeValue)).collect(Collectors.toList());
 
                             if (foundMarks != null && !foundMarks.isEmpty()) {
-                                MarksEntity foundMark = foundMarks.get(0);
-                                foundMark.setAverageMark(averageMarkValue);
-                                foundMark.setStatus(statusValue);
+                                for (int i = 0; i < foundMarks.size(); i++) {
+                                    MarksEntity foundMark = foundMarks.get(i);
+                                    if (foundMark.getStatus().equalsIgnoreCase("Studying")) {
+                                        foundMark.setAverageMark(averageMarkValue);
+                                        foundMark.setStatus(statusValue);
+                                        marksService.updateMark(foundMark);
+                                        break;
+                                    }
+                                }
 
-                                marksService.updateMark(foundMark);
                             }
                         }
                     }
                 }
                 this.currentLine++;
             }
+            jsonObject.addProperty("success", true);
+            jsonObject.addProperty("message", "Cập nhật điểm sinh viên đang học thành công !");
+
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             Logger.writeLog(ex);
-            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("fail", false);
             jsonObject.addProperty("message", ex.getMessage());
         }
 
-        jsonObject.addProperty("success", true);
-        jsonObject.addProperty("message", "Cập nhật điểm sinh viên đang học thành công !");
         return jsonObject;
     }
 
@@ -2279,6 +2475,159 @@ public class UploadController {
 //        obj.addProperty("success", true);
 //        return obj;
 //    }
+    @RequestMapping(value = "/convertToStudentQuantityPerClass")
+    public ModelAndView StudentQuantityPerClass() {
+        ModelAndView mav = new ModelAndView("Convert2StudentQuantityByClassAndSubject");
+        mav.addObject("title", "Số lượng sinh viên theo lớp môn");
+
+
+        return mav;
+    }
+
+    @RequestMapping(value = "/convertToStudentQuantity", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goConvert2StudentQuantityByClassAndSubject(@RequestParam("file") MultipartFile file,
+                                                                 HttpServletRequest request, HttpServletResponse response) {
+        JsonObject jsonObject = new JsonObject();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+            int excelDataIndex = 1;
+            int lastRow = spreadsheet.getLastRowNum();
+            this.totalLine = lastRow - startRowNumber + 1;
+
+
+            int rollNumberIndex = -1;
+            int subjectCodeIndex = -1;
+            int classNameIndex = -1;
+
+            //dynamic search and assign index column
+            for (Row r : spreadsheet) {
+                for (Cell cell : r) {
+                    if (cell.getCellTypeEnum() == CellType.STRING) {
+                        String cellValue = cell.getStringCellValue().trim();
+                        switch (cellValue) {
+                            case "RollNumber":
+                                rollNumberIndex = cell.getColumnIndex();
+                                break;
+                            case "SubjectCode":
+                                subjectCodeIndex = cell.getColumnIndex();
+                                break;
+                            case "GroupName":
+                                classNameIndex = cell.getColumnIndex();
+                                break;
+                        }
+
+                    }
+                }
+            }
+            if (rollNumberIndex != -1 && subjectCodeIndex != -1 && classNameIndex != -1) {
+
+                //classList: contains Map<SubjectCode, Map<ClassName, StudentQuantity>>
+                Map<String, Map<String, Integer>> combineList = new HashMap<>();
+
+                //use for sorting, !!!!not need right now!!!!!
+//                List<String> subjectCodeList = new ArrayList<>();
+
+
+                this.currentLine = 1;
+                String markComponentName = Enums.MarkComponent.AVERAGE.getValue();
+                for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                    row = spreadsheet.getRow(rowIndex);
+
+                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    Cell classNameCell = row.getCell(classNameIndex);
+                    Cell subjectCodeCell = row.getCell(subjectCodeIndex);
+
+                    //check if cell is empty or null to end the loop
+                    if (rollNumberCell == null || rollNumberCell.getCellTypeEnum() == CellType.BLANK
+                            || classNameCell == null || classNameCell.getCellTypeEnum() == CellType.BLANK
+                            || subjectCodeCell == null || subjectCodeCell.getCellTypeEnum() == CellType.BLANK) {
+                        break;
+                    } else {
+                        String rollNumberValue = rollNumberCell.getStringCellValue();
+                        String classNameValue = classNameCell.getStringCellValue();
+                        String subjectCodeValue = subjectCodeCell.getStringCellValue();
+
+                        Map<String, Integer> classesInSubject = combineList.get(subjectCodeValue);
+                        if (classesInSubject == null) {
+                            combineList.put(subjectCodeValue, new HashMap<String, Integer>());
+                        } else {
+                            Integer studentQuantity = classesInSubject.get(classNameValue);
+                            if (studentQuantity == null) {
+                                //if not found any class, add class with initiate student quantity =1
+                                classesInSubject.put(classNameValue, 1);
+                            } else {
+                                //if class is founded, increase number of student by 1
+                                ++studentQuantity;
+                                classesInSubject.put(classNameValue, studentQuantity);
+                            }
+                        }
+                    }
+                    System.out.println("convert" + currentLine);
+                    this.currentLine++;
+                }
+                HttpSession session = request.getSession();
+                        session.setAttribute("studentQuantityConverList", combineList);
+
+                //!!!!!!Export file
+//                ExportConvert2StudentQuantityByClassAndSubject exportObject =
+//                        new ExportConvert2StudentQuantityByClassAndSubject();
+//                exportObject.setCombineList(combineList);
+//
+//                // get output stream of the response
+//                OutputStream os = null;
+//                String path = System.getProperty("java.io.tmpdir");
+//                String fileName = path+"/"+exportObject.getFileName();
+//                try {
+//                    // set content attributes for the response
+////                    String mimeType = "application/octet-stream";
+////                    String headerKey = "Content-Disposition";
+////                    response.setContentType(mimeType);
+////
+////                    // set headers for the response
+////                    String headerValue = String.format("attachment; filename=\"%s\"", exportObject.getFileName());
+////                    response.setHeader(headerKey, headerValue);
+//
+//                    // write data
+//
+//                    os = new FileOutputStream(fileName);
+//
+//                    //not used params, create to satisfied parameter
+//                    Map<String, String> params = new HashMap<>();
+//                    exportObject.writeData(os, params, request);
+//                    File myfile = new File(fileName);
+//                    if(myfile.exists()){
+//                        System.out.println("haha");
+//                    }
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+                //!!!!!End of Export file
+                jsonObject.addProperty("success", true);
+                jsonObject.addProperty("message", "Convert thành công !");
+//                jsonObject.addProperty("downloadPath", fileName);
+            } else {
+                jsonObject.addProperty("success", false);
+                jsonObject.addProperty("message", "File không đúng định dạng !");
+            }
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("fail", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+
+        return jsonObject;
+    }
 
 
 }

@@ -20,6 +20,11 @@ public class CourseServiceImpl implements ICourseService {
     }
 
     @Override
+    public CourseEntity findCourseBySubjectCode(String subjectCode) {
+        return courseEntityJpaController.findCourseBySubjectCode(subjectCode);
+    }
+
+    @Override
     public void createCourseList(List<CourseEntity> courseEntityList) {
         courseEntityJpaController.createCourseList(courseEntityList);
     }

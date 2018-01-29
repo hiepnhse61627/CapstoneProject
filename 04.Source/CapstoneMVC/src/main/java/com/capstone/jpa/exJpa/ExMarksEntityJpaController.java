@@ -456,6 +456,27 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         return query.getResultList();
     }
 
+    public List<MarksEntity> getMarksByStudentIdAndSemester(int studentId, int semesterId) {
+        EntityManager manager = getEntityManager();
+        TypedQuery<MarksEntity> query = manager.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :studentId AND a.semesterId.id = :semesterId", MarksEntity.class);
+        query.setParameter("studentId", studentId);
+        query.setParameter("semesterId", semesterId);
+        return query.getResultList();
+    }
+
+    public List<MarksEntity> getMarksByStudentAndSubjectIdList(int studentId, List<String> subjIdList) {
+        EntityManager manager = getEntityManager();
+        TypedQuery<MarksEntity>
+                query = manager.createQuery("SELECT a FROM MarksEntity a" +
+                " WHERE a.isActivated = true and a.studentId.id = :id " +
+                "AND a.subjectMarkComponentId.subjectId.id IN :subjectIdList", MarksEntity.class);
+        query.setParameter("id", studentId);
+        query.setParameter("subjectIdList", subjIdList);
+        return query.getResultList();
+    }
+
+
+
     public List<MarksEntity> getStudyingStudents(String subjectId, String[] statuses) {
         EntityManager manager = getEntityManager();
         String queryStr = "SELECT c FROM MarksEntity c WHERE c.isActivated = true and c.status IN :list ";

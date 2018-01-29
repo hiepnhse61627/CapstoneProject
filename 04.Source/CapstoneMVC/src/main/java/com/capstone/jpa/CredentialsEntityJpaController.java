@@ -4,21 +4,24 @@
  * and open the template in the editor.
  */
 package com.capstone.jpa;
-
 import com.capstone.entities.CredentialsEntity;
-import com.capstone.jpa.exceptions.NonexistentEntityException;
 import java.io.Serializable;
-import java.util.List;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+import com.capstone.entities.CredentialsRolesEntity;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
 
 /**
  *
- * @author hiepnhse61627
+ * @author StormNs
  */
 public class CredentialsEntityJpaController implements Serializable {
 
@@ -31,13 +34,36 @@ public class CredentialsEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(CredentialsEntity credentialsEntity) {
+    public void create(CredentialsEntity credentialsEntity) throws PreexistingEntityException, Exception {
+        if (credentialsEntity.getCredentialsRolesEntityCollection() == null) {
+            credentialsEntity.setCredentialsRolesEntityCollection(new ArrayList<CredentialsRolesEntity>());
+        }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            Collection<CredentialsRolesEntity> attachedCredentialsRolesEntityCollection = new ArrayList<CredentialsRolesEntity>();
+            for (CredentialsRolesEntity credentialsRolesEntityCollectionCredentialsRolesEntityToAttach : credentialsEntity.getCredentialsRolesEntityCollection()) {
+                credentialsRolesEntityCollectionCredentialsRolesEntityToAttach = em.getReference(credentialsRolesEntityCollectionCredentialsRolesEntityToAttach.getClass(), credentialsRolesEntityCollectionCredentialsRolesEntityToAttach.getId());
+                attachedCredentialsRolesEntityCollection.add(credentialsRolesEntityCollectionCredentialsRolesEntityToAttach);
+            }
+            credentialsEntity.setCredentialsRolesEntityCollection(attachedCredentialsRolesEntityCollection);
             em.persist(credentialsEntity);
+            for (CredentialsRolesEntity credentialsRolesEntityCollectionCredentialsRolesEntity : credentialsEntity.getCredentialsRolesEntityCollection()) {
+                CredentialsEntity oldCredentialsIdOfCredentialsRolesEntityCollectionCredentialsRolesEntity = credentialsRolesEntityCollectionCredentialsRolesEntity.getCredentialsId();
+                credentialsRolesEntityCollectionCredentialsRolesEntity.setCredentialsId(credentialsEntity);
+                credentialsRolesEntityCollectionCredentialsRolesEntity = em.merge(credentialsRolesEntityCollectionCredentialsRolesEntity);
+                if (oldCredentialsIdOfCredentialsRolesEntityCollectionCredentialsRolesEntity != null) {
+                    oldCredentialsIdOfCredentialsRolesEntityCollectionCredentialsRolesEntity.getCredentialsRolesEntityCollection().remove(credentialsRolesEntityCollectionCredentialsRolesEntity);
+                    oldCredentialsIdOfCredentialsRolesEntityCollectionCredentialsRolesEntity = em.merge(oldCredentialsIdOfCredentialsRolesEntityCollectionCredentialsRolesEntity);
+                }
+            }
             em.getTransaction().commit();
+        } catch (Exception ex) {
+            if (findCredentialsEntity(credentialsEntity.getId()) != null) {
+                throw new PreexistingEntityException("CredentialsEntity " + credentialsEntity + " already exists.", ex);
+            }
+            throw ex;
         } finally {
             if (em != null) {
                 em.close();
@@ -50,7 +76,34 @@ public class CredentialsEntityJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            CredentialsEntity persistentCredentialsEntity = em.find(CredentialsEntity.class, credentialsEntity.getId());
+            Collection<CredentialsRolesEntity> credentialsRolesEntityCollectionOld = persistentCredentialsEntity.getCredentialsRolesEntityCollection();
+            Collection<CredentialsRolesEntity> credentialsRolesEntityCollectionNew = credentialsEntity.getCredentialsRolesEntityCollection();
+            Collection<CredentialsRolesEntity> attachedCredentialsRolesEntityCollectionNew = new ArrayList<CredentialsRolesEntity>();
+            for (CredentialsRolesEntity credentialsRolesEntityCollectionNewCredentialsRolesEntityToAttach : credentialsRolesEntityCollectionNew) {
+                credentialsRolesEntityCollectionNewCredentialsRolesEntityToAttach = em.getReference(credentialsRolesEntityCollectionNewCredentialsRolesEntityToAttach.getClass(), credentialsRolesEntityCollectionNewCredentialsRolesEntityToAttach.getId());
+                attachedCredentialsRolesEntityCollectionNew.add(credentialsRolesEntityCollectionNewCredentialsRolesEntityToAttach);
+            }
+            credentialsRolesEntityCollectionNew = attachedCredentialsRolesEntityCollectionNew;
+            credentialsEntity.setCredentialsRolesEntityCollection(credentialsRolesEntityCollectionNew);
             credentialsEntity = em.merge(credentialsEntity);
+            for (CredentialsRolesEntity credentialsRolesEntityCollectionOldCredentialsRolesEntity : credentialsRolesEntityCollectionOld) {
+                if (!credentialsRolesEntityCollectionNew.contains(credentialsRolesEntityCollectionOldCredentialsRolesEntity)) {
+                    credentialsRolesEntityCollectionOldCredentialsRolesEntity.setCredentialsId(null);
+                    credentialsRolesEntityCollectionOldCredentialsRolesEntity = em.merge(credentialsRolesEntityCollectionOldCredentialsRolesEntity);
+                }
+            }
+            for (CredentialsRolesEntity credentialsRolesEntityCollectionNewCredentialsRolesEntity : credentialsRolesEntityCollectionNew) {
+                if (!credentialsRolesEntityCollectionOld.contains(credentialsRolesEntityCollectionNewCredentialsRolesEntity)) {
+                    CredentialsEntity oldCredentialsIdOfCredentialsRolesEntityCollectionNewCredentialsRolesEntity = credentialsRolesEntityCollectionNewCredentialsRolesEntity.getCredentialsId();
+                    credentialsRolesEntityCollectionNewCredentialsRolesEntity.setCredentialsId(credentialsEntity);
+                    credentialsRolesEntityCollectionNewCredentialsRolesEntity = em.merge(credentialsRolesEntityCollectionNewCredentialsRolesEntity);
+                    if (oldCredentialsIdOfCredentialsRolesEntityCollectionNewCredentialsRolesEntity != null && !oldCredentialsIdOfCredentialsRolesEntityCollectionNewCredentialsRolesEntity.equals(credentialsEntity)) {
+                        oldCredentialsIdOfCredentialsRolesEntityCollectionNewCredentialsRolesEntity.getCredentialsRolesEntityCollection().remove(credentialsRolesEntityCollectionNewCredentialsRolesEntity);
+                        oldCredentialsIdOfCredentialsRolesEntityCollectionNewCredentialsRolesEntity = em.merge(oldCredentialsIdOfCredentialsRolesEntityCollectionNewCredentialsRolesEntity);
+                    }
+                }
+            }
             em.getTransaction().commit();
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
@@ -79,6 +132,11 @@ public class CredentialsEntityJpaController implements Serializable {
                 credentialsEntity.getId();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The credentialsEntity with id " + id + " no longer exists.", enfe);
+            }
+            Collection<CredentialsRolesEntity> credentialsRolesEntityCollection = credentialsEntity.getCredentialsRolesEntityCollection();
+            for (CredentialsRolesEntity credentialsRolesEntityCollectionCredentialsRolesEntity : credentialsRolesEntityCollection) {
+                credentialsRolesEntityCollectionCredentialsRolesEntity.setCredentialsId(null);
+                credentialsRolesEntityCollectionCredentialsRolesEntity = em.merge(credentialsRolesEntityCollectionCredentialsRolesEntity);
             }
             em.remove(credentialsEntity);
             em.getTransaction().commit();
@@ -134,5 +192,5 @@ public class CredentialsEntityJpaController implements Serializable {
             em.close();
         }
     }
-    
+
 }

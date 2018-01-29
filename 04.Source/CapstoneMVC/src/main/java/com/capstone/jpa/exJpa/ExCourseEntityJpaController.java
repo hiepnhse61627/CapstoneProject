@@ -22,7 +22,55 @@ public class ExCourseEntityJpaController extends CourseEntityJpaController {
 
             CourseEntity courseEntity = (CourseEntity) query.getSingleResult();
 
-            return  courseEntity;
+            return courseEntity;
+        } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    public CourseEntity findCourseBySubjectCode(String subjectCode) {
+        EntityManager em = getEntityManager();
+        try {
+            String sqlString = "SELECT c FROM CourseEntity c WHERE c.subjectCode = :subjectCode";
+            TypedQuery<CourseEntity> query = em.createQuery(sqlString, CourseEntity.class);
+            query.setParameter("subjectCode", subjectCode);
+
+            List<CourseEntity> courseEntityList = query.getResultList();
+
+//            int lastSemester = 0;
+//            int lastYear = 0;
+//            for (CourseEntity entity : courseEntityList) {
+//                String tmpYear = entity.getSemester().substring(entity.getSemester().length() - 4, entity.getSemester().length() - 1);
+//                lastYear = lastYear < Integer.parseInt(tmpYear) ? Integer.parseInt(tmpYear) : lastYear;
+//                String tmpSemester = entity.getSemester().substring(0, entity.getSemester().length() - 4);
+//                int flag = 0;
+//                if (tmpSemester.equals("SPRING")) {
+//                    flag = 1;
+//                }
+//
+//                if (tmpSemester.equals("SUMMER")) {
+//                    flag = 2;
+//                }
+//
+//                if (tmpSemester.equals("FALL")) {
+//                    flag = 3;
+//                }
+//
+//                if (flag > lastSemester) {
+//                    lastSemester = flag;
+//                }
+//            }
+//
+//            String lastSemesterStr = "";
+//            if(lastSemester==1){
+//                lastSemesterStr="SPRING";
+//            }
+
+            return courseEntityList.get(0);
         } catch (NoResultException nrEx) {
             return null;
         } finally {

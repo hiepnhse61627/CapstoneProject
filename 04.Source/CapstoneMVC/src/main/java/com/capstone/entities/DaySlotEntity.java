@@ -29,8 +29,7 @@ public class DaySlotEntity implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Column(name = "Date")
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date date;
+    private String date;
     @JoinColumn(name = "SlotId", referencedColumnName = "Id")
     @ManyToOne
     private SlotEntity slotId;
@@ -52,11 +51,11 @@ public class DaySlotEntity implements Serializable {
         this.id = id;
     }
 
-    public Date getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date;
     }
 
