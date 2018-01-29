@@ -198,9 +198,9 @@ public class EmployeeList {
         return jsonObj;
     }
 
-    @RequestMapping(value = "/getEmployeeInfo", method = RequestMethod.POST)
+    @RequestMapping(value = "/getScheduleEmployeeInfo", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject getEmployeeInfoByEmail(@RequestBody String body) {
+    public JsonObject getScheduleEmployeeInfoByEmail(@RequestBody String body) {
         JsonParser parser = new JsonParser();
         JsonObject obj = (JsonObject) parser.parse(body);
         String email = obj.get("email").getAsString();
@@ -227,67 +227,65 @@ public class EmployeeList {
                 model.setSlot(schedule.getDateId().getSlotId().getSlotName());
                 model.setStartTime(schedule.getDateId().getSlotId().getStartTime());
                 model.setEndTime(schedule.getDateId().getSlotId().getEndTime());
+                model.setLecture(emp.getFullName());
                 scheduleModelList.add(model);
             }
             emp.setScheduleEntityList(null);
 
-            obj.add("employee", parser.parse(gson.toJson(emp)));
+            obj.add("user", parser.parse(gson.toJson(emp)));
 
-
-            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-            for (ScheduleModel scheduleModel : scheduleModelList) {
-                Date aDate = df.parse(scheduleModel.getDate());
-
-            }
-
-            ScheduleModel tmpModel;
-            for (int i = 0; i < scheduleModelList.size() - 1; i++) {
-                for (int j = 0; j < scheduleModelList.size() - i - 1; j++) {
-                    Date aDate = df.parse(scheduleModelList.get(j).getDate());
-                    Date aDate2 = df.parse(scheduleModelList.get(j + 1).getDate());
-
-                    if (aDate.compareTo(aDate2) > 0) {
-                        tmpModel = scheduleModelList.get(j + 1);
-                        scheduleModelList.set(j + 1, scheduleModelList.get(j));
-                        scheduleModelList.set(j, tmpModel);
-                    }
-
-                    if (aDate.compareTo(aDate2) == 0) {
-                        String slot1 = scheduleModelList.get(j).getSlot();
-                        String slot2 = scheduleModelList.get(j + 1).getSlot();
-
-                        if (slot1.compareTo(slot2) > 0) {
-                            tmpModel = scheduleModelList.get(j + 1);
-                            scheduleModelList.set(j + 1, scheduleModelList.get(j));
-                            scheduleModelList.set(j, tmpModel);
-                        }
-                    }
-                }
-            }
-
-//            String date = "";
-//            for (ScheduleModel model : scheduleModelList) {
-//
-//                if (model.getDate().equals(date)) {
-//                    model.setDate("");
-//                } else {
-//                    date = model.getDate();
-//                }
-//
-//            }
-
+//            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+//            ScheduleModel tmpModel;
 //            for (int i = 0; i < scheduleModelList.size() - 1; i++) {
 //                for (int j = 0; j < scheduleModelList.size() - i - 1; j++) {
-//                    String slot1 = scheduleModelList.get(j).getSlot();
-//                    String slot2 = scheduleModelList.get(j + 1).getSlot();
+//                    Date aDate = df.parse(scheduleModelList.get(j).getDate());
+//                    Date aDate2 = df.parse(scheduleModelList.get(j + 1).getDate());
 //
-//                    if (slot1.compareTo(slot2)>=0) {
+//                    if (aDate.compareTo(aDate2) > 0) {
 //                        tmpModel = scheduleModelList.get(j + 1);
 //                        scheduleModelList.set(j + 1, scheduleModelList.get(j));
 //                        scheduleModelList.set(j, tmpModel);
 //                    }
+//
+//                    if (aDate.compareTo(aDate2) == 0) {
+//                        String slot1 = scheduleModelList.get(j).getSlot();
+//                        String slot2 = scheduleModelList.get(j + 1).getSlot();
+//
+//                        if (slot1.compareTo(slot2) > 0) {
+//                            tmpModel = scheduleModelList.get(j + 1);
+//                            scheduleModelList.set(j + 1, scheduleModelList.get(j));
+//                            scheduleModelList.set(j, tmpModel);
+//                        }
+//                    }
 //                }
 //            }
+
+            Collections.sort(scheduleModelList, new Comparator<ScheduleModel>() {
+                @Override
+                public int compare(ScheduleModel o1, ScheduleModel o2) {
+                    try {
+                        DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                        Date aDate = df.parse(o1.getDate());
+                        Date aDate2 = df.parse(o2.getDate());
+                        if (aDate.compareTo(aDate2) > 0) {
+                            return 1;
+                        }
+
+                        if (aDate.compareTo(aDate2) == 0) {
+                            String slot1 = o1.getSlot();
+                            String slot2 = o2.getSlot();
+
+                            if (slot1.compareTo(slot2) > 0) {
+                                return 1;
+                            }
+                        }
+                        return -1;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return 0;
+                }
+            });
 
             obj.add("scheduleList", parser.parse(gson.toJson(scheduleModelList)));
         } catch (Exception e) {

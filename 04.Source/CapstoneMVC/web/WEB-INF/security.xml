@@ -10,7 +10,9 @@
         <intercept-url pattern="/register**" access="isAnonymous()"/>
         <intercept-url pattern="/auth/google" access="isAnonymous()"/>
         <intercept-url pattern="/favicon.ico" access="isAnonymous()"/>
-        <intercept-url pattern="/getEmployeeInfo" access="permitAll()"/>
+        <intercept-url pattern="/getScheduleEmployeeInfo" access="permitAll()"/>
+        <intercept-url pattern="/send" access="permitAll()"/>
+
         <intercept-url pattern="/Resources/**" access="permitAll()"/>
 
         <intercept-url pattern="/" access="isAuthenticated()"/>
