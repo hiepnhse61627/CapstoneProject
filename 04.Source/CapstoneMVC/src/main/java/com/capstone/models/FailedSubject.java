@@ -4,7 +4,15 @@ public class FailedSubject {
     private String status;
     private String semester;
     private boolean redo=false;
+    private int redoTimes=0;
 
+    public int getRedoTimes() {
+        return redoTimes;
+    }
+
+    public void setRedoTimes(int redoTimes) {
+        this.redoTimes = redoTimes;
+    }
 
     public FailedSubject(String status, String semester) {
         this.status = status;
