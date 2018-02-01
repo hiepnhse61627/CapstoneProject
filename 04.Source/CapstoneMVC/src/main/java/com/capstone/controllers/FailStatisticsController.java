@@ -479,10 +479,13 @@ public class FailStatisticsController {
                 Map<String, List<MarksEntity>> map = table.row(studentId);
                 for (Map.Entry<String, List<MarksEntity>> entry : map.entrySet()) {
                     List<MarksEntity> marks = entry.getValue();
-                    Set<String> markStatuses = marks.stream().map(MarksEntity::getStatus).collect(Collectors.toSet());
-                    if (markStatuses.contains("Fail") && markStatuses.contains("Studying")) {
+//                    Set<String> markStatuses = marks.stream().map(MarksEntity::getStatus).collect(Collectors.toSet());
+                    if(marks.size()>1){
                         count++;
                     }
+//                    if (markStatuses.contains("Fail") && markStatuses.contains("Studying")) {
+//                        count++;
+//                    }
                 }
             }
         }

@@ -1,7 +1,7 @@
 <component name="ArtifactManager">
-  <artifact type="war" build-on-make="true" name="ROOT">
+  <artifact type="exploded-war" build-on-make="true" name="ROOT">
     <output-path>$PROJECT_DIR$/out/artifacts/ROOT</output-path>
-    <root id="archive" name="ROOT.war">
+    <root id="root">
       <element id="artifact" artifact-name="spring-mvc-quickstart:war exploded" />
       <element id="directory" name="WEB-INF">
         <element id="directory" name="classes">

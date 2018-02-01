@@ -395,165 +395,7 @@ public class StudentServiceImpl implements IStudentService {
                 Map<String, FailedSubject> FailedSubjects = new ConcurrentHashMap<String, FailedSubject>();
 
                 List<Object[]> studentSubjectCredits = studentEntityJpaController.getSubjectsWithCreditsByStudent(student.getId()).stream().collect(Collectors.toList());
-                for (int i = 0; i < subjectMarkCompList.size(); i++) {
-//                    if (student.getRollNumber().equals("SB60462") && subjectMarkCompList.get(i)[1].toString().equals("CHN132")) {
-//                        System.out.println();
-//                    }
-                    if (!subjectMarkCompList.get(i)[2].toString().equals("N/A")) {
-                        String semester = "";
-                        int semesterYear = 0;
-                        int number = 0;
-                        try {
-                            semester = subjectMarkCompList.get(i)[2].toString();
-                            semesterYear = Integer.parseInt(semester.substring(semester.length() - 4, semester.length()));
-                            String season = semester.substring(0, semester.length() - 4);
-                            number = getSeasonNumber(season);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-
-                        if (selectedYear > semesterYear) {
-                            if (i == 0) {
-                                if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                    FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                    FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                }
-                            } else {
-                                if (FailedSubjects.containsKey(subjectMarkCompList.get(i)[1].toString())) {
-                                    //0:studentId, 1:SubjectId, 2:Semester, 3:Status
-                                    String preSemester = FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getSemester();
-                                    int preYear = Integer.parseInt(preSemester.substring(preSemester.length() - 4, preSemester.length()));
-                                    if (preYear == semesterYear) {
-                                        String preSeason = preSemester.substring(0, preSemester.length() - 4);
-                                        int preNumber = 0;
-                                        preNumber = getSeasonNumber(preSeason);
-
-                                        if (number > preNumber) {
-                                            if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                                FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                                failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                            }
-                                            if (subjectMarkCompList.get(i)[3].toString().equals("Passed")) {
-                                                FailedSubject failedSubject = new FailedSubject("Timed", subjectMarkCompList.get(i)[2].toString());
-                                                failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                            }
-                                        }
-                                        if (number <= preNumber) {
-                                            //Thi lai pass
-                                            if (!FailedSubjects.containsKey((subjectMarkCompList.get(i)[1].toString()))) {
-                                                FailedSubject failedSubject = new FailedSubject("", subjectMarkCompList.get(i)[2].toString());
-                                                failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                            } else {
-                                                FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                            }
-                                        }
-
-                                    }
-                                    if (preYear < semesterYear) {
-                                        if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                            FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                            failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                            FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                        }
-                                        if (subjectMarkCompList.get(i)[3].toString().equals("Passed")) {
-                                            FailedSubject failedSubject = new FailedSubject("Timed", subjectMarkCompList.get(i)[2].toString());
-                                            failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                            FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                        }
-                                    }
-                                    if (preYear > semesterYear) {
-                                        FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                    }
-                                    FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedo(true);
-                                } else {
-                                    if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                        FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                        FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                    }
-//                                    else {
-//                                        FailedSubject failedSubject = new FailedSubject("Passed", subjectMarkCompList.get(i)[2].toString());
-//                                        FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-//                                    }
-                                }
-                            }
-                        }
-                        if (selectedYear == semesterYear) {
-                            if (selectedNum >= number) {
-                                if (i == 0) {
-                                    if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                        FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                        FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                    }
-                                } else {
-                                    if (FailedSubjects.containsKey(subjectMarkCompList.get(i)[1].toString())) {
-                                        //0:studentId, 1:SubjectId, 2:Semester, 3:Status
-                                        String preSemester = FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getSemester();
-                                        int preYear = Integer.parseInt(preSemester.substring(preSemester.length() - 4, preSemester.length()));
-                                        if (preYear == semesterYear) {
-                                            String preSeason = preSemester.substring(0, preSemester.length() - 4);
-                                            int preNumber = 0;
-                                            preNumber = getSeasonNumber(preSeason);
-
-                                            if (number > preNumber) {
-                                                if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                                    FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                                    failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                    FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                                }
-                                                if (subjectMarkCompList.get(i)[3].toString().equals("Passed")) {
-                                                    FailedSubject failedSubject = new FailedSubject("Timed", subjectMarkCompList.get(i)[2].toString());
-                                                    failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                    FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                                }
-                                            }
-                                            if (number <= preNumber) {
-                                                //Thi lai pass
-                                                if (!FailedSubjects.containsKey((subjectMarkCompList.get(i)[1].toString()))) {
-                                                    FailedSubject failedSubject = new FailedSubject("", subjectMarkCompList.get(i)[2].toString());
-                                                    failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                    FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                                } else {
-                                                    FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                }
-                                            }
-                                        }
-                                        if (preYear < semesterYear) {
-                                            if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                                FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                                failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                            }
-                                            if (subjectMarkCompList.get(i)[3].toString().equals("Passed")) {
-                                                FailedSubject failedSubject = new FailedSubject("Timed", subjectMarkCompList.get(i)[2].toString());
-                                                failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                            }
-                                        }
-                                        if (preYear > semesterYear) {
-                                            FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                        }
-                                        FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedo(true);
-                                    } else {
-                                        if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                            FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                            FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                        }
-//                                        else {
-//                                            FailedSubject failedSubject = new FailedSubject("Passed", subjectMarkCompList.get(i)[2].toString());
-//                                            FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-//                                        }
-                                    }
-                                }
-                            }
-//                            if(){
-//
-//                            }
-                        }
-                    }
-                }
+                FailedSubjects = getFailedSubjects(FailedSubjects,subjectMarkCompList,selectedYear,selectedNum);
 
                 if (FailedSubjects.size() != 0) {
                     String failedSub = "";
@@ -569,7 +411,6 @@ public class StudentServiceImpl implements IStudentService {
                                             if (FailedSubjects.containsKey(replaceSubjects.get(entry.getKey()))) {
                                                 if (FailedSubjects.get(replaceSubjects.get(entry.getKey())).getStatus().equals("Passed")) {
                                                     entry.getValue().setStatus("PRS");//PassReplacementSubject
-
                                                 } else {
                                                     //In cac mon chuyen nganh failed
                                                     if (entry.getValue().getSemester().equals(selectedSem)) {
@@ -593,8 +434,6 @@ public class StudentServiceImpl implements IStudentService {
                                         }
                                     }
                                 }
-                                //In tat ca cac mon failed
-                                //failedSub += entry.getKey();
                             } else {
                                 for (Object[] subjectCredit : studentSubjectCredits) {
                                     if (entry.getKey().equals(subjectCredit[0].toString())) {
@@ -625,8 +464,6 @@ public class StudentServiceImpl implements IStudentService {
                                         }
                                     }
                                 }
-                                //In tat ca cac mon failed
-                                //failedSub += " ," + entry.getKey();
                             }
                         }
                     }
@@ -634,12 +471,6 @@ public class StudentServiceImpl implements IStudentService {
                         studentFailedSubjects.add(new StudentFailedSubject(student.getFullName(), student.getRollNumber(), failedSub, "", numberOfSubjects));
                     }
                 }
-//                for (Map.Entry<String, FailedSubject> entry : FailedSubjects.entrySet()) {
-//                    if(subjectsFailed.containsKey(entry.getKey())&&entry.getValue().getStatus().equals("Fail")){
-//                        subjectsFailed.get(entry.getKey()).setNumber(subjectsFailed.get(entry.getKey()).getNumber()+1);
-//                    }
-//                }
-//                studentFailedSubjects.put(student.getRollNumber(), FailedSubject);
             }
 
         } catch (Exception ex) {
@@ -678,165 +509,8 @@ public class StudentServiceImpl implements IStudentService {
                 Map<String, FailedSubject> FailedSubjects = new ConcurrentHashMap<String, FailedSubject>();
 
                 List<Object[]> studentSubjectCredits = studentEntityJpaController.getSubjectsWithCreditsByStudent(student.getId()).stream().collect(Collectors.toList());
-                for (int i = 0; i < subjectMarkCompList.size(); i++) {
-//                    if (student.getRollNumber().equals("SB60462") && subjectMarkCompList.get(i)[1].toString().equals("CHN132")) {
-//                        System.out.println();
-//                    }
-                    if (!subjectMarkCompList.get(i)[2].toString().equals("N/A")) {
-                        String semester = "";
-                        int semesterYear = 0;
-                        int number = 0;
-                        try {
-                            semester = subjectMarkCompList.get(i)[2].toString();
-                            semesterYear = Integer.parseInt(semester.substring(semester.length() - 4, semester.length()));
-                            String season = semester.substring(0, semester.length() - 4);
-                            number = getSeasonNumber(season);
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
 
-                        if (selectedYear > semesterYear) {
-                            if (i == 0) {
-                                if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                    FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                    FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                }
-                            } else {
-                                if (FailedSubjects.containsKey(subjectMarkCompList.get(i)[1].toString())) {
-                                    //0:studentId, 1:SubjectId, 2:Semester, 3:Status
-                                    String preSemester = FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getSemester();
-                                    int preYear = Integer.parseInt(preSemester.substring(preSemester.length() - 4, preSemester.length()));
-                                    if (preYear == semesterYear) {
-                                        String preSeason = preSemester.substring(0, preSemester.length() - 4);
-                                        int preNumber = 0;
-                                        preNumber = getSeasonNumber(preSeason);
-
-                                        if (number > preNumber) {
-                                            if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                                FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                                failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                            }
-                                            if (subjectMarkCompList.get(i)[3].toString().equals("Passed")) {
-                                                FailedSubject failedSubject = new FailedSubject("Timed", subjectMarkCompList.get(i)[2].toString());
-                                                failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                            }
-                                        }
-                                        if (number <= preNumber) {
-                                            //Thi lai pass
-                                            if (!FailedSubjects.containsKey((subjectMarkCompList.get(i)[1].toString()))) {
-                                                FailedSubject failedSubject = new FailedSubject("", subjectMarkCompList.get(i)[2].toString());
-                                                failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                            } else {
-                                                FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                            }
-                                        }
-
-                                    }
-                                    if (preYear < semesterYear) {
-                                        if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                            FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                            failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                            FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                        }
-                                        if (subjectMarkCompList.get(i)[3].toString().equals("Passed")) {
-                                            FailedSubject failedSubject = new FailedSubject("Timed", subjectMarkCompList.get(i)[2].toString());
-                                            failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                            FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                        }
-                                    }
-                                    if (preYear > semesterYear) {
-                                        FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                    }
-                                    FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedo(true);
-                                } else {
-                                    if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                        FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                        FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                    }
-//                                    else {
-//                                        FailedSubject failedSubject = new FailedSubject("Passed", subjectMarkCompList.get(i)[2].toString());
-//                                        FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-//                                    }
-                                }
-                            }
-                        }
-                        if (selectedYear == semesterYear) {
-                            if (selectedNum >= number) {
-                                if (i == 0) {
-                                    if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                        FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                        FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                    }
-                                } else {
-                                    if (FailedSubjects.containsKey(subjectMarkCompList.get(i)[1].toString())) {
-                                        //0:studentId, 1:SubjectId, 2:Semester, 3:Status
-                                        String preSemester = FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getSemester();
-                                        int preYear = Integer.parseInt(preSemester.substring(preSemester.length() - 4, preSemester.length()));
-                                        if (preYear == semesterYear) {
-                                            String preSeason = preSemester.substring(0, preSemester.length() - 4);
-                                            int preNumber = 0;
-                                            preNumber = getSeasonNumber(preSeason);
-
-                                            if (number > preNumber) {
-                                                if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                                    FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                                    failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                    FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                                }
-                                                if (subjectMarkCompList.get(i)[3].toString().equals("Passed")) {
-                                                    FailedSubject failedSubject = new FailedSubject("Timed", subjectMarkCompList.get(i)[2].toString());
-                                                    failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                    FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                                }
-                                            }
-                                            if (number <= preNumber) {
-                                                //Thi lai pass
-                                                if (!FailedSubjects.containsKey((subjectMarkCompList.get(i)[1].toString()))) {
-                                                    FailedSubject failedSubject = new FailedSubject("", subjectMarkCompList.get(i)[2].toString());
-                                                    failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                    FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                                } else {
-                                                    FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                }
-                                            }
-                                        }
-                                        if (preYear < semesterYear) {
-                                            if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                                FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                                failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                            }
-                                            if (subjectMarkCompList.get(i)[3].toString().equals("Passed")) {
-                                                FailedSubject failedSubject = new FailedSubject("Timed", subjectMarkCompList.get(i)[2].toString());
-                                                failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                                FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                            }
-                                        }
-                                        if (preYear > semesterYear) {
-                                            FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
-                                        }
-                                        FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedo(true);
-                                    } else {
-                                        if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
-                                            FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
-                                            FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-                                        }
-//                                        else {
-//                                            FailedSubject failedSubject = new FailedSubject("Passed", subjectMarkCompList.get(i)[2].toString());
-//                                            FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
-//                                        }
-                                    }
-                                }
-                            }
-//                            if(){
-//
-//                            }
-                        }
-                    }
-                }
+                FailedSubjects = getFailedSubjects(FailedSubjects,subjectMarkCompList,selectedYear,selectedNum);
 
                 if (FailedSubjects.size() != 0) {
                     String failedSub = "";
@@ -876,8 +550,6 @@ public class StudentServiceImpl implements IStudentService {
                                         }
                                     }
                                 }
-                                //In tat ca cac mon failed
-                                //failedSub += entry.getKey();
                             } else {
                                 for (Object[] subjectCredit : studentSubjectCredits) {
                                     if (entry.getKey().equals(subjectCredit[0].toString())) {
@@ -908,8 +580,6 @@ public class StudentServiceImpl implements IStudentService {
                                         }
                                     }
                                 }
-                                //In tat ca cac mon failed
-                                //failedSub += " ," + entry.getKey();
                             }
                         }
                     }
@@ -917,12 +587,6 @@ public class StudentServiceImpl implements IStudentService {
                         studentFailedSubjects.add(new StudentFailedSubject(student.getFullName(), student.getRollNumber(), failedSub, "", numberOfSubjects));
                     }
                 }
-//                for (Map.Entry<String, FailedSubject> entry : FailedSubjects.entrySet()) {
-//                    if(subjectsFailed.containsKey(entry.getKey())&&entry.getValue().getStatus().equals("Fail")){
-//                        subjectsFailed.get(entry.getKey()).setNumber(subjectsFailed.get(entry.getKey()).getNumber()+1);
-//                    }
-//                }
-//                studentFailedSubjects.put(student.getRollNumber(), FailedSubject);
             }
 
         } catch (Exception ex) {
@@ -930,4 +594,182 @@ public class StudentServiceImpl implements IStudentService {
         }
         return studentFailedSubjects;
     }
+
+    public Map<String, FailedSubject> getFailedSubjects(Map<String, FailedSubject> FailedSubjects,List<Object[]> subjectMarkCompList,int selectedYear, int selectedNum){
+        for (int i = 0; i < subjectMarkCompList.size(); i++) {
+//                    if (student.getRollNumber().equals("SB60462") && subjectMarkCompList.get(i)[1].toString().equals("CHN132")) {
+//                        System.out.println();
+//                    }
+            if (!subjectMarkCompList.get(i)[2].toString().equals("N/A")) {
+                String semester = "";
+                int semesterYear = 0;
+                int number = 0;
+                try {
+                    semester = subjectMarkCompList.get(i)[2].toString();
+                    semesterYear = Integer.parseInt(semester.substring(semester.length() - 4, semester.length()));
+                    String season = semester.substring(0, semester.length() - 4);
+                    number = getSeasonNumber(season);
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+
+                if (selectedYear > semesterYear) {
+                    if (i == 0) {
+                        if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
+                            FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
+                            FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+                        }
+                    } else {
+                        if (FailedSubjects.containsKey(subjectMarkCompList.get(i)[1].toString())) {
+                            //0:studentId, 1:SubjectId, 2:Semester, 3:Status
+                            String preSemester = FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getSemester();
+                            int preYear = Integer.parseInt(preSemester.substring(preSemester.length() - 4, preSemester.length()));
+                            if (preYear == semesterYear) {
+                                String preSeason = preSemester.substring(0, preSemester.length() - 4);
+                                int preNumber = 0;
+                                preNumber = getSeasonNumber(preSeason);
+
+                                if (number > preNumber) {
+                                    if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
+                                        FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
+                                        failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
+                                        FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+                                    }
+                                    if (subjectMarkCompList.get(i)[3].toString().equals("Passed")) {
+                                        FailedSubject failedSubject = new FailedSubject("Timed", subjectMarkCompList.get(i)[2].toString());
+                                        failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
+                                        FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+                                    }
+                                }
+                                if (number <= preNumber) {
+                                    //Thi lai pass
+                                    if (!FailedSubjects.containsKey((subjectMarkCompList.get(i)[1].toString()))) {
+                                        FailedSubject failedSubject = new FailedSubject("", subjectMarkCompList.get(i)[2].toString());
+                                        failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
+                                        FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+                                    } else {
+                                        FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
+                                    }
+                                }
+
+                            }
+                            if (preYear < semesterYear) {
+                                if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
+                                    FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
+                                    failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
+                                    FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+                                }
+                                if (subjectMarkCompList.get(i)[3].toString().equals("Passed")) {
+                                    FailedSubject failedSubject = new FailedSubject("Timed", subjectMarkCompList.get(i)[2].toString());
+                                    failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
+                                    FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+                                }
+                            }
+                            if (preYear > semesterYear) {
+                                FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
+                            }
+                            FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedo(true);
+                        } else {
+                            if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
+                                FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
+                                FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+                            }
+//                                    else {
+//                                        FailedSubject failedSubject = new FailedSubject("Passed", subjectMarkCompList.get(i)[2].toString());
+//                                        FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+//                                    }
+                        }
+                    }
+                }
+                if (selectedYear == semesterYear) {
+                    if (selectedNum >= number) {
+                        if (i == 0) {
+                            if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
+                                FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
+                                FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+                            }
+                        } else {
+                            if (FailedSubjects.containsKey(subjectMarkCompList.get(i)[1].toString())) {
+                                //0:studentId, 1:SubjectId, 2:Semester, 3:Status
+                                String preSemester = FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getSemester();
+                                int preYear = Integer.parseInt(preSemester.substring(preSemester.length() - 4, preSemester.length()));
+                                if (preYear == semesterYear) {
+                                    String preSeason = preSemester.substring(0, preSemester.length() - 4);
+                                    int preNumber = 0;
+                                    preNumber = getSeasonNumber(preSeason);
+
+                                    if (number > preNumber) {
+                                        if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
+                                            FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
+                                            failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
+                                            FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+                                        }
+                                        if (subjectMarkCompList.get(i)[3].toString().equals("Passed")) {
+                                            FailedSubject failedSubject = new FailedSubject("Timed", subjectMarkCompList.get(i)[2].toString());
+                                            failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
+                                            FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+                                        }
+                                    }
+                                    if (number <= preNumber) {
+                                        //Thi lai pass
+                                        if (!FailedSubjects.containsKey((subjectMarkCompList.get(i)[1].toString()))) {
+                                            FailedSubject failedSubject = new FailedSubject("", subjectMarkCompList.get(i)[2].toString());
+                                            failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
+                                            FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+                                        } else {
+                                            FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
+                                        }
+                                    }
+                                }
+                                if (preYear < semesterYear) {
+                                    if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
+                                        FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
+                                        failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
+                                        FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+                                    }
+                                    if (subjectMarkCompList.get(i)[3].toString().equals("Passed")) {
+                                        FailedSubject failedSubject = new FailedSubject("Timed", subjectMarkCompList.get(i)[2].toString());
+                                        failedSubject.setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
+                                        FailedSubjects.replace(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+                                    }
+                                }
+                                if (preYear > semesterYear) {
+                                    FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedoTimes(FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).getRedoTimes() + 1);
+                                }
+                                FailedSubjects.get(subjectMarkCompList.get(i)[1].toString()).setRedo(true);
+                            } else {
+                                if (subjectMarkCompList.get(i)[3].toString().equals("Fail")) {
+                                    FailedSubject failedSubject = new FailedSubject("Fail", subjectMarkCompList.get(i)[2].toString());
+                                    FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+                                }
+//                                        else {
+//                                            FailedSubject failedSubject = new FailedSubject("Passed", subjectMarkCompList.get(i)[2].toString());
+//                                            FailedSubjects.put(subjectMarkCompList.get(i)[1].toString(), failedSubject);
+//                                        }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return FailedSubjects;
+    }
+
+    public Map<String,StudentAndSubject> getSubjectsStudentsStudyInSemester(Integer selectedSemester){
+        List<Object[]> subjectsStudentsReLearn = studentEntityJpaController.getAllSubjectsStudentsReStudyInSameSemester(selectedSemester);
+        Map<String,StudentAndSubject> subjectsStudentsReLearnMap = new HashMap<>();
+        List<Object[]> resultList = new ArrayList<>();
+        for (Object[] subjects:subjectsStudentsReLearn) {
+            //0: RollNumber, 1: FullName, 2: Subject
+            if(!subjectsStudentsReLearnMap.containsKey(subjects[0])) {
+                subjectsStudentsReLearnMap.put(subjects[0].toString(),new StudentAndSubject(subjects[1].toString(),subjects[2].toString()));
+            }
+            else{
+                String moreSubjects=subjectsStudentsReLearnMap.get(subjects[0]).getStudySubject()+", "+subjects[2].toString();
+                subjectsStudentsReLearnMap.replace(subjects[0].toString(),new StudentAndSubject(subjects[1].toString(),moreSubjects));
+            }
+        }
+        return subjectsStudentsReLearnMap;
+    }
+
 }
