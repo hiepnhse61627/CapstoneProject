@@ -1320,6 +1320,8 @@ public class UploadController {
                             // set Enabled
                             if (enabledCell != null) {
                                 mark.setEnabled(enabledCell.getBooleanCellValue());
+                            } else {
+                                mark.setEnabled(true);
                             }
 
                             // add to list mark entities
@@ -2617,7 +2619,6 @@ public class UploadController {
             for (Map.Entry<String, Map<String, Integer>> combine : combineList.entrySet()) {
 
 
-
                 Map<String, Integer> classesAndStudentsQuantityList = combine.getValue();
 
                 //Map<ClassName, StudentQuantity>
@@ -2630,7 +2631,7 @@ public class UploadController {
                     //Class name
                     classInfo.add(item.getKey());
                     //Student Quantity
-                    classInfo.add(item.getValue()+"");
+                    classInfo.add(item.getValue() + "");
 
                     result.add(classInfo);
                 }

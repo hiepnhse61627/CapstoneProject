@@ -28,7 +28,7 @@ public class StudentList {
     @RequestMapping("/studentList")
     public ModelAndView StudentListAll() {
         ModelAndView view = new ModelAndView("StudentList");
-        view.addObject("title", "Danh sách sinh viên");
+        view.addObject("title", "Tra cứu sinh viên");
 
         return view;
     }

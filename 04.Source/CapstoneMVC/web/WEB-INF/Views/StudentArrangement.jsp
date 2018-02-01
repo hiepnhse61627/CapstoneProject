@@ -22,7 +22,7 @@
         <div class="b-header">
             <div class="row">
                 <div class="col-md-7 title">
-                    <h1>Danh sách sinh viên theo lớp môn</h1>
+                    <h1>Dự kiến xếp lớp</h1>
                 </div>
                 <div class="col-md-5 text-right">
                     <button type="button" class="btn btn-success" onclick="ExportExcel()">Xuất dữ liệu</button>
