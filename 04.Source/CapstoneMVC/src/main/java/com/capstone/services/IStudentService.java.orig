@@ -31,6 +31,6 @@ public interface IStudentService {
     List<StudentEntity> getStudentsFromMarksBySemester(int semesterId);
     List<StudentEntity> getStudentBySemesterIdAndStatus(int semesterId, List<String> statusList);
     List<StudentEntity> getStudentBySemesterIdAndProgram(int semesterId, int programId);
-    List<StudentFailedSubject> getSubjectsFailedBySemester(Integer selectedSemester);
+List<StudentFailedSubject> getSubjectsFailedBySemester(Integer selectedSemester);
     List<StudentFailedSubject> getSubjectsSlotsFailedBySemester(Integer selectedSemester);
 }

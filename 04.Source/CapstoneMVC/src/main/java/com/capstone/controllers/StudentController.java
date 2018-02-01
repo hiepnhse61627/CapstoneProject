@@ -394,7 +394,7 @@ public class StudentController {
     @RequestMapping("/studentFailCreditsPage")
     public ModelAndView goStudentFailCreditPage() {
         ModelAndView mav = new ModelAndView("StudentFailCredit");
-        mav.addObject("title", "Danh sách sinh viên đang nợ tín chỉ");
+        mav.addObject("title","Danh sách sinh viên đang nợ tín chỉ 2");
         return mav;
     }
 
@@ -458,6 +458,92 @@ public class StudentController {
         List<List<String>> displayList = new ArrayList<>();
         if (!results.isEmpty()) {
             displayList = results.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+        }
+
+        JsonArray aaData = (JsonArray) new Gson().toJsonTree(displayList);
+
+        jsonObject.addProperty("iTotalRecords", results.size());
+        jsonObject.addProperty("iTotalDisplayRecords",  results.size());
+        jsonObject.add("aaData", aaData);
+        jsonObject.addProperty("sEcho", params.get("sEcho"));
+
+        return jsonObject;
+    }
+
+    @RequestMapping("/subjectsTryingToPassPage")
+    public ModelAndView goSubjectsTryingToPassPage(){
+        ModelAndView mav = new ModelAndView("SubjectsTryingToPass");
+        mav.addObject("title","Danh sách môn sinh viên cố gắng vượt qua");
+        IRealSemesterService service = new RealSemesterServiceImpl();
+        mav.addObject("semesters", Ultilities.SortSemesters(service.getAllSemester()));
+        return mav;
+    }
+
+    @RequestMapping("/subjectsTryingToPass")
+    @ResponseBody
+    public JsonObject subjectsTryingToPass(@RequestParam Map<String, String> params){
+        JsonObject jsonObject = new JsonObject();
+
+        Integer semester = Integer.valueOf(params.get("semesterId"));
+        List<StudentFailedSubject> subjects = studentService.getSubjectsSlotsFailedBySemester(semester);
+
+        List<List<String>> results = new ArrayList<>();
+        for (StudentFailedSubject subject : subjects) {
+            List<String> displayInfo = new ArrayList<>();
+            displayInfo.add(subject.getStudentCode());
+            displayInfo.add(subject.getStudentName());
+            displayInfo.add(String.valueOf(subject.getFailedCredit()));
+            displayInfo.add(subject.getSubjectFailed());
+            results.add(displayInfo);
+        }
+
+        List<List<String>> displayList = new ArrayList<>();
+        if (!results.isEmpty()) {
+            //displayList = results.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+            displayList = results.stream().collect(Collectors.toList());
+        }
+
+        JsonArray aaData = (JsonArray) new Gson().toJsonTree(displayList);
+
+        jsonObject.addProperty("iTotalRecords", results.size());
+        jsonObject.addProperty("iTotalDisplayRecords",  results.size());
+        jsonObject.add("aaData", aaData);
+        jsonObject.addProperty("sEcho", params.get("sEcho"));
+
+        return jsonObject;
+    }
+
+    @RequestMapping("/subjectsSlotsTryingToPassPage")
+    public ModelAndView goSubjectsSlotsTryingToPassPage(){
+        ModelAndView mav = new ModelAndView("SubjectsSlotsTryingToPass");
+        mav.addObject("title","Danh sách lượt môn sinh viên cố gắng vượt qua");
+        IRealSemesterService service = new RealSemesterServiceImpl();
+        mav.addObject("semesters", Ultilities.SortSemesters(service.getAllSemester()));
+        return mav;
+    }
+
+    @RequestMapping("/subjectsSlotsTryingToPass")
+    @ResponseBody
+    public JsonObject subjectsSlotsTryingToPass(@RequestParam Map<String, String> params){
+        JsonObject jsonObject = new JsonObject();
+
+        Integer semester = Integer.valueOf(params.get("semesterId"));
+        List<StudentFailedSubject> subjects = studentService.getSubjectsSlotsFailedBySemester(semester);
+
+        List<List<String>> results = new ArrayList<>();
+        for (StudentFailedSubject subject : subjects) {
+            List<String> displayInfo = new ArrayList<>();
+            displayInfo.add(subject.getStudentCode());
+            displayInfo.add(subject.getStudentName());
+            displayInfo.add(String.valueOf(subject.getFailedCredit()));
+            displayInfo.add(subject.getSubjectFailed());
+            results.add(displayInfo);
+        }
+
+        List<List<String>> displayList = new ArrayList<>();
+        if (!results.isEmpty()) {
+            //displayList = results.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+            displayList = results.stream().collect(Collectors.toList());
         }
 
         JsonArray aaData = (JsonArray) new Gson().toJsonTree(displayList);
