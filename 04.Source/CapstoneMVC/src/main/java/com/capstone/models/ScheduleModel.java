@@ -13,6 +13,15 @@ public class ScheduleModel {
     private String slot;
     private String endTime;
     private String startTime;
+    private String lecture;
+
+    public String getLecture() {
+        return lecture;
+    }
+
+    public void setLecture(String lecture) {
+        this.lecture = lecture;
+    }
 
     public String getEndTime() {
         return endTime;

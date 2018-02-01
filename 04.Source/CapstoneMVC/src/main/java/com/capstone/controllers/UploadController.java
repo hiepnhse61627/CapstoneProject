@@ -13,6 +13,9 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import com.capstone.entities.*;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,11 +31,14 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.*;
 
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 
@@ -55,6 +61,9 @@ public class UploadController {
 
     @Autowired
     ServletContext context;
+
+    @Autowired
+    AndroidPushNotificationsService androidPushNotificationsService;
 
     IScheduleService scheduleService = new ScheduleServiceImpl();
     IDaySlotService daySlotService = new DaySlotServiceImpl();
@@ -1532,6 +1541,52 @@ public class UploadController {
         return jsonObject;
     }
 
+    public ResponseEntity<String> sendNotification(String msg, String email, List<ScheduleEntity> listNewSchedule) {
+        try {
+            Gson gson = new Gson();
+
+            NotificationModel notification = new NotificationModel();
+            notification.setBody(msg);
+            notification.setSound("default");
+
+            FireBaseMessagingModel fireBaseMessaging = new FireBaseMessagingModel();
+//            fireBaseMessaging.setNotification(notification);
+            fireBaseMessaging.setTo("/topics/" + email);
+
+            List<ScheduleModel> scheduleModelList = new ArrayList<>();
+            for (ScheduleEntity schedule : listNewSchedule) {
+                ScheduleModel model = new ScheduleModel();
+                model.setCourseName(schedule.getCourseId().getSubjectCode());
+                model.setDate(schedule.getDateId().getDate());
+                model.setRoom(schedule.getRoomId().getName());
+                model.setSlot(schedule.getDateId().getSlotId().getSlotName());
+                model.setStartTime(schedule.getDateId().getSlotId().getStartTime());
+                model.setEndTime(schedule.getDateId().getSlotId().getEndTime());
+                model.setLecture(URLEncoder.encode(schedule.getEmpId().getFullName(), "UTF-8"));
+
+                scheduleModelList.add(model);
+            }
+
+            FirebaseDataModel data = new FirebaseDataModel();
+            data.setNewScheduleList(scheduleModelList);
+            fireBaseMessaging.setData(data);
+
+            HttpEntity<String> request = new HttpEntity<>(gson.toJson(fireBaseMessaging));
+
+            CompletableFuture<String> pushNotification = androidPushNotificationsService.send(request);
+
+            String firebaseResponse = pushNotification.get();
+
+            return new ResponseEntity<>(firebaseResponse, HttpStatus.OK);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new ResponseEntity<>("Push Notification ERROR!", HttpStatus.BAD_REQUEST);
+    }
+
+
     @RequestMapping(value = "/uploadSchedules", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject importSchedules(@RequestParam("file") MultipartFile file, @RequestParam("semesterId") String semesterIdStr) {
@@ -1542,10 +1597,8 @@ public class UploadController {
         List<RoomEntity> rooms = null;
         EmployeeEntity employee = null;
         CourseEntity course = null;
-        int count1 = 0;
-        int count2 = 0;
 
-        Set<String> errorCourse = new HashSet<>();
+        Set<EmployeeEntity> employees = new HashSet<>();
 
         try {
             InputStream is = file.getInputStream();
@@ -1568,9 +1621,7 @@ public class UploadController {
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
-                    if (currentLine == 2811) {
-                        System.out.println("haha");
-                    }
+
                     Cell courseCell = row.getCell(courseIndex);
                     Cell dateCell = row.getCell(dateIndex);
                     Cell slotNameCell = row.getCell(slotNameIndex);
@@ -1621,13 +1672,6 @@ public class UploadController {
                             }
                             rooms = roomService.findRoomsByName(roomName);
 
-//                            if (course != null) {
-//                                count2++;
-//                            }else{
-//                                count1++;
-//                                errorCourse.add(courseCell.getStringCellValue());
-//                            }
-
                             if (course != null && rooms.size() > 0) {
                                 if (!course.getSubjectCode().contains("VOV") || !course.getSubjectCode().contains("LAB")) {
                                     employee = employeeService.findEmployeeByShortName(employeeCell.getStringCellValue());
@@ -1642,6 +1686,7 @@ public class UploadController {
 
                                     if (employee != null) {
                                         scheduleEntity.setEmpId(employee);
+                                        employees.add(employee);
                                     }
                                     scheduleEntities.add(scheduleEntity);
                                 }
@@ -1657,6 +1702,11 @@ public class UploadController {
             }
             daySlotService.createDaySlotList(daySlotEntities);
             scheduleService.createScheduleList(scheduleEntities);
+
+            for (EmployeeEntity emp : employees) {
+                String msg = "Your schedule has been changed. Click here to check update";
+                sendNotification(msg, emp.getEmailEDU().substring(0, emp.getEmailEDU().indexOf("@")), scheduleEntities);
+            }
 
             jsonObject.addProperty("success", true);
             jsonObject.addProperty("message", "Import lịch học thành công !");
