@@ -234,32 +234,6 @@ public class EmployeeList {
 
             obj.add("user", parser.parse(gson.toJson(emp)));
 
-//            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-//            ScheduleModel tmpModel;
-//            for (int i = 0; i < scheduleModelList.size() - 1; i++) {
-//                for (int j = 0; j < scheduleModelList.size() - i - 1; j++) {
-//                    Date aDate = df.parse(scheduleModelList.get(j).getDate());
-//                    Date aDate2 = df.parse(scheduleModelList.get(j + 1).getDate());
-//
-//                    if (aDate.compareTo(aDate2) > 0) {
-//                        tmpModel = scheduleModelList.get(j + 1);
-//                        scheduleModelList.set(j + 1, scheduleModelList.get(j));
-//                        scheduleModelList.set(j, tmpModel);
-//                    }
-//
-//                    if (aDate.compareTo(aDate2) == 0) {
-//                        String slot1 = scheduleModelList.get(j).getSlot();
-//                        String slot2 = scheduleModelList.get(j + 1).getSlot();
-//
-//                        if (slot1.compareTo(slot2) > 0) {
-//                            tmpModel = scheduleModelList.get(j + 1);
-//                            scheduleModelList.set(j + 1, scheduleModelList.get(j));
-//                            scheduleModelList.set(j, tmpModel);
-//                        }
-//                    }
-//                }
-//            }
-
             Collections.sort(scheduleModelList, new Comparator<ScheduleModel>() {
                 @Override
                 public int compare(ScheduleModel o1, ScheduleModel o2) {

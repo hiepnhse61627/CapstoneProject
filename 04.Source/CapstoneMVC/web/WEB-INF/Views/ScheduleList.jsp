@@ -9,10 +9,10 @@
                     <h1>Danh sách lịch học</h1>
                 </div>
                 <div class="col-md-3 text-right">
-                    <button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
-                        <i class="glyphicon glyphicon-open"></i>
-                        <div>XUẤT DỮ LIỆU</div>
-                    </button>
+                    <%--<button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">--%>
+                        <%--<i class="glyphicon glyphicon-open"></i>--%>
+                        <%--<div>XUẤT DỮ LIỆU</div>--%>
+                    <%--</button>--%>
                 </div>
             </div>
             <hr>

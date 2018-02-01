@@ -36,6 +36,8 @@ public class ScheduleEntity implements Serializable {
     @JoinColumn(name = "RoomId", referencedColumnName = "Id")
     @ManyToOne
     private RoomEntity roomId;
+    @Column(name = "GroupName")
+    private String groupName;
 
     public ScheduleEntity() {
     }
@@ -82,6 +84,14 @@ public class ScheduleEntity implements Serializable {
 
     public void setRoomId(RoomEntity roomId) {
         this.roomId = roomId;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 
     @Override
