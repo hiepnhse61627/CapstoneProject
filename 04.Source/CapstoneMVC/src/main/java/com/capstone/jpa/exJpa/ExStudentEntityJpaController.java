@@ -395,6 +395,26 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
         return result;
     }
 
+    public List<Object[]> getAllSubjectsStudentsReStudyInSameSemester(int semesterId) {
+        EntityManager em = getEntityManager();
+        List<Object[]> result = null;
+
+        try {
+            String queryStr = "Select s.RollNumber, s.FullName,sm.SubjectId From Marks m " +
+                    "Inner Join Student s on m.StudentId = s.Id " +
+                    "Inner Join RealSemester r On m.SemesterId = r.Id " +
+                    "Inner Join Subject_MarkComponent sm On m.subjectMarkComponentId = sm.Id " +
+                    "Where r.Id=? Group by s.RollNumber,sm.SubjectId,s.FullName HAVING count(*) > 1 Order By RollNumber";
+            Query query = em.createNativeQuery(queryStr);
+            query.setParameter(1, semesterId);
+            result = query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
     public List<StudentEntity> getStudentsFromMarksBySemester(int semesterId) {
         EntityManager em = null;
         List<StudentEntity> resultList = new ArrayList<>();

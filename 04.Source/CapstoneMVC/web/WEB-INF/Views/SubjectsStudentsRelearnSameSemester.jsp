@@ -18,7 +18,7 @@
 <section class="content">
     <div class="box">
         <div class="b-header">
-            <h1>Danh sách lượt môn sinh viên cố gắng trả nợ</h1>
+            <h1>Danh sách môn học lại trong kì</h1>
             <hr>
         </div>
 
@@ -55,8 +55,7 @@
                             <tr>
                                 <th>Mã sinh viên</th>
                                 <th>Tên sinh viên</th>
-                                <th>Số môn đang trả nợ</th>
-                                <th>Môn sinh viên đang trả nợ (Số lượt)</th>
+                                <th>Các môn học lại trong kì</th>
                             </tr>
                             </thead>
                         </table>
@@ -127,7 +126,7 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/subjectsSlotsTryingToPass", // url getData.php etc
+            "sAjaxSource": "/subjectsStudentRelearnSameSemester", // url getData.php etc
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "semesterId", "value": $('#semester').val()})
             },
