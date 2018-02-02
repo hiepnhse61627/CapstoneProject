@@ -37,11 +37,12 @@ public class CourseEntity implements Serializable {
     private String semester;
     @Column(name = "SubjectCode", length = 50)
     private String subjectCode;
-@OneToMany(mappedBy = "courseId")
+    @OneToMany(mappedBy = "courseId")
     private List<MarksEntity> marksEntityList;
     @OneToMany(mappedBy = "courseId")
     private List<ScheduleEntity> scheduleEntityCollection;
-
+    @OneToMany(mappedBy = "courseId")
+    private List<CourseStudentEntity> courseStudentEntityList;
     public CourseEntity() {
     }
 
@@ -87,6 +88,14 @@ public class CourseEntity implements Serializable {
 
     public void setScheduleEntityList(List<ScheduleEntity> scheduleEntityCollection) {
         this.scheduleEntityCollection = scheduleEntityCollection;
+    }
+
+    public List<CourseStudentEntity> getCourseStudentEntityList() {
+        return courseStudentEntityList;
+    }
+
+    public void setCourseStudentEntityList(List<CourseStudentEntity> courseStudentEntityList) {
+        this.courseStudentEntityList = courseStudentEntityList;
     }
     @Override
     public int hashCode() {

@@ -9,10 +9,10 @@
                     <h1>Danh sách môn học</h1>
                 </div>
                 <div class="col-md-3 text-right">
-                    <button type="button" class="btn btn-success btn-with-icon" onclick="CreateNewRoom()">
-                        <i class="fa fa-plus"></i>
-                        <div style="margin-top: -3px">TẠO PHÒNG</div>
-                    </button>
+                    <%--<button type="button" class="btn btn-success btn-with-icon" onclick="CreateNewRoom()">--%>
+                        <%--<i class="fa fa-plus"></i>--%>
+                        <%--<div style="margin-top: -3px">TẠO PHÒNG</div>--%>
+                    <%--</button>--%>
                 </div>
             </div>
             <hr>
@@ -24,7 +24,7 @@
                         <thead>
                         <th>Tên phòng</th>
                         <th>Sức chứa</th>
-                        <th>Chi tiết</th>
+                        <%--<th>Chi tiết</th>--%>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -243,21 +243,17 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2],
-                    "bSortable": false,
-                },
-                {
-                    "aTargets": [0, 1, 2],
+                    "aTargets": [0, 1],
                     "bSortable": false,
                     "sClass": "text-center",
                 },
-                {
-                    "aTargets": [2],
-                    "mRender": function (data, type, row) {
-                        return "<a class='btn btn-success tbl-btn' onclick='ShowModal(\"" + row[0] + "\")'>" +
-                            "<i class='glyphicon glyphicon-pencil'></i></a>";
-                    }
-                },
+                // {
+                //     "aTargets": [2],
+                //     "mRender": function (data, type, row) {
+                //         return "<a class='btn btn-success tbl-btn' onclick='ShowModal(\"" + row[0] + "\")'>" +
+                //             "<i class='glyphicon glyphicon-pencil'></i></a>";
+                //     }
+                // },
             ],
             "bAutoWidth": false,
         }).fnSetFilteringDelay(700);

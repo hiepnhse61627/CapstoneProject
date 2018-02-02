@@ -7,14 +7,14 @@
 <section class="content">
     <div class="box">
         <div class="b-header">
-            <h1>Nhập danh sách lịch day của GV</h1>
+            <h1>Nhập danh sách lịch học của SV</h1>
             <hr>
         </div>
         <div class="b-body">
             <div class="form-group">
                 <div class="row">
                     <div class="title">
-                        Bấm vào <a class="link" href="/Resources/FileTemplates/Schedule.xlsx">Template</a>
+                        Bấm vào <a class="link" href="/Resources/FileTemplates/CourseStudent.xlsx">Template</a>
                         để tải
                         về bản mẫu
                     </div>
@@ -63,7 +63,7 @@
                 isRunning = true;
                 $.ajax({
                     type: "POST",
-                    url: "/uploadSchedules",
+                    url: "/uploadCourseStudents",
                     processData: false,
                     contentType: false,
                     data: form,

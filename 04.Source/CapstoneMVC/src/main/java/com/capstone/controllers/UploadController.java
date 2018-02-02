@@ -65,6 +65,7 @@ public class UploadController {
     @Autowired
     AndroidPushNotificationsService androidPushNotificationsService;
 
+    ICourseStudentService courseStudentService = new CourseStudentServiceImpl();
     IScheduleService scheduleService = new ScheduleServiceImpl();
     IDaySlotService daySlotService = new DaySlotServiceImpl();
     ISlotService slotService = new SlotServiceImpl();
@@ -862,7 +863,18 @@ public class UploadController {
     @RequestMapping(value = "/importSchedulesPage")
     public ModelAndView goImportSchedulesPage() {
         ModelAndView mav = new ModelAndView("importSchedules");
-        mav.addObject("title", "Nhập danh sách lịch học");
+        mav.addObject("title", "Nhập danh sách lịch dạy của GV");
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+
+        mav.addObject("semesters", semesters);
+        return mav;
+    }
+
+    @RequestMapping(value = "/importCourseStudentsPage")
+    public ModelAndView goImportCourseStudentPage() {
+        ModelAndView mav = new ModelAndView("importCourseStudents");
+        mav.addObject("title", "Nhập danh sách lịch học của SV");
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
         semesters = Ultilities.SortSemesters(semesters);
 
@@ -1611,6 +1623,7 @@ public class UploadController {
             int lastRow = spreadsheet.getLastRowNum();
             this.totalLine = lastRow - startRowNumber + 1;
 
+            int groupNameIndex = 0;
             int courseIndex = 1;
             int dateIndex = 2;
             int slotNameIndex = 3;
@@ -1622,6 +1635,7 @@ public class UploadController {
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
 
+                    Cell groupNameCell = row.getCell(groupNameIndex);
                     Cell courseCell = row.getCell(courseIndex);
                     Cell dateCell = row.getCell(dateIndex);
                     Cell slotNameCell = row.getCell(slotNameIndex);
@@ -1683,6 +1697,7 @@ public class UploadController {
                                     scheduleEntity.setCourseId(course);
                                     scheduleEntity.setDateId(daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)));
                                     scheduleEntity.setRoomId(rooms.get(0));
+                                    scheduleEntity.setGroupName(groupNameCell.getStringCellValue());
 
                                     if (employee != null) {
                                         scheduleEntity.setEmpId(employee);
@@ -1690,7 +1705,6 @@ public class UploadController {
                                     }
                                     scheduleEntities.add(scheduleEntity);
                                 }
-
 
                             }
                         }
@@ -1707,6 +1721,95 @@ public class UploadController {
                 String msg = "Your schedule has been changed. Click here to check update";
                 sendNotification(msg, emp.getEmailEDU().substring(0, emp.getEmailEDU().indexOf("@")), scheduleEntities);
             }
+
+            jsonObject.addProperty("success", true);
+            jsonObject.addProperty("message", "Import lịch học thành công !");
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("fail", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+
+        return jsonObject;
+    }
+
+
+    @RequestMapping(value = "/uploadCourseStudents", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject importCourseStudents(@RequestParam("file") MultipartFile file, @RequestParam("semesterId") String semesterIdStr) {
+        JsonObject jsonObject = new JsonObject();
+        List<CourseStudentEntity> courseStudentEntities = new ArrayList<CourseStudentEntity>();
+        StudentEntity student = null;
+        CourseEntity course = null;
+
+//        Set<EmployeeEntity> employees = new HashSet<>();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+            int excelDataIndex = 1;
+            int lastRow = spreadsheet.getLastRowNum();
+            this.totalLine = lastRow - startRowNumber + 1;
+
+            int groupNameIndex = 2;
+            int rollNumberIndex = 0;
+            int courseIndex = 1;
+
+            this.currentLine = 0;
+            for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+                if (row != null) {
+
+                    Cell groupNameCell = row.getCell(groupNameIndex);
+                    Cell courseCell = row.getCell(courseIndex);
+                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+
+                    if (rollNumberCell != null && !rollNumberCell.toString().equals("") && courseCell != null && !courseCell.toString().equals("")) {
+
+                        String rollNumber = rollNumberCell.getStringCellValue().trim();
+                        String courseName = courseCell.getStringCellValue().trim();
+
+                        student = studentService.findStudentByRollNumber(rollNumber);
+
+                        Integer semesterId = Integer.parseInt(semesterIdStr.trim());
+                        RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterById(semesterId);
+                        course = courseService.findCourseBySemesterAndSubjectCode(realSemesterEntity.getSemester(), courseName);
+
+                        if (course != null && student != null) {
+                            if (courseStudentService.findCourseStudentByCourseAndStudent(course, student) == null) {
+                                CourseStudentEntity courseStudentEntity = new CourseStudentEntity();
+                                courseStudentEntity.setCourseId(course);
+                                courseStudentEntity.setStudentId(student);
+                                courseStudentEntity.setGroupName(groupNameCell.getStringCellValue());
+                                courseStudentEntities.add(courseStudentEntity);
+                            } else {
+                                System.out.println(currentLine);
+                            }
+                        } else {
+                            System.out.println(currentLine);
+                        }
+
+                    } else {
+                        System.out.println(currentLine);
+                    }
+                    this.currentLine++;
+                } else {
+                    System.out.println(currentLine);
+                }
+
+            }
+            courseStudentService.createCourseStudentList(courseStudentEntities);
+
+//            for (EmployeeEntity emp : employees) {
+//                String msg = "Your schedule has been changed. Click here to check update";
+//                sendNotification(msg, emp.getEmailEDU().substring(0, emp.getEmailEDU().indexOf("@")), scheduleEntities);
+//            }
 
             jsonObject.addProperty("success", true);
             jsonObject.addProperty("message", "Import lịch học thành công !");
