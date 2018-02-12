@@ -404,4 +404,28 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
             e.printStackTrace();
         }
     }
+
+    public List<Object[]> getAllReplaceSubjects(){
+        try{
+            EntityManager em = getEntityManager();
+            Query query = em.createNativeQuery("SELECT SubjectId,ReplacementId FROM Replacement_Subject");
+            return query.getResultList();
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
+    public List<Object[]> getAllSubjects(){
+        try{
+            EntityManager em = getEntityManager();
+            Query query = em.createNativeQuery("SELECT Id, Name FROM Subject");
+            return query.getResultList();
+        }
+        catch (Exception ex){
+            ex.printStackTrace();
+        }
+        return null;
+    }
 }

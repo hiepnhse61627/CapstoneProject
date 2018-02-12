@@ -11,8 +11,13 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+
+import com.capstone.entities.CourseStudentEntity;
 import com.capstone.entities.MarksEntity;
+import com.capstone.entities.ScheduleEntity;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
+
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -33,9 +38,15 @@ public class CourseEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(CourseEntity courseEntity) {
+    public void create(CourseEntity courseEntity) throws PreexistingEntityException, Exception {
         if (courseEntity.getMarksEntityList() == null) {
             courseEntity.setMarksEntityList(new ArrayList<MarksEntity>());
+        }
+        if (courseEntity.getScheduleEntityList() == null) {
+            courseEntity.setScheduleEntityList(new ArrayList<ScheduleEntity>());
+        }
+        if (courseEntity.getCourseStudentEntityList() == null) {
+            courseEntity.setCourseStudentEntityList(new ArrayList<CourseStudentEntity>());
         }
         EntityManager em = null;
         try {
@@ -47,6 +58,18 @@ public class CourseEntityJpaController implements Serializable {
                 attachedMarksEntityList.add(marksEntityListMarksEntityToAttach);
             }
             courseEntity.setMarksEntityList(attachedMarksEntityList);
+            List<ScheduleEntity> attachedScheduleEntityList = new ArrayList<ScheduleEntity>();
+            for (ScheduleEntity scheduleEntityListScheduleEntityToAttach : courseEntity.getScheduleEntityList()) {
+                scheduleEntityListScheduleEntityToAttach = em.getReference(scheduleEntityListScheduleEntityToAttach.getClass(), scheduleEntityListScheduleEntityToAttach.getId());
+                attachedScheduleEntityList.add(scheduleEntityListScheduleEntityToAttach);
+            }
+            courseEntity.setScheduleEntityList(attachedScheduleEntityList);
+            List<CourseStudentEntity> attachedCourseStudentEntityList = new ArrayList<CourseStudentEntity>();
+            for (CourseStudentEntity courseStudentEntityListCourseStudentEntityToAttach : courseEntity.getCourseStudentEntityList()) {
+                courseStudentEntityListCourseStudentEntityToAttach = em.getReference(courseStudentEntityListCourseStudentEntityToAttach.getClass(), courseStudentEntityListCourseStudentEntityToAttach.getId());
+                attachedCourseStudentEntityList.add(courseStudentEntityListCourseStudentEntityToAttach);
+            }
+            courseEntity.setCourseStudentEntityList(attachedCourseStudentEntityList);
             em.persist(courseEntity);
             for (MarksEntity marksEntityListMarksEntity : courseEntity.getMarksEntityList()) {
                 CourseEntity oldCourseIdOfMarksEntityListMarksEntity = marksEntityListMarksEntity.getCourseId();
@@ -57,7 +80,30 @@ public class CourseEntityJpaController implements Serializable {
                     oldCourseIdOfMarksEntityListMarksEntity = em.merge(oldCourseIdOfMarksEntityListMarksEntity);
                 }
             }
+            for (ScheduleEntity scheduleEntityListScheduleEntity : courseEntity.getScheduleEntityList()) {
+                CourseEntity oldCourseIdOfScheduleEntityListScheduleEntity = scheduleEntityListScheduleEntity.getCourseId();
+                scheduleEntityListScheduleEntity.setCourseId(courseEntity);
+                scheduleEntityListScheduleEntity = em.merge(scheduleEntityListScheduleEntity);
+                if (oldCourseIdOfScheduleEntityListScheduleEntity != null) {
+                    oldCourseIdOfScheduleEntityListScheduleEntity.getScheduleEntityList().remove(scheduleEntityListScheduleEntity);
+                    oldCourseIdOfScheduleEntityListScheduleEntity = em.merge(oldCourseIdOfScheduleEntityListScheduleEntity);
+                }
+            }
+            for (CourseStudentEntity courseStudentEntityListCourseStudentEntity : courseEntity.getCourseStudentEntityList()) {
+                CourseEntity oldCourseIdOfCourseStudentEntityListCourseStudentEntity = courseStudentEntityListCourseStudentEntity.getCourseId();
+                courseStudentEntityListCourseStudentEntity.setCourseId(courseEntity);
+                courseStudentEntityListCourseStudentEntity = em.merge(courseStudentEntityListCourseStudentEntity);
+                if (oldCourseIdOfCourseStudentEntityListCourseStudentEntity != null) {
+                    oldCourseIdOfCourseStudentEntityListCourseStudentEntity.getCourseStudentEntityList().remove(courseStudentEntityListCourseStudentEntity);
+                    oldCourseIdOfCourseStudentEntityListCourseStudentEntity = em.merge(oldCourseIdOfCourseStudentEntityListCourseStudentEntity);
+                }
+            }
             em.getTransaction().commit();
+        } catch (Exception ex) {
+            if (findCourseEntity(courseEntity.getId()) != null) {
+                throw new PreexistingEntityException("CourseEntity " + courseEntity + " already exists.", ex);
+            }
+            throw ex;
         } finally {
             if (em != null) {
                 em.close();
@@ -73,6 +119,10 @@ public class CourseEntityJpaController implements Serializable {
             CourseEntity persistentCourseEntity = em.find(CourseEntity.class, courseEntity.getId());
             List<MarksEntity> marksEntityListOld = persistentCourseEntity.getMarksEntityList();
             List<MarksEntity> marksEntityListNew = courseEntity.getMarksEntityList();
+            List<ScheduleEntity> scheduleEntityListOld = persistentCourseEntity.getScheduleEntityList();
+            List<ScheduleEntity> scheduleEntityListNew = courseEntity.getScheduleEntityList();
+            List<CourseStudentEntity> courseStudentEntityListOld = persistentCourseEntity.getCourseStudentEntityList();
+            List<CourseStudentEntity> courseStudentEntityListNew = courseEntity.getCourseStudentEntityList();
             List<MarksEntity> attachedMarksEntityListNew = new ArrayList<MarksEntity>();
             for (MarksEntity marksEntityListNewMarksEntityToAttach : marksEntityListNew) {
                 marksEntityListNewMarksEntityToAttach = em.getReference(marksEntityListNewMarksEntityToAttach.getClass(), marksEntityListNewMarksEntityToAttach.getId());
@@ -80,6 +130,20 @@ public class CourseEntityJpaController implements Serializable {
             }
             marksEntityListNew = attachedMarksEntityListNew;
             courseEntity.setMarksEntityList(marksEntityListNew);
+            List<ScheduleEntity> attachedScheduleEntityListNew = new ArrayList<ScheduleEntity>();
+            for (ScheduleEntity scheduleEntityListNewScheduleEntityToAttach : scheduleEntityListNew) {
+                scheduleEntityListNewScheduleEntityToAttach = em.getReference(scheduleEntityListNewScheduleEntityToAttach.getClass(), scheduleEntityListNewScheduleEntityToAttach.getId());
+                attachedScheduleEntityListNew.add(scheduleEntityListNewScheduleEntityToAttach);
+            }
+            scheduleEntityListNew = attachedScheduleEntityListNew;
+            courseEntity.setScheduleEntityList(scheduleEntityListNew);
+            List<CourseStudentEntity> attachedCourseStudentEntityListNew = new ArrayList<CourseStudentEntity>();
+            for (CourseStudentEntity courseStudentEntityListNewCourseStudentEntityToAttach : courseStudentEntityListNew) {
+                courseStudentEntityListNewCourseStudentEntityToAttach = em.getReference(courseStudentEntityListNewCourseStudentEntityToAttach.getClass(), courseStudentEntityListNewCourseStudentEntityToAttach.getId());
+                attachedCourseStudentEntityListNew.add(courseStudentEntityListNewCourseStudentEntityToAttach);
+            }
+            courseStudentEntityListNew = attachedCourseStudentEntityListNew;
+            courseEntity.setCourseStudentEntityList(courseStudentEntityListNew);
             courseEntity = em.merge(courseEntity);
             for (MarksEntity marksEntityListOldMarksEntity : marksEntityListOld) {
                 if (!marksEntityListNew.contains(marksEntityListOldMarksEntity)) {
@@ -95,6 +159,40 @@ public class CourseEntityJpaController implements Serializable {
                     if (oldCourseIdOfMarksEntityListNewMarksEntity != null && !oldCourseIdOfMarksEntityListNewMarksEntity.equals(courseEntity)) {
                         oldCourseIdOfMarksEntityListNewMarksEntity.getMarksEntityList().remove(marksEntityListNewMarksEntity);
                         oldCourseIdOfMarksEntityListNewMarksEntity = em.merge(oldCourseIdOfMarksEntityListNewMarksEntity);
+                    }
+                }
+            }
+            for (ScheduleEntity scheduleEntityListOldScheduleEntity : scheduleEntityListOld) {
+                if (!scheduleEntityListNew.contains(scheduleEntityListOldScheduleEntity)) {
+                    scheduleEntityListOldScheduleEntity.setCourseId(null);
+                    scheduleEntityListOldScheduleEntity = em.merge(scheduleEntityListOldScheduleEntity);
+                }
+            }
+            for (ScheduleEntity scheduleEntityListNewScheduleEntity : scheduleEntityListNew) {
+                if (!scheduleEntityListOld.contains(scheduleEntityListNewScheduleEntity)) {
+                    CourseEntity oldCourseIdOfScheduleEntityListNewScheduleEntity = scheduleEntityListNewScheduleEntity.getCourseId();
+                    scheduleEntityListNewScheduleEntity.setCourseId(courseEntity);
+                    scheduleEntityListNewScheduleEntity = em.merge(scheduleEntityListNewScheduleEntity);
+                    if (oldCourseIdOfScheduleEntityListNewScheduleEntity != null && !oldCourseIdOfScheduleEntityListNewScheduleEntity.equals(courseEntity)) {
+                        oldCourseIdOfScheduleEntityListNewScheduleEntity.getScheduleEntityList().remove(scheduleEntityListNewScheduleEntity);
+                        oldCourseIdOfScheduleEntityListNewScheduleEntity = em.merge(oldCourseIdOfScheduleEntityListNewScheduleEntity);
+                    }
+                }
+            }
+            for (CourseStudentEntity courseStudentEntityListOldCourseStudentEntity : courseStudentEntityListOld) {
+                if (!courseStudentEntityListNew.contains(courseStudentEntityListOldCourseStudentEntity)) {
+                    courseStudentEntityListOldCourseStudentEntity.setCourseId(null);
+                    courseStudentEntityListOldCourseStudentEntity = em.merge(courseStudentEntityListOldCourseStudentEntity);
+                }
+            }
+            for (CourseStudentEntity courseStudentEntityListNewCourseStudentEntity : courseStudentEntityListNew) {
+                if (!courseStudentEntityListOld.contains(courseStudentEntityListNewCourseStudentEntity)) {
+                    CourseEntity oldCourseIdOfCourseStudentEntityListNewCourseStudentEntity = courseStudentEntityListNewCourseStudentEntity.getCourseId();
+                    courseStudentEntityListNewCourseStudentEntity.setCourseId(courseEntity);
+                    courseStudentEntityListNewCourseStudentEntity = em.merge(courseStudentEntityListNewCourseStudentEntity);
+                    if (oldCourseIdOfCourseStudentEntityListNewCourseStudentEntity != null && !oldCourseIdOfCourseStudentEntityListNewCourseStudentEntity.equals(courseEntity)) {
+                        oldCourseIdOfCourseStudentEntityListNewCourseStudentEntity.getCourseStudentEntityList().remove(courseStudentEntityListNewCourseStudentEntity);
+                        oldCourseIdOfCourseStudentEntityListNewCourseStudentEntity = em.merge(oldCourseIdOfCourseStudentEntityListNewCourseStudentEntity);
                     }
                 }
             }
@@ -131,6 +229,16 @@ public class CourseEntityJpaController implements Serializable {
             for (MarksEntity marksEntityListMarksEntity : marksEntityList) {
                 marksEntityListMarksEntity.setCourseId(null);
                 marksEntityListMarksEntity = em.merge(marksEntityListMarksEntity);
+            }
+            List<ScheduleEntity> scheduleEntityList = courseEntity.getScheduleEntityList();
+            for (ScheduleEntity scheduleEntityListScheduleEntity : scheduleEntityList) {
+                scheduleEntityListScheduleEntity.setCourseId(null);
+                scheduleEntityListScheduleEntity = em.merge(scheduleEntityListScheduleEntity);
+            }
+            List<CourseStudentEntity> courseStudentEntityList = courseEntity.getCourseStudentEntityList();
+            for (CourseStudentEntity courseStudentEntityListCourseStudentEntity : courseStudentEntityList) {
+                courseStudentEntityListCourseStudentEntity.setCourseId(null);
+                courseStudentEntityListCourseStudentEntity = em.merge(courseStudentEntityListCourseStudentEntity);
             }
             em.remove(courseEntity);
             em.getTransaction().commit();
@@ -186,5 +294,6 @@ public class CourseEntityJpaController implements Serializable {
             em.close();
         }
     }
-    
+
 }
+

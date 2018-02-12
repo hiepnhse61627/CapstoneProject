@@ -13,14 +13,15 @@ import javax.persistence.criteria.Root;
 import com.capstone.entities.RealSemesterEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.entities.StudentStatusEntity;
-import com.capstone.jpa.exceptions.NonexistentEntityException;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
 
 /**
  *
- * @author hiepnhse61627
+ * @author StormNs
  */
 public class StudentStatusEntityJpaController implements Serializable {
 
@@ -33,7 +34,7 @@ public class StudentStatusEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(StudentStatusEntity studentStatusEntity) {
+    public void create(StudentStatusEntity studentStatusEntity) throws PreexistingEntityException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -58,6 +59,11 @@ public class StudentStatusEntityJpaController implements Serializable {
                 studentId = em.merge(studentId);
             }
             em.getTransaction().commit();
+        } catch (Exception ex) {
+            if (findStudentStatusEntity(studentStatusEntity.getId()) != null) {
+                throw new PreexistingEntityException("StudentStatusEntity " + studentStatusEntity + " already exists.", ex);
+            }
+            throw ex;
         } finally {
             if (em != null) {
                 em.close();
@@ -193,5 +199,5 @@ public class StudentStatusEntityJpaController implements Serializable {
             em.close();
         }
     }
-    
+
 }

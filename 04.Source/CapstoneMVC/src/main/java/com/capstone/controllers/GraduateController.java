@@ -281,30 +281,44 @@ public class GraduateController {
         IRealSemesterService service = new RealSemesterServiceImpl();
         RealSemesterEntity semester = service.findSemesterById(semesterId);
 
-        boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
+//        List<RealSemesterEntity> semesterList = semesterService.getAllSemester();
+//        semesterList = Ultilities.SortSemesters(semesterList);
+//        semesterList = Lists.reverse(semesterList);
 
+
+        boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
+        int previousSemesterId = Ultilities.GetSemesterIdBeforeThisId(semester.getId());
         List<StudentEntity> students;
         if (programId < 0) {
-            students = studentService.findAllStudents();
+            students = studentService.findStudentsBySemesterId(Ultilities.GetSemesterIdBeforeThisId(semester.getId()));
         } else {
-            students = studentService.getStudentByProgram(programId);
+            students = studentService.getStudentBySemesterIdAndProgram
+                    (previousSemesterId, programId);
+//            students = students.stream().filter(q -> q.getProgramId().getId() == programId).collect(Collectors.toList());
         }
+//        EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
+//        EntityManager em = fac.createEntityManager();
 
-        EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
-        EntityManager em = fac.createEntityManager();
 
         IMarksService marksService = new MarksServiceImpl();
-        List<MarksEntity> totalMarks = marksService.getMarkByConditions(Ultilities.GetSemesterIdBeforeThisId(semester.getId()), null, -1);
+        List<MarksEntity> totalMarks = marksService.getMarkByConditions(previousSemesterId, null, -1);
         totalMarks = Ultilities.SortSemestersByMarks(totalMarks);
 
-        students = students.stream().filter(c -> isOJT(c, semester)).collect(Collectors.toList());
+        students = students.stream().filter(c -> isOJT(c, previousSemesterId)).collect(Collectors.toList());
 //        students = students.stream().filter(c -> c.getTerm() >= 5).collect(Collectors.toList());
 
-        List<MarksEntity> map = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true AND a.subjectMarkComponentId.subjectId.type = 1 AND (LOWER(a.status) LIKE '%studying%' OR LOWER(a.status) LIKE '%pass%')", MarksEntity.class)
-                .getResultList()
-                .stream()
-                .filter(Ultilities.distinctByKey(c -> c.getStudentId().getId()))
-                .collect(Collectors.toList());
+//         lấy danh sách điểm những thằng đã opass hoặc đang học ojt
+//        List<MarksEntity> map = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true " +
+//                "AND a.subjectMarkComponentId.subjectId.type = 1 AND (LOWER(a.status) LIKE '%studying%' " +
+//                "OR LOWER(a.status) LIKE '%pass%')", MarksEntity.class)
+//                .getResultList()
+//                .stream()
+//                .filter(Ultilities.distinctByKey(c -> c.getStudentId().getId()))
+//                .collect(Collectors.toList());
+
+        //lấy danh sách điểm những thằng đã opass hoặc đang học ojt
+        List<StudentEntity> map = marksService.getOjtStudentsFromSelectedSemesterAndBeforeFromMarks(previousSemesterId);
+
 
         IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
 
@@ -342,7 +356,11 @@ public class GraduateController {
             }
 
             boolean req = false;
-            if (map.stream().anyMatch(c -> c.getStudentId().getId() == student.getId())) {
+            // loại những sinh viên đã có điểm hoặc đang học Ojt
+//            if (map.stream().anyMatch(c -> c.getStudentId().getId() == student.getId())) {
+//                req = true;
+//            }
+            if (map.stream().anyMatch(q -> q.getId() == student.getId())) {
                 req = true;
             }
 
@@ -369,6 +387,7 @@ public class GraduateController {
                 }
 
                 int percent = student.getProgramId().getOjt();
+
 
 //                int tongtinchi = student.getPassCredits();
                 int tongtinchi = 0;
@@ -446,7 +465,7 @@ public class GraduateController {
     }
 
     // finda all atudents match OJT term
-    private boolean isOJT(StudentEntity student, RealSemesterEntity semester) {
+    private boolean isOJT(StudentEntity student, int previousSemesterId) {
         int ojt = 6;
         List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
         for (DocumentStudentEntity doc : docs) {
@@ -461,8 +480,32 @@ public class GraduateController {
             }
         }
 
-        int require = ojt - 1 - Global.CompareSemesterGap(semester);
-        if (student.getTerm() >= require) {
+
+        //convert to double 4 comparison
+        double require = ojt * 1.0;
+        StudentStatusEntity studentStatus = null;
+        List<StudentStatusEntity> statusList = student.getStudentStatusEntityList();
+
+        for (StudentStatusEntity status: statusList ) {
+            if(status.getSemesterId().getId() == previousSemesterId){
+                studentStatus = status;
+            }
+        }
+
+        double studentTerm;
+        try {
+            if (studentStatus != null)
+                studentTerm = Double.parseDouble(studentStatus.getTerm());
+            else
+                studentTerm = -1;
+
+        } catch (Exception ex) {
+            studentTerm = -1;
+        }
+
+        //studentTerm + 1  == selectedSemester : chọn danh sách sinh viên đi trong hk Spring2018
+        // --> sinh viên đó sẽ được đi vào Spring2018 --> lấy trạng thái kì trước đó là Fall2017 để check
+        if (studentTerm + 1 >= require) {
             return true;
         } else {
             return false;
@@ -470,23 +513,46 @@ public class GraduateController {
     }
 
     // finda all atudents match Capstone term
-    private boolean isCapstone(StudentEntity student, RealSemesterEntity r1) {
-        int ojt = 9;
+    private boolean isCapstone(StudentEntity student, int previousSemesterId) {
+        int capstone = 9;
         List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
         for (DocumentStudentEntity doc : docs) {
             if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
                 List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
                 for (SubjectCurriculumEntity s : list) {
                     if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
-                        ojt = s.getTermNumber();
+                        capstone = s.getTermNumber();
                         break;
                     }
                 }
             }
         }
 
-        int require = ojt - 1 - Global.CompareSemesterGap(r1);
-        if (student.getTerm() >= require) {
+        //convert to double 4 comparison
+        double require = capstone * 1.0;
+        StudentStatusEntity studentStatus = null;
+        List<StudentStatusEntity> statusList = student.getStudentStatusEntityList();
+
+        for (StudentStatusEntity status: statusList ) {
+            if(status.getSemesterId().getId() == previousSemesterId){
+                studentStatus = status;
+            }
+        }
+
+        double studentTerm;
+        try {
+            if (studentStatus != null)
+                studentTerm = Double.parseDouble(studentStatus.getTerm());
+            else
+                studentTerm = -1;
+
+        } catch (Exception ex) {
+            studentTerm = -1;
+        }
+
+        //studentTerm + 1  == selectedSemester : chọn danh sách sinh viên đi trong hk Spring2018
+        // --> sinh viên đó sẽ được đi vào Spring2018 --> lấy trạng thái kì trước đó là Fall2017 để check
+        if (studentTerm + 1 >= require) {
             return true;
         } else {
             return false;
@@ -505,12 +571,12 @@ public class GraduateController {
         RealSemesterEntity semester = service.findSemesterById(semesterId);
 
         boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
-
+        int previousSemesterId = Ultilities.GetSemesterIdBeforeThisId(semester.getId());
         List<StudentEntity> students;
         if (programId < 0) {
             students = studentService.findAllStudents();
         } else {
-            students = studentService.getStudentByProgram(programId);
+            students = studentService.getStudentBySemesterIdAndProgram(previousSemesterId, programId);
         }
 
         EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
@@ -518,10 +584,12 @@ public class GraduateController {
 
 //        IMarksService marksService = new MarksServiceImpl();
 
-        students = students.stream().filter(c -> isCapstone(c, semester)).collect(Collectors.toList());
+        students = students.stream().filter(c -> isCapstone(c, previousSemesterId)).collect(Collectors.toList());
 //        students = students.stream().filter(c -> c.getTerm() >= 5).collect(Collectors.toList());
 
-        List<MarksEntity> map = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true AND a.subjectMarkComponentId.subjectId.type = 2 AND (LOWER(a.status) LIKE '%studying%' OR LOWER(a.status) LIKE '%pass%')", MarksEntity.class)
+        List<MarksEntity> map = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true " +
+                "AND a.subjectMarkComponentId.subjectId.type = 2 " +
+                "AND (LOWER(a.status) LIKE '%studying%' OR LOWER(a.status) LIKE '%pass%')", MarksEntity.class)
                 .getResultList()
                 .stream()
                 .filter(Ultilities.distinctByKey(c -> c.getStudentId().getId()))

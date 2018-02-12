@@ -82,8 +82,8 @@ public class AdminController {
 
             List<List<String>> searchList = list.stream().filter(u ->
                     Ultilities.containsIgnoreCase(u.get(1), sSearch)
-                    || Ultilities.containsIgnoreCase(u.get(2), sSearch)
-                    || Ultilities.containsIgnoreCase(u.get(3), sSearch))
+                            || Ultilities.containsIgnoreCase(u.get(2), sSearch)
+                            || Ultilities.containsIgnoreCase(u.get(3), sSearch))
                     .collect(Collectors.toList());
             List<List<String>> displayList = searchList.stream().skip(iDisplayStart).limit(iDisplayLength)
                     .collect(Collectors.toList());
@@ -194,6 +194,29 @@ public class AdminController {
 
         return data;
     }
+
+    @RequestMapping("/manageRoles")
+    public ModelAndView manageRoles() {
+        ModelAndView mav = new ModelAndView("CreateRolesPage");
+        mav.addObject("title", "Tạo mới chức vụ");
+        return mav;
+    }
+
+//    @RequestMapping("/createNewRole")
+//    public JsonObject createRoles(@RequestParam String newRole){
+//
+//
+//        return ;
+//    }
+
+    @RequestMapping("/manageCredentialsRoles")
+    public ModelAndView manageCredentialsRoles()
+    {
+        ModelAndView mav = new ModelAndView("");
+        mav.addObject("title", "Phân quyền cho chức vụ");
+        return mav;
+    }
+
 
     // get all user roles to a list
     private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user){

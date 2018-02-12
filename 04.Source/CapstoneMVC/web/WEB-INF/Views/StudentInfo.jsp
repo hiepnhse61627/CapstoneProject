@@ -151,15 +151,22 @@
                 <div class="col-md-6 title">
                     <h1>Thông tin sinh viên</h1>
                 </div>
-                <div class="col-md-6 text-right">
-                    <a onclick="ExportExcel()" class="btn btn-warning btn-with-icon text-right m-l-5">
-                        <i class="glyphicon glyphicon-open"></i>
-                        <div class="m-l-3">XUẤT BẢNG ĐIỂM QUÁ TRÌNH</div>
-                    </a>
-                    <a href="/studentList" class="btn btn-danger btn-with-icon text-right">
-                        <i class="fa fa-arrow-left"></i>
-                        <div class="m-l-3">QUAY LẠI</div>
-                    </a>
+                <div class="col-md-6 ">
+                    <div class="my-content">
+                        <div class="my-input-group">
+                            <%--<div class="left-content m-r-5">--%>
+                                <%--<label class="p-t-8">Chọn sinh viên:</label>--%>
+                            <%--</div>--%>
+                            <div class="right-content width-50 width-m-70">
+                                <label class="p-t-8">Chọn sinh viên:</label>
+                                <select id="cb-student" class="select">
+                                    <c:forEach var="stu" items="${students}">
+                                        <option value="${stu.rollNumber}">${stu.rollNumber} - ${stu.fullName}</option>
+                                    </c:forEach>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <hr>
@@ -169,16 +176,30 @@
             <div class="form-group">
                 <div class="row">
                     <div class="title">
-                        <h4 class="text-left m-r-10 m-t-5">Thông tin chi tiết</h4>
-                        <button class="btn btn-primary text-left" id="btnEdit" onclick="onEdit()">
-                            <i class="glyphicon glyphicon-pencil btn-icon"></i>
-                        </button>
-                        <button class="btn btn-success text-left m-r-5" id="btnSubmit" onclick="EditStudent()" style="display: none">
-                            <i class="fa fa-check btn-icon"></i>
-                        </button>
-                        <button class="btn btn-danger text-left" id="btnCancel" onclick="onCancel()" style="display: none">
-                            <i class="fa fa-times btn-icon"></i>
-                        </button>
+                        <div class="col-md-6 title">
+                            <h4 class="text-left m-r-10 m-t-5">Thông tin chi tiết</h4>
+                            <button class="btn btn-primary text-left" id="btnEdit" onclick="onEdit()">
+                                <i class="glyphicon glyphicon-pencil btn-icon"></i>
+                            </button>
+                            <button class="btn btn-success text-left m-r-5" id="btnSubmit" onclick="EditStudent()" style="display: none">
+                                <i class="fa fa-check btn-icon"></i>
+                            </button>
+                            <button class="btn btn-danger text-left" id="btnCancel" onclick="onCancel()" style="display: none">
+                                <i class="fa fa-times btn-icon"></i>
+                            </button>
+                            <div class="text-right">
+                                <a onclick="ExportExcel()" class="btn btn-warning btn-with-icon text-right m-l-5">
+                                    <i class="glyphicon glyphicon-open"></i>
+                                    <div class="m-l-3">XUẤT BẢNG ĐIỂM QUÁ TRÌNH</div>
+                                </a>
+                                <a href="/studentList" class="btn btn-danger btn-with-icon text-right">
+                                    <i class="fa fa-arrow-left"></i>
+                                    <div class="m-l-3">QUAY LẠI</div>
+                                </a>
+                            </div>
+
+                        </div>
+
                     </div>
                     <div class="my-content">
                         <div class="row m-0">
@@ -373,6 +394,7 @@
 
     $(document).ready(function () {
         LoadMarkList();
+        CreateSelect();
 
         oldFullName = '${student.fullName}';
         oldGender = '${gender}';
@@ -620,5 +642,42 @@
 
         $("#export-excel").submit();
     }
+
+    function CreateSelect() {
+        $('#cb-student').select2({
+            width: 'resolve',
+            minimumInputLength: 2,
+            ajax: {
+                url: '/getStudentList',
+                data: function (params) {
+                    var queryParameters = {
+                        searchValue: params.term
+                    }
+                    return queryParameters;
+                },
+                processResults: function (result) {
+                    if (result.success) {
+                        return {
+                            results: $.map(result.items, function (item) {
+                                return {
+                                    id: item.value,
+                                    text: item.text,
+                                }
+                            })
+                        };
+                    } else {
+                        swal('', 'Có lỗi xảy ra, vui lòng thử lại', 'warning');
+                    }
+                }
+            }
+        });
+    }
+    $('#cb-student').on('change', function(){
+       var stuId = $('#cb-student').val();
+       if(stuId > 0){
+           $(location).attr('href', '/studentList/' + stuId);
+       }
+    });
+
 </script>
 

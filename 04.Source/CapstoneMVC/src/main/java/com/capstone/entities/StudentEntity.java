@@ -62,6 +62,8 @@ public class StudentEntity implements Serializable {
     private ProgramEntity programId;
     @OneToMany(mappedBy = "studentId")
     private List<StudentStatusEntity> studentStatusEntityList;
+    @OneToMany(mappedBy = "studentId")
+    private List<CourseStudentEntity> courseStudentEntityList;
 
     public StudentEntity() {
     }
@@ -209,6 +211,14 @@ public class StudentEntity implements Serializable {
 
     public void setStudentStatusEntityList(List<StudentStatusEntity> studentStatusEntityList) {
         this.studentStatusEntityList = studentStatusEntityList;
+    }
+
+    public List<CourseStudentEntity> getCourseStudentEntityList() {
+        return courseStudentEntityList;
+    }
+
+    public void setCourseStudentEntityList(List<CourseStudentEntity> courseStudentEntityList) {
+        this.courseStudentEntityList = courseStudentEntityList;
     }
 
     @Override

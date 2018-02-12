@@ -51,7 +51,7 @@ public class StudentArrangementController {
     @RequestMapping("/studentArrangement")
     public ModelAndView StudentArrangementIndex() {
         ModelAndView view = new ModelAndView("StudentArrangement");
-        view.addObject("title", "Danh sách sinh viên theo lớp môn");
+        view.addObject("title", "Dự kiến xếp lớp");
 
         IRealSemesterService semesterService = new RealSemesterServiceImpl();
         List<RealSemesterEntity> semesters = semesterService.getAllSemester();

@@ -1,13 +1,15 @@
 <component name="ArtifactManager">
-  <artifact type="exploded-war" name="spring-mvc-quickstart:war exploded">
-    <output-path>$PROJECT_DIR$/out/artifacts/spring_mvc_quickstart_war_exploded</output-path>
+  <artifact type="exploded-war" build-on-make="true" name="ROOT">
+    <output-path>$PROJECT_DIR$/out/artifacts/ROOT</output-path>
     <root id="root">
+      <element id="artifact" artifact-name="spring-mvc-quickstart:war exploded" />
       <element id="directory" name="WEB-INF">
         <element id="directory" name="classes">
           <element id="module-output" name="spring-mvc-quickstart" />
           <element id="jpa-descriptors" facet="spring-mvc-quickstart/jpa/JPA" />
         </element>
         <element id="directory" name="lib">
+          <element id="library" level="project" name="JPA 2.1-JPA 2.1" />
           <element id="library" level="project" name="Maven: opensymphony:sitemesh:2.4.2" />
           <element id="library" level="project" name="Maven: org.eclipse.persistence:eclipselink:2.5.0" />
           <element id="library" level="project" name="Maven: org.eclipse.persistence:javax.persistence:2.1.0" />
@@ -70,7 +72,7 @@
           <element id="library" level="project" name="Maven: org.springframework:spring-jdbc:4.3.9.RELEASE" />
           <element id="library" level="project" name="Maven: org.springframework:spring-tx:4.3.9.RELEASE" />
           <element id="library" level="project" name="Maven: com.h2database:h2:1.4.195" />
-          <element id="library" level="project" name="Maven: com.aspose:aspose-cells:16.11.0" />
+          <element id="library" level="project" name="Maven: com.aspose:aspose-cells:17.12" />
           <element id="library" level="project" name="Maven: org.springframework:spring-context-support:4.3.11.RELEASE" />
           <element id="library" level="project" name="Maven: com.sun.mail:javax.mail:1.6.0" />
           <element id="library" level="project" name="Maven: javax.activation:activation:1.1" />

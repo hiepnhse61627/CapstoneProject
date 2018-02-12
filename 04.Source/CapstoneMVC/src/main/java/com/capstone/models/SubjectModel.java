@@ -11,6 +11,16 @@ public class SubjectModel {
     private boolean result;
     private String errorMessage;
 
+    public int getNumber() {
+        return number;
+    }
+
+    public void setNumber(int number) {
+        this.number = number;
+    }
+
+    private int number;
+
     public SubjectModel() {
     }
 

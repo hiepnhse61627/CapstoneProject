@@ -58,7 +58,7 @@ public class Global {
         List<MarksEntity> removeMarks;
         removeMarks = list
                 .stream()
-                .filter(c -> c.getIsActivated() == true)
+                .filter(c -> c.getIsActivated())
                 .filter(c -> sortedList.indexOf(c.getSemesterId()) <= sortedList.indexOf(temporarySemester))
                 .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("fail") || c.getStatus().toLowerCase().contains("exempt"))
                 .collect(Collectors.toList());

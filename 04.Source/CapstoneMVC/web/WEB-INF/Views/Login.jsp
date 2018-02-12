@@ -123,7 +123,7 @@
             url += ".xip.io";
         }
         url += ":" + (location.port == '' ? "80" : location.port);
-        href.href = "https://accounts.google.com/o/oauth2/auth?client_id=415843400023-vlpk1t8gu558gmt597aqtumvkco0lmme.apps.googleusercontent.com&redirect_uri=http://" + url + "/auth/google&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto";
+        href.href = "https://accounts.google.com/o/oauth2/auth?clieredirect_urint_id=415843400023-vlpk1t8gu558gmt597aqtumvkco0lmme.apps.googleusercontent.com&=http://" + url + "/auth/google&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto";
 
         console.log(url);
 

@@ -149,7 +149,10 @@ public class ExportController {
                 "com.capstone.exporters.ExportExcelGraduatedStudentsImpl", // 17 = export excel graduated
                 "com.capstone.exporters.ExportInterimAcademicTranscriptImpl", // 18 = export interim academic transcript
                 "com.capstone.exporters.ExportStudentsFailedMoreThanRequiredCreditsImpl", // 19 = export students failed more than required credits
-                "com.capstone.exporters.ExportBestStudentImpl" // 20 = Best student in subjects in semester
+                "com.capstone.exporters.ExportExcelStudentsStudyResultBySemester", //20 = export students study Results
+                "com.capstone.exporters.ExportExcelStudentsStudyInfo", //21 = export students study info
+                "com.capstone.exporters.ExportConvert2StudentQuantityByClassAndSubject" //22
+				"com.capstone.exporters.ExportBestStudentImpl" // 23 = Best student in subjects in semester
         };
 
         try {

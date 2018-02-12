@@ -1,6 +1,7 @@
 package com.capstone.services;
 
 import com.capstone.entities.MarksEntity;
+import com.capstone.entities.StudentEntity;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 
 import java.util.List;
@@ -41,4 +42,7 @@ public interface IMarksService {
     // ----- Manager function ----
     List<Object[]> getTotalStudentsGroupBySemesterAndSubject(int semesterId);
     List<List<String>> getAverageSubjectLearnedByStudent(int programId);
+    List<MarksEntity> getMarksByStudentIdAndSemester(int studentId, int semesterId);
+    List<MarksEntity> getMarksByStudentAndSubjectIdList(int studentId, List<String> subjIdList);
+    List<StudentEntity> getOjtStudentsFromSelectedSemesterAndBeforeFromMarks(int semesterId);
 }

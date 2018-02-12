@@ -213,11 +213,13 @@
         <dec:body/>
     </div><!-- /.content-wrapper -->
 </div><!-- ./wrapper -->
-
+<footer>
+    <p class="text-center">&#169;FPT University</p>
+</footer>
 <script>
     var list;
 
-    $(document).ready(function() {
+    $(document).ready(function () {
         $(".select2-selection span").attr('title', '');
     });
 

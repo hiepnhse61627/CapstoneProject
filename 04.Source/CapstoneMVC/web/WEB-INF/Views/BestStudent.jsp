@@ -171,7 +171,7 @@
     }
 
     function ExportExcel() {
-        $("input[name='objectType']").val(20);
+        $("input[name='objectType']").val(23);
         $("input[name='semesterId']").val($('#cb-semester').val() != null ? $('#cb-semester').val() : 0);
         $("#export-excel").submit();
     }
