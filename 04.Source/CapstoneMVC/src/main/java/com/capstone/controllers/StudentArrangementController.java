@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -565,18 +566,25 @@ public class StudentArrangementController {
             // Create class for LAB
             int count;
             int classNumber;
+            int classCount = 0;
             for (String shift : shiftMapForLAB.keySet()) {
                 Map<String, List<StudentEntity>> subjectMapForLAB = shiftMapForLAB.get(shift);
                 for (String subjectCode : subjectMapForLAB.keySet()) {
                     count = 0;
                     classNumber = 1;
+                    classCount++;
 
                     SubjectEntity subject = subjectMap.get(subjectCode);
 
                     List<StudentEntity> list = subjectMapForLAB.get(subjectCode);
                     List<String> dataRow;
                     for (StudentEntity student : list) {
+                        StudentArrangementModel currentStudentModel = studentList.stream()
+                                .filter(q -> q.student.getRollNumber().equals(student.getRollNumber()))
+                                .collect(Collectors.toList()).get(0);
+
                         if (count == 25) {
+                            classCount++;
                             classNumber++;
                             count = 0;
                         }
@@ -586,9 +594,11 @@ public class StudentArrangementController {
                         dataRow.add(subject.getName());
                         dataRow.add(student.getRollNumber());
                         dataRow.add(student.getFullName());
-                        dataRow.add(subjectCode + "_" + shift + "_" + classNumber);
+                        dataRow.add(subjectCode + "_" + shift + "_" + classNumber + "_T" + ((classCount % 6) + 2));
                         dataRow.add(shift);
                         displayList.add(dataRow);
+
+                        currentStudentModel.setLabDay("T" + ((classCount % 6) + 2));
 
                         ++count;
                     }
@@ -659,6 +669,53 @@ public class StudentArrangementController {
                     }
                 }
 
+            }
+
+            List<String> evenSlotName = Arrays.asList((new String[] {"S21", "S22", "S23"}));
+            List<String> oddSlotName = Arrays.asList((new String[] {"S31", "S32", "S33"}));
+
+            // Check if a group of students can't make up a class and move them to their opposite shift's classes
+            for(ClassKey classKey : groupClassList.keySet()) {
+                List<StudentArrangementModel> currentShiftList = groupClassList.get(classKey);
+
+                if(currentShiftList.size() < 15) {
+                    String oppositeShift = classKey.shift.equalsIgnoreCase("AM") ? "PM" : "AM";
+                    List<ClassKey> oppositeShiftClassKeyList = groupClassList.keySet().stream().filter(
+                            q -> q.subjectCode.equals(classKey.subjectCode)
+                            && q.shift.equalsIgnoreCase(oppositeShift)).collect(Collectors.toList());
+
+                    int lowestEven = Integer.MAX_VALUE;
+                    int lowestOdd = Integer.MAX_VALUE;
+                    int posEven = -1;
+                    int posOdd = -1;
+
+                    for (ClassKey key : oppositeShiftClassKeyList) {
+                        if (evenSlotName.contains(key.slotName)) {
+                            if(groupClassList.get(key).size() < lowestEven) {
+                                posEven = oppositeShiftClassKeyList.indexOf(key);
+                                lowestEven = groupClassList.get(key).size();
+                            }
+                        } else {
+                            if(groupClassList.get(key).size() < lowestOdd) {
+                                posOdd = oppositeShiftClassKeyList.indexOf(key);
+                                lowestOdd = groupClassList.get(key).size();
+                            }
+                        }
+                    }
+
+                    ClassKey optimizedEvenSlotClassKey = oppositeShiftClassKeyList.get(posEven);
+                    ClassKey optimizedOddSlotClassKey = oppositeShiftClassKeyList.get(posOdd);
+
+                    for(StudentArrangementModel model : currentShiftList) {
+                        if(Arrays.asList(new String[] {"T2", "T4", "T6"}).contains(model.labDay)) {
+
+                        } else if (Arrays.asList(new String[] {"T3", "T5"}).contains(model.labDay)) {
+
+                        } else {
+
+                        }
+                    }
+                }
             }
 
             for(ClassKey classKey : groupClassList.keySet()) {
@@ -1285,6 +1342,16 @@ public class StudentArrangementController {
         public StudentEntity student;
         public int numOfSubjects; // In suggestion list
         public String[] subjects; // Based on subject's OrdinalNumber in curriculum
+
+        public String getLabDay() {
+            return labDay;
+        }
+
+        public void setLabDay(String labDay) {
+            this.labDay = labDay;
+        }
+
+        public String labDay;
 
         // [0, 1, 2]: Slot 1,2,3 of Monday, Wednesday, Friday
         // [3, 4, 5]: Slot 1,2,3 of Tuesday, Thursday
