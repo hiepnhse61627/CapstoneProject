@@ -13,6 +13,7 @@ public interface ICourseStudentService {
     List<CourseStudentEntity> findCourseStudentByGroupNameAndCourse(String groupName, CourseEntity course);
     CourseStudentEntity findCourseStudentByCourseAndStudent(CourseEntity course, StudentEntity student);
     List<CourseStudentEntity> findCourseStudentByGroupName(String groupName);
+    List<CourseStudentEntity> findCourseStudentByStudent(StudentEntity studentEntity);
     List<CourseStudentEntity> findAllCourseStudent();
     void saveCourseStudent(CourseStudentEntity emp) throws Exception;
     CourseStudentEntity createCourseStudent(CourseStudentEntity CourseStudentEntity);

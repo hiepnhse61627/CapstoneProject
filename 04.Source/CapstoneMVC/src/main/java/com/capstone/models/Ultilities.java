@@ -4,15 +4,22 @@ import com.capstone.entities.*;
 import com.capstone.services.*;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.servlet.ServletContext;
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -744,5 +751,51 @@ public class Ultilities {
             return d.getCreatedDate().getTime();
         }).reversed());
         return docs.get(0);
+    }
+
+    public static ResponseEntity<String> sendNotification(String msg, String email, List<ScheduleEntity> listNewSchedule, AndroidPushNotificationsService androidPushNotificationsService) {
+        try {
+
+            Gson gson = new Gson();
+
+            NotificationModel notification = new NotificationModel();
+            notification.setBody(msg);
+            notification.setSound("default");
+
+            FireBaseMessagingModel fireBaseMessaging = new FireBaseMessagingModel();
+//            fireBaseMessaging.setNotification(notification);
+            fireBaseMessaging.setTo("/topics/" + email);
+
+            List<ScheduleModel> scheduleModelList = new ArrayList<>();
+            for (ScheduleEntity schedule : listNewSchedule) {
+                ScheduleModel model = new ScheduleModel();
+                model.setCourseName(schedule.getCourseId().getSubjectCode());
+                model.setDate(schedule.getDateId().getDate());
+                model.setRoom(schedule.getRoomId().getName());
+                model.setSlot(schedule.getDateId().getSlotId().getSlotName());
+                model.setStartTime(schedule.getDateId().getSlotId().getStartTime());
+                model.setEndTime(schedule.getDateId().getSlotId().getEndTime());
+                model.setLecture(URLEncoder.encode(schedule.getEmpId().getFullName(), "UTF-8"));
+
+                scheduleModelList.add(model);
+            }
+
+            FirebaseDataModel data = new FirebaseDataModel();
+            data.setNewScheduleList(scheduleModelList);
+            fireBaseMessaging.setData(data);
+
+            HttpEntity<String> request = new HttpEntity<>(gson.toJson(fireBaseMessaging));
+
+            CompletableFuture<String> pushNotification = androidPushNotificationsService.send(request);
+
+            String firebaseResponse = pushNotification.get();
+
+            return new ResponseEntity<>(firebaseResponse, HttpStatus.OK);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new ResponseEntity<>("Push Notification ERROR!", HttpStatus.BAD_REQUEST);
     }
 }

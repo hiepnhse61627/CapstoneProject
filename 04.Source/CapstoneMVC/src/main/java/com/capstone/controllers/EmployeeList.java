@@ -33,95 +33,6 @@ public class EmployeeList {
         return view;
     }
 
-//    @RequestMapping("/studentList/{studentId}")
-//    public ModelAndView StudentInfo(@PathVariable("studentId") int studentId) {
-//        ModelAndView view = new ModelAndView("StudentInfo");
-//        view.addObject("title", "Thông tin sinh viên");
-//        view = this.GetStudentInfoData(view, studentId);
-//
-//        return view;
-//    }
-//
-//    @RequestMapping("/studentProcess/{studentId}")
-//    public ModelAndView StudentInfo2(@PathVariable("studentId") int studentId) {
-//        ModelAndView view = new ModelAndView("StudentInfo2");
-//        view.addObject("title", "Điểm quá trình");
-//        view = this.GetStudentInfoData(view, studentId);
-//
-//        return view;
-//    }
-
-//    private ModelAndView GetStudentInfoData(ModelAndView view, int studentId) {
-//        IStudentService studentService = new StudentServiceImpl();
-//        IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
-//        IStudentStatusService studentStatusService = new StudentStatusServiceImpl();
-//
-//        StudentEntity student = studentService.findStudentById(studentId);
-//
-//        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-//        view.addObject("student", student);
-//        view.addObject("docStudent", Lists.reverse(student.getDocumentStudentEntityList()).get(0));
-//
-//        view.addObject("gender", student.getGender() == Enums.Gender.MALE.getValue()
-//                ? Enums.Gender.MALE.getName() : Enums.Gender.FEMALE.getName());
-//        view.addObject("dateOfBirth", sdf.format(student.getDateOfBirth()));
-//        view.addObject("program", student.getProgramId() != null ? student.getProgramId().getName() : "N/A");
-//        CurriculumEntity cur = Lists.reverse(student.getDocumentStudentEntityList()).get(0).getCurriculumId();
-//        view.addObject("curriculum", cur != null ? cur.getName() : "N/A");
-//
-//        // Giaa lap hoc ky
-//        RealSemesterEntity gialap = Global.getTemporarySemester();
-//
-//        StudentStatusEntity studentStatusEntity = studentStatusService.getStudentStatusBySemesterIdAndStudentId(gialap.getId(), studentId);
-//        String studentStatus = studentStatusEntity != null ? studentStatusEntity.getStatus() : "N/A";
-//        view.addObject("status", studentStatus);
-//
-//        return view;
-//    }
-
-//    @RequestMapping(value = "/student/edit")
-//    @ResponseBody
-//    public JsonObject EditSubject(@RequestParam("sRollNumber") String rollNumber, @RequestParam("sFullName") String fullName,
-//                                  @RequestParam("sGender") String gender, @RequestParam("sDOB") String dob
-//            , @RequestParam("sTermNumber") String term) {
-//        JsonObject jsonObj = new JsonObject();
-//        IStudentService studentService = new StudentServiceImpl();
-//        try {
-//
-//            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-//            EntityManager em = emf.createEntityManager();
-//            em.getTransaction().begin();
-//            StudentEntity student = studentService.findStudentByRollNumber(rollNumber);
-//
-//            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-//            Date date = dateFormat.parse(dob);
-//            long time = date.getTime();
-//            Timestamp dateOfBirth = new Timestamp(time);
-//            student.setDateOfBirth(dateOfBirth);
-//            student.setDateOfBirth(date);
-//            student.setFullName(fullName);
-//            student.setTerm(Integer.valueOf(term));
-//            if (gender.equals("Nam")){
-//                student.setGender(true);
-//            }else{
-//                student.setGender(false);
-//            }
-//            em.merge(student);
-//            em.flush();
-//            em.getTransaction().commit();
-//
-//                jsonObj.addProperty("success", true);
-//                jsonObj.addProperty("message", "update Fail");
-//
-//        } catch (Exception e) {
-//            Logger.writeLog(e);
-//            jsonObj.addProperty("false", false);
-//            jsonObj.addProperty("message", e.getMessage());
-//        }
-//
-//        return jsonObj;
-//    }
-
     @RequestMapping(value = "/loadEmployeeList")
     @ResponseBody
     public JsonObject LoadEmployeeListAll(@RequestParam Map<String, String> params) {
@@ -230,9 +141,15 @@ public class EmployeeList {
                 model.setLecture(emp.getFullName());
                 scheduleModelList.add(model);
             }
-            emp.setScheduleEntityList(null);
 
-            obj.add("user", parser.parse(gson.toJson(emp)));
+            MobileUserModel user = new MobileUserModel();
+            user.setCode(emp.getCode());
+            user.setId(emp.getId());
+            user.setName(emp.getFullName());
+            user.setEmailEDU(emp.getEmailEDU());
+            user.setPosition(emp.getPosition());
+
+            obj.add("user", parser.parse(gson.toJson(user)));
 
             Collections.sort(scheduleModelList, new Comparator<ScheduleModel>() {
                 @Override

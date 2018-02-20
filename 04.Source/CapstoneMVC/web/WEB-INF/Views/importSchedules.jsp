@@ -7,7 +7,7 @@
 <section class="content">
     <div class="box">
         <div class="b-header">
-            <h1>Nhập danh sách lịch day của GV</h1>
+            <h1>Nhập danh sách lịch dạy của GV</h1>
             <hr>
         </div>
         <div class="b-body">

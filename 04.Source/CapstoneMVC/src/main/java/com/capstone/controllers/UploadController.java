@@ -35,6 +35,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import static com.capstone.models.Ultilities.distinctByKey;
+import static com.capstone.models.Ultilities.sendNotification;
+
 
 @Controller
 public class UploadController {
@@ -868,7 +871,7 @@ public class UploadController {
     @RequestMapping(value = "/importCourseStudentsPage")
     public ModelAndView goImportCourseStudentPage() {
         ModelAndView mav = new ModelAndView("importCourseStudents");
-        mav.addObject("title", "Nhập danh sách lịch học của SV");
+        mav.addObject("title", "Nhập danh sách lớp của SV");
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
         semesters = Ultilities.SortSemesters(semesters);
 
@@ -1545,50 +1548,50 @@ public class UploadController {
         return jsonObject;
     }
 
-    public ResponseEntity<String> sendNotification(String msg, String email, List<ScheduleEntity> listNewSchedule) {
-        try {
-            Gson gson = new Gson();
-
-            NotificationModel notification = new NotificationModel();
-            notification.setBody(msg);
-            notification.setSound("default");
-
-            FireBaseMessagingModel fireBaseMessaging = new FireBaseMessagingModel();
-//            fireBaseMessaging.setNotification(notification);
-            fireBaseMessaging.setTo("/topics/" + email);
-
-            List<ScheduleModel> scheduleModelList = new ArrayList<>();
-            for (ScheduleEntity schedule : listNewSchedule) {
-                ScheduleModel model = new ScheduleModel();
-                model.setCourseName(schedule.getCourseId().getSubjectCode());
-                model.setDate(schedule.getDateId().getDate());
-                model.setRoom(schedule.getRoomId().getName());
-                model.setSlot(schedule.getDateId().getSlotId().getSlotName());
-                model.setStartTime(schedule.getDateId().getSlotId().getStartTime());
-                model.setEndTime(schedule.getDateId().getSlotId().getEndTime());
-                model.setLecture(URLEncoder.encode(schedule.getEmpId().getFullName(), "UTF-8"));
-
-                scheduleModelList.add(model);
-            }
-
-            FirebaseDataModel data = new FirebaseDataModel();
-            data.setNewScheduleList(scheduleModelList);
-            fireBaseMessaging.setData(data);
-
-            HttpEntity<String> request = new HttpEntity<>(gson.toJson(fireBaseMessaging));
-
-            CompletableFuture<String> pushNotification = androidPushNotificationsService.send(request);
-
-            String firebaseResponse = pushNotification.get();
-
-            return new ResponseEntity<>(firebaseResponse, HttpStatus.OK);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return new ResponseEntity<>("Push Notification ERROR!", HttpStatus.BAD_REQUEST);
-    }
+//    public ResponseEntity<String> sendNotification(String msg, String email, List<ScheduleEntity> listNewSchedule) {
+//        try {
+//            Gson gson = new Gson();
+//
+//            NotificationModel notification = new NotificationModel();
+//            notification.setBody(msg);
+//            notification.setSound("default");
+//
+//            FireBaseMessagingModel fireBaseMessaging = new FireBaseMessagingModel();
+////            fireBaseMessaging.setNotification(notification);
+//            fireBaseMessaging.setTo("/topics/" + email);
+//
+//            List<ScheduleModel> scheduleModelList = new ArrayList<>();
+//            for (ScheduleEntity schedule : listNewSchedule) {
+//                ScheduleModel model = new ScheduleModel();
+//                model.setCourseName(schedule.getCourseId().getSubjectCode());
+//                model.setDate(schedule.getDateId().getDate());
+//                model.setRoom(schedule.getRoomId().getName());
+//                model.setSlot(schedule.getDateId().getSlotId().getSlotName());
+//                model.setStartTime(schedule.getDateId().getSlotId().getStartTime());
+//                model.setEndTime(schedule.getDateId().getSlotId().getEndTime());
+//                model.setLecture(URLEncoder.encode(schedule.getEmpId().getFullName(), "UTF-8"));
+//
+//                scheduleModelList.add(model);
+//            }
+//
+//            FirebaseDataModel data = new FirebaseDataModel();
+//            data.setNewScheduleList(scheduleModelList);
+//            fireBaseMessaging.setData(data);
+//
+//            HttpEntity<String> request = new HttpEntity<>(gson.toJson(fireBaseMessaging));
+//
+//            CompletableFuture<String> pushNotification = androidPushNotificationsService.send(request);
+//
+//            String firebaseResponse = pushNotification.get();
+//
+//            return new ResponseEntity<>(firebaseResponse, HttpStatus.OK);
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        return new ResponseEntity<>("Push Notification ERROR!", HttpStatus.BAD_REQUEST);
+//    }
 
 
     @RequestMapping(value = "/uploadSchedules", method = RequestMethod.POST)
@@ -1602,14 +1605,14 @@ public class UploadController {
         EmployeeEntity employee = null;
         CourseEntity course = null;
 
-        Set<EmployeeEntity> employees = new HashSet<>();
+        Map<EmployeeEntity, List<ScheduleEntity>> employeesMap = new HashMap<>();
+        Map<StudentEntity, List<ScheduleEntity>> studentsMap = new HashMap<>();
 
         try {
             InputStream is = file.getInputStream();
 
             XSSFWorkbook workbook = new XSSFWorkbook(is);
             XSSFSheet spreadsheet = workbook.getSheetAt(0);
-
             XSSFRow row;
             int excelDataIndex = 1;
             int lastRow = spreadsheet.getLastRowNum();
@@ -1663,9 +1666,11 @@ public class UploadController {
 
                                 daySlotEntity.setDate(formattedDate);
                                 daySlotEntity.setSlotId(slots.get(0));
-
-                                daySlotEntities.add(daySlotEntity);
+                                daySlotService.createDateSlot(daySlotEntity);
+//                                daySlotEntities.add(daySlotEntity);
                             }
+
+
                             Integer semesterId = Integer.parseInt(semesterIdStr.trim());
                             RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterById(semesterId);
                             course = courseService.findCourseBySemesterAndSubjectCode(realSemesterEntity.getSemester(), courseCell.getStringCellValue());
@@ -1683,7 +1688,10 @@ public class UploadController {
                                     employee = employeeService.findEmployeeByShortName(employeeCell.getStringCellValue());
                                 }
 
-                                if (scheduleService.findScheduleByDateSlotAndRoom(daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)), rooms.get(0)) == null) {
+                                DaySlotEntity daySlot = daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0));
+//                                if (scheduleService.findScheduleByDateSlotAndRoom(daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)), rooms.get(0)) == null) {
+                                ScheduleEntity aScheduleEntity = scheduleService.findScheduleByDateSlotAndGroupName(daySlot, groupNameCell.getStringCellValue());
+                                if (aScheduleEntity == null && scheduleService.findScheduleByDateSlotAndLecture(daySlot, employee) == null) {
                                     ScheduleEntity scheduleEntity = new ScheduleEntity();
 
                                     scheduleEntity.setCourseId(course);
@@ -1693,25 +1701,113 @@ public class UploadController {
 
                                     if (employee != null) {
                                         scheduleEntity.setEmpId(employee);
-                                        employees.add(employee);
-                                    }
-                                    scheduleEntities.add(scheduleEntity);
-                                }
 
+                                        List<ScheduleEntity> teacherSchedule = new ArrayList<>();
+                                        if (employeesMap.get(employee) == null) {
+                                            employeesMap.put(employee, new ArrayList<ScheduleEntity>());
+                                        }
+                                        teacherSchedule = employeesMap.get(employee);
+                                        teacherSchedule = new ArrayList<>(teacherSchedule);
+
+                                        ScheduleEntity tmp = teacherSchedule.stream().filter(q -> q.getRoomId().getId() == scheduleEntity.getRoomId().getId()
+                                                && q.getDateId().getId() == scheduleEntity.getDateId().getId()).findFirst().orElse(null);
+
+                                        if (tmp == null) {
+                                            teacherSchedule.add(scheduleEntity);
+                                        }
+
+                                        employeesMap.put(employee, teacherSchedule);
+                                    }
+
+                                    scheduleEntities.add(scheduleEntity);
+
+                                    List<CourseStudentEntity> courseStudentEntityList = courseStudentService.findCourseStudentByGroupNameAndCourse(groupNameCell.getStringCellValue(), course);
+                                    if (courseStudentEntityList != null) {
+                                        for (CourseStudentEntity courseStudentEntity : courseStudentEntityList) {
+                                            List<ScheduleEntity> studentSchedule = new ArrayList<>();
+                                            StudentEntity aStudent = courseStudentEntity.getStudentId();
+                                            if (studentsMap.get(aStudent) == null) {
+                                                studentsMap.put(aStudent, new ArrayList<ScheduleEntity>());
+                                            }
+                                            studentSchedule = studentsMap.get(aStudent);
+                                            studentSchedule = new ArrayList<>(studentSchedule);
+
+                                            ScheduleEntity tmp = studentSchedule.stream().filter(q -> q.getRoomId().getId() == scheduleEntity.getRoomId().getId()
+                                                    && q.getDateId().getId() == scheduleEntity.getDateId().getId()).findFirst().orElse(null);
+
+                                            if (tmp == null) {
+                                                studentSchedule.add(scheduleEntity);
+                                            }
+
+                                            studentsMap.put(aStudent, studentSchedule);
+                                        }
+                                    }
+                                } else {
+                                    //update schedule
+                                    if (employee != null && aScheduleEntity != null) {
+                                        if (aScheduleEntity.getRoomId().getId() != rooms.get(0).getId() || aScheduleEntity.getEmpId().getId() != employee.getId()) {
+                                            aScheduleEntity.setEmpId(employee);
+
+                                            aScheduleEntity.setRoomId(rooms.get(0));
+                                            scheduleService.updateSchedule(aScheduleEntity);
+
+                                            List<ScheduleEntity> teacherSchedule = new ArrayList<>();
+                                            if (employeesMap.get(employee) == null) {
+                                                employeesMap.put(employee, new ArrayList<ScheduleEntity>());
+                                            }
+                                            teacherSchedule = employeesMap.get(employee);
+                                            teacherSchedule = new ArrayList<>(teacherSchedule);
+
+                                            ScheduleEntity tmp = teacherSchedule.stream().filter(q -> q.getRoomId().getId() == aScheduleEntity.getRoomId().getId()
+                                                    && q.getDateId().getId() == aScheduleEntity.getDateId().getId()).findFirst().orElse(null);
+
+                                            if (tmp == null) {
+                                                teacherSchedule.add(aScheduleEntity);
+                                            }
+                                            employeesMap.put(employee, teacherSchedule);
+
+
+                                            List<CourseStudentEntity> courseStudentEntityList = courseStudentService.findCourseStudentByGroupNameAndCourse(groupNameCell.getStringCellValue(), course);
+                                            if (courseStudentEntityList != null) {
+                                                for (CourseStudentEntity courseStudentEntity : courseStudentEntityList) {
+                                                    List<ScheduleEntity> studentSchedule = new ArrayList<>();
+                                                    StudentEntity aStudent = courseStudentEntity.getStudentId();
+                                                    if (studentsMap.get(aStudent) == null) {
+                                                        studentsMap.put(aStudent, new ArrayList<ScheduleEntity>());
+                                                    }
+                                                    studentSchedule = studentsMap.get(aStudent);
+                                                    studentSchedule = new ArrayList<>(studentSchedule);
+
+                                                    ScheduleEntity tmp2 = studentSchedule.stream().filter(q -> q.getRoomId().getId() == aScheduleEntity.getRoomId().getId()
+                                                            && q.getDateId().getId() == aScheduleEntity.getDateId().getId()).findFirst().orElse(null);
+
+                                                    if (tmp2 == null) {
+                                                        studentSchedule.add(aScheduleEntity);
+                                                    }
+
+                                                    studentsMap.put(aStudent, studentSchedule);
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                }
                             }
                         }
-
                     }
                     this.currentLine++;
                 }
-
             }
-            daySlotService.createDaySlotList(daySlotEntities);
+//            daySlotService.createDaySlotList(daySlotEntities);
             scheduleService.createScheduleList(scheduleEntities);
+            String msg = "Your schedule has been changed. Click here to check update";
 
-            for (EmployeeEntity emp : employees) {
-                String msg = "Your schedule has been changed. Click here to check update";
-                sendNotification(msg, emp.getEmailEDU().substring(0, emp.getEmailEDU().indexOf("@")), scheduleEntities);
+            for (EmployeeEntity key : employeesMap.keySet()) {
+                sendNotification(msg, key.getEmailEDU().substring(0, key.getEmailEDU().indexOf("@")), employeesMap.get(key), androidPushNotificationsService);
+            }
+
+            for (StudentEntity key : studentsMap.keySet()) {
+                sendNotification(msg, key.getEmail().substring(0, key.getEmail().indexOf("@")), studentsMap.get(key), androidPushNotificationsService);
             }
 
             jsonObject.addProperty("success", true);
