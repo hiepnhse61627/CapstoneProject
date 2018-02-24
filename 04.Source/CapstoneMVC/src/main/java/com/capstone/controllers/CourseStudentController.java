@@ -70,11 +70,9 @@ public class CourseStudentController {
 
             HashSet<String> groupNameList = new HashSet();
 
-
             if(courseStudentEntities!=null && courseStudentEntities.size()>0){
                 for(CourseStudentEntity courseStudent : courseStudentEntities){
                     groupNameList.add(courseStudent.getGroupName());
-
                 }
 
                 for(String groupName : groupNameList){
@@ -82,8 +80,6 @@ public class CourseStudentController {
                     allScheduleList.addAll(courseScheduleEntityList);
                 }
             }
-
-
 
             List<ScheduleModel> scheduleModelList = new ArrayList<>();
             for (ScheduleEntity schedule : allScheduleList) {

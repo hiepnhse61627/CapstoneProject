@@ -29,7 +29,7 @@
                         <th>Chức vụ</th>
                         <th>Điện thoại</th>
                         <th>Email FE</th>
-                        <%--<th>Chi tiết</th>--%>
+                        <th>Chi tiết</th>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -120,14 +120,14 @@
                     "bSortable": false,
                     "sClass": "text-center",
                 },
-                // {
-                //     "aTargets": [6],
-                //     "mRender": function (data, type, row) {
-                //         var href = "/studentList/" + data;
-                //         return "<a href='" + href + "' class='btn btn-success tbl-btn'>" +
-                //             "<i class='fa fa-eye'></i></a>";
-                //     }
-                // },
+                {
+                    "aTargets": [6],
+                    "mRender": function (data, type, row) {
+                        var href = "/employeeList/" + data;
+                        return "<a href='" + href + "' class='btn btn-success tbl-btn'>" +
+                            "<i class='fa fa-eye'></i></a>";
+                    }
+                },
             ],
             "bAutoWidth": false,
         }).fnSetFilteringDelay(700);

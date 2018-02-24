@@ -753,7 +753,7 @@ public class Ultilities {
         return docs.get(0);
     }
 
-    public static ResponseEntity<String> sendNotification(String msg, String email, List<ScheduleEntity> listNewSchedule, AndroidPushNotificationsService androidPushNotificationsService) {
+    public static ResponseEntity<String> sendNotification(String msg, String email, List<ScheduleEntity> listNewSchedule, AndroidPushNotificationsService androidPushNotificationsService, String type) {
         try {
 
             Gson gson = new Gson();
@@ -763,7 +763,6 @@ public class Ultilities {
             notification.setSound("default");
 
             FireBaseMessagingModel fireBaseMessaging = new FireBaseMessagingModel();
-//            fireBaseMessaging.setNotification(notification);
             fireBaseMessaging.setTo("/topics/" + email);
 
             List<ScheduleModel> scheduleModelList = new ArrayList<>();
@@ -782,7 +781,18 @@ public class Ultilities {
 
             FirebaseDataModel data = new FirebaseDataModel();
             data.setNewScheduleList(scheduleModelList);
+            data.setType(type);
             fireBaseMessaging.setData(data);
+
+//            NotificationModel notificationModel = new NotificationModel();
+//
+//            if(type.equals("create")){
+//                notificationModel.setTitle("You have new schedule");
+//            }else{
+//                notificationModel.setTitle("Your schedule has been changed");
+//            }
+//            notificationModel.setBody( "Your subject " + listNewSchedule.get(0).getCourseId().getSubjectCode() + " has new schedules.");
+//            fireBaseMessaging.setNotification(notificationModel);
 
             HttpEntity<String> request = new HttpEntity<>(gson.toJson(fireBaseMessaging));
 

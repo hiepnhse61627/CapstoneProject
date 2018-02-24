@@ -1,7 +1,17 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+
 <style>
+    .form-group .my-content .my-input-group .right-content {
+        width: 76%;
+    }
+
+    .btn-icon {
+        padding: 2px 0px;
+        font-size: 14px;
+    }
+
     .form-date-range {
         position: relative;
     }
@@ -46,54 +56,222 @@
     .select2-selection__rendered[title]:hover:after {
         color: red;
     }
-</style>
 
+
+</style>
 
 <section class="content">
     <div class="box">
         <div class="b-header">
             <div class="row">
-                <div class="col-md-9 title">
-                    <h1>Danh sách lịch học</h1>
+                <div class="col-md-6 title">
+                    <h1>Thông tin giảng viên</h1>
                 </div>
-                <div class="col-md-3 text-right">
-                    <button type="button" class="btn btn-success btn-with-icon" onclick="CreateSchedule()">
-                        <i class="glyphicon glyphicon-open"></i>
-                        <div>Thêm lịch học</div>
-                    </button>
+                <div class="col-md-6 text-right">
+                    <a href="/employeeList" class="btn btn-danger btn-with-icon text-right">
+                        <i class="fa fa-arrow-left"></i>
+                        <div class="m-l-3">QUAY LẠI</div>
+                    </a>
                 </div>
             </div>
             <hr>
         </div>
 
         <div class="b-body">
-            <div class="row">
-                <div class="col-md-12">
-                    <table id="tbl-schedule">
-                        <thead>
-                        <th>ID</th>
-                        <th>Mã môn</th>
-                        <th>Lớp</th>
-                        <th>Ngày</th>
-                        <th>Slot</th>
-                        <th>Phòng</th>
-                        <th>Giảng viên</th>
-                        <th>Chi tiết</th>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+            <div class="form-group">
+                <div class="row">
+                    <div class="title">
+                        <h4 class="text-left m-r-10 m-t-5">Thông tin chi tiết</h4>
+                        <button class="btn btn-primary text-left" id="btnEdit" onclick="onEdit()">
+                            <i class="glyphicon glyphicon-pencil btn-icon"></i>
+                        </button>
+                        <button class="btn btn-success text-left m-r-5" id="btnEditSubmit" onclick="EditEmployee()"
+                                style="display: none">
+                            <i class="fa fa-check btn-icon"></i>
+                        </button>
+                        <button class="btn btn-danger text-left" id="btnEditCancel" onclick="onCancel()"
+                                style="display: none">
+                            <i class="fa fa-times btn-icon"></i>
+                        </button>
+                    </div>
+                    <div class="my-content">
+                        <div class="row m-0">
+                            <div class="my-input-group width-40 p-l-30 text-left">
+                                <div class="left-content" style="width: 85px">
+                                    <label class="p-t-8">Tên:</label>
+                                </div>
+                                <div class="right-content">
+                                    <input id="employeeName" disabled type="text" class="form-control"
+                                           value="${employee.fullName}"/>
+                                </div>
+                            </div>
+
+                            <div class="my-input-group width-40 p-l-30 text-left">
+                                <div class="left-content" style="width: 85px">
+                                    <label class="p-t-8">Giới tính:</label>
+                                </div>
+                                <div class="right-content">
+                                    <input id="gender" disabled type="text" class="form-control"
+                                           value="${(employee.gender == true) ? "Nam" : "Nữ"}"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row m-0">
+                            <div class="my-input-group width-40 p-l-30 text-left">
+                                <div class="left-content" style="width: 85px">
+                                    <label class="p-t-8">Mã GV:</label>
+                                </div>
+                                <div class="right-content">
+                                    <input id="code" disabled type="text" class="form-control"
+                                           value="${employee.code}"/>
+                                </div>
+                            </div>
+
+                            <div class="my-input-group width-40 p-l-30 text-left">
+                                <div class="left-content" style="width: 85px">
+                                    <label class="p-t-8">Ngày sinh:</label>
+                                </div>
+                                <div class="right-content">
+                                    <input id="dateOfBirth" disabled type="text" class="form-control"
+                                           value="${employee.dateOfBirth}"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row m-0">
+                            <div class="my-input-group width-40 p-l-30 text-left">
+                                <div class="left-content" style="width: 85px">
+                                    <label class="p-t-8">Vị trí:</label>
+                                </div>
+                                <div class="right-content">
+                                    <input id="position" disabled type="text" class="form-control"
+                                           value="${employee.position}"/>
+                                </div>
+                            </div>
+
+                            <div class="my-input-group width-40 p-l-30 text-left">
+                                <div class="left-content" style="width: 85px">
+                                    <label class="p-t-8">Loại hợp đồng:</label>
+                                </div>
+                                <div class="right-content">
+                                    <input id="contract" disabled type="text" class="form-control"
+                                           value="${employee.contract}"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row m-0">
+                            <div class="my-input-group width-40 p-l-30 text-left">
+                                <div class="left-content" style="width: 85px">
+                                    <label class="p-t-8">Email FE:</label>
+                                </div>
+                                <div class="right-content">
+                                    <input id="emailFE" disabled type="text" class="form-control"
+                                           value="${employee.emailFE}"/>
+                                </div>
+                            </div>
+
+                            <div class="my-input-group width-40 p-l-30 text-left">
+                                <div class="left-content" style="width: 85px">
+                                    <label class="p-t-8">Email EDU:</label>
+                                </div>
+                                <div class="right-content">
+                                    <input id="emailEDU" disabled type="text" class="form-control"
+                                           value="${employee.emailEDU}"/>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="row m-0">
+                            <div class="my-input-group width-40 p-l-30 text-left">
+                                <div class="left-content" style="width: 85px">
+                                    <label class="p-t-8">Email cá nhân:</label>
+                                </div>
+                                <div class="right-content">
+                                    <input id="emailPersonal" disabled type="text" class="form-control"
+                                           value="${employee.personalEmail}"/>
+                                </div>
+                            </div>
+
+                            <div class="my-input-group width-40 p-l-30 text-left">
+                                <div class="left-content" style="width: 85px">
+                                    <label class="p-t-8">SĐT:</label>
+                                </div>
+                                <div class="right-content">
+                                    <input id="phone" disabled type="text" class="form-control"
+                                           value="${employee.phone}"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row m-0">
+                            <div class="my-input-group p-l-30 text-left" style="width: 93%;">
+                                <div class="left-content" style="width: 85px">
+                                    <label class="p-t-8">Địa chỉ:</label>
+                                </div>
+                                <div class="right-content">
+                                    <input id="address" disabled type="text" class="form-control"
+                                           value="${employee.address}"/>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="row m-0">
+                            <%--<button style="display: none" id="change" type="button" class="btn btn-primary" onclick="return EditEmployee($('#code').val(),$('#employeName').val()--%>
+                                    <%--,$('#position').val(),$('#contract').val(),$('#emailEDU').val(),$('#emailFE').val(),--%>
+                                    <%--$('#emailPersonal').val(),$('#gender').val(),$('#dateOfBirth').val(), $('#phone').val(),$('#address').val())">--%>
+                                <%--Thay đổi thông tin--%>
+                            <%--</button>--%>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="title">
+                        <h4 class="text-left m-r-10 m-t-5">Lịch dạy</h4>
+                        <button class="btn btn-success text-left" style="margin-top: -3px" onclick="CreateSchedule()">
+                            Thêm lịch dạy
+                        </button>
+                    </div>
+
+                    <div class="my-content">
+                        <%--<div hidden class="no-data col-md-12">--%>
+                        <%--Không có dữ liệu--%>
+                        <%--</div>--%>
+                        <div class="b-body">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <table id="tbl-schedule">
+                                        <thead>
+                                        <th>ID</th>
+                                        <th>Mã môn</th>
+                                        <th>Lớp</th>
+                                        <th>Ngày</th>
+                                        <th>Slot</th>
+                                        <th>Phòng</th>
+                                        <th>Giảng viên</th>
+                                        <th>Chi tiết</th>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-<form id="export-excel" action="/exportExcel" hidden>
-    <input name="objectType"/>
-</form>
-
 <div id="scheduleModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
+
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -170,21 +348,14 @@
                             </select>
                         </div>
 
-                        <div class="form-group">
-                            <label for="lecture">Giáo viên:</label>
-                            <select id="lecture" class="select lecture-select">
-                                <c:forEach var="emp" items="${employees}">
-                                    <option value="${emp.fullName}">${emp.fullName}</option>
-                                </c:forEach>
-                            </select>
-                        </div>
-
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" value="" id="all">
-                            <label class="form-check-label" for="all">
-                                Áp dụng cho tất cả slot tương tự
-                            </label>
-                        </div>
+                        <%--<div class="form-group">--%>
+                            <%--<label for="lecture">Giáo viên:</label>--%>
+                            <%--<select id="lecture" class="select lecture-select">--%>
+                                <%--<c:forEach var="emp" items="${employees}">--%>
+                                    <%--<option value="${emp.fullName}">${emp.fullName}</option>--%>
+                                <%--</c:forEach>--%>
+                            <%--</select>--%>
+                        <%--</div>--%>
 
                     </div>
                 </div>
@@ -198,10 +369,25 @@
     </div>
 </div>
 
+<form id="export-excel" action="/exportExcel" hidden>
+    <input name="objectType"/>
+    <input name="studentId"/>
+</form>
+
 <script>
     var tblSchedule;
     var startDate;
     var endDate;
+
+    var oldPosition;
+    var oldContract;
+    var oldEmailFE;
+    var oldEmailEDU;
+    var oldEmailPersonal;
+    var oldPhone;
+    var oldAddress;
+    var oldName;
+
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -256,6 +442,15 @@
     }
 
     $(document).ready(function () {
+        oldPosition = '${employee.position}';
+        oldContract = '${employee.contract}';
+        oldEmailFE = '${employee.emailFE}';
+        oldEmailEDU = '${employee.emailEDU}';
+        oldEmailPersonal = '${employee.personalEmail}';
+        oldPhone = '${employee.phone}';
+        oldAddress = '${employee.address}';
+        oldName = '${employee.fullName}';
+
         $('#subject').select2({
             placeholder: '- Chọn môn -'
         });
@@ -361,9 +556,9 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/loadScheduleList",
+            "sAjaxSource": "/loadScheduleList/${employee.id}",
             "oLanguage": {
-                "sSearchPlaceholder": "Tên GV, Ngày, Mã môn",
+                "sSearchPlaceholder": "Ngày, Mã môn",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
@@ -384,6 +579,10 @@
                 },
                 {
                     "aTargets": [0],
+                    "bVisible": false,
+                },
+                {
+                    "aTargets": [6],
                     "bVisible": false,
                 },
                 {
@@ -444,7 +643,7 @@
                             dayOfWeekList: JSON.stringify(dayOfWeekArr),
                             slots: JSON.stringify(slots),
                             room: $("#room").val(),
-                            lecture: $("#lecture").val()
+                            lecture: oldName,
                         },
                         success: function (result) {
                             isRunning = false;
@@ -564,6 +763,86 @@
         return !isError;
     }
 
+    function EditEmployee() {
+        swal({
+            title: 'Xác nhận cập nhật giảng viên?',
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Tiếp tục',
+            cancelButtonText: 'Đóng'
+        }).then(function () {
+            $.ajax({
+                type: "POST",
+                url: "/employee/edit/${employee.id}",
+                data: {
+                    "position": $('#position').val(),
+                    "emailPersonal": $('#emailPersonal').val(),
+                    "emailFE": $('#emailFE').val(),
+                    "emailEDU": $('#emailEDU').val(),
+                    "phone": $('#phone').val(),
+                    "address": $('#address').val(),
+                    "contract": $('#contract').val(),
+                },
+                success: function (result) {
+                    if (result.success) {
+                        swal({
+                            title: 'Thành công',
+                            text: "Đã cập nhật giảng viên!",
+                            type: 'success'
+                        }).then(function () {
+                            oldPosition = $('#position').val();
+                            oldContract =  $('#contract').val();
+                            oldEmailFE = $('#emailFE').val();
+                            oldEmailEDU = $('#emailEDU').val();
+                            oldEmailPersonal = $('#emailPersonal').val();
+                            oldPhone = $('#phone').val();
+                            oldAddress = $('#address').val();
+                            onCancel();
+                        });
+                    } else {
+                        swal('', result.message, 'error');
+                    }
+                }
+            });
+        });
+    }
+
+    function onEdit() {
+        $('#btnEdit').hide();
+        $('#btnEditSubmit').show();
+        $('#btnEditCancel').show();
+        $('#position').prop("disabled", false);
+        $('#emailPersonal').prop("disabled", false);
+        $('#emailFE').prop("disabled", false);
+        $('#emailEDU').prop("disabled", false);
+        $('#phone').prop("disabled", false);
+        $('#address').prop("disabled", false);
+        $('#contract').prop("disabled", false);
+    }
+
+    function onCancel() {
+        $('#btnEdit').show();
+        $('#btnEditSubmit').hide();
+        $('#btnEditCancel').hide();
+        $('#position').prop("disabled", true);
+        $('#emailPersonal').prop("disabled", true);
+        $('#emailFE').prop("disabled", true);
+        $('#emailEDU').prop("disabled", true);
+        $('#phone').prop("disabled", true);
+        $('#address').prop("disabled", true);
+        $('#contract').prop("disabled", true);
+
+        $('#position').val(oldPosition);
+        $('#emailPersonal').val(oldEmailPersonal);
+        $('#emailFE').val(oldEmailFE);
+        $('#emailEDU').val(oldEmailEDU);
+        $('#phone').val(oldPhone);
+        $('#address').val(oldAddress);
+        $('#contract').val(oldContract);
+    }
+
     function ClearModal() {
         $('#subject').val('').trigger('change');
         $('#semester').val('N/A').trigger('change');
@@ -591,6 +870,5 @@
         var data = str.split("/");
         return new Date(data[2], data[1] - 1, data[0]);
     }
-
-
 </script>
+

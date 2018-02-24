@@ -31,7 +31,7 @@
             </div>
             <div class="form-group">
                 <div class="left-content m-r-5">
-                    <label>Chọn học kỳ để nhập thời khóa biểu:</label>
+                    <label>Chọn học kỳ:</label>
                 </div>
                 <div class="right-content width-30 width-m-70">
                     <select id="semester" class="select form-control">
@@ -96,7 +96,6 @@
             contentType: false,
             success: function (result) {
                 $('#progress').html("<div>(" + result.current + "/" + result.total + ")</div>");
-                console.log("task running");
                 if (running) {
                     setTimeout("waitForTaskFinish(isRunning)", 50);
                 }

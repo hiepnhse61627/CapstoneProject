@@ -1661,6 +1661,7 @@ public class UploadController {
 
                         slots = slotService.findSlotsByName(slotName);
                         if (slots.size() != 0) {
+                            //add DaySlot to DB
                             if (daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)) == null) {
                                 DaySlotEntity daySlotEntity = new DaySlotEntity();
 
@@ -1803,11 +1804,11 @@ public class UploadController {
             String msg = "Your schedule has been changed. Click here to check update";
 
             for (EmployeeEntity key : employeesMap.keySet()) {
-                sendNotification(msg, key.getEmailEDU().substring(0, key.getEmailEDU().indexOf("@")), employeesMap.get(key), androidPushNotificationsService);
+                sendNotification(msg, key.getEmailEDU().substring(0, key.getEmailEDU().indexOf("@")), employeesMap.get(key), androidPushNotificationsService,"edit");
             }
 
             for (StudentEntity key : studentsMap.keySet()) {
-                sendNotification(msg, key.getEmail().substring(0, key.getEmail().indexOf("@")), studentsMap.get(key), androidPushNotificationsService);
+                sendNotification(msg, key.getEmail().substring(0, key.getEmail().indexOf("@")), studentsMap.get(key), androidPushNotificationsService, "edit");
             }
 
             jsonObject.addProperty("success", true);

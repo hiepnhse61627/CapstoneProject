@@ -24,6 +24,23 @@ import java.util.stream.Collectors;
 
 @Controller
 public class EmployeeList {
+    IRoomService roomService = new RoomServiceImpl();
+
+    IScheduleService scheduleService = new ScheduleServiceImpl();
+
+    ISlotService slotService = new SlotServiceImpl();
+
+    IDaySlotService daySlotService = new DaySlotServiceImpl();
+
+    ICourseStudentService courseStudentService = new CourseStudentServiceImpl();
+
+    ICourseService courseService = new CourseServiceImpl();
+
+    IEmployeeService employeeService = new EmployeeServiceImpl();
+
+    IRealSemesterService realSemesterService = new RealSemesterServiceImpl();
+
+    ISubjectService subjectService = new SubjectServiceImpl();
 
     @RequestMapping("/employeeList")
     public ModelAndView EmployeeListAll() {
@@ -31,6 +48,88 @@ public class EmployeeList {
         view.addObject("title", "Danh sách giảng viên");
 
         return view;
+    }
+
+    @RequestMapping("/employeeList/{employeeId}")
+    public ModelAndView EmployeeInfo(@PathVariable("employeeId") int employeeId) {
+        ModelAndView view = new ModelAndView("EmployeeInfo");
+        view.addObject("title", "Thông tin giảng viên");
+        List<SubjectEntity> subjects = subjectService.getAllSubjects();
+        view.addObject("subjects", subjects);
+
+        List<RoomEntity> rooms = roomService.findAllRooms();
+        view.addObject("rooms", rooms);
+
+        List<EmployeeEntity> emps = employeeService.findAllEmployees();
+        view.addObject("employees", emps);
+
+        List<SlotEntity> slots = slotService.findAllSlots();
+        view.addObject("slots", slots);
+
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+
+        view.addObject("semesters", semesters);
+
+        EmployeeEntity emp = employeeService.findEmployeeById(employeeId);
+
+        view.addObject("employee", emp);
+
+        return view;
+    }
+
+    @RequestMapping(value = "/employee/edit/{employeeId}")
+    @ResponseBody
+    public JsonObject EditEmployee(@PathVariable("employeeId") int employeeId, @RequestParam Map<String, String> params) {
+        JsonObject jsonObj = new JsonObject();
+
+        try {
+            EmployeeEntity emp = employeeService.findEmployeeById(employeeId);
+            String position = params.get("position");
+            String emailPersonal = params.get("emailPersonal");
+            String emailFE = params.get("emailFE");
+            String emailEDU = params.get("emailEDU");
+            String phone = params.get("phone");
+            String address = params.get("address");
+            String contract = params.get("contract");
+
+            if(position != null && !position.equals("")){
+                emp.setPosition(position);
+            }
+
+            if(emailPersonal != null && !emailPersonal.equals("")){
+                emp.setPersonalEmail(emailPersonal);
+            }
+
+            if(emailFE != null && !emailFE.equals("")){
+                emp.setEmailFE(emailFE);
+            }
+
+            if(emailEDU != null && !emailEDU.equals("")){
+                emp.setEmailEDU(emailEDU);
+            }
+
+            if(phone != null && !phone.equals("")){
+                emp.setPhone(phone);
+            }
+
+            if(address != null && !address.equals("")){
+                emp.setAddress(position);
+            }
+
+            if(contract != null && !contract.equals("")){
+                emp.setContract(position);
+            }
+
+            employeeService.updateEmployee(emp);
+            jsonObj.addProperty("success", true);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jsonObj;
     }
 
     @RequestMapping(value = "/loadEmployeeList")
@@ -129,8 +228,14 @@ public class EmployeeList {
             Gson gson = new Gson();
             obj = new JsonObject();
 
+            String queryStr2 = "SELECT s FROM ScheduleEntity s" +
+                    " WHERE s.empId.id = :id";
+            Query query2 = em.createQuery(queryStr2);
+            query2.setParameter("id", emp.getId());
+            List<ScheduleEntity> scheduleList = query2.getResultList();
+
             List<ScheduleModel> scheduleModelList = new ArrayList<>();
-            for (ScheduleEntity schedule : emp.getScheduleEntityList()) {
+            for (ScheduleEntity schedule : scheduleList) {
                 ScheduleModel model = new ScheduleModel();
                 model.setCourseName(schedule.getCourseId().getSubjectCode());
                 model.setDate(schedule.getDateId().getDate());
