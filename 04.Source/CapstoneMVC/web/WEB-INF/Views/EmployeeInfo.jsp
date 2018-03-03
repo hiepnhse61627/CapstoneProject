@@ -387,6 +387,7 @@
     var oldPhone;
     var oldAddress;
     var oldName;
+    var oldCode;
 
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
@@ -450,6 +451,7 @@
         oldPhone = '${employee.phone}';
         oldAddress = '${employee.address}';
         oldName = '${employee.fullName}';
+        oldCode = '${employee.code}';
 
         $('#subject').select2({
             placeholder: '- Chọn môn -'
@@ -784,6 +786,7 @@
                     "phone": $('#phone').val(),
                     "address": $('#address').val(),
                     "contract": $('#contract').val(),
+                    "code": $('#code').val(),
                 },
                 success: function (result) {
                     if (result.success) {
@@ -799,6 +802,7 @@
                             oldEmailPersonal = $('#emailPersonal').val();
                             oldPhone = $('#phone').val();
                             oldAddress = $('#address').val();
+                            oldCode =  $('#code').val();
                             onCancel();
                         });
                     } else {
@@ -820,6 +824,8 @@
         $('#phone').prop("disabled", false);
         $('#address').prop("disabled", false);
         $('#contract').prop("disabled", false);
+        // $('#code').prop("disabled", false);
+
     }
 
     function onCancel() {
@@ -833,6 +839,7 @@
         $('#phone').prop("disabled", true);
         $('#address').prop("disabled", true);
         $('#contract').prop("disabled", true);
+        $('#code').prop("disabled", true);
 
         $('#position').val(oldPosition);
         $('#emailPersonal').val(oldEmailPersonal);
@@ -841,6 +848,7 @@
         $('#phone').val(oldPhone);
         $('#address').val(oldAddress);
         $('#contract').val(oldContract);
+        $('#code').val(oldCode);
     }
 
     function ClearModal() {

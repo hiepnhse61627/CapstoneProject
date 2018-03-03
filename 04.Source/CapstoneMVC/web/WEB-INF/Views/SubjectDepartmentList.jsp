@@ -6,7 +6,7 @@
         <div class="b-header">
             <div class="row">
                 <div class="col-md-9 title">
-                    <h1>Danh sách môn học</h1>
+                    <h1>Danh sách môn thuộc bộ môn </h1>
                 </div>
                 <div class="col-md-3 text-right">
                     <%--<button type="button" class="btn btn-success btn-with-icon" onclick="CreateNewRoom()">--%>
@@ -20,10 +20,10 @@
         <div class="b-body">
             <div class="row">
                 <div class="col-md-12">
-                    <table id="tbl-room">
+                    <table id="tbl-subjectDepartment">
                         <thead>
-                        <th>Tên phòng</th>
-                        <th>Sức chứa</th>
+                        <th>Mã môn</th>
+                        <th>Tên bộ môn</th>
                         <%--<th>Chi tiết</th>--%>
                         </thead>
                         <tbody></tbody>
@@ -34,8 +34,9 @@
     </div>
 </section>
 
+
 <script>
-    var tblRoom;
+    var tblsubjectDepartment;
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -53,7 +54,6 @@
                 anControl = $('input', _that.fnSettings().aanFeatures.f);
 
             anControl.off('keyup search input').on('keyup search input', function () {
-                var $$this = $this;
 
                 if ((anControl.val().length == 0 || anControl.val().length >= 2) && (sPreviousSearch === null || sPreviousSearch != anControl.val())) {
                     window.clearTimeout(oTimerId);
@@ -71,22 +71,21 @@
     };
 
     $(document).ready(function () {
-        LoadRoomList();
+        LoadsubjectDepartmentList();
     });
 
-
-    function LoadRoomList() {
-        tblRoom = $('#tbl-room').dataTable({
-            "bServerSide": true,
+    function LoadsubjectDepartmentList() {
+        tblsubjectDepartment = $('#tbl-subjectDepartment').dataTable({
+            "bServerSide": false,
             "bFilter": true,
             "bRetrieve": true,
             "sScrollX": "100%",
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/loadRoomList",
+            "sAjaxSource": "/loadSubjectDepartmentList",
             "oLanguage": {
-                "sSearchPlaceholder": "Tên phòng",
+                "sSearchPlaceholder": "Mã môn, tên bộ môn",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
@@ -116,7 +115,6 @@
             "bAutoWidth": false,
         }).fnSetFilteringDelay(700);
     }
-
 
     function RefreshTable() {
         if (tblSubject != null) {

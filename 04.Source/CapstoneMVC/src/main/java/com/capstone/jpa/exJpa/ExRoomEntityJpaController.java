@@ -28,14 +28,6 @@ public class ExRoomEntityJpaController extends RoomEntityJpaController {
         try {
             EntityManager manager = getEntityManager();
             manager.getTransaction().begin();
-//            for (DocumentRoomEntity doc : Room.getDocumentRoomEntityList()) {
-//                if (doc.getId() == null) {
-//                    manager.persist(doc);
-//                    manager.flush();
-//                    manager.merge(doc);
-//                    manager.refresh(doc);
-//                }
-//            }
             manager.merge(Room);
             manager.flush();
             manager.getTransaction().commit();
@@ -96,6 +88,27 @@ public class ExRoomEntityJpaController extends RoomEntityJpaController {
                     " WHERE s.name LIKE :name";
             TypedQuery<RoomEntity> query = em.createQuery(queryStr, RoomEntity.class);
             query.setParameter("name", "%" + searchValue + "%");
+
+            result = query.getResultList();
+
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
+    }
+
+    public List<RoomEntity> findRoomsByCapacity(int searchValue) {
+        EntityManager em = getEntityManager();
+        List<RoomEntity> result = null;
+
+        try {
+            String queryStr = "SELECT s FROM RoomEntity s" +
+                    " WHERE s.capacity >= :capacity";
+            TypedQuery<RoomEntity> query = em.createQuery(queryStr, RoomEntity.class);
+            query.setParameter("capacity", searchValue);
 
             result = query.getResultList();
 

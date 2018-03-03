@@ -92,6 +92,7 @@ public class EmployeeList {
             String phone = params.get("phone");
             String address = params.get("address");
             String contract = params.get("contract");
+            String code = params.get("code");
 
             if(position != null && !position.equals("")){
                 emp.setPosition(position);
@@ -119,6 +120,10 @@ public class EmployeeList {
 
             if(contract != null && !contract.equals("")){
                 emp.setContract(position);
+            }
+
+            if(code != null && !code.equals("")){
+                emp.setCode(code);
             }
 
             employeeService.updateEmployee(emp);

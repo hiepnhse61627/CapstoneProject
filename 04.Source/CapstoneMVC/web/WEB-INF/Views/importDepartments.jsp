@@ -7,7 +7,7 @@
 <section class="content">
     <div class="box">
         <div class="b-header">
-            <h1>Nhập danh sách phòng</h1>
+            <h1>Nhập danh sách bộ môn</h1>
             <hr>
         </div>
         <div class="b-body">
@@ -49,7 +49,7 @@
                 swal.showLoading();
                 $.ajax({
                     type: "POST",
-                    url: "/uploadRooms",
+                    url: "/uploadDepartments",
                     processData: false,
                     contentType: false,
                     data: form,
@@ -57,7 +57,7 @@
                         if (result.success) {
                             swal({
                                 title: 'Thành công',
-                                text: "Đã import các phòng!",
+                                text: "Đã import các bộ môn!",
                                 type: 'success'
                             }).then(function () {
                                 location.reload();

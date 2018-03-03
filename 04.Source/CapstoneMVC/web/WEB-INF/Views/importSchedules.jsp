@@ -49,6 +49,8 @@
 </section>
 
 <script>
+    var isRunning = true;
+
     function Add() {
         var form = new FormData();
         form.append('file', $('#file')[0].files[0]);
@@ -56,7 +58,7 @@
 
         swal({
             title: 'Đang xử lý',
-            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div><div id='progress2' class='form-group'></div>",
             type: 'info',
             onOpen: function () {
                 swal.showLoading();
@@ -82,6 +84,7 @@
                         }
                     }
                 });
+                waitForExcelFinish();
                 waitForTaskFinish(isRunning);
             },
             allowOutsideClick: false
@@ -91,13 +94,28 @@
     function waitForTaskFinish(running) {
         $.ajax({
             type: "GET",
-            url: "/getlinestatus",
+            url: "/getLineScheduleStatus",
             processData: false,
             contentType: false,
             success: function (result) {
-                $('#progress').html("<div>(" + result.current + "/" + result.total + ")</div>");
+                $('#progress2').html("<h4>Thêm vào database</h4><div>(" + result.current + "/" + result.total + ")</div>");
                 if (running) {
                     setTimeout("waitForTaskFinish(isRunning)", 50);
+                }
+            }
+        });
+    }
+
+    function waitForExcelFinish() {
+        $.ajax({
+            type: "GET",
+            url: "/getExcelCurrentLineStatus",
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                if (result.isExcelRunning) {
+                    $('#progress').html("<h4>Duyệt file xecel</h4><div>(" + result.excelCurrent + "/" + result.excelTotal + ")</div>");
+                    setTimeout("waitForExcelFinish()", 500);
                 }
             }
         });

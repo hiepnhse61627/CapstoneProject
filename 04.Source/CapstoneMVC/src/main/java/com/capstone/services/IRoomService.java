@@ -10,6 +10,7 @@ public interface IRoomService {
     void createRoomList(List<RoomEntity> RoomEntityList);
     RoomEntity findRoomById(int id);
     List<RoomEntity> findRoomsByName(String searchValue);
+    List<RoomEntity> findRoomsByCapacity(int searchValue);
     List<RoomEntity> findAllRooms();
     void saveRoom(RoomEntity emp) throws Exception;
     RoomEntity createRoom(RoomEntity RoomEntity);

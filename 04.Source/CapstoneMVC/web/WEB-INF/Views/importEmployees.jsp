@@ -47,7 +47,6 @@
             type: 'info',
             onOpen: function () {
                 swal.showLoading();
-                isRunning = true;
                 $.ajax({
                     type: "POST",
                     url: "/uploadEmployees",
@@ -55,7 +54,6 @@
                     contentType: false,
                     data: form,
                     success: function (result) {
-                        isRunning = false;
                         if (result.success) {
                             swal({
                                 title: 'Thành công',
@@ -69,25 +67,9 @@
                         }
                     }
                 });
-                waitForTaskFinish(isRunning);
             },
             allowOutsideClick: false
         });
     }
 
-    function waitForTaskFinish(running) {
-        $.ajax({
-            type: "GET",
-            url: "/getlinestatus",
-            processData: false,
-            contentType: false,
-            success: function (result) {
-                $('#progress').html("<div>(" + result.current + "/" + result.total + ")</div>");
-                console.log("task running");
-                if (running) {
-                    setTimeout("waitForTaskFinish(isRunning)", 50);
-                }
-            }
-        });
-    }
 </script>
