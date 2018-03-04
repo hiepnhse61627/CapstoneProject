@@ -24,6 +24,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.capstone.models.Ultilities.sendNotification;
+import static com.capstone.services.DateUtil.formatDate;
+import static com.capstone.services.DateUtil.getDate;
 
 @Controller
 public class ScheduleList {
@@ -310,8 +312,8 @@ public class ScheduleList {
                         "    INNER JOIN  Day_Slot d ON s.DateId=d.Id " +
                         "WHERE (s.isActive IS NULL OR s.isActive = 'true') AND " +
                         "((s.CourseId = c.Id AND c.SubjectCode LIKE '%" + sSearch + "%') OR \n" +
-                        " (s.DateId = d.Id AND d.Date LIKE '%" + sSearch + "%')" +
-                        " (s.groupName LIKE '%\" + sSearch + \"%')) AND" +
+                        " (s.DateId = d.Id AND d.Date LIKE '%" + sSearch + "%') OR" +
+                        " (s.groupName LIKE '%" + sSearch + "%')) AND" +
                         " (s.EmpId = " + employeeId + ")";
                 Query queryCounting2 = em.createNativeQuery(queryStr);
                 iTotalDisplayRecords = ((Number) queryCounting2.getSingleResult()).intValue();
@@ -327,8 +329,8 @@ public class ScheduleList {
                                     "    INNER JOIN  EmployeeEntity e ON s.empId.id=e.id " +
                                     "WHERE (s.isActive IS NULL OR s.isActive = 'true') AND " +
                                     "((s.courseId.id = c.id AND c.subjectCode LIKE '%" + sSearch + "%') OR \n" +
-                                    " (s.dateId.id = d.id AND d.date LIKE '%" + sSearch + "%')" +
-                                    " (s.groupName LIKE '%\" + sSearch + \"%')) AND" +
+                                    " (s.dateId.id = d.id AND d.date LIKE '%" + sSearch + "%') OR" +
+                                    " (s.groupName LIKE '%" + sSearch + "%')) AND" +
                                     " (s.empId.id = " + employeeId + ")");
             TypedQuery<ScheduleEntity> query = em.createQuery(queryStr, ScheduleEntity.class);
             query.setFirstResult(iDisplayStart);
@@ -395,27 +397,6 @@ public class ScheduleList {
         return jsonObj;
     }
 
-    public static Date getDate(String s) {
-        DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-        Date date = null;
-        try {
-            date = format.parse(s);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return date;
-    }
-
-    public static String formatDate(Date s) {
-        DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-        String date = "";
-        try {
-            date = format.format(s);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return date;
-    }
 
     public static List<String> getDayOfWeekInRange(String d1, String d2, String dayOfWeek) {
         int dayOfWeekType = 0;

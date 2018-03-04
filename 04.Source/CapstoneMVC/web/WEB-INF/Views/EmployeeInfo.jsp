@@ -255,6 +255,7 @@
                                         <th>Slot</th>
                                         <th>Phòng</th>
                                         <th>Giảng viên</th>
+                                        <th>Capacity</th>
                                         <th>Chi tiết</th>
                                         </thead>
                                         <tbody></tbody>
@@ -271,7 +272,6 @@
 
 <div id="scheduleModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
-
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -308,7 +308,7 @@
                         </div>
 
                         <div class="form-group row">
-                            <div class="col-md-6">
+                            <div class="col-md-6" id="dayOfWeek-container">
                                 <label class="form-check-label" for="dayOfWeek">Thứ:</label>
                                 <select id="dayOfWeek" class="select dayOfWeek-select">
                                     <option value="Mon">Thứ 2</option>
@@ -320,7 +320,7 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-6">
+                            <div class="col-md-6" id="slot-container">
                                 <label for="slot">Slot:</label>
                                 <select id="slot" class="select slot-select" multiple="multiple">
                                     <c:forEach var="aSlot" items="${slots}">
@@ -339,23 +339,46 @@
                         <div class="form-group field_array">
                         </div>
 
-                        <div class="form-group">
+                        <div class="form-group" id="room-container">
                             <label for="room">Phòng:</label>
                             <select id="room" class="select room-select">
                                 <c:forEach var="room" items="${rooms}">
-                                    <option value="${room.name}">${room.name} - Sức chứa: ${room.capacity}</option>
+                                    <option value="${room.name}">${room.name}</option>
                                 </c:forEach>
                             </select>
                         </div>
 
-                        <%--<div class="form-group">--%>
-                            <%--<label for="lecture">Giáo viên:</label>--%>
-                            <%--<select id="lecture" class="select lecture-select">--%>
-                                <%--<c:forEach var="emp" items="${employees}">--%>
-                                    <%--<option value="${emp.fullName}">${emp.fullName}</option>--%>
-                                <%--</c:forEach>--%>
-                            <%--</select>--%>
-                        <%--</div>--%>
+                        <div class="form-group" id="capacity-container">
+                            <label for="capacity">Số lượng sinh viên tối đa:</label>
+                            <select id="capacity" class="select room-select">
+                                <c:forEach var="aCapacity" items="${capacity}">
+                                    <option value="${aCapacity}">${aCapacity}</option>
+                                </c:forEach>
+                            </select>
+                        </div>
+
+                        <div class="form-check" id="changeRoom-container">
+                            <input class="form-check-input" type="checkbox" value="" id="changeRoom">
+                            <label class="form-check-label" for="changeRoom">
+                                Yêu cầu chuyển phòng
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="lecture">Giáo viên:</label>
+                            <select id="lecture" class="select lecture-select">
+                                <c:forEach var="emp" items="${employees}">
+                                    <option value="${emp.fullName}">${emp.fullName}</option>
+                                </c:forEach>
+                            </select>
+                        </div>
+
+                        <div class="form-check" id="all-container">
+                            <input class="form-check-input" type="checkbox" value="" id="all">
+                            <label class="form-check-label" for="all">
+                                Áp dụng cho tất cả slot tương tự
+                            </label>
+                        </div>
 
                     </div>
                 </div>
@@ -436,10 +459,40 @@
                 $(el).removeAttr('title');
             });
 
+            $("select[id*='slot']").each(function (j, el) {
+                var slotArr = $(el).val();
+
+                if (slotArr !== null && slotArr !== undefined && slotArr instanceof Array) {
+                    for (var i = 0; i < slotArr.length; i++) {
+                        slotArr[i] = parseInt(slotArr[i].replace("Slot ", ""));
+                    }
+
+                    var isConsecutive = Consecutive(slotArr);
+                    if (isConsecutive > 0) {
+                        slotArr.pop();
+                        alert("Slot trong cùng ngày phải kế nhau");
+                        for (var t = 0; t < slotArr.length; t++) {
+                            slotArr[t] = "Slot " + slotArr[t];
+                        }
+                        $(el).val(slotArr).trigger("change");
+                        return;
+                    }
+                }
+
+            });
+
+
             $("li[class*='select2-selection__choice']").each(function (i, el) {
                 $(el).removeAttr('title');
             });
         });
+    }
+
+    function Consecutive(arr) {
+        arr.sort(function (a, b) {
+            return a - b;
+        });
+        return arr[arr.length - 1] - arr[0] - arr.length + 1;
     }
 
     $(document).ready(function () {
@@ -469,9 +522,12 @@
             placeholder: '- Chọn slot học -'
         });
 
-        $('#room').select2({
-            placeholder: '- Chọn phòng -'
+        $('#capacity').select2({
+            placeholder: '- Chọn số lượng -'
         });
+
+        $('#room').select2();
+        $("#room").attr("disabled", true);
 
         $('#lecture').select2({
             placeholder: '- Chọn giáo viên -'
@@ -485,7 +541,7 @@
         var wrapper = $(".field_array"); //Fields wrapper
         var add_button = $(".add_field_button"); //Add button ID
 
-        var x = 0; //initlal text box count
+
         $(add_button).click(function (e) { //on add input button click
             e.preventDefault();
             if (x < max_fields) { //max input box allowed
@@ -560,7 +616,7 @@
             "bSort": false,
             "sAjaxSource": "/loadScheduleList/${employee.id}",
             "oLanguage": {
-                "sSearchPlaceholder": "Ngày, Mã môn",
+                "sSearchPlaceholder": "Tên lớp, Ngày, Mã môn",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
@@ -575,7 +631,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4, 5, 6, 7],
+                    "aTargets": [0, 1, 2, 3, 4, 5, 6, 7, 8],
                     "bSortable": false,
                     "sClass": "text-center",
                 },
@@ -584,14 +640,14 @@
                     "bVisible": false,
                 },
                 {
-                    "aTargets": [6],
+                    "aTargets": [7],
                     "bVisible": false,
                 },
                 {
-                    "aTargets": [7],
+                    "aTargets": [8],
                     "mRender": function (data, type, row) {
                         return "<a class='btn btn-success tbl-btn' onclick='EditSchedule(" + row[0] + ",\""
-                            + row[1] + "\",\"" + row[2] + "\",\"" + row[3] + "\",\"" + row[4] + "\",\"" + row[5] + "\",\"" + row[6] + "\")'>" +
+                            + row[1] + "\",\"" + row[2] + "\",\"" + row[3] + "\",\"" + row[4] + "\",\"" + row[5] + "\",\"" + row[6] + "\",\"" + row[7] + "\")'>" +
                             "<i class='glyphicon glyphicon-pencil'></i></a>";
                     }
                 },
@@ -625,6 +681,8 @@
             $("select[id*='slot']").each(function (i, el) {
                 slots.push($(el).val());
             });
+
+
             swal({
                 title: 'Đang xử lý',
                 html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
@@ -645,7 +703,10 @@
                             dayOfWeekList: JSON.stringify(dayOfWeekArr),
                             slots: JSON.stringify(slots),
                             room: $("#room").val(),
-                            lecture: oldName,
+                            capacity: $("#capacity").val(),
+                            lecture: $("#lecture").val(),
+                            changeRoom: $("#changeRoom").is(":checked"),
+                            all: $("#all").is(":checked"),
                         },
                         success: function (result) {
                             isRunning = false;
@@ -659,7 +720,23 @@
                                     $("#scheduleModal").modal('toggle');
 
                                 });
-                            } else {
+                            }
+
+                            if (result.warning) {
+                                var el = document.createElement("h4");
+                                el.innerText = result.message;
+                                swal({
+                                    title: 'Thành công một phần',
+                                    html: "<h4>Xin thực hiện lại với các slot bị lỗi</h4>" + result.message,
+                                    type: 'warning'
+                                }).then(function () {
+                                    RefreshTable();
+                                    $("#scheduleModal").modal('toggle');
+
+                                });
+                            }
+
+                            if (result.fail) {
                                 swal('Đã xảy ra lỗi!', result.message, 'error');
                             }
                         }
@@ -678,6 +755,10 @@
         $("#btnSubmit").attr("data-schedule-id", 0);
         $("#subject").attr("disabled", false);
         $("#semester-container").show();
+        $("#dayOfWeek-container").show();
+        $("#room-container").hide();
+        $("#changeRoom-container").hide();
+        $("#all-container").hide();
         $("#class").attr("disabled", false);
         $("#dayOfWeek").attr("disabled", false);
         $("#scheduleDate").attr("disabled", false);
@@ -688,15 +769,33 @@
         $("#scheduleModal").modal('toggle');
     }
 
-    function EditSchedule(scheduleId, subCode, clazz, sDate, slot, room, lecture) {
+    function EditSchedule(scheduleId, subCode, clazz, sDate, slot, room, lecture, capacity) {
         ClearModal();
+
+        startDate = endDate = moment().format('DD/MM/YYYY');
+        $('#scheduleDate').daterangepicker({
+            startDate: moment(),
+            endDate: moment(),
+            singleDatePicker: true,
+            locale: {
+                format: 'DD/MM/YYYY'
+            }
+        }, function (start, end) {
+            startDate = start.format('DD/MM/YYYY');
+            endDate = end.format('DD/MM/YYYY');
+            $('#startDate span').html(startDate + ' - ' + endDate);
+        });
+
         $("#btnSubmit").html("Cập nhật");
         $('#btnSubmit').data("type", "edit")
         $("#btnSubmit").attr("data-schedule-id", scheduleId);
         $("#subject").attr("disabled", true);
         $("#semester-container").hide();
+        $("#dayOfWeek-container").hide();
+        $("#room-container").show();
+        $("#changeRoom-container").show();
+        $("#all-container").show();
         $("#class").attr("disabled", true);
-        $("#scheduleDate").attr("disabled", true);
         $("#dayOfWeek").attr("disabled", true);
         $("#slot").removeAttr("multiple");
         resetSelect2(0);
@@ -714,6 +813,8 @@
         $("#dayOfWeek").val(weekDays[day]).trigger("change");
 
         $("#room").val(room).trigger("change");
+        $("#capacity").val(capacity).trigger("change");
+
         $("#lecture").val(lecture).trigger("change");
 
         $("#scheduleModal").modal('toggle');
@@ -745,8 +846,8 @@
 
             if (isError) {
                 return !isError;
-            } else if ($("#room").val() === "" || $("#room").val() === null) {
-                alert("Phòng không được bỏ trống");
+            } else if ($("#capacity").val() === "" || $("#capacity").val() === null) {
+                alert("Số lượng không được bỏ trống");
                 isError = true;
             } else if ($("#lecture").val() === "" || $("#lecture").val() === null) {
                 alert("Giáo viên không được bỏ trống");
@@ -759,12 +860,63 @@
             } else if ($("#slot").val() === "" || $("#slot").val() === null) {
                 alert("Slot không được bỏ trống");
                 isError = true;
+            } else if ($("#capacity").val() === "" || $("#capacity").val() === null) {
+                alert("Số lượng không được bỏ trống");
+                isError = true;
+            } else if ($("#lecture").val() === "" || $("#lecture").val() === null) {
+                alert("Giáo viên không được bỏ trống");
+                isError = true;
             }
         }
 
         return !isError;
     }
 
+    function ClearModal() {
+        $('#subject').val('').trigger('change');
+        $('#semester').val('N/A').trigger('change');
+        $("#class").val("");
+        $('#scheduleDate').data('daterangepicker').setStartDate(moment());
+        $('#scheduleDate').data('daterangepicker').setEndDate(moment());
+        $("#dayOfWeek").val('').trigger('change');
+        $("#slot").val('').trigger('change');
+        $("#lecture").val('').trigger('change');
+        $('#room').val('').trigger('change');
+        $('#capacity').val('').trigger('change');
+        $('#changeRoom').prop('checked', false);
+        $('#all').prop('checked', false);
+
+        startDate = endDate = moment().format('DD/MM/YYYY');
+        $('#scheduleDate').daterangepicker({
+            startDate: moment(),
+            endDate: moment(),
+//            drops: "up",
+            locale: {
+                format: 'DD/MM/YYYY'
+            }
+        }, function (start, end) {
+            startDate = start.format('DD/MM/YYYY');
+            endDate = end.format('DD/MM/YYYY');
+            $('#startDate span').html(startDate + ' - ' + endDate);
+        });
+
+        $("div[class*='addMore']").each(function (i, el) {
+            $(el).remove();
+        });
+        x = 0;
+    }
+
+    function RefreshTable() {
+        if (tblSchedule != null) {
+            // tblSchedule._fnPageChange(0);
+            tblSchedule._fnAjaxUpdate();
+        }
+    }
+
+    function ToDate(str) {
+        var data = str.split("/");
+        return new Date(data[2], data[1] - 1, data[0]);
+    }
     function EditEmployee() {
         swal({
             title: 'Xác nhận cập nhật giảng viên?',
@@ -851,32 +1003,5 @@
         $('#code').val(oldCode);
     }
 
-    function ClearModal() {
-        $('#subject').val('').trigger('change');
-        $('#semester').val('N/A').trigger('change');
-        $("#class").val("");
-        $('#scheduleDate').data('daterangepicker').setStartDate(moment());
-        $('#scheduleDate').data('daterangepicker').setEndDate(moment());
-        $("#dayOfWeek").val('').trigger('change');
-        $("#slot").val('').trigger('change');
-        $("#lecture").val('').trigger('change');
-        $('#room').val('').trigger('change');
-
-        $("div[class*='addMore']").each(function (i, el) {
-            $(el).remove();
-        });
-    }
-
-    function RefreshTable() {
-        if (tblSchedule != null) {
-            // tblSchedule._fnPageChange(0);
-            tblSchedule._fnAjaxUpdate();
-        }
-    }
-
-    function ToDate(str) {
-        var data = str.split("/");
-        return new Date(data[2], data[1] - 1, data[0]);
-    }
 </script>
 
