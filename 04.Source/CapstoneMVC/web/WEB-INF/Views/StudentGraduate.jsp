@@ -86,6 +86,9 @@
                 </div>
             </div>
 
+
+            <%--<button class="btn btn-success" onclick="UpdateOjtTerm()">Update Ojt term</button>--%>
+
             <div class="form-group">
                 <div class="row">
                     <div class="col-md-12">
@@ -399,4 +402,25 @@
         table._fnPageChange(0);
         table._fnAjaxUpdate();
     }
+
+    function UpdateOjtTerm() {
+
+        $.ajax({
+            type: "POST",
+            url: "/updateOjtTerm",
+            processData: false,
+            contentType: false,
+            success: function (result) {
+
+                if (result.success) {
+                   swal('Success',
+                       result.message,
+                       'success')
+                } else {
+                    swal('', 'Có lỗi xảy ra, vui lòng thử lại sau', 'warning');
+                }
+            }
+        });
+    }
+
 </script>

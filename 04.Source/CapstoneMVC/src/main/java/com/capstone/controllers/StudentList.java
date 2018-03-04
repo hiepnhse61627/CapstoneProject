@@ -8,6 +8,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -101,17 +103,17 @@ public class StudentList {
             student.setDateOfBirth(date);
             student.setFullName(fullName);
             student.setTerm(Integer.valueOf(term));
-            if (gender.equals("Nam")){
+            if (gender.equals("Nam")) {
                 student.setGender(true);
-            }else{
+            } else {
                 student.setGender(false);
             }
             em.merge(student);
             em.flush();
             em.getTransaction().commit();
 
-                jsonObj.addProperty("success", true);
-                jsonObj.addProperty("message", "update Fail");
+            jsonObj.addProperty("success", true);
+            jsonObj.addProperty("message", "update Fail");
 
         } catch (Exception e) {
             Logger.writeLog(e);
@@ -150,7 +152,8 @@ public class StudentList {
                     " AND smc.subjectId.id = sc.subjectId.id" +
                     " AND mc.name LIKE :markComponentName" +
                     " AND m.studentId.id = :studentId" +
-                    " AND m.isActivated = true";Query query = em.createQuery(queryStr);
+                    " AND m.isActivated = true";
+            Query query = em.createQuery(queryStr);
             query.setParameter("markComponentName", "%average%");
             query.setParameter("studentId", studentId);
 
@@ -504,6 +507,57 @@ public class StudentList {
     private class StudentDetailModel {
         public int term;
         public List<MarkModel> markList;
+    }
+
+
+    @RequestMapping("/myStudentInfo")
+    public ModelAndView myStudentInfoPage() {
+        ModelAndView view = new ModelAndView("MyStudentInfo");
+        view.addObject("title", "Thông tin sinh viên");
+
+        StudentEntity student = getMyStudentEntity();
+        if (student != null) {
+            view = this.GetStudentInfoData(view, student.getId());
+
+        }else{
+            //trả về 404
+        }
+
+        return view;
+    }
+
+    private CustomUser getPrincipal() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUser user = (CustomUser) authentication.getPrincipal();
+        return user;
+    }
+
+    private StudentEntity getMyStudentEntity() {
+        //get current account login
+        CustomUser principal = getPrincipal();
+        ICredentialsService credentialsService = new CredentialsServiceImpl();
+        CredentialsEntity entity = credentialsService.findCredential(principal.getUsername());
+
+        //get student rollnumber
+        String studentRollNumber = entity.getStudentRollNumber();
+
+        StudentServiceImpl studentService = new StudentServiceImpl();
+        StudentEntity student = studentService.findStudentByRollNumber(studentRollNumber);
+        return student;
+    }
+
+
+    @RequestMapping("/myDetail")
+    public ModelAndView Index() {
+        ModelAndView view = new ModelAndView("MyStudentDetail");
+        view.addObject("title", "Tiến trình học của tôi");
+        StudentEntity student = getMyStudentEntity();
+        if(student != null){
+            view.addObject("myStudentId", student.getId());
+        }else{
+            //trả về 404
+        }
+        return view;
     }
 }
 

@@ -21,14 +21,7 @@
                     <h1>Thông tin chi tiết sinh viên</h1>
                 </div>
                 <div class="col-md-7 text-right">
-                    <button type="button" class="btn btn-warning btn-with-icon" onclick="ExportExcelForOneStudent()">
-                        <i class="glyphicon glyphicon-open"></i>
-                        <div>Xuất dữ liêu cho sinh viên đang được chọn</div>
-                    </button>
-                    <button type="button" class="btn btn-warning btn-with-icon" onclick="ExportExcel2()">
-                        <i class="glyphicon glyphicon-open"></i>
-                        <div>Xuất dữ liêu chỉ học đi</div>
-                    </button>
+
                     <button type="button" style="margin-top: 4px;" class="btn btn-success btn-with-icon"
                             onclick="ExportExcel()">
                         <i class="glyphicon glyphicon-open"></i>
@@ -42,29 +35,31 @@
             <div class="form-group">
                 <div class="row">
                     <div class="my-content">
-                        <div class="my-input-group">
-                            <div class="left-content m-r-5">
-                                <label class="p-t-8">Chọn sinh viên:</label>
-                            </div>
+                        <%--<div class="my-input-group">--%>
+                        <%--<div class="left-content m-r-5">--%>
+                        <%--<label class="p-t-8">Chọn sinh viên:</label>--%>
+                        <%--</div>--%>
 
-                            <div class="col-md-6 right-content width-m-70">
-                                <div class="width-40 float-left m-r-5">
-                                    <select id="cb-student" class="select"> </select>
-                                </div>
-                                <button id="find" type="button" class="btn btn-primary float-left m-r-5">Tìm kiếm
-                                </button>
-                                <button id="detail" type="button" class="btn btn-success float-left"
-                                        style="display: none" onclick="GetAllStudentMarks()">Xem chi tiết điểm
-                                </button>
-                            </div>
-                        </div>
+                        <%--<div class="col-md-6 right-content width-m-70">--%>
+                        <%--<div class="width-40 float-left m-r-5">--%>
+                        <%--<select id="cb-student" class="select"> </select>--%>
+                        <%--</div>--%>
+                        <%--<button id="find" type="button" class="btn btn-primary float-left m-r-5">Tìm kiếm--%>
+                        <%--</button>--%>
+                        <%--<button id="detail" type="button" class="btn btn-success float-left"--%>
+                        <%--style="display: none" onclick="GetAllStudentMarks()">Xem chi tiết điểm--%>
+                        <%--</button>--%>
+                        <%--</div>--%>
+                        <%--</div>--%>
+                        <input type="hidden" id="cb-student" value="${myStudentId}"/>
                         <div class="my-input-group">
                             <div class="left-content m-r-5">
                                 <label class="p-t-8">Số môn đề xuất:</label>
                             </div>
                             <div class="right-content width-60 width-m-70">
                                 <div class="col-md-2">
-                                    <input id="total" style="margin-left: -6px;" type="number" min="0" value="7" max="9" class="form-control"/>
+                                    <input id="total" style="margin-left: -6px;" type="number" min="0" value="7" max="9"
+                                           class="form-control"/>
                                 </div>
                             </div>
                         </div>
@@ -335,10 +330,10 @@
     $(document).ready(function () {
         CreateSelect();
 
-        $('#find').on("click", function () {
-            RefreshTable();
-            CreateSelect();
-        });
+        // $('#find').on("click", function () {
+        //     RefreshTable();
+        //     // CreateSelect();
+        // });
 
         CreateEmptyDataTable('#table');
         CreateEmptyDataTable('#nextCourseTable');
@@ -346,38 +341,40 @@
         CreateEmptyDataTable('#suggestCourseTable');
         CreateEmptyDataTable('#notStart');
         CreateEmptyDataTable('#cantStudy');
+
+        RefreshTable();
     });
 
-    function CreateSelect() {
-        $('#cb-student').select2({
-            width: 'resolve',
-            minimumInputLength: 2,
-            ajax: {
-                url: '/getStudentList',
-                data: function (params) {
-                    var queryParameters = {
-                        searchValue: params.term
-                    }
-                    return queryParameters;
-                },
-                processResults: function (result) {
-                    if (result.success) {
-                        return {
-                            results: $.map(result.items, function (item) {
-                                return {
-                                    id: item.value,
-                                    text: item.text,
-                                }
-                            })
-                        };
-                    } else {
-                        swal('', 'Có lỗi xảy ra, vui lòng thử lại', 'warning');
-                    }
-                }
-            }
-        });
-        $("#semester").select2();
-    }
+    // function CreateSelect() {
+    //     $('#cb-student').select2({
+    //         width: 'resolve',
+    //         minimumInputLength: 2,
+    //         ajax: {
+    //             url: '/getStudentList',
+    //             data: function (params) {
+    //                 var queryParameters = {
+    //                     searchValue: params.term
+    //                 }
+    //                 return queryParameters;
+    //             },
+    //             processResults: function (result) {
+    //                 if (result.success) {
+    //                     return {
+    //                         results: $.map(result.items, function (item) {
+    //                             return {
+    //                                 id: item.value,
+    //                                 text: item.text,
+    //                             }
+    //                         })
+    //                     };
+    //                 } else {
+    //                     swal('', 'Có lỗi xảy ra, vui lòng thử lại', 'warning');
+    //                 }
+    //             }
+    //         }
+    //     });
+    //     $("#semester").select2();
+    // }
 
     function CreateDebtTable() {
         table = $('#table').dataTable({
@@ -663,24 +660,6 @@
         Call();
     }
 
-    function ExportExcel2() {
-        $("input[name='objectType']").val(13);
-        $("input[name='studentId']").val("-1");
-        $("input[name='total']").val($('#total').val());
-        $("#export-excel").submit();
-
-        Call();
-    }
-
-
-    function ExportExcelForOneStudent() {
-        $("input[name='objectType']").val(2);
-        $("input[name='studentId']").val($('#cb-student').val());
-        $("input[name='total']").val($('#total').val());
-        $("#export-excel").submit();
-
-        Call();
-    }
 
     function Call() {
         swal({
