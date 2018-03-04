@@ -35,6 +35,7 @@ public interface IMarksService {
     List<Object[]> getLatestPassFailMarksAndCredits(int studentId);
     List<MarksEntity> findMarksBySemesterId(Integer semesterId);
     List<MarksEntity> findMarksByStudentIdAndSubjectCdAndSemesterId(Integer studentId, String subjectCd, Integer semesterId);
+    List<MarksEntity> findMarksByProperties(int semesterId, int studentId);
 
     List<MarksEntity> getMarksForMarkPage(int studentId);
 

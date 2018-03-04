@@ -152,6 +152,7 @@ public class ExportController {
                 "com.capstone.exporters.ExportExcelStudentsStudyResultBySemester", //20 = export students study Results
                 "com.capstone.exporters.ExportExcelStudentsStudyInfo", //21 = export students study info
                 "com.capstone.exporters.ExportConvert2StudentQuantityByClassAndSubject" //22
+				"com.capstone.exporters.ExportBestStudentImpl" // 23 = Best student in subjects in semester
         };
 
         try {

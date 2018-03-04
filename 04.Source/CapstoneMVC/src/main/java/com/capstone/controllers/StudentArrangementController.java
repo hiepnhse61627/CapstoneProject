@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
@@ -565,18 +566,25 @@ public class StudentArrangementController {
             // Create class for LAB
             int count;
             int classNumber;
+            int classCount = 0;
             for (String shift : shiftMapForLAB.keySet()) {
                 Map<String, List<StudentEntity>> subjectMapForLAB = shiftMapForLAB.get(shift);
                 for (String subjectCode : subjectMapForLAB.keySet()) {
                     count = 0;
                     classNumber = 1;
+                    classCount++;
 
                     SubjectEntity subject = subjectMap.get(subjectCode);
 
                     List<StudentEntity> list = subjectMapForLAB.get(subjectCode);
                     List<String> dataRow;
                     for (StudentEntity student : list) {
+                        StudentArrangementModel currentStudentModel = studentList.stream()
+                                .filter(q -> q.student.getRollNumber().equals(student.getRollNumber()))
+                                .collect(Collectors.toList()).get(0);
+
                         if (count == 25) {
+                            classCount++;
                             classNumber++;
                             count = 0;
                         }
@@ -586,9 +594,11 @@ public class StudentArrangementController {
                         dataRow.add(subject.getName());
                         dataRow.add(student.getRollNumber());
                         dataRow.add(student.getFullName());
-                        dataRow.add(subjectCode + "_" + shift + "_" + classNumber);
+                        dataRow.add(subjectCode + "_" + shift + "_" + classNumber + "_T" + ((classCount % 6) + 2));
                         dataRow.add(shift);
                         displayList.add(dataRow);
+
+                        currentStudentModel.setLabDay("T" + ((classCount % 6) + 2));
 
                         ++count;
                     }
@@ -599,6 +609,9 @@ public class StudentArrangementController {
             Map<String, Map<String, Map<String, Integer>>> shiftOrdinalNumberMap = new HashMap<>();
             shiftOrdinalNumberMap.put("AM", new HashMap<>());
             shiftOrdinalNumberMap.put("PM", new HashMap<>());
+
+            // Group Student by subject, slot and shift
+            Map<ClassKey, List<StudentArrangementModel>> groupClassList = new HashMap<>();
 
             // Create course classes for other subjects
             for (int i = 0; i <= 5; i++) {
@@ -649,14 +662,204 @@ public class StudentArrangementController {
 
                     String subjectCode = key.subject;
                     if (!subjectCode.isEmpty()) {
-                        this.arrangeStudentIntoSlot(displayList, amList, shiftOrdinalNumberMap.get("AM"),
+                        this.arrangeStudentIntoSlot(groupClassList, displayList, amList, shiftOrdinalNumberMap.get("AM"),
                                 subjectMap, "AM", subjectCode);
-                        this.arrangeStudentIntoSlot(displayList, pmList, shiftOrdinalNumberMap.get("PM"),
+                        this.arrangeStudentIntoSlot(groupClassList, displayList, pmList, shiftOrdinalNumberMap.get("PM"),
                                 subjectMap, "PM", subjectCode);
                     }
                 }
 
             }
+
+            List<String> evenSlotName = Arrays.asList((new String[] {"S21", "S22", "S23"}));
+            List<String> oddSlotName = Arrays.asList((new String[] {"S31", "S32", "S33"}));
+
+            // Check if a group of students can't make up a class and move them to their opposite shift's classes
+            for(ClassKey classKey : groupClassList.keySet()) {
+                List<StudentArrangementModel> currentShiftList = groupClassList.get(classKey);
+
+                if(currentShiftList.size() < 15) {
+                    String oppositeShift = classKey.shift.equalsIgnoreCase("AM") ? "PM" : "AM";
+                    List<ClassKey> oppositeShiftClassKeyList = groupClassList.keySet().stream().filter(
+                            q -> q.subjectCode.equals(classKey.subjectCode)
+                            && q.shift.equalsIgnoreCase(oppositeShift)).collect(Collectors.toList());
+
+                    int lowestEven = Integer.MAX_VALUE;
+                    int lowestOdd = Integer.MAX_VALUE;
+                    int posEven = -1;
+                    int posOdd = -1;
+
+                    for (ClassKey key : oppositeShiftClassKeyList) {
+                        if (evenSlotName.contains(key.slotName)) {
+                            if(groupClassList.get(key).size() < lowestEven) {
+                                posEven = oppositeShiftClassKeyList.indexOf(key);
+                                lowestEven = groupClassList.get(key).size();
+                            }
+                        } else {
+                            if(groupClassList.get(key).size() < lowestOdd) {
+                                posOdd = oppositeShiftClassKeyList.indexOf(key);
+                                lowestOdd = groupClassList.get(key).size();
+                            }
+                        }
+                    }
+
+                    ClassKey optimizedEvenSlotClassKey = oppositeShiftClassKeyList.get(posEven);
+                    ClassKey optimizedOddSlotClassKey = oppositeShiftClassKeyList.get(posOdd);
+
+                    for(StudentArrangementModel model : currentShiftList) {
+                        if(Arrays.asList(new String[] {"T2", "T4", "T6"}).contains(model.labDay)) {
+
+                        } else if (Arrays.asList(new String[] {"T3", "T5"}).contains(model.labDay)) {
+
+                        } else {
+
+                        }
+                    }
+                }
+            }
+
+            for(ClassKey classKey : groupClassList.keySet()) {
+                List<StudentArrangementModel> tempStudentList = groupClassList.get(classKey);
+                int ordinalNumber = 1;
+                SubjectEntity subjectEntity = subjectMap.get(classKey.subjectCode);
+
+                while(tempStudentList.size() >= 55) {
+                    List<StudentArrangementModel> finalStudentList = tempStudentList.stream().skip(0).limit(25).collect(Collectors.toList());
+                    String currentClass = classKey.subjectCode + "_" + classKey.shift + "_" + ordinalNumber + "_"
+                            + classKey.slotName;
+                    for (StudentArrangementModel std : finalStudentList) {
+                        List<String> row = new ArrayList<>();
+                        row.add(subjectEntity.getId());
+                        row.add(subjectEntity.getName());
+                        row.add(std.student.getRollNumber());
+                        row.add(std.student.getFullName());
+                        row.add(currentClass);
+                        row.add(classKey.shift);
+
+                        displayList.add(row);
+                    }
+
+                    tempStudentList.removeAll(finalStudentList);
+                    ordinalNumber++;
+                }
+
+                if (tempStudentList.size() <= 54 && tempStudentList.size() >= 51) {
+                    List<StudentArrangementModel> finalStudentList = tempStudentList.stream().skip(0).limit(tempStudentList.size() - 30).collect(Collectors.toList());
+                    String currentClass = classKey.subjectCode + "_" + classKey.shift + "_" + ordinalNumber + "_"
+                            + classKey.slotName;
+                    for (StudentArrangementModel std : finalStudentList) {
+                        List<String> row = new ArrayList<>();
+                        row.add(subjectEntity.getId());
+                        row.add(subjectEntity.getName());
+                        row.add(std.student.getRollNumber());
+                        row.add(std.student.getFullName());
+                        row.add(currentClass);
+                        row.add(classKey.shift);
+
+                        displayList.add(row);
+                    }
+
+                    tempStudentList.removeAll(finalStudentList);
+                    ordinalNumber++;
+                }
+
+                if(tempStudentList.size() <= 50 & tempStudentList.size() >= 40) {
+                    List<StudentArrangementModel> finalStudentList = tempStudentList.stream().skip(0).limit(25).collect(Collectors.toList());
+                    String currentClass = classKey.subjectCode + "_" + classKey.shift + "_" + ordinalNumber + "_"
+                            + classKey.slotName;
+                    for (StudentArrangementModel std : finalStudentList) {
+                        List<String> row = new ArrayList<>();
+                        row.add(subjectEntity.getId());
+                        row.add(subjectEntity.getName());
+                        row.add(std.student.getRollNumber());
+                        row.add(std.student.getFullName());
+                        row.add(currentClass);
+                        row.add(classKey.shift);
+
+                        displayList.add(row);
+                    }
+
+                    tempStudentList.removeAll(finalStudentList);
+                    ordinalNumber++;
+
+                    finalStudentList = tempStudentList.stream().skip(0).collect(Collectors.toList());
+                    currentClass = classKey.subjectCode + "_" + classKey.shift + "_" + ordinalNumber + "_"
+                            + classKey.slotName;
+                    for (StudentArrangementModel std : finalStudentList) {
+                        List<String> row = new ArrayList<>();
+                        row.add(subjectEntity.getId());
+                        row.add(subjectEntity.getName());
+                        row.add(std.student.getRollNumber());
+                        row.add(std.student.getFullName());
+                        row.add(currentClass);
+                        row.add(classKey.shift);
+
+                        displayList.add(row);
+                    }
+
+                    tempStudentList.removeAll(finalStudentList);
+                    ordinalNumber++;
+                }
+
+                if(tempStudentList.size() <= 39 & tempStudentList.size() >= 30) {
+                    List<StudentArrangementModel> finalStudentList = tempStudentList.stream().skip(0).limit(tempStudentList.size() - 15).collect(Collectors.toList());
+                    String currentClass = classKey.subjectCode + "_" + classKey.shift + "_" + ordinalNumber + "_"
+                            + classKey.slotName;
+                    for (StudentArrangementModel std : finalStudentList) {
+                        List<String> row = new ArrayList<>();
+                        row.add(subjectEntity.getId());
+                        row.add(subjectEntity.getName());
+                        row.add(std.student.getRollNumber());
+                        row.add(std.student.getFullName());
+                        row.add(currentClass);
+                        row.add(classKey.shift);
+
+                        displayList.add(row);
+                    }
+
+                    tempStudentList.removeAll(finalStudentList);
+                    ordinalNumber++;
+
+                    finalStudentList = tempStudentList.stream().skip(0).limit(15).collect(Collectors.toList());
+                    currentClass = classKey.subjectCode + "_" + classKey.shift + "_" + ordinalNumber + "_"
+                            + classKey.slotName;
+                    for (StudentArrangementModel std : finalStudentList) {
+                        List<String> row = new ArrayList<>();
+                        row.add(subjectEntity.getId());
+                        row.add(subjectEntity.getName());
+                        row.add(std.student.getRollNumber());
+                        row.add(std.student.getFullName());
+                        row.add(currentClass);
+                        row.add(classKey.shift);
+
+                        displayList.add(row);
+                    }
+
+                    tempStudentList.removeAll(finalStudentList);
+                    ordinalNumber++;
+                }
+
+                if(!tempStudentList.isEmpty()) {
+                    List<StudentArrangementModel> finalStudentList = tempStudentList.stream().skip(0).collect(Collectors.toList());
+                    String currentClass = classKey.subjectCode + "_" + classKey.shift + "_" + ordinalNumber + "_"
+                            + classKey.slotName;
+                    for (StudentArrangementModel std : finalStudentList) {
+                        List<String> row = new ArrayList<>();
+                        row.add(subjectEntity.getId());
+                        row.add(subjectEntity.getName());
+                        row.add(std.student.getRollNumber());
+                        row.add(std.student.getFullName());
+                        row.add(currentClass);
+                        row.add(classKey.shift);
+
+                        displayList.add(row);
+                    }
+
+                    tempStudentList.removeAll(finalStudentList);
+                    ordinalNumber++;
+                }
+            }
+
             this.process2 = true;
 
             displayList.sort(new Comparator<List<String>>() {
@@ -682,7 +885,8 @@ public class StudentArrangementController {
         return jsonObj;
     }
 
-    private void arrangeStudentIntoSlot(List<List<String>> displayList, List<StudentArrangementModel> studentList,
+    private void arrangeStudentIntoSlot(Map<ClassKey, List<StudentArrangementModel>> groupClassList,
+                                        List<List<String>> displayList, List<StudentArrangementModel> studentList,
                                         Map<String, Map<String, Integer>> subjectOrdinalNumberMap,
                                         Map<String, SubjectEntity> subjectMap,
                                         String shift, String subjectCode) {
@@ -760,6 +964,9 @@ public class StudentArrangementController {
             ordinalNumberMap.put(slotName[finalPosition], ordinalNumber);
         }
 
+
+
+
         // Chọn ra 25 sinh viên đầu danh sách để xếp lớp
         SubjectEntity subjectEntity = subjectMap.get(subjectCode);
         List<StudentArrangementModel> finalStudentList = studentsInSlot.get(finalPosition)
@@ -775,11 +982,20 @@ public class StudentArrangementController {
             row.add(currentClass);
             row.add(shift);
 
-            displayList.add(row);
+//            displayList.add(row);
         }
 
+        ClassKey classKey = new ClassKey(slotName[finalPosition], shift, subjectCode);
+        List<StudentArrangementModel> classList = groupClassList.get(classKey);
+
+        if(classList == null) {
+            classList = new ArrayList<>();
+            groupClassList.put(classKey, classList);
+        }
+
+        classList.addAll(finalStudentList);
         studentList.removeAll(finalStudentList);
-        this.arrangeStudentIntoSlot(displayList, studentList, subjectOrdinalNumberMap, subjectMap, shift, subjectCode);
+        this.arrangeStudentIntoSlot(groupClassList, displayList, studentList, subjectOrdinalNumberMap, subjectMap, shift, subjectCode);
     }
 
     private List<SubjectCurriculumEntity> getSubjectCurriculumList(StudentEntity student) {
@@ -1127,6 +1343,16 @@ public class StudentArrangementController {
         public int numOfSubjects; // In suggestion list
         public String[] subjects; // Based on subject's OrdinalNumber in curriculum
 
+        public String getLabDay() {
+            return labDay;
+        }
+
+        public void setLabDay(String labDay) {
+            this.labDay = labDay;
+        }
+
+        public String labDay;
+
         // [0, 1, 2]: Slot 1,2,3 of Monday, Wednesday, Friday
         // [3, 4, 5]: Slot 1,2,3 of Tuesday, Thursday
         public Boolean[] slots;
@@ -1170,4 +1396,35 @@ public class StudentArrangementController {
         }
     }
 
+    private class ClassKey {
+        public String slotName;
+        public String shift;
+        public String subjectCode;
+
+        public ClassKey(String slotName, String shift, String subjectCode) {
+            this.slotName = slotName;
+            this.shift = shift;
+            this.subjectCode = subjectCode;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            ClassKey that = (ClassKey) o;
+
+            if (!slotName.equalsIgnoreCase(that.slotName)) return false;
+            if (!shift.equalsIgnoreCase(that.shift)) return false;
+            return subjectCode.equalsIgnoreCase(that.subjectCode);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = slotName.hashCode();
+            result = 31 * result + shift.hashCode();
+            result = 31 * result + subjectCode.hashCode();
+            return result;
+        }
+    }
 }
