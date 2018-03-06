@@ -38,6 +38,11 @@ public class CourseStudentServiceImpl implements ICourseStudentService {
     }
 
     @Override
+    public List<CourseStudentEntity> findCourseStudentByStudent(StudentEntity studentEntity) {
+        return CourseStudentEntityJpaController.findCourseStudentByStudent(studentEntity);
+    }
+
+    @Override
     public List<CourseStudentEntity> findAllCourseStudent() {
         return null;
     }

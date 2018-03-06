@@ -1,0 +1,126 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
+
+<section class="content">
+    <div class="box">
+        <div class="b-header">
+            <div class="row">
+                <div class="col-md-9 title">
+                    <h1>Danh sách môn thuộc bộ môn </h1>
+                </div>
+                <div class="col-md-3 text-right">
+                    <%--<button type="button" class="btn btn-success btn-with-icon" onclick="CreateNewRoom()">--%>
+                        <%--<i class="fa fa-plus"></i>--%>
+                        <%--<div style="margin-top: -3px">TẠO PHÒNG</div>--%>
+                    <%--</button>--%>
+                </div>
+            </div>
+            <hr>
+        </div>
+        <div class="b-body">
+            <div class="row">
+                <div class="col-md-12">
+                    <table id="tbl-subjectDepartment">
+                        <thead>
+                        <th>Mã môn</th>
+                        <th>Tên bộ môn</th>
+                        <%--<th>Chi tiết</th>--%>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<script>
+    var tblsubjectDepartment;
+
+    jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
+        var _that = this;
+
+        if (iDelay === undefined) {
+            iDelay = 250;
+        }
+
+        this.each(function (i) {
+            $.fn.dataTableExt.iApiIndex = i;
+            var
+                $this = this,
+                oTimerId = null,
+                sPreviousSearch = null,
+                anControl = $('input', _that.fnSettings().aanFeatures.f);
+
+            anControl.off('keyup search input').on('keyup search input', function () {
+
+                if ((anControl.val().length == 0 || anControl.val().length >= 2) && (sPreviousSearch === null || sPreviousSearch != anControl.val())) {
+                    window.clearTimeout(oTimerId);
+                    sPreviousSearch = anControl.val();
+                    oTimerId = window.setTimeout(function () {
+                        $.fn.dataTableExt.iApiIndex = i;
+                        _that.fnFilter(anControl.val());
+                    }, iDelay);
+                }
+            });
+
+            return this;
+        });
+        return this;
+    };
+
+    $(document).ready(function () {
+        LoadsubjectDepartmentList();
+    });
+
+    function LoadsubjectDepartmentList() {
+        tblsubjectDepartment = $('#tbl-subjectDepartment').dataTable({
+            "bServerSide": false,
+            "bFilter": true,
+            "bRetrieve": true,
+            "sScrollX": "100%",
+            "bScrollCollapse": true,
+            "bProcessing": true,
+            "bSort": false,
+            "sAjaxSource": "/loadSubjectDepartmentList",
+            "oLanguage": {
+                "sSearchPlaceholder": "Mã môn, tên bộ môn",
+                "sSearch": "Tìm kiếm:",
+                "sZeroRecords": "Không có dữ liệu phù hợp",
+                "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
+                "sEmptyTable": "Không có dữ liệu",
+                "sInfoFiltered": " - lọc ra từ _MAX_ dòng",
+                "sLengthMenu": "Hiển thị _MENU_ dòng",
+                "sProcessing": "Đang xử lý...",
+                "oPaginate": {
+                    "sNext": "<i class='fa fa-chevron-right'></i>",
+                    "sPrevious": "<i class='fa fa-chevron-left'></i>"
+                }
+            },
+            "aoColumnDefs": [
+                {
+                    "aTargets": [0, 1],
+                    "bSortable": false,
+                    "sClass": "text-center",
+                },
+                // {
+                //     "aTargets": [2],
+                //     "mRender": function (data, type, row) {
+                //         return "<a class='btn btn-success tbl-btn' onclick='ShowModal(\"" + row[0] + "\")'>" +
+                //             "<i class='glyphicon glyphicon-pencil'></i></a>";
+                //     }
+                // },
+            ],
+            "bAutoWidth": false,
+        }).fnSetFilteringDelay(700);
+    }
+
+    function RefreshTable() {
+        if (tblSubject != null) {
+            tblSubject._fnPageChange(0);
+            tblSubject._fnAjaxUpdate();
+        }
+    }
+
+</script>

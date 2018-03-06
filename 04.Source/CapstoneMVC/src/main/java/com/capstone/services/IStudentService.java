@@ -36,4 +36,5 @@ public interface IStudentService {
     List<StudentFailedSubject> getSubjectsFailedBySemester(Integer selectedSemester);
     List<StudentFailedSubject> getSubjectsSlotsFailedBySemester(Integer selectedSemester);
     Map<String,StudentAndSubject> getSubjectsStudentsStudyInSemester(Integer selectedSemester);
+    void myUpdateStudent(StudentEntity student);
 }

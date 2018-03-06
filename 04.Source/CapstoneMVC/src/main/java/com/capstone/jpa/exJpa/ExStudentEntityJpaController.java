@@ -485,6 +485,19 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
     }
 
 
+    public void myUpdateStudent(StudentEntity student) {
+        try {
+            EntityManager manager = getEntityManager();
+            manager.getTransaction().begin();
+            manager.merge(student);
+            manager.flush();
+            manager.getTransaction().commit();
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            e.printStackTrace();
+        }
+    }
+
 }
 
 

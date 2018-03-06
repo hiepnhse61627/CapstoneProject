@@ -7,7 +7,7 @@
 <section class="content">
     <div class="box">
         <div class="b-header">
-            <h1>Nhập danh sách lịch day của GV</h1>
+            <h1>Nhập danh sách lịch dạy của GV</h1>
             <hr>
         </div>
         <div class="b-body">
@@ -31,7 +31,7 @@
             </div>
             <div class="form-group">
                 <div class="left-content m-r-5">
-                    <label>Chọn học kỳ để nhập thời khóa biểu:</label>
+                    <label>Chọn học kỳ:</label>
                 </div>
                 <div class="right-content width-30 width-m-70">
                     <select id="semester" class="select form-control">
@@ -49,6 +49,8 @@
 </section>
 
 <script>
+    var isRunning = true;
+
     function Add() {
         var form = new FormData();
         form.append('file', $('#file')[0].files[0]);
@@ -56,7 +58,7 @@
 
         swal({
             title: 'Đang xử lý',
-            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div><div id='progress2' class='form-group'></div>",
             type: 'info',
             onOpen: function () {
                 swal.showLoading();
@@ -82,6 +84,7 @@
                         }
                     }
                 });
+                waitForExcelFinish();
                 waitForTaskFinish(isRunning);
             },
             allowOutsideClick: false
@@ -91,14 +94,28 @@
     function waitForTaskFinish(running) {
         $.ajax({
             type: "GET",
-            url: "/getlinestatus",
+            url: "/getLineScheduleStatus",
             processData: false,
             contentType: false,
             success: function (result) {
-                $('#progress').html("<div>(" + result.current + "/" + result.total + ")</div>");
-                console.log("task running");
+                $('#progress2').html("<h4>Thêm vào database</h4><div>(" + result.current + "/" + result.total + ")</div>");
                 if (running) {
                     setTimeout("waitForTaskFinish(isRunning)", 50);
+                }
+            }
+        });
+    }
+
+    function waitForExcelFinish() {
+        $.ajax({
+            type: "GET",
+            url: "/getExcelCurrentLineStatus",
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                if (result.isExcelRunning) {
+                    $('#progress').html("<h4>Duyệt file xecel</h4><div>(" + result.excelCurrent + "/" + result.excelTotal + ")</div>");
+                    setTimeout("waitForExcelFinish()", 500);
                 }
             }
         });

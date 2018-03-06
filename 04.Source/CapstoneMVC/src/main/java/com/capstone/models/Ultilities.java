@@ -4,15 +4,22 @@ import com.capstone.entities.*;
 import com.capstone.services.*;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import com.google.gson.Gson;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.servlet.ServletContext;
+import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -85,8 +92,8 @@ public class Ultilities {
     public static List<MarksEntity> FilterStudentsOnlyPassAndFailAndStudying(List<MarksEntity> set) {
         List<MarksEntity> newSet = set.stream()
                 .filter(c -> c.getStatus().toLowerCase().contains("pass") ||
-                                c.getStatus().toLowerCase().contains("fail") ||
-                                c.getStatus().toLowerCase().contains("study"))
+                        c.getStatus().toLowerCase().contains("fail") ||
+                        c.getStatus().toLowerCase().contains("study"))
                 .collect(Collectors.toList());
         newSet = SortSemestersByMarks(newSet);
         return newSet;
@@ -745,4 +752,323 @@ public class Ultilities {
         }).reversed());
         return docs.get(0);
     }
+
+    public static ResponseEntity<String> sendNotification(String msg, String email, List<ScheduleEntity> listNewSchedule, AndroidPushNotificationsService androidPushNotificationsService, String type) {
+        try {
+
+            Gson gson = new Gson();
+
+            NotificationModel notification = new NotificationModel();
+            notification.setBody(msg);
+            notification.setSound("default");
+
+            FireBaseMessagingModel fireBaseMessaging = new FireBaseMessagingModel();
+            fireBaseMessaging.setTo("/topics/" + email);
+
+            List<ScheduleModel> scheduleModelList = new ArrayList<>();
+            for (ScheduleEntity schedule : listNewSchedule) {
+                ScheduleModel model = new ScheduleModel();
+                model.setCourseName(schedule.getCourseId().getSubjectCode());
+                model.setDate(schedule.getDateId().getDate());
+                model.setRoom(schedule.getRoomId().getName());
+                model.setSlot(schedule.getDateId().getSlotId().getSlotName());
+                model.setStartTime(schedule.getDateId().getSlotId().getStartTime());
+                model.setEndTime(schedule.getDateId().getSlotId().getEndTime());
+                model.setLecture(URLEncoder.encode(schedule.getEmpId().getFullName(), "UTF-8"));
+
+                scheduleModelList.add(model);
+            }
+
+            FirebaseDataModel data = new FirebaseDataModel();
+            data.setNewScheduleList(scheduleModelList);
+            data.setType(type);
+            fireBaseMessaging.setData(data);
+
+//            NotificationModel notificationModel = new NotificationModel();
+//
+//            if(type.equals("create")){
+//                notificationModel.setTitle("You have new schedule");
+//            }else{
+//                notificationModel.setTitle("Your schedule has been changed");
+//            }
+//            notificationModel.setBody( "Your subject " + listNewSchedule.get(0).getCourseId().getSubjectCode() + " has new schedules.");
+//            fireBaseMessaging.setNotification(notificationModel);
+
+            HttpEntity<String> request = new HttpEntity<>(gson.toJson(fireBaseMessaging));
+
+            CompletableFuture<String> pushNotification = androidPushNotificationsService.send(request);
+
+            String firebaseResponse = pushNotification.get();
+
+            return new ResponseEntity<>(firebaseResponse, HttpStatus.OK);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new ResponseEntity<>("Push Notification ERROR!", HttpStatus.BAD_REQUEST);
+    }
+
+    public static void isLatestMarkFailOrNot(MarksEntity latestMark, List<MarksEntity> sortedList, LatestFailMark checkModel) {
+        RealSemesterEntity tmpSemester = latestMark.getSemesterId();
+        //check xem trong một kì có học môn đó 2 lần không (trả nợ ngay trong kì)
+        List<MarksEntity> reLearnInSameSemester = sortedList.stream()
+                .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
+                .collect(Collectors.toList());
+        if (reLearnInSameSemester.size() >= 2) {
+            //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
+            // nếu có 2 fail --> fail; nếu có 1 pass, 1 fail -> pass
+            MarksEntity checkPass = reLearnInSameSemester.stream()
+                    .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                    .findFirst().orElse(null);
+            if (checkPass == null) {
+                checkModel.setFailed(true);
+                checkModel.setLatestFailedMark(latestMark);
+            }
+        } else {
+            if (latestMark != null &&
+                    latestMark.getStatus().equalsIgnoreCase(Enums.MarkStatus.FAIL.getValue())) {
+                checkModel.setFailed(true);
+                checkModel.setLatestFailedMark(latestMark);
+            }
+        }
+    }
+
+    public static boolean isLatestMarkFailOrNotVer2(MarksEntity latestMark, List<MarksEntity> sortedList) {
+        RealSemesterEntity tmpSemester = latestMark.getSemesterId();
+        //check xem trong một kì có học môn đó 2 lần không (trả nợ ngay trong kì)
+        List<MarksEntity> reLearnInSameSemester = sortedList.stream()
+                .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
+                .collect(Collectors.toList());
+        if (reLearnInSameSemester.size() >= 2) {
+            //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
+            // nếu có 2 fail --> fail; nếu có 1 pass, 1 fail -> pass
+            MarksEntity checkPass = reLearnInSameSemester.stream()
+                    .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                    .findFirst().orElse(null);
+            if (checkPass != null) {
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            if (latestMark != null &&
+                    latestMark.getStatus().equalsIgnoreCase(Enums.MarkStatus.FAIL.getValue())) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    //
+    public static boolean isSubjectFailedPrerequisite(SubjectEntity subject, List<RealSemesterEntity> sortedSemester
+            , List<SubjectEntity> allSubjects, List<MarksEntity> allMarks, RealSemesterEntity selectedSemester
+            , List<PrequisiteEntity> allPrerequisites) {
+
+        boolean result = false;
+
+        PrequisiteEntity prerequisite = subject.getPrequisiteEntity();
+        //----check prerequisite start here------
+        if (prerequisite != null) {
+            String oldPrerequisite = prerequisite.getPrequisiteSubs();
+            String newPrerequisite = prerequisite.getNewPrequisiteSubs();
+            if (oldPrerequisite == null && newPrerequisite == null) {
+                return result;
+            } else {
+
+                boolean isAbleToLearn = false;
+                //check year for newPrerequisite
+                // if currentSemester < effectionSemester -> we can't check prerequesite
+                boolean able4newPrerequisite = true;
+                List<String> rows = null;
+                if (oldPrerequisite != null && newPrerequisite == null) {
+                    rows = Arrays.asList(oldPrerequisite.split("OR"));
+                } else if (oldPrerequisite == null && newPrerequisite != null) {
+                    String effectSemester = prerequisite.getEffectionSemester();
+                    RealSemesterEntity affectSemester = sortedSemester.stream()
+                            .filter(q -> q.getSemester().equalsIgnoreCase(effectSemester))
+                            .findFirst().orElse(null);
+
+                    int selectedIndex = sortedSemester.indexOf(selectedSemester);
+                    int effectIndex = sortedSemester.indexOf(affectSemester);
+
+                    if (selectedIndex < effectIndex) {
+                        able4newPrerequisite = false;
+                    }
+
+                    rows = Arrays.asList(newPrerequisite.split("OR"));
+                }else if (oldPrerequisite != null && newPrerequisite != null){
+
+                    //kiểm tra cả 2 cũ lẫn mới
+                    String[] oldSubj = oldPrerequisite.split("OR");
+                    String[] newSubj = newPrerequisite.split("OR");
+                    rows.addAll(Arrays.asList(oldSubj));
+                    rows.addAll(Arrays.asList(newSubj));
+                }
+
+
+                if (able4newPrerequisite) {
+                    //check prerequisite of subject
+                    rowLoop:
+                    for (String row : rows) {
+                        row = row.replaceAll("\\(", "")
+                                .replaceAll("\\)", "").trim();
+                        String[] cells = row.split(",");
+
+                        //count if student learned enough prerequisite subject
+                        int numNeedtoPass = cells.length;
+                        int countPass = 0;
+
+//                            try{
+                        for (String cell : cells) {
+                            String subjCode = cell.trim();
+                            SubjectEntity cellSubject = allSubjects.stream()
+                                    .filter(q -> q.getId().equalsIgnoreCase(subjCode)).findFirst()
+                                    .orElse(null);
+
+                            //khởi tạo như thế này để có thể dùng stream filter
+                            if (cellSubject != null) {
+
+
+                                List<SubjectEntity> isReplacedSubjects = new ArrayList<>(cellSubject.getSubjectEntityList1());
+                                List<SubjectEntity> replaceSubjects = new ArrayList<>(cellSubject.getSubjectEntityList());
+
+                                List<String> isReplacedSubjectCodes = isReplacedSubjects.stream()
+                                        .map(q -> q.getId()).collect(Collectors.toList());
+                                List<String> replaceSubjectCodes = replaceSubjects.stream()
+                                        .map(q -> q.getId()).collect(Collectors.toList());
+
+                                //mảng chính gồm môn chính [A] và môn thay thế của [A] và môn bị thay thế của [A]
+                                //check môn thay thế
+                                List<String> mainList = new ArrayList<>();
+                                mainList.add(subjCode);
+                                mainList.addAll(isReplacedSubjectCodes);
+                                mainList.addAll(replaceSubjectCodes);
+
+
+                                // kiểm tra môn chính, môn thay thế và môn bị thay thế
+                                List<MarksEntity> marksList = allMarks.stream()
+                                        .filter(q -> mainList.stream()
+                                                .anyMatch(a -> a.equalsIgnoreCase(
+                                                        q.getSubjectMarkComponentId().getSubjectId().getId())
+                                                )
+                                        ).collect(Collectors.toList());
+
+                                marksList = Ultilities.SortSemestersByMarks(marksList);
+
+                                if (!marksList.isEmpty()) {
+
+                                    MarksEntity latestMark = marksList.get(marksList.size() - 1);
+
+                                    RealSemesterEntity tmpSemester = latestMark.getSemesterId();
+
+                                    //lấy tất cả điểm trong cùng học kỳ mới nhất,
+                                    //  tránh trường hợp học 1 môn 2 lần trong 1 học kỳ mà khi hàm sắp xếp chạy thì
+                                    //  2 môn k biết môn nào học trước học sau để lấy điểm cuối cùng
+                                    List<MarksEntity> reLearnInSameSemester = marksList.stream()
+                                            .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
+                                            .collect(Collectors.toList());
+
+
+                                    RealSemesterEntity summer2017 = sortedSemester.stream()
+                                            .filter(q -> q.getSemester().equalsIgnoreCase("SUMMER2017"))
+                                            .findFirst().orElse(null);
+                                    int selectedSemesterIndex = sortedSemester.indexOf(selectedSemester);
+                                    int summer2017Index = sortedSemester.indexOf(summer2017);
+
+                                    //check xem có điểm nào thỏa dk
+                                    MarksEntity isPass = null;
+                                    List<SubjectEntity> failSubjs = new ArrayList<>();
+
+                                    //nếu có 2 môn cùng được học trong 1 kì,
+                                    //  nếu có record nào pass hoặc thỏa dk điểm tiên quyết thì môn đó
+                                    //  được xem là pass tiên quyết (ko phải pass môn học đó- chỉ là đủ dk để học môn tiên quyết),
+                                    //  vì học sinh không được dk học cải thiện cùng 1 môn trong 1 học kỳ
+                                    //  -> trường hợp pass sau đó học cải thiện rồi bị fail trong cùng 1 kỳ là ko xuất hiện,
+                                    //   chỉ có học fail sau đó trả nợ ngay trong kì
+                                    if (!reLearnInSameSemester.isEmpty()) {
+
+                                        //1.nếu như học kỳ được chọn <= Summer2017,
+                                        //    xét dk qua môn tiên quyết theo trạng thái điểm.
+                                        //2.nếu như học kỳ được chọn > Summer2017,
+                                        //     xét dk qua  môn tiên quyết lớn hơn hoặc = điểm được quy định trong
+                                        //     bảng Prequsite.
+                                        if (selectedSemesterIndex <= summer2017Index) {
+                                            //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
+                                            // nếu có 2 fail --> fail
+                                            isPass = reLearnInSameSemester.stream()
+                                                    .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                                                    .findFirst().orElse(null);
+
+                                        } else {
+                                            PrequisiteEntity prerequisite1 = allPrerequisites.stream()
+                                                    .filter(q -> q.getSubjectId().equalsIgnoreCase(cellSubject.getId()))
+                                                    .findFirst().orElse(null);
+
+                                            String tempSemester = prerequisite1.getEffectionSemester();
+
+                                            Double tmpPassMark;
+                                            //xét xem môn này có tồn tại học kỳ áp dụng khác nhau ko
+                                            if (tempSemester == null || tempSemester.isEmpty()) {
+                                                tmpPassMark = prerequisite1.getFailMark() * 1.0;
+                                            } else {
+                                                //check xem học kỳ được chọn thỏa dk áp dụng theo học kỳ nào của môn dang xét
+                                                RealSemesterEntity affectionSemester = sortedSemester.stream()
+                                                        .filter(q -> q.getSemester().equalsIgnoreCase(tempSemester))
+                                                        .findFirst().orElse(null);
+                                                int affectIndex = sortedSemester.indexOf(affectionSemester);
+
+                                                if (selectedSemesterIndex <= affectIndex) {
+                                                    tmpPassMark = prerequisite1.getFailMark() * 1.0;
+                                                } else {
+                                                    tmpPassMark = prerequisite1.getNewFailMark() * 1.0;
+                                                }
+                                            }
+
+                                             isPass = reLearnInSameSemester.stream()
+                                                    .filter(q -> q.getAverageMark() >= tmpPassMark
+                                                            || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                                                    .findFirst().orElse(null);
+                                        }
+
+
+                                    }
+                                    if (isPass != null) {
+                                        ++countPass;
+                                    }else{
+                                        failSubjs.add(cellSubject);
+                                    }
+
+                                }
+
+
+                            }
+                        }
+                        if (countPass == numNeedtoPass) {
+                            isAbleToLearn = true;
+                            break rowLoop;
+                        }
+//                            }catch(Exception e){
+//                                System.out.println(e.getMessage());
+//                            }
+
+
+                    }
+
+                    //check if this subject is able to learn
+                    if (isAbleToLearn) {
+                        result = false;
+                    } else {
+
+                        result = true;
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+
 }

@@ -22,8 +22,28 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.capstone.services.DateUtil.formatDate;
+import static com.capstone.services.DateUtil.getDate;
+
 @Controller
 public class EmployeeList {
+    IRoomService roomService = new RoomServiceImpl();
+
+    IScheduleService scheduleService = new ScheduleServiceImpl();
+
+    ISlotService slotService = new SlotServiceImpl();
+
+    IDaySlotService daySlotService = new DaySlotServiceImpl();
+
+    ICourseStudentService courseStudentService = new CourseStudentServiceImpl();
+
+    ICourseService courseService = new CourseServiceImpl();
+
+    IEmployeeService employeeService = new EmployeeServiceImpl();
+
+    IRealSemesterService realSemesterService = new RealSemesterServiceImpl();
+
+    ISubjectService subjectService = new SubjectServiceImpl();
 
     @RequestMapping("/employeeList")
     public ModelAndView EmployeeListAll() {
@@ -33,94 +53,222 @@ public class EmployeeList {
         return view;
     }
 
-//    @RequestMapping("/studentList/{studentId}")
-//    public ModelAndView StudentInfo(@PathVariable("studentId") int studentId) {
-//        ModelAndView view = new ModelAndView("StudentInfo");
-//        view.addObject("title", "Thông tin sinh viên");
-//        view = this.GetStudentInfoData(view, studentId);
-//
-//        return view;
-//    }
-//
-//    @RequestMapping("/studentProcess/{studentId}")
-//    public ModelAndView StudentInfo2(@PathVariable("studentId") int studentId) {
-//        ModelAndView view = new ModelAndView("StudentInfo2");
-//        view.addObject("title", "Điểm quá trình");
-//        view = this.GetStudentInfoData(view, studentId);
-//
-//        return view;
-//    }
+    @RequestMapping("/employeeList/{employeeId}")
+    public ModelAndView EmployeeInfo(@PathVariable("employeeId") int employeeId) {
+        ModelAndView view = new ModelAndView("EmployeeInfo");
+        view.addObject("title", "Thông tin giảng viên");
+        List<SubjectEntity> subjects = subjectService.getAllSubjects();
+        view.addObject("subjects", subjects);
 
-//    private ModelAndView GetStudentInfoData(ModelAndView view, int studentId) {
-//        IStudentService studentService = new StudentServiceImpl();
-//        IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
-//        IStudentStatusService studentStatusService = new StudentStatusServiceImpl();
-//
-//        StudentEntity student = studentService.findStudentById(studentId);
-//
-//        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-//        view.addObject("student", student);
-//        view.addObject("docStudent", Lists.reverse(student.getDocumentStudentEntityList()).get(0));
-//
-//        view.addObject("gender", student.getGender() == Enums.Gender.MALE.getValue()
-//                ? Enums.Gender.MALE.getName() : Enums.Gender.FEMALE.getName());
-//        view.addObject("dateOfBirth", sdf.format(student.getDateOfBirth()));
-//        view.addObject("program", student.getProgramId() != null ? student.getProgramId().getName() : "N/A");
-//        CurriculumEntity cur = Lists.reverse(student.getDocumentStudentEntityList()).get(0).getCurriculumId();
-//        view.addObject("curriculum", cur != null ? cur.getName() : "N/A");
-//
-//        // Giaa lap hoc ky
-//        RealSemesterEntity gialap = Global.getTemporarySemester();
-//
-//        StudentStatusEntity studentStatusEntity = studentStatusService.getStudentStatusBySemesterIdAndStudentId(gialap.getId(), studentId);
-//        String studentStatus = studentStatusEntity != null ? studentStatusEntity.getStatus() : "N/A";
-//        view.addObject("status", studentStatus);
-//
-//        return view;
-//    }
+        List<RoomEntity> rooms = roomService.findAllRooms();
+        view.addObject("rooms", rooms);
 
-//    @RequestMapping(value = "/student/edit")
-//    @ResponseBody
-//    public JsonObject EditSubject(@RequestParam("sRollNumber") String rollNumber, @RequestParam("sFullName") String fullName,
-//                                  @RequestParam("sGender") String gender, @RequestParam("sDOB") String dob
-//            , @RequestParam("sTermNumber") String term) {
-//        JsonObject jsonObj = new JsonObject();
-//        IStudentService studentService = new StudentServiceImpl();
-//        try {
-//
-//            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-//            EntityManager em = emf.createEntityManager();
-//            em.getTransaction().begin();
-//            StudentEntity student = studentService.findStudentByRollNumber(rollNumber);
-//
-//            DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-//            Date date = dateFormat.parse(dob);
-//            long time = date.getTime();
-//            Timestamp dateOfBirth = new Timestamp(time);
-//            student.setDateOfBirth(dateOfBirth);
-//            student.setDateOfBirth(date);
-//            student.setFullName(fullName);
-//            student.setTerm(Integer.valueOf(term));
-//            if (gender.equals("Nam")){
-//                student.setGender(true);
-//            }else{
-//                student.setGender(false);
-//            }
-//            em.merge(student);
-//            em.flush();
-//            em.getTransaction().commit();
-//
-//                jsonObj.addProperty("success", true);
-//                jsonObj.addProperty("message", "update Fail");
-//
-//        } catch (Exception e) {
-//            Logger.writeLog(e);
-//            jsonObj.addProperty("false", false);
-//            jsonObj.addProperty("message", e.getMessage());
-//        }
-//
-//        return jsonObj;
-//    }
+        List<EmployeeEntity> emps = employeeService.findAllEmployees();
+        view.addObject("employees", emps);
+
+        List<SlotEntity> slots = slotService.findAllSlots();
+        view.addObject("slots", slots);
+
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+
+        view.addObject("semesters", semesters);
+
+        EmployeeEntity emp = employeeService.findEmployeeById(employeeId);
+
+        view.addObject("employee", emp);
+
+        Set listCapacity = new HashSet();
+        for (RoomEntity room : rooms) {
+            listCapacity.add(room.getCapacity());
+        }
+        view.addObject("capacity", listCapacity);
+
+        return view;
+    }
+
+    @RequestMapping(value = "/employee/edit/{employeeId}")
+    @ResponseBody
+    public JsonObject EditEmployee(@PathVariable("employeeId") int employeeId, @RequestParam Map<String, String> params) {
+        JsonObject jsonObj = new JsonObject();
+
+        try {
+            EmployeeEntity emp = employeeService.findEmployeeById(employeeId);
+            String position = params.get("position");
+            String emailPersonal = params.get("emailPersonal");
+            String emailFE = params.get("emailFE");
+            String emailEDU = params.get("emailEDU");
+            String phone = params.get("phone");
+            String address = params.get("address");
+            String contract = params.get("contract");
+            String code = params.get("code");
+
+            if (position != null && !position.equals("")) {
+                emp.setPosition(position);
+            }
+
+            if (emailPersonal != null && !emailPersonal.equals("")) {
+                emp.setPersonalEmail(emailPersonal);
+            }
+
+            if (emailFE != null && !emailFE.equals("")) {
+                emp.setEmailFE(emailFE);
+            }
+
+            if (emailEDU != null && !emailEDU.equals("")) {
+                emp.setEmailEDU(emailEDU);
+            }
+
+            if (phone != null && !phone.equals("")) {
+                emp.setPhone(phone);
+            }
+
+            if (address != null && !address.equals("")) {
+                emp.setAddress(position);
+            }
+
+            if (contract != null && !contract.equals("")) {
+                emp.setContract(position);
+            }
+
+            if (code != null && !code.equals("")) {
+                emp.setCode(code);
+            }
+
+            employeeService.updateEmployee(emp);
+            jsonObj.addProperty("success", true);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jsonObj;
+    }
+
+
+    @RequestMapping("/employeeFreeSchedule")
+    public ModelAndView EmployeeFreeSchedule() {
+        ModelAndView view = new ModelAndView("EmployeeFreeSchedule");
+        view.addObject("title", "Thống kê lịch trống của GV");
+
+        List<EmployeeEntity> emps = employeeService.findAllEmployees();
+        view.addObject("employees", emps);
+
+        return view;
+    }
+
+    @RequestMapping(value = "/employeeFreeSchedule/get")
+    @ResponseBody
+    public JsonObject LoadEmployeeFreeScheduleAll(@RequestParam Map<String, String> params) {
+        JsonObject jsonObj = new JsonObject();
+
+        try {
+            Integer lectureId = null;
+            String startDate = params.get("startDate");
+            String endDate = params.get("endDate");
+
+            Map<Date, List<String>> freeDaySlot = new TreeMap<>();
+
+            if (!params.get("lecture").equals("")) {
+                lectureId = Integer.parseInt(params.get("lecture"));
+            }
+
+            List<ScheduleEntity> scheduleList = scheduleService.findScheduleByLecture(lectureId);
+            if (scheduleList != null) {
+                List<String> slotNameList = new ArrayList<>();
+
+                List<SlotEntity> slotList = slotService.findAllSlots();
+
+                for (SlotEntity aSlot : slotList) {
+                    slotNameList.add(aSlot.getSlotName());
+                }
+
+                //get all schedule in date range
+                if (!startDate.equals(endDate)) {
+                    List<ScheduleEntity> removeList = new ArrayList<>();
+                    for (ScheduleEntity aSchedule : scheduleList) {
+                        Date aDate = getDate(aSchedule.getDateId().getDate());
+                        if (aDate.before(getDate(startDate)) || aDate.after(getDate(endDate))) {
+                            removeList.add(aSchedule);
+                        }
+                    }
+                    scheduleList.removeAll(removeList);
+
+                    List<String> allDates = new ArrayList();
+                    Date date1 = getDate(startDate);
+                    Date date2 = getDate(endDate);
+
+                    Calendar c1 = Calendar.getInstance();
+                    c1.setTime(date1);
+                    Calendar c2 = Calendar.getInstance();
+                    c2.setTime(date2);
+                    while (!c2.before(c1)) {
+                        allDates.add(formatDate(c1.getTime()));
+                        c1.add(Calendar.DATE, 1);
+                    }
+
+                    for (ScheduleEntity aSchedule : scheduleList) {
+                        allDates.remove(aSchedule.getDateId().getDate());
+                    }
+
+                    for (String aDate : allDates) {
+                        List<String> tmpSlotList = new ArrayList<>();
+                        tmpSlotList.add("Trống slot cả ngày");
+                        freeDaySlot.put(getDate(aDate), tmpSlotList);
+
+                    }
+
+                    //get all remaining free slot of a employee schedule in a date
+                    for (ScheduleEntity aSchedule : scheduleList) {
+                        List<String> slotOfDayList = freeDaySlot.get(getDate(aSchedule.getDateId().getDate()));
+                        if (slotOfDayList == null) {
+                            slotOfDayList = new ArrayList<>(slotNameList);
+                        }
+                        slotOfDayList.remove(aSchedule.getDateId().getSlotId().getSlotName());
+                        freeDaySlot.put(getDate(aSchedule.getDateId().getDate()), slotOfDayList);
+                    }
+
+
+                    List<List<String>> result = new ArrayList<>();
+
+                    for (Date key : freeDaySlot.keySet()) {
+                        String totalSlot = "";
+                        for (String aSlot : freeDaySlot.get(key)) {
+                            totalSlot += aSlot+", ";
+                        }
+
+                        List<String> dataList = new ArrayList<String>();
+                        dataList.add(formatDate(key));
+                        dataList.add(totalSlot.substring(0, totalSlot.lastIndexOf(", ")));
+                        result.add(dataList);
+                    }
+
+                    Gson gson = new Gson();
+                    JsonArray array = (JsonArray) gson.toJsonTree(result);
+
+                    jsonObj.add("aaData", array);
+                }else{
+
+                    Gson gson = new Gson();
+                    JsonArray array = (JsonArray) gson.toJsonTree(new ArrayList<>());
+                    jsonObj.add("aaData", array);
+
+                }
+            }else{
+                Gson gson = new Gson();
+                JsonArray array = (JsonArray) gson.toJsonTree(new ArrayList<>());
+                jsonObj.add("aaData", array);
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jsonObj;
+    }
+
 
     @RequestMapping(value = "/loadEmployeeList")
     @ResponseBody
@@ -218,8 +366,14 @@ public class EmployeeList {
             Gson gson = new Gson();
             obj = new JsonObject();
 
+            String queryStr2 = "SELECT s FROM ScheduleEntity s" +
+                    " WHERE s.empId.id = :id";
+            Query query2 = em.createQuery(queryStr2);
+            query2.setParameter("id", emp.getId());
+            List<ScheduleEntity> scheduleList = query2.getResultList();
+
             List<ScheduleModel> scheduleModelList = new ArrayList<>();
-            for (ScheduleEntity schedule : emp.getScheduleEntityList()) {
+            for (ScheduleEntity schedule : scheduleList) {
                 ScheduleModel model = new ScheduleModel();
                 model.setCourseName(schedule.getCourseId().getSubjectCode());
                 model.setDate(schedule.getDateId().getDate());
@@ -230,9 +384,15 @@ public class EmployeeList {
                 model.setLecture(emp.getFullName());
                 scheduleModelList.add(model);
             }
-            emp.setScheduleEntityList(null);
 
-            obj.add("user", parser.parse(gson.toJson(emp)));
+            MobileUserModel user = new MobileUserModel();
+            user.setCode(emp.getCode());
+            user.setId(emp.getId());
+            user.setName(emp.getFullName());
+            user.setEmailEDU(emp.getEmailEDU());
+            user.setPosition(emp.getPosition());
+
+            obj.add("user", parser.parse(gson.toJson(user)));
 
             Collections.sort(scheduleModelList, new Comparator<ScheduleModel>() {
                 @Override

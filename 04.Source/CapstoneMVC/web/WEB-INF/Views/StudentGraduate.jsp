@@ -18,8 +18,12 @@
                 </div>
                 <div class="col-md-5 text-right">
                     <button type="button" class="btn btn-success" onclick="ExportExcel()">Xuất dữ liệu</button>
-                    <button type="button" class="btn btn-warning" onclick="ExportExcelPDF()">Xuất danh sách sinh viên tốt nghiệp (PDF)</button>
-                    <button type="button" class="btn btn-success" onclick="ExportExcelPDF2()">Xuất danh sách sinh viên tốt nghiệp (Excel)</button>
+                    <button type="button" class="btn btn-warning" onclick="ExportExcelPDF()">Xuất danh sách sinh viên
+                        tốt nghiệp (PDF)
+                    </button>
+                    <button type="button" class="btn btn-success btn-lg" data-toggle="modal"
+                            data-target="#preExportExcel">Xuất danh sách sinh viên tốt nghiệp (Excel)
+                    </button>
                 </div>
             </div>
             <hr>
@@ -86,6 +90,10 @@
                 </div>
             </div>
 
+
+            <%--dùng update mấy data bị sai--%>
+            <%--<button class="btn btn-success" onclick="UpdateOjtTerm()">Update Ojt term</button>--%>
+
             <div class="form-group">
                 <div class="row">
                     <div class="col-md-12">
@@ -133,6 +141,44 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="preExportExcel" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Xuất kèm tên đề tài tốt nghiệp</h4>
+            </div>
+            <div class="modal-body">
+                <div class="title">
+                    <label>Chọn file:</label>
+                </div>
+                <div class="my-content">
+                    <div class="form-group">
+                        <div class="col-md-6">
+                            <label for="thesisFile" hidden></label>
+                            <input type="file" accept=".xlsx, .xls" id="thesisFile" name="file"/>
+                        </div>
+                        <button type="button" onclick="UploadThesisName()" class="btn btn-success"
+                                title="dùng để upload, gán tên đề tài vào bảng điểm cho học sinh tốt nghiệp">
+                            Upload Tên đề tài
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="form-group">
+                    <button type="button" onclick="ExportExcelPDF2()"
+                            title="Xuất ra danh sách học sinh tốt nghiệp của kì được chọn" class="btn btn-success">
+                        Export Excel
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -197,8 +243,43 @@
         return this;
     };
 
+    function UploadThesisName() {
+        var form = new FormData();
+        form.append('file', $('#thesisFile')[0].files[0]);
+
+        swal({
+            title: 'Đang xử lý',
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                $.ajax({
+                    type: "POST",
+                    url: "/uploadThesisName",
+                    processData: false,
+                    contentType: false,
+                    data: form,
+                    success: function (result) {
+                        if (result.success) {
+                            swal({
+                                title: 'Thành công',
+                                text: result.message,
+                                type: 'success'
+                            });
+                        } else {
+                            swal('Đã xảy ra lỗi!', result.message, 'error');
+                        }
+                    }
+                });
+            },
+            allowOutsideClick: false
+        });
+    }
+
     $(document).ready(function () {
         $('.select').select2();
+
+        CreateEmptyDataTable('#table');
 
 //        $('#credit').on("input", function () {
 //            this.value = this.value.replace(/[^0-9]/g, '');
@@ -236,6 +317,10 @@
 //            RefreshTable();
 //        });
 
+
+    });
+
+    function CreateMainTable() {
         table = $('#table').dataTable({
             "bServerSide": false,
             "bFilter": true,
@@ -285,7 +370,7 @@
             ],
             "bAutoWidth": false,
         }).fnSetFilteringDelay(1000);
-    });
+    }
 
     function ExportExcel() {
         $("input[name='objectType']").val(4);
@@ -313,16 +398,16 @@
         $('#export-excel-2').submit();
     }
 
-//    function ExportExcelPDF() {
-//        $("input[name='objectType']").val(5);
-//        $("input[name='credit']").val($('#credit').val());
-//        $("input[name='sCredit']").val($('#sCredit').val());
-//        $("input[name='programId']").val($('#program').val());
-//        $("input[name='semesterId']").val($('#semester').val());
-//        $("input[name='sSearch']").val(table.api().context[0].oPreviousSearch.sSearch);
-//
-//        $("#export-excel").submit();
-//    }
+    //    function ExportExcelPDF() {
+    //        $("input[name='objectType']").val(5);
+    //        $("input[name='credit']").val($('#credit').val());
+    //        $("input[name='sCredit']").val($('#sCredit').val());
+    //        $("input[name='programId']").val($('#program').val());
+    //        $("input[name='semesterId']").val($('#semester').val());
+    //        $("input[name='sSearch']").val(table.api().context[0].oPreviousSearch.sSearch);
+    //
+    //        $("#export-excel").submit();
+    //    }
 
     function GetAllStudentMarks(studentId) {
         var form = new FormData();
@@ -396,7 +481,34 @@
     }
 
     function RefreshTable() {
-        table._fnPageChange(0);
-        table._fnAjaxUpdate();
+        if (table != null) {
+            table._fnPageChange(0);
+            table._fnAjaxUpdate();
+        } else {
+            //destroy empty table
+            $('#table').dataTable().fnDestroy();
+            CreateMainTable();
+        }
     }
+
+    function UpdateOjtTerm() {
+
+        $.ajax({
+            type: "POST",
+            url: "/updateStudentTerm",
+            processData: false,
+            contentType: false,
+            success: function (result) {
+
+                if (result.success) {
+                    swal('Success',
+                        result.message,
+                        'success')
+                } else {
+                    swal('', 'Có lỗi xảy ra, vui lòng thử lại sau', 'warning');
+                }
+            }
+        });
+    }
+
 </script>

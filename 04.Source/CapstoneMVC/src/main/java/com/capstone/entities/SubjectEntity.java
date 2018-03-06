@@ -47,6 +47,8 @@ public class SubjectEntity implements Serializable {
     private List<SubjectMarkComponentEntity> subjectMarkComponentEntityList;
     @OneToMany(mappedBy = "subjectId")
     private List<EmpCompetenceEntity> empCompetenceEntityCollection;
+    @OneToMany(mappedBy = "subjectId")
+    private List<SubjectDepartmentEntity> subjectDepartmentEntityList;
 
     public SubjectEntity() {
     }
@@ -141,6 +143,14 @@ public class SubjectEntity implements Serializable {
 
     public void setEmpCompetenceEntityList(List<EmpCompetenceEntity> empCompetenceEntityCollection) {
         this.empCompetenceEntityCollection = empCompetenceEntityCollection;
+    }
+
+    public List<SubjectDepartmentEntity> getSubjectDepartmentEntityList() {
+        return subjectDepartmentEntityList;
+    }
+
+    public void setSubjectDepartmentEntityList(List<SubjectDepartmentEntity> subjectDepartmentEntityList) {
+        this.subjectDepartmentEntityList = subjectDepartmentEntityList;
     }
 
     @Override

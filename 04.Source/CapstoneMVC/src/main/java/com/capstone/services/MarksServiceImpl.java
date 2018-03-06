@@ -189,4 +189,19 @@ public class MarksServiceImpl implements IMarksService {
     public List<StudentEntity> getOjtStudentsFromSelectedSemesterAndBeforeFromMarks(int semesterId) {
         return marksEntityJpaController.getOjtStudentsFromSelectedSemesterAndBeforeFromMarks(semesterId);
     }
+
+    @Override
+    public List<StudentEntity> getOjtStudentsBeforeSelectedSemesterFromMarks(int semesterId) {
+        return marksEntityJpaController.getOjtStudentsBeforeSelectedSemesterFromMarks(semesterId);
+    }
+
+    @Override
+    public List<StudentEntity> getCapstoneStudentsBeforeSelectedSemesterFromMarks(int semesterId) {
+        return marksEntityJpaController.getCapstoneStudentsBeforeSelectedSemesterFromMarks(semesterId);
+    }
+
+    @Override
+    public List<MarksEntity> getStudentMarkBeforeSelectedSemesterFromMarks(int semesterId, int studentId) {
+        return marksEntityJpaController.getStudentMarkBeforeSelectedSemesterFromMarks(semesterId, studentId);
+    }
 }

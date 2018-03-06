@@ -62,4 +62,21 @@ public class Enums {
         }
     }
 
+
+    public enum StudentStatus {
+        Graduated("G"),
+        HOCDI("HD"),
+        HOCLAI("HL");
+
+
+        private final String value;
+
+        private StudentStatus(final String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return this.value;
+        }
+    }
 }

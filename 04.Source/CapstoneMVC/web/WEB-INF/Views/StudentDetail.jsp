@@ -107,6 +107,7 @@
                                         <th>Khóa</th>
                                         <th>Điểm</th>
                                         <th>Trạng thái</th>
+                                        <th>Môn bị thay thế</th>
                                     </tr>
                                     </thead>
                                     <tbody></tbody>
@@ -409,7 +410,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4],
+                    "aTargets": [0, 1, 2, 3, 4, 5],
                     "bSortable": false,
                     "sClass": "text-center",
                 },
@@ -645,7 +646,7 @@
                     }
                 },
                 {
-                    "aTargets": [0],
+                    "aTargets": [0, 1, 2],
                     "sClass": "text-center",
                 },
             ],

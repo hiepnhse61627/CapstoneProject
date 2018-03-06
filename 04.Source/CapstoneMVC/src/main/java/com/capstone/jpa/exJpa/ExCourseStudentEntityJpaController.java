@@ -167,4 +167,25 @@ public class ExCourseStudentEntityJpaController extends CourseStudentEntityJpaCo
         return CourseStudentEntity;
     }
 
+    public List<CourseStudentEntity> findCourseStudentByStudent(StudentEntity studentEntity) {
+        EntityManager em = getEntityManager();
+        try {
+            String sqlString = "SELECT c FROM CourseStudentEntity c " +
+                    "WHERE (c.studentId = :student)";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("student", studentEntity);
+
+            List<CourseStudentEntity> std  = query.getResultList();
+
+            return std;
+        } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+
 }

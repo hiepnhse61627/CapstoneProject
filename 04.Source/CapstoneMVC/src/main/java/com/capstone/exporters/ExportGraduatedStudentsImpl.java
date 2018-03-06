@@ -80,11 +80,11 @@ public class ExportGraduatedStudentsImpl implements IExportObject {
         List<List<String>> studentList;
         GraduateController graduateController = new GraduateController();
         if (type.equals("Graduate")) {
-            studentList = graduateController.processGraduate(params);
+            studentList = graduateController.processGraduate2(params);
         } else if (type.equals("OJT")) {
-            studentList = graduateController.proccessOJT(params);
+            studentList = graduateController.proccessOJT2(params);
         } else{
-            studentList = graduateController.processCapstone(params);
+            studentList = graduateController.processCapstone2(params);
         }
 
         return studentList;

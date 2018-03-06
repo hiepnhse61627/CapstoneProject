@@ -24,6 +24,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 import javax.servlet.ServletContext;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -394,7 +395,7 @@ public class StudentController {
     @RequestMapping("/studentFailCreditsPage")
     public ModelAndView goStudentFailCreditPage() {
         ModelAndView mav = new ModelAndView("StudentFailCredit");
-        mav.addObject("title","Danh sách sinh viên đang nợ tín chỉ 2");
+        mav.addObject("title", "Danh sách sinh viên đang nợ tín chỉ 2");
         return mav;
     }
 
@@ -463,7 +464,7 @@ public class StudentController {
         JsonArray aaData = (JsonArray) new Gson().toJsonTree(displayList);
 
         jsonObject.addProperty("iTotalRecords", results.size());
-        jsonObject.addProperty("iTotalDisplayRecords",  results.size());
+        jsonObject.addProperty("iTotalDisplayRecords", results.size());
         jsonObject.add("aaData", aaData);
         jsonObject.addProperty("sEcho", params.get("sEcho"));
 
@@ -471,9 +472,9 @@ public class StudentController {
     }
 
     @RequestMapping("/subjectsTryingToPassPage")
-    public ModelAndView goSubjectsTryingToPassPage(){
+    public ModelAndView goSubjectsTryingToPassPage() {
         ModelAndView mav = new ModelAndView("SubjectsTryingToPass");
-        mav.addObject("title","Danh sách môn sinh viên cố gắng vượt qua");
+        mav.addObject("title", "Danh sách môn sinh viên cố gắng vượt qua");
         IRealSemesterService service = new RealSemesterServiceImpl();
         mav.addObject("semesters", Ultilities.SortSemesters(service.getAllSemester()));
         return mav;
@@ -481,7 +482,7 @@ public class StudentController {
 
     @RequestMapping("/subjectsTryingToPass")
     @ResponseBody
-    public JsonObject subjectsTryingToPass(@RequestParam Map<String, String> params){
+    public JsonObject subjectsTryingToPass(@RequestParam Map<String, String> params) {
         JsonObject jsonObject = new JsonObject();
 
         Integer semester = Integer.valueOf(params.get("semesterId"));
@@ -506,7 +507,7 @@ public class StudentController {
         JsonArray aaData = (JsonArray) new Gson().toJsonTree(displayList);
 
         jsonObject.addProperty("iTotalRecords", results.size());
-        jsonObject.addProperty("iTotalDisplayRecords",  results.size());
+        jsonObject.addProperty("iTotalDisplayRecords", results.size());
         jsonObject.add("aaData", aaData);
         jsonObject.addProperty("sEcho", params.get("sEcho"));
 
@@ -514,9 +515,9 @@ public class StudentController {
     }
 
     @RequestMapping("/subjectsSlotsTryingToPassPage")
-    public ModelAndView goSubjectsSlotsTryingToPassPage(){
+    public ModelAndView goSubjectsSlotsTryingToPassPage() {
         ModelAndView mav = new ModelAndView("SubjectsSlotsTryingToPass");
-        mav.addObject("title","Danh sách lượt môn sinh viên cố gắng vượt qua");
+        mav.addObject("title", "Danh sách lượt môn sinh viên cố gắng vượt qua");
         IRealSemesterService service = new RealSemesterServiceImpl();
         mav.addObject("semesters", Ultilities.SortSemesters(service.getAllSemester()));
         return mav;
@@ -524,7 +525,7 @@ public class StudentController {
 
     @RequestMapping("/subjectsSlotsTryingToPass")
     @ResponseBody
-    public JsonObject subjectsSlotsTryingToPass(@RequestParam Map<String, String> params){
+    public JsonObject subjectsSlotsTryingToPass(@RequestParam Map<String, String> params) {
         JsonObject jsonObject = new JsonObject();
 
         Integer semester = Integer.valueOf(params.get("semesterId"));
@@ -557,9 +558,9 @@ public class StudentController {
     }
 
     @RequestMapping("/subjectsStudentRelearnSameSemesterPage")
-    public ModelAndView goSubjectsStudentRelearnSameSemester(){
+    public ModelAndView goSubjectsStudentRelearnSameSemester() {
         ModelAndView mav = new ModelAndView("SubjectsStudentsRelearnSameSemester");
-        mav.addObject("title","Danh sách môn học lại trong kì");
+        mav.addObject("title", "Danh sách môn học lại trong kì");
         IRealSemesterService service = new RealSemesterServiceImpl();
         mav.addObject("semesters", Ultilities.SortSemesters(service.getAllSemester()));
         return mav;
@@ -567,14 +568,14 @@ public class StudentController {
 
     @RequestMapping("/subjectsStudentRelearnSameSemester")
     @ResponseBody
-    public JsonObject subjectsStudentRelearnSameSemester(@RequestParam Map<String, String> params){
+    public JsonObject subjectsStudentRelearnSameSemester(@RequestParam Map<String, String> params) {
         JsonObject jsonObject = new JsonObject();
 
         Integer semester = Integer.valueOf(params.get("semesterId"));
-        Map<String,StudentAndSubject> subjects = studentService.getSubjectsStudentsStudyInSemester(semester);
+        Map<String, StudentAndSubject> subjects = studentService.getSubjectsStudentsStudyInSemester(semester);
 
         List<List<String>> results = new ArrayList<>();
-        for (Map.Entry<String, StudentAndSubject> entry : subjects.entrySet()){
+        for (Map.Entry<String, StudentAndSubject> entry : subjects.entrySet()) {
             List<String> displayInfo = new ArrayList<>();
             displayInfo.add(entry.getKey());
             displayInfo.add(entry.getValue().getStudentName());
@@ -758,5 +759,9 @@ public class StudentController {
 
         return jsonObject;
     }
+
+
+
+
 
 }

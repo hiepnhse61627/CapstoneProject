@@ -45,4 +45,7 @@ public interface IMarksService {
     List<MarksEntity> getMarksByStudentIdAndSemester(int studentId, int semesterId);
     List<MarksEntity> getMarksByStudentAndSubjectIdList(int studentId, List<String> subjIdList);
     List<StudentEntity> getOjtStudentsFromSelectedSemesterAndBeforeFromMarks(int semesterId);
+    List<StudentEntity> getOjtStudentsBeforeSelectedSemesterFromMarks(int semesterId);
+    List<StudentEntity> getCapstoneStudentsBeforeSelectedSemesterFromMarks(int semesterId);
+    List<MarksEntity> getStudentMarkBeforeSelectedSemesterFromMarks(int semesterId, int studentId);
 }

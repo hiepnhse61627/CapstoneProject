@@ -31,4 +31,5 @@ public class FireBaseMessagingModel {
     public void setData(FirebaseDataModel data) {
         this.data = data;
     }
+
 }
