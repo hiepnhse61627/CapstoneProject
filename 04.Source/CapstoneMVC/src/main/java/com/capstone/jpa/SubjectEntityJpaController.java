@@ -44,14 +44,17 @@ public class SubjectEntityJpaController implements Serializable {
         if (subjectEntity.getSubjectEntityList1() == null) {
             subjectEntity.setSubjectEntityList1(new ArrayList<SubjectEntity>());
         }
+        if (subjectEntity.getEmpCompetenceEntityList() == null) {
+            subjectEntity.setEmpCompetenceEntityList(new ArrayList<EmpCompetenceEntity>());
+        }
         if (subjectEntity.getSubjectCurriculumEntityList() == null) {
             subjectEntity.setSubjectCurriculumEntityList(new ArrayList<SubjectCurriculumEntity>());
         }
         if (subjectEntity.getSubjectMarkComponentEntityList() == null) {
             subjectEntity.setSubjectMarkComponentEntityList(new ArrayList<SubjectMarkComponentEntity>());
         }
-        if (subjectEntity.getEmpCompetenceEntityList() == null) {
-            subjectEntity.setEmpCompetenceEntityList(new ArrayList<EmpCompetenceEntity>());
+        if (subjectEntity.getSubjectDepartmentEntityList() == null) {
+            subjectEntity.setSubjectDepartmentEntityList(new ArrayList<SubjectDepartmentEntity>());
         }
         EntityManager em = null;
         try {
@@ -74,6 +77,12 @@ public class SubjectEntityJpaController implements Serializable {
                 attachedSubjectEntityList1.add(subjectEntityList1SubjectEntityToAttach);
             }
             subjectEntity.setSubjectEntityList1(attachedSubjectEntityList1);
+            List<EmpCompetenceEntity> attachedEmpCompetenceEntityList = new ArrayList<EmpCompetenceEntity>();
+            for (EmpCompetenceEntity empCompetenceEntityListEmpCompetenceEntityToAttach : subjectEntity.getEmpCompetenceEntityList()) {
+                empCompetenceEntityListEmpCompetenceEntityToAttach = em.getReference(empCompetenceEntityListEmpCompetenceEntityToAttach.getClass(), empCompetenceEntityListEmpCompetenceEntityToAttach.getId());
+                attachedEmpCompetenceEntityList.add(empCompetenceEntityListEmpCompetenceEntityToAttach);
+            }
+            subjectEntity.setEmpCompetenceEntityList(attachedEmpCompetenceEntityList);
             List<SubjectCurriculumEntity> attachedSubjectCurriculumEntityList = new ArrayList<SubjectCurriculumEntity>();
             for (SubjectCurriculumEntity subjectCurriculumEntityListSubjectCurriculumEntityToAttach : subjectEntity.getSubjectCurriculumEntityList()) {
                 subjectCurriculumEntityListSubjectCurriculumEntityToAttach = em.getReference(subjectCurriculumEntityListSubjectCurriculumEntityToAttach.getClass(), subjectCurriculumEntityListSubjectCurriculumEntityToAttach.getId());
@@ -86,12 +95,12 @@ public class SubjectEntityJpaController implements Serializable {
                 attachedSubjectMarkComponentEntityList.add(subjectMarkComponentEntityListSubjectMarkComponentEntityToAttach);
             }
             subjectEntity.setSubjectMarkComponentEntityList(attachedSubjectMarkComponentEntityList);
-            List<EmpCompetenceEntity> attachedEmpCompetenceEntityList = new ArrayList<EmpCompetenceEntity>();
-            for (EmpCompetenceEntity empCompetenceEntityListEmpCompetenceEntityToAttach : subjectEntity.getEmpCompetenceEntityList()) {
-                empCompetenceEntityListEmpCompetenceEntityToAttach = em.getReference(empCompetenceEntityListEmpCompetenceEntityToAttach.getClass(), empCompetenceEntityListEmpCompetenceEntityToAttach.getId());
-                attachedEmpCompetenceEntityList.add(empCompetenceEntityListEmpCompetenceEntityToAttach);
+            List<SubjectDepartmentEntity> attachedSubjectDepartmentEntityList = new ArrayList<SubjectDepartmentEntity>();
+            for (SubjectDepartmentEntity subjectDepartmentEntityListSubjectDepartmentEntityToAttach : subjectEntity.getSubjectDepartmentEntityList()) {
+                subjectDepartmentEntityListSubjectDepartmentEntityToAttach = em.getReference(subjectDepartmentEntityListSubjectDepartmentEntityToAttach.getClass(), subjectDepartmentEntityListSubjectDepartmentEntityToAttach.getId());
+                attachedSubjectDepartmentEntityList.add(subjectDepartmentEntityListSubjectDepartmentEntityToAttach);
             }
-            subjectEntity.setEmpCompetenceEntityList(attachedEmpCompetenceEntityList);
+            subjectEntity.setSubjectDepartmentEntityList(attachedSubjectDepartmentEntityList);
             em.persist(subjectEntity);
             if (prequisiteEntity != null) {
                 SubjectEntity oldSubjectEntityOfPrequisiteEntity = prequisiteEntity.getSubjectEntity();
@@ -109,6 +118,15 @@ public class SubjectEntityJpaController implements Serializable {
             for (SubjectEntity subjectEntityList1SubjectEntity : subjectEntity.getSubjectEntityList1()) {
                 subjectEntityList1SubjectEntity.getSubjectEntityList().add(subjectEntity);
                 subjectEntityList1SubjectEntity = em.merge(subjectEntityList1SubjectEntity);
+            }
+            for (EmpCompetenceEntity empCompetenceEntityListEmpCompetenceEntity : subjectEntity.getEmpCompetenceEntityList()) {
+                SubjectEntity oldSubjectIdOfEmpCompetenceEntityListEmpCompetenceEntity = empCompetenceEntityListEmpCompetenceEntity.getSubjectId();
+                empCompetenceEntityListEmpCompetenceEntity.setSubjectId(subjectEntity);
+                empCompetenceEntityListEmpCompetenceEntity = em.merge(empCompetenceEntityListEmpCompetenceEntity);
+                if (oldSubjectIdOfEmpCompetenceEntityListEmpCompetenceEntity != null) {
+                    oldSubjectIdOfEmpCompetenceEntityListEmpCompetenceEntity.getEmpCompetenceEntityList().remove(empCompetenceEntityListEmpCompetenceEntity);
+                    oldSubjectIdOfEmpCompetenceEntityListEmpCompetenceEntity = em.merge(oldSubjectIdOfEmpCompetenceEntityListEmpCompetenceEntity);
+                }
             }
             for (SubjectCurriculumEntity subjectCurriculumEntityListSubjectCurriculumEntity : subjectEntity.getSubjectCurriculumEntityList()) {
                 SubjectEntity oldSubjectIdOfSubjectCurriculumEntityListSubjectCurriculumEntity = subjectCurriculumEntityListSubjectCurriculumEntity.getSubjectId();
@@ -128,13 +146,13 @@ public class SubjectEntityJpaController implements Serializable {
                     oldSubjectIdOfSubjectMarkComponentEntityListSubjectMarkComponentEntity = em.merge(oldSubjectIdOfSubjectMarkComponentEntityListSubjectMarkComponentEntity);
                 }
             }
-            for (EmpCompetenceEntity empCompetenceEntityListEmpCompetenceEntity : subjectEntity.getEmpCompetenceEntityList()) {
-                SubjectEntity oldSubjectIdOfEmpCompetenceEntityListEmpCompetenceEntity = empCompetenceEntityListEmpCompetenceEntity.getSubjectId();
-                empCompetenceEntityListEmpCompetenceEntity.setSubjectId(subjectEntity);
-                empCompetenceEntityListEmpCompetenceEntity = em.merge(empCompetenceEntityListEmpCompetenceEntity);
-                if (oldSubjectIdOfEmpCompetenceEntityListEmpCompetenceEntity != null) {
-                    oldSubjectIdOfEmpCompetenceEntityListEmpCompetenceEntity.getEmpCompetenceEntityList().remove(empCompetenceEntityListEmpCompetenceEntity);
-                    oldSubjectIdOfEmpCompetenceEntityListEmpCompetenceEntity = em.merge(oldSubjectIdOfEmpCompetenceEntityListEmpCompetenceEntity);
+            for (SubjectDepartmentEntity subjectDepartmentEntityListSubjectDepartmentEntity : subjectEntity.getSubjectDepartmentEntityList()) {
+                SubjectEntity oldSubjectIdOfSubjectDepartmentEntityListSubjectDepartmentEntity = subjectDepartmentEntityListSubjectDepartmentEntity.getSubjectId();
+                subjectDepartmentEntityListSubjectDepartmentEntity.setSubjectId(subjectEntity);
+                subjectDepartmentEntityListSubjectDepartmentEntity = em.merge(subjectDepartmentEntityListSubjectDepartmentEntity);
+                if (oldSubjectIdOfSubjectDepartmentEntityListSubjectDepartmentEntity != null) {
+                    oldSubjectIdOfSubjectDepartmentEntityListSubjectDepartmentEntity.getSubjectDepartmentEntityList().remove(subjectDepartmentEntityListSubjectDepartmentEntity);
+                    oldSubjectIdOfSubjectDepartmentEntityListSubjectDepartmentEntity = em.merge(oldSubjectIdOfSubjectDepartmentEntityListSubjectDepartmentEntity);
                 }
             }
             em.getTransaction().commit();
@@ -162,12 +180,14 @@ public class SubjectEntityJpaController implements Serializable {
             List<SubjectEntity> subjectEntityListNew = subjectEntity.getSubjectEntityList();
             List<SubjectEntity> subjectEntityList1Old = persistentSubjectEntity.getSubjectEntityList1();
             List<SubjectEntity> subjectEntityList1New = subjectEntity.getSubjectEntityList1();
+            List<EmpCompetenceEntity> empCompetenceEntityListOld = persistentSubjectEntity.getEmpCompetenceEntityList();
+            List<EmpCompetenceEntity> empCompetenceEntityListNew = subjectEntity.getEmpCompetenceEntityList();
             List<SubjectCurriculumEntity> subjectCurriculumEntityListOld = persistentSubjectEntity.getSubjectCurriculumEntityList();
             List<SubjectCurriculumEntity> subjectCurriculumEntityListNew = subjectEntity.getSubjectCurriculumEntityList();
             List<SubjectMarkComponentEntity> subjectMarkComponentEntityListOld = persistentSubjectEntity.getSubjectMarkComponentEntityList();
             List<SubjectMarkComponentEntity> subjectMarkComponentEntityListNew = subjectEntity.getSubjectMarkComponentEntityList();
-            List<EmpCompetenceEntity> empCompetenceEntityListOld = persistentSubjectEntity.getEmpCompetenceEntityList();
-            List<EmpCompetenceEntity> empCompetenceEntityListNew = subjectEntity.getEmpCompetenceEntityList();
+            List<SubjectDepartmentEntity> subjectDepartmentEntityListOld = persistentSubjectEntity.getSubjectDepartmentEntityList();
+            List<SubjectDepartmentEntity> subjectDepartmentEntityListNew = subjectEntity.getSubjectDepartmentEntityList();
             List<String> illegalOrphanMessages = null;
             if (prequisiteEntityOld != null && !prequisiteEntityOld.equals(prequisiteEntityNew)) {
                 if (illegalOrphanMessages == null) {
@@ -196,6 +216,13 @@ public class SubjectEntityJpaController implements Serializable {
             }
             subjectEntityList1New = attachedSubjectEntityList1New;
             subjectEntity.setSubjectEntityList1(subjectEntityList1New);
+            List<EmpCompetenceEntity> attachedEmpCompetenceEntityListNew = new ArrayList<EmpCompetenceEntity>();
+            for (EmpCompetenceEntity empCompetenceEntityListNewEmpCompetenceEntityToAttach : empCompetenceEntityListNew) {
+                empCompetenceEntityListNewEmpCompetenceEntityToAttach = em.getReference(empCompetenceEntityListNewEmpCompetenceEntityToAttach.getClass(), empCompetenceEntityListNewEmpCompetenceEntityToAttach.getId());
+                attachedEmpCompetenceEntityListNew.add(empCompetenceEntityListNewEmpCompetenceEntityToAttach);
+            }
+            empCompetenceEntityListNew = attachedEmpCompetenceEntityListNew;
+            subjectEntity.setEmpCompetenceEntityList(empCompetenceEntityListNew);
             List<SubjectCurriculumEntity> attachedSubjectCurriculumEntityListNew = new ArrayList<SubjectCurriculumEntity>();
             for (SubjectCurriculumEntity subjectCurriculumEntityListNewSubjectCurriculumEntityToAttach : subjectCurriculumEntityListNew) {
                 subjectCurriculumEntityListNewSubjectCurriculumEntityToAttach = em.getReference(subjectCurriculumEntityListNewSubjectCurriculumEntityToAttach.getClass(), subjectCurriculumEntityListNewSubjectCurriculumEntityToAttach.getId());
@@ -210,13 +237,13 @@ public class SubjectEntityJpaController implements Serializable {
             }
             subjectMarkComponentEntityListNew = attachedSubjectMarkComponentEntityListNew;
             subjectEntity.setSubjectMarkComponentEntityList(subjectMarkComponentEntityListNew);
-            List<EmpCompetenceEntity> attachedEmpCompetenceEntityListNew = new ArrayList<EmpCompetenceEntity>();
-            for (EmpCompetenceEntity empCompetenceEntityListNewEmpCompetenceEntityToAttach : empCompetenceEntityListNew) {
-                empCompetenceEntityListNewEmpCompetenceEntityToAttach = em.getReference(empCompetenceEntityListNewEmpCompetenceEntityToAttach.getClass(), empCompetenceEntityListNewEmpCompetenceEntityToAttach.getId());
-                attachedEmpCompetenceEntityListNew.add(empCompetenceEntityListNewEmpCompetenceEntityToAttach);
+            List<SubjectDepartmentEntity> attachedSubjectDepartmentEntityListNew = new ArrayList<SubjectDepartmentEntity>();
+            for (SubjectDepartmentEntity subjectDepartmentEntityListNewSubjectDepartmentEntityToAttach : subjectDepartmentEntityListNew) {
+                subjectDepartmentEntityListNewSubjectDepartmentEntityToAttach = em.getReference(subjectDepartmentEntityListNewSubjectDepartmentEntityToAttach.getClass(), subjectDepartmentEntityListNewSubjectDepartmentEntityToAttach.getId());
+                attachedSubjectDepartmentEntityListNew.add(subjectDepartmentEntityListNewSubjectDepartmentEntityToAttach);
             }
-            empCompetenceEntityListNew = attachedEmpCompetenceEntityListNew;
-            subjectEntity.setEmpCompetenceEntityList(empCompetenceEntityListNew);
+            subjectDepartmentEntityListNew = attachedSubjectDepartmentEntityListNew;
+            subjectEntity.setSubjectDepartmentEntityList(subjectDepartmentEntityListNew);
             subjectEntity = em.merge(subjectEntity);
             if (prequisiteEntityNew != null && !prequisiteEntityNew.equals(prequisiteEntityOld)) {
                 SubjectEntity oldSubjectEntityOfPrequisiteEntity = prequisiteEntityNew.getSubjectEntity();
@@ -249,6 +276,23 @@ public class SubjectEntityJpaController implements Serializable {
                 if (!subjectEntityList1Old.contains(subjectEntityList1NewSubjectEntity)) {
                     subjectEntityList1NewSubjectEntity.getSubjectEntityList().add(subjectEntity);
                     subjectEntityList1NewSubjectEntity = em.merge(subjectEntityList1NewSubjectEntity);
+                }
+            }
+            for (EmpCompetenceEntity empCompetenceEntityListOldEmpCompetenceEntity : empCompetenceEntityListOld) {
+                if (!empCompetenceEntityListNew.contains(empCompetenceEntityListOldEmpCompetenceEntity)) {
+                    empCompetenceEntityListOldEmpCompetenceEntity.setSubjectId(null);
+                    empCompetenceEntityListOldEmpCompetenceEntity = em.merge(empCompetenceEntityListOldEmpCompetenceEntity);
+                }
+            }
+            for (EmpCompetenceEntity empCompetenceEntityListNewEmpCompetenceEntity : empCompetenceEntityListNew) {
+                if (!empCompetenceEntityListOld.contains(empCompetenceEntityListNewEmpCompetenceEntity)) {
+                    SubjectEntity oldSubjectIdOfEmpCompetenceEntityListNewEmpCompetenceEntity = empCompetenceEntityListNewEmpCompetenceEntity.getSubjectId();
+                    empCompetenceEntityListNewEmpCompetenceEntity.setSubjectId(subjectEntity);
+                    empCompetenceEntityListNewEmpCompetenceEntity = em.merge(empCompetenceEntityListNewEmpCompetenceEntity);
+                    if (oldSubjectIdOfEmpCompetenceEntityListNewEmpCompetenceEntity != null && !oldSubjectIdOfEmpCompetenceEntityListNewEmpCompetenceEntity.equals(subjectEntity)) {
+                        oldSubjectIdOfEmpCompetenceEntityListNewEmpCompetenceEntity.getEmpCompetenceEntityList().remove(empCompetenceEntityListNewEmpCompetenceEntity);
+                        oldSubjectIdOfEmpCompetenceEntityListNewEmpCompetenceEntity = em.merge(oldSubjectIdOfEmpCompetenceEntityListNewEmpCompetenceEntity);
+                    }
                 }
             }
             for (SubjectCurriculumEntity subjectCurriculumEntityListOldSubjectCurriculumEntity : subjectCurriculumEntityListOld) {
@@ -285,20 +329,20 @@ public class SubjectEntityJpaController implements Serializable {
                     }
                 }
             }
-            for (EmpCompetenceEntity empCompetenceEntityListOldEmpCompetenceEntity : empCompetenceEntityListOld) {
-                if (!empCompetenceEntityListNew.contains(empCompetenceEntityListOldEmpCompetenceEntity)) {
-                    empCompetenceEntityListOldEmpCompetenceEntity.setSubjectId(null);
-                    empCompetenceEntityListOldEmpCompetenceEntity = em.merge(empCompetenceEntityListOldEmpCompetenceEntity);
+            for (SubjectDepartmentEntity subjectDepartmentEntityListOldSubjectDepartmentEntity : subjectDepartmentEntityListOld) {
+                if (!subjectDepartmentEntityListNew.contains(subjectDepartmentEntityListOldSubjectDepartmentEntity)) {
+                    subjectDepartmentEntityListOldSubjectDepartmentEntity.setSubjectId(null);
+                    subjectDepartmentEntityListOldSubjectDepartmentEntity = em.merge(subjectDepartmentEntityListOldSubjectDepartmentEntity);
                 }
             }
-            for (EmpCompetenceEntity empCompetenceEntityListNewEmpCompetenceEntity : empCompetenceEntityListNew) {
-                if (!empCompetenceEntityListOld.contains(empCompetenceEntityListNewEmpCompetenceEntity)) {
-                    SubjectEntity oldSubjectIdOfEmpCompetenceEntityListNewEmpCompetenceEntity = empCompetenceEntityListNewEmpCompetenceEntity.getSubjectId();
-                    empCompetenceEntityListNewEmpCompetenceEntity.setSubjectId(subjectEntity);
-                    empCompetenceEntityListNewEmpCompetenceEntity = em.merge(empCompetenceEntityListNewEmpCompetenceEntity);
-                    if (oldSubjectIdOfEmpCompetenceEntityListNewEmpCompetenceEntity != null && !oldSubjectIdOfEmpCompetenceEntityListNewEmpCompetenceEntity.equals(subjectEntity)) {
-                        oldSubjectIdOfEmpCompetenceEntityListNewEmpCompetenceEntity.getEmpCompetenceEntityList().remove(empCompetenceEntityListNewEmpCompetenceEntity);
-                        oldSubjectIdOfEmpCompetenceEntityListNewEmpCompetenceEntity = em.merge(oldSubjectIdOfEmpCompetenceEntityListNewEmpCompetenceEntity);
+            for (SubjectDepartmentEntity subjectDepartmentEntityListNewSubjectDepartmentEntity : subjectDepartmentEntityListNew) {
+                if (!subjectDepartmentEntityListOld.contains(subjectDepartmentEntityListNewSubjectDepartmentEntity)) {
+                    SubjectEntity oldSubjectIdOfSubjectDepartmentEntityListNewSubjectDepartmentEntity = subjectDepartmentEntityListNewSubjectDepartmentEntity.getSubjectId();
+                    subjectDepartmentEntityListNewSubjectDepartmentEntity.setSubjectId(subjectEntity);
+                    subjectDepartmentEntityListNewSubjectDepartmentEntity = em.merge(subjectDepartmentEntityListNewSubjectDepartmentEntity);
+                    if (oldSubjectIdOfSubjectDepartmentEntityListNewSubjectDepartmentEntity != null && !oldSubjectIdOfSubjectDepartmentEntityListNewSubjectDepartmentEntity.equals(subjectEntity)) {
+                        oldSubjectIdOfSubjectDepartmentEntityListNewSubjectDepartmentEntity.getSubjectDepartmentEntityList().remove(subjectDepartmentEntityListNewSubjectDepartmentEntity);
+                        oldSubjectIdOfSubjectDepartmentEntityListNewSubjectDepartmentEntity = em.merge(oldSubjectIdOfSubjectDepartmentEntityListNewSubjectDepartmentEntity);
                     }
                 }
             }
@@ -352,6 +396,11 @@ public class SubjectEntityJpaController implements Serializable {
                 subjectEntityList1SubjectEntity.getSubjectEntityList().remove(subjectEntity);
                 subjectEntityList1SubjectEntity = em.merge(subjectEntityList1SubjectEntity);
             }
+            List<EmpCompetenceEntity> empCompetenceEntityList = subjectEntity.getEmpCompetenceEntityList();
+            for (EmpCompetenceEntity empCompetenceEntityListEmpCompetenceEntity : empCompetenceEntityList) {
+                empCompetenceEntityListEmpCompetenceEntity.setSubjectId(null);
+                empCompetenceEntityListEmpCompetenceEntity = em.merge(empCompetenceEntityListEmpCompetenceEntity);
+            }
             List<SubjectCurriculumEntity> subjectCurriculumEntityList = subjectEntity.getSubjectCurriculumEntityList();
             for (SubjectCurriculumEntity subjectCurriculumEntityListSubjectCurriculumEntity : subjectCurriculumEntityList) {
                 subjectCurriculumEntityListSubjectCurriculumEntity.setSubjectId(null);
@@ -362,10 +411,10 @@ public class SubjectEntityJpaController implements Serializable {
                 subjectMarkComponentEntityListSubjectMarkComponentEntity.setSubjectId(null);
                 subjectMarkComponentEntityListSubjectMarkComponentEntity = em.merge(subjectMarkComponentEntityListSubjectMarkComponentEntity);
             }
-            List<EmpCompetenceEntity> empCompetenceEntityList = subjectEntity.getEmpCompetenceEntityList();
-            for (EmpCompetenceEntity empCompetenceEntityListEmpCompetenceEntity : empCompetenceEntityList) {
-                empCompetenceEntityListEmpCompetenceEntity.setSubjectId(null);
-                empCompetenceEntityListEmpCompetenceEntity = em.merge(empCompetenceEntityListEmpCompetenceEntity);
+            List<SubjectDepartmentEntity> subjectDepartmentEntityList = subjectEntity.getSubjectDepartmentEntityList();
+            for (SubjectDepartmentEntity subjectDepartmentEntityListSubjectDepartmentEntity : subjectDepartmentEntityList) {
+                subjectDepartmentEntityListSubjectDepartmentEntity.setSubjectId(null);
+                subjectDepartmentEntityListSubjectDepartmentEntity = em.merge(subjectDepartmentEntityListSubjectDepartmentEntity);
             }
             em.remove(subjectEntity);
             em.getTransaction().commit();
@@ -423,3 +472,4 @@ public class SubjectEntityJpaController implements Serializable {
     }
 
 }
+

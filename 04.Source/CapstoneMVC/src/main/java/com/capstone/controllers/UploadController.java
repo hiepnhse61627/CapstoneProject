@@ -41,6 +41,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
+import static com.capstone.models.Ultilities.distinctByKey;
+import static com.capstone.models.Ultilities.sendNotification;
+
 
 @Controller
 public class UploadController {
@@ -58,6 +61,7 @@ public class UploadController {
     private int currentLine1;
     private int startRowNumber = -1;
     private int endRowNumber = -1;
+    private boolean isExcelRunning = true;
 
     @Autowired
     ServletContext context;
@@ -86,6 +90,8 @@ public class UploadController {
     IDocumentStudentService documentStudentService = new DocumentStudentServiceImpl();
     IOldRollNumberService oldRollNumberService = new OldRollNumberServiceImpl();
     IStudentStatusService studentStatusService = new StudentStatusServiceImpl();
+    IDepartmentService departmentService = new DepartmentServiceImpl();
+    ISubjectDepartmentService subjectDepartmentService = new SubjectDepartmentServiceImpl();
 
     /**
      * --------------STUDENTS------------
@@ -860,6 +866,14 @@ public class UploadController {
         return mav;
     }
 
+    @RequestMapping(value = "/importDepartmentsPage")
+    public ModelAndView goImportDepartmentsPage() {
+        ModelAndView mav = new ModelAndView("importDepartments");
+        mav.addObject("title", "Nhập danh sách bộ môn");
+
+        return mav;
+    }
+
     @RequestMapping(value = "/importSchedulesPage")
     public ModelAndView goImportSchedulesPage() {
         ModelAndView mav = new ModelAndView("importSchedules");
@@ -874,7 +888,7 @@ public class UploadController {
     @RequestMapping(value = "/importCourseStudentsPage")
     public ModelAndView goImportCourseStudentPage() {
         ModelAndView mav = new ModelAndView("importCourseStudents");
-        mav.addObject("title", "Nhập danh sách lịch học của SV");
+        mav.addObject("title", "Nhập danh sách lớp của SV");
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
         semesters = Ultilities.SortSemesters(semesters);
 
@@ -1553,64 +1567,11 @@ public class UploadController {
         return jsonObject;
     }
 
-    public ResponseEntity<String> sendNotification(String msg, String email, List<ScheduleEntity> listNewSchedule) {
-        try {
-            Gson gson = new Gson();
 
-            NotificationModel notification = new NotificationModel();
-            notification.setBody(msg);
-            notification.setSound("default");
-
-            FireBaseMessagingModel fireBaseMessaging = new FireBaseMessagingModel();
-//            fireBaseMessaging.setNotification(notification);
-            fireBaseMessaging.setTo("/topics/" + email);
-
-            List<ScheduleModel> scheduleModelList = new ArrayList<>();
-            for (ScheduleEntity schedule : listNewSchedule) {
-                ScheduleModel model = new ScheduleModel();
-                model.setCourseName(schedule.getCourseId().getSubjectCode());
-                model.setDate(schedule.getDateId().getDate());
-                model.setRoom(schedule.getRoomId().getName());
-                model.setSlot(schedule.getDateId().getSlotId().getSlotName());
-                model.setStartTime(schedule.getDateId().getSlotId().getStartTime());
-                model.setEndTime(schedule.getDateId().getSlotId().getEndTime());
-                model.setLecture(URLEncoder.encode(schedule.getEmpId().getFullName(), "UTF-8"));
-
-                scheduleModelList.add(model);
-            }
-
-            FirebaseDataModel data = new FirebaseDataModel();
-            data.setNewScheduleList(scheduleModelList);
-            fireBaseMessaging.setData(data);
-
-            HttpEntity<String> request = new HttpEntity<>(gson.toJson(fireBaseMessaging));
-
-            CompletableFuture<String> pushNotification = androidPushNotificationsService.send(request);
-
-            String firebaseResponse = pushNotification.get();
-
-            return new ResponseEntity<>(firebaseResponse, HttpStatus.OK);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return new ResponseEntity<>("Push Notification ERROR!", HttpStatus.BAD_REQUEST);
-    }
-
-
-    @RequestMapping(value = "/uploadSchedules", method = RequestMethod.POST)
+    @RequestMapping(value = "/uploadDepartments", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject importSchedules(@RequestParam("file") MultipartFile file, @RequestParam("semesterId") String semesterIdStr) {
+    public JsonObject importDepartments(@RequestParam("file") MultipartFile file) {
         JsonObject jsonObject = new JsonObject();
-        List<DaySlotEntity> daySlotEntities = new ArrayList<DaySlotEntity>();
-        List<ScheduleEntity> scheduleEntities = new ArrayList<ScheduleEntity>();
-        List<SlotEntity> slots = null;
-        List<RoomEntity> rooms = null;
-        EmployeeEntity employee = null;
-        CourseEntity course = null;
-
-        Set<EmployeeEntity> employees = new HashSet<>();
 
         try {
             InputStream is = file.getInputStream();
@@ -1623,6 +1584,92 @@ public class UploadController {
             int lastRow = spreadsheet.getLastRowNum();
             this.totalLine = lastRow - startRowNumber + 1;
 
+            int subjectIndex = 0;
+            int nameIndex = 1;
+
+            this.currentLine = 0;
+            for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+                Cell subjectCell = row.getCell(subjectIndex);
+                Cell nameCell = row.getCell(nameIndex);
+
+                String subjectCode = "";
+                String name = "";
+
+                subjectCode = subjectCell.getStringCellValue().trim();
+                name = nameCell.getStringCellValue().trim();
+
+                if (nameCell != null && !name.equals("")) {
+                    if (departmentService.findDepartmentsByName(name).size() == 0) {
+                        DepartmentEntity departmentEntity = new DepartmentEntity();
+                        departmentEntity.setDeptName(name);
+                        departmentService.createDepartment(departmentEntity);
+                    }
+                }
+
+                if (subjectCode != null && !subjectCode.equals("")) {
+                    List<DepartmentEntity> departmentList = departmentService.findDepartmentsByName(name);
+                    if (departmentList.size() != 0) {
+                        SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
+                        DepartmentEntity departmentEntity = departmentList.get(0);
+                        if (subjectEntity != null) {
+                            if (subjectDepartmentService.findSubjectDepartmentsBySubjectAndDepartment(subjectEntity, departmentEntity).size() == 0) {
+                                SubjectDepartmentEntity subjectDepartmentEntity = new SubjectDepartmentEntity();
+                                subjectDepartmentEntity.setSubjectId(subjectEntity);
+                                subjectDepartmentEntity.setDeptId(departmentEntity);
+                                subjectDepartmentService.createSubjectDepartment(subjectDepartmentEntity);
+                            }
+                        }
+
+                    }
+                }
+                this.currentLine++;
+            }
+            jsonObject.addProperty("success", true);
+            jsonObject.addProperty("message", "Import bộ môn thành công !");
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("fail", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+        return jsonObject;
+    }
+
+
+    public boolean isExcelRunning() {
+        return isExcelRunning;
+    }
+
+    public void setExcelRunning(boolean excelRunning) {
+        isExcelRunning = excelRunning;
+    }
+
+    @RequestMapping(value = "/uploadSchedules", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject importSchedules(@RequestParam("file") MultipartFile file, @RequestParam("semesterId") String semesterIdStr) {
+        JsonObject jsonObject = new JsonObject();
+        List<DaySlotEntity> daySlotEntities = new ArrayList<DaySlotEntity>();
+        List<ScheduleEntity> scheduleEntities = new ArrayList<ScheduleEntity>();
+        List<SlotEntity> slots = null;
+        List<RoomEntity> rooms = null;
+        EmployeeEntity employee = null;
+        CourseEntity course = null;
+
+//        Map<EmployeeEntity, List<ScheduleEntity>> employeesMap = new HashMap<>();
+//        Map<StudentEntity, List<ScheduleEntity>> studentsMap = new HashMap<>();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+            XSSFRow row;
+            int excelDataIndex = 1;
+            int lastRow = spreadsheet.getLastRowNum();
+            this.totalLine = lastRow;
+
             int groupNameIndex = 0;
             int courseIndex = 1;
             int dateIndex = 2;
@@ -1631,6 +1678,9 @@ public class UploadController {
             int employeeIndex = 5;
 
             this.currentLine = 0;
+
+            setExcelRunning(true);
+
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
@@ -1666,14 +1716,17 @@ public class UploadController {
 
                         slots = slotService.findSlotsByName(slotName);
                         if (slots.size() != 0) {
+                            //add DaySlot to DB
                             if (daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)) == null) {
                                 DaySlotEntity daySlotEntity = new DaySlotEntity();
 
                                 daySlotEntity.setDate(formattedDate);
                                 daySlotEntity.setSlotId(slots.get(0));
-
-                                daySlotEntities.add(daySlotEntity);
+                                daySlotService.createDateSlot(daySlotEntity);
+//                                daySlotEntities.add(daySlotEntity);
                             }
+
+
                             Integer semesterId = Integer.parseInt(semesterIdStr.trim());
                             RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterById(semesterId);
                             course = courseService.findCourseBySemesterAndSubjectCode(realSemesterEntity.getSemester(), courseCell.getStringCellValue());
@@ -1691,36 +1744,130 @@ public class UploadController {
                                     employee = employeeService.findEmployeeByShortName(employeeCell.getStringCellValue());
                                 }
 
-                                if (scheduleService.findScheduleByDateSlotAndRoom(daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)), rooms.get(0)) == null) {
+                                DaySlotEntity daySlot = daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0));
+//                                if (scheduleService.findScheduleByDateSlotAndRoom(daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)), rooms.get(0)) == null) {
+                                ScheduleEntity aScheduleEntity = scheduleService.findScheduleByDateSlotAndGroupName(daySlot, groupNameCell.getStringCellValue());
+                                if (aScheduleEntity == null && scheduleService.findScheduleByDateSlotAndLecture(daySlot, employee) == null) {
                                     ScheduleEntity scheduleEntity = new ScheduleEntity();
 
                                     scheduleEntity.setCourseId(course);
                                     scheduleEntity.setDateId(daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0)));
                                     scheduleEntity.setRoomId(rooms.get(0));
                                     scheduleEntity.setGroupName(groupNameCell.getStringCellValue());
-
+                                    scheduleEntity.setActive(true);
                                     if (employee != null) {
                                         scheduleEntity.setEmpId(employee);
-                                        employees.add(employee);
-                                    }
-                                    scheduleEntities.add(scheduleEntity);
-                                }
 
+//                                        List<ScheduleEntity> teacherSchedule = new ArrayList<>();
+//                                        if (employeesMap.get(employee) == null) {
+//                                            employeesMap.put(employee, new ArrayList<ScheduleEntity>());
+//                                        }
+//                                        teacherSchedule = employeesMap.get(employee);
+//                                        teacherSchedule = new ArrayList<>(teacherSchedule);
+//
+//                                        ScheduleEntity tmp = teacherSchedule.stream().filter(q -> q.getRoomId().getId() == scheduleEntity.getRoomId().getId()
+//                                                && q.getDateId().getId() == scheduleEntity.getDateId().getId()).findFirst().orElse(null);
+//
+//                                        if (tmp == null) {
+//                                            teacherSchedule.add(scheduleEntity);
+//                                        }
+//
+//                                        employeesMap.put(employee, teacherSchedule);
+                                    }
+
+                                    scheduleEntities.add(scheduleEntity);
+
+//                                    List<CourseStudentEntity> courseStudentEntityList = courseStudentService.findCourseStudentByGroupNameAndCourse(groupNameCell.getStringCellValue(), course);
+//                                    if (courseStudentEntityList != null) {
+//                                        for (CourseStudentEntity courseStudentEntity : courseStudentEntityList) {
+//                                            List<ScheduleEntity> studentSchedule = new ArrayList<>();
+//                                            StudentEntity aStudent = courseStudentEntity.getStudentId();
+//                                            if (studentsMap.get(aStudent) == null) {
+//                                                studentsMap.put(aStudent, new ArrayList<ScheduleEntity>());
+//                                            }
+//                                            studentSchedule = studentsMap.get(aStudent);
+//                                            studentSchedule = new ArrayList<>(studentSchedule);
+//
+//                                            ScheduleEntity tmp = studentSchedule.stream().filter(q -> q.getRoomId().getId() == scheduleEntity.getRoomId().getId()
+//                                                    && q.getDateId().getId() == scheduleEntity.getDateId().getId()).findFirst().orElse(null);
+//
+//                                            if (tmp == null) {
+//                                                studentSchedule.add(scheduleEntity);
+//                                            }
+//
+//                                            studentsMap.put(aStudent, studentSchedule);
+//                                        }
+//                                    }
+                                } else {
+                                    //update schedule
+                                    if (employee != null && aScheduleEntity != null) {
+                                        if (aScheduleEntity.getRoomId().getId() != rooms.get(0).getId() || aScheduleEntity.getEmpId().getId() != employee.getId()) {
+                                            aScheduleEntity.setEmpId(employee);
+
+                                            aScheduleEntity.setRoomId(rooms.get(0));
+                                            scheduleService.updateSchedule(aScheduleEntity);
+
+//                                            List<ScheduleEntity> teacherSchedule = new ArrayList<>();
+//                                            if (employeesMap.get(employee) == null) {
+//                                                employeesMap.put(employee, new ArrayList<ScheduleEntity>());
+//                                            }
+//                                            teacherSchedule = employeesMap.get(employee);
+//                                            teacherSchedule = new ArrayList<>(teacherSchedule);
+//
+//                                            ScheduleEntity tmp = teacherSchedule.stream().filter(q -> q.getRoomId().getId() == aScheduleEntity.getRoomId().getId()
+//                                                    && q.getDateId().getId() == aScheduleEntity.getDateId().getId()).findFirst().orElse(null);
+//
+//                                            if (tmp == null) {
+//                                                teacherSchedule.add(aScheduleEntity);
+//                                            }
+//                                            employeesMap.put(employee, teacherSchedule);
+//
+//
+//                                            List<CourseStudentEntity> courseStudentEntityList = courseStudentService.findCourseStudentByGroupNameAndCourse(groupNameCell.getStringCellValue(), course);
+//                                            if (courseStudentEntityList != null) {
+//                                                for (CourseStudentEntity courseStudentEntity : courseStudentEntityList) {
+//                                                    List<ScheduleEntity> studentSchedule = new ArrayList<>();
+//                                                    StudentEntity aStudent = courseStudentEntity.getStudentId();
+//                                                    if (studentsMap.get(aStudent) == null) {
+//                                                        studentsMap.put(aStudent, new ArrayList<ScheduleEntity>());
+//                                                    }
+//                                                    studentSchedule = studentsMap.get(aStudent);
+//                                                    studentSchedule = new ArrayList<>(studentSchedule);
+//
+//                                                    ScheduleEntity tmp2 = studentSchedule.stream().filter(q -> q.getRoomId().getId() == aScheduleEntity.getRoomId().getId()
+//                                                            && q.getDateId().getId() == aScheduleEntity.getDateId().getId()).findFirst().orElse(null);
+//
+//                                                    if (tmp2 == null) {
+//                                                        studentSchedule.add(aScheduleEntity);
+//                                                    }
+//
+//                                                    studentsMap.put(aStudent, studentSchedule);
+//                                                }
+//                                            }
+                                        }
+                                    }
+
+                                }
                             }
                         }
-
                     }
                     this.currentLine++;
                 }
-
             }
-            daySlotService.createDaySlotList(daySlotEntities);
+
             scheduleService.createScheduleList(scheduleEntities);
+            setExcelRunning(false);
 
-            for (EmployeeEntity emp : employees) {
-                String msg = "Your schedule has been changed. Click here to check update";
-                sendNotification(msg, emp.getEmailEDU().substring(0, emp.getEmailEDU().indexOf("@")), scheduleEntities);
-            }
+
+//            String msg = "Your schedule has been changed. Click here to check update";
+//
+//            for (EmployeeEntity key : employeesMap.keySet()) {
+//                sendNotification(msg, key.getEmailEDU().substring(0, key.getEmailEDU().indexOf("@")), employeesMap.get(key), androidPushNotificationsService,"edit");
+//            }
+//
+//            for (StudentEntity key : studentsMap.keySet()) {
+//                sendNotification(msg, key.getEmail().substring(0, key.getEmail().indexOf("@")), studentsMap.get(key), androidPushNotificationsService, "edit");
+//            }
 
             jsonObject.addProperty("success", true);
             jsonObject.addProperty("message", "Import lịch học thành công !");
@@ -1730,9 +1877,28 @@ public class UploadController {
             jsonObject.addProperty("fail", false);
             jsonObject.addProperty("message", ex.getMessage());
         }
-
-
         return jsonObject;
+    }
+
+
+    @RequestMapping("/getExcelCurrentLineStatus")
+    @ResponseBody
+    public JsonObject getExcelCurrentLineStatus() {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("excelCurrent", this.currentLine);
+        obj.addProperty("excelTotal", this.totalLine);
+        obj.addProperty("isExcelRunning", isExcelRunning());
+        return obj;
+    }
+
+
+    @RequestMapping("/getLineScheduleStatus")
+    @ResponseBody
+    public JsonObject getLineScheduleStatus() {
+        JsonObject obj = new JsonObject();
+        obj.addProperty("current", scheduleService.getCurrentLine());
+        obj.addProperty("total", scheduleService.getTotalLine());
+        return obj;
     }
 
 
@@ -1805,11 +1971,6 @@ public class UploadController {
 
             }
             courseStudentService.createCourseStudentList(courseStudentEntities);
-
-//            for (EmployeeEntity emp : employees) {
-//                String msg = "Your schedule has been changed. Click here to check update";
-//                sendNotification(msg, emp.getEmailEDU().substring(0, emp.getEmailEDU().indexOf("@")), scheduleEntities);
-//            }
 
             jsonObject.addProperty("success", true);
             jsonObject.addProperty("message", "Import lịch học thành công !");

@@ -219,23 +219,19 @@
 <script>
     var list;
 
-    $(document).ready(function () {
-        $(".select2-selection span").attr('title', '');
-    });
-
     var input = document.getElementById('menu-filter');
     input.onkeyup = function () {
         var filter = input.value.toLowerCase();
         list = document.querySelectorAll('.sidebar-menu li');
         for (var i = 0; i < list.length; i++) {
             var name = list[i].getElementsByClassName('name')[0].innerHTML;
-            console.log(name);
             if (name.toLowerCase().search(filter) != -1)
                 list[i].style.display = 'list-item';
             else
                 list[i].style.display = 'none';
         }
     }
+
 </script>
 
 </body>

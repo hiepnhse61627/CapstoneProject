@@ -38,6 +38,10 @@ public class ScheduleEntity implements Serializable {
     private RoomEntity roomId;
     @Column(name = "GroupName")
     private String groupName;
+    @Column(name = "isActive")
+    private boolean isActive;
+    @Column(name = "parentScheduleId")
+    private Integer parentScheduleId;
 
     public ScheduleEntity() {
     }
@@ -92,6 +96,22 @@ public class ScheduleEntity implements Serializable {
 
     public void setGroupName(String groupName) {
         this.groupName = groupName;
+    }
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
+    }
+
+    public Integer getParentScheduleId() {
+        return parentScheduleId;
+    }
+
+    public void setParentScheduleId(Integer parentScheduleId) {
+        this.parentScheduleId = parentScheduleId;
     }
 
     @Override

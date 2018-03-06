@@ -1,9 +1,6 @@
 package com.capstone.services;
 
-import com.capstone.entities.DaySlotEntity;
-import com.capstone.entities.RoomEntity;
-import com.capstone.entities.ScheduleEntity;
-import com.capstone.entities.SlotEntity;
+import com.capstone.entities.*;
 import com.capstone.jpa.exJpa.ExScheduleEntityJpaController;
 
 import javax.persistence.EntityManagerFactory;
@@ -31,6 +28,31 @@ public class ScheduleServiceImpl implements IScheduleService {
     }
 
     @Override
+    public ScheduleEntity findScheduleByDateSlotAndGroupName(DaySlotEntity dateSlot, String groupName) {
+        return ScheduleEntityJpaController.findScheduleByDateSlotAndGroupName(dateSlot, groupName);
+    }
+
+    @Override
+    public ScheduleEntity findScheduleByDateSlotAndLecture(DaySlotEntity dateSlot, EmployeeEntity emp) {
+        return ScheduleEntityJpaController.findScheduleByDateSlotAndLecture(dateSlot, emp);
+    }
+
+    @Override
+    public List<ScheduleEntity> findScheduleByGroupName(String groupName) {
+        return ScheduleEntityJpaController.findScheduleByGroupName(groupName);
+    }
+
+    @Override
+    public List<ScheduleEntity> findScheduleByLectureHaveParentSchedule(Integer lectureId) {
+        return ScheduleEntityJpaController.findScheduleByLectureHaveParentSchedule(lectureId);
+    }
+
+    @Override
+    public List<ScheduleEntity> findScheduleByGroupnameAndCourse(CourseEntity course, String groupName) {
+        return ScheduleEntityJpaController.findScheduleByGroupnameAndCourse(course, groupName);
+    }
+
+    @Override
     public List<ScheduleEntity> findAllSchedule() {
         return null;
     }
@@ -52,10 +74,12 @@ public class ScheduleServiceImpl implements IScheduleService {
     @Override
     public void updateSchedule(ScheduleEntity entity) {
         try {
-            ScheduleEntityJpaController.edit(entity);
+//            ScheduleEntityJpaController.edit(entity);
+            ScheduleEntityJpaController.updateSchedule(entity);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
     @Override

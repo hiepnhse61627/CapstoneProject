@@ -11,6 +11,7 @@
         <intercept-url pattern="/auth/google" access="isAnonymous()"/>
         <intercept-url pattern="/favicon.ico" access="isAnonymous()"/>
         <intercept-url pattern="/getScheduleEmployeeInfo" access="permitAll()"/>
+        <intercept-url pattern="/getScheduleStudent" access="permitAll()"/>
         <intercept-url pattern="/send" access="permitAll()"/>
 
         <intercept-url pattern="/Resources/**" access="permitAll()"/>
