@@ -1,4 +1,5 @@
 package com.capstone.services;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -48,6 +49,28 @@ public class DateUtil {
             }
         }
 
+        return date;
+    }
+
+    public static Date getDate(String s) {
+        DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+        Date date = null;
+        try {
+            date = format.parse(s);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return date;
+    }
+
+    public static String formatDate(Date s) {
+        DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+        String date = "";
+        try {
+            date = format.format(s);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return date;
     }
 

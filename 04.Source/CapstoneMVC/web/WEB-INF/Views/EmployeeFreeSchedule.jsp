@@ -43,7 +43,7 @@
 <section class="content">
     <div class="box">
         <div class="b-header">
-            <h1>Thống kê lịch dạy thay đổi </h1>
+            <h1>Thống kê lịch trống của giảng viên</h1>
             <hr>
         </div>
 
@@ -74,14 +74,8 @@
                         <table id="table">
                             <thead>
                             <tr>
-                                <th>ID</th>
-                                <th>Mã môn</th>
-                                <th>Lớp</th>
                                 <th>Ngày</th>
                                 <th>Slot</th>
-                                <th>Phòng</th>
-                                <th>Giảng viên</th>
-                                <th>Slot ban đầu</th>
                             </tr>
                             </thead>
                         </table>
@@ -180,14 +174,14 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/scheduleChangeStatistic/get", // url getData.php etc
+            "sAjaxSource": "/employeeFreeSchedule/get", // url getData.php etc
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "startDate", "value":  $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY')}),
                     aoData.push({"name": "endDate", "value":  $('#scheduleDate').data('daterangepicker').endDate.format('DD/MM/YYYY')}),
                     aoData.push({"name": "lecture", "value": $('#lecture').val()})
             },
             "oLanguage": {
-                "sSearchPlaceholder": "Môn học, Lớp, Ngày...",
+                "sSearchPlaceholder": "Ngày, Slot...",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": 'Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng',
@@ -203,25 +197,14 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4, 5, 6, 7],
+                    "aTargets": [0, 1],
                     "sClass": "text-center",
                     "bSortable": false
                 },
-                {
-                    "aTargets": [0],
-                    "bVisible": false,
-                },
-                // {
-                //     "aTargets": [1],
-                //     "mRender": function (data, type, row) {
-                //         return "<a onclick='GetAllStudentMarks(" + row[5] + ")'>" + data + "</a>";
-                //     }
-                // }
             ],
             "bAutoWidth": false
         }).fnSetFilteringDelay(1000);
     });
-
 
     function RefreshTable() {
         if (table != null) {

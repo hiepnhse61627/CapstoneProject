@@ -22,6 +22,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.capstone.services.DateUtil.formatDate;
+import static com.capstone.services.DateUtil.getDate;
+
 @Controller
 public class EmployeeList {
     IRoomService roomService = new RoomServiceImpl();
@@ -75,6 +78,12 @@ public class EmployeeList {
 
         view.addObject("employee", emp);
 
+        Set listCapacity = new HashSet();
+        for (RoomEntity room : rooms) {
+            listCapacity.add(room.getCapacity());
+        }
+        view.addObject("capacity", listCapacity);
+
         return view;
     }
 
@@ -94,35 +103,35 @@ public class EmployeeList {
             String contract = params.get("contract");
             String code = params.get("code");
 
-            if(position != null && !position.equals("")){
+            if (position != null && !position.equals("")) {
                 emp.setPosition(position);
             }
 
-            if(emailPersonal != null && !emailPersonal.equals("")){
+            if (emailPersonal != null && !emailPersonal.equals("")) {
                 emp.setPersonalEmail(emailPersonal);
             }
 
-            if(emailFE != null && !emailFE.equals("")){
+            if (emailFE != null && !emailFE.equals("")) {
                 emp.setEmailFE(emailFE);
             }
 
-            if(emailEDU != null && !emailEDU.equals("")){
+            if (emailEDU != null && !emailEDU.equals("")) {
                 emp.setEmailEDU(emailEDU);
             }
 
-            if(phone != null && !phone.equals("")){
+            if (phone != null && !phone.equals("")) {
                 emp.setPhone(phone);
             }
 
-            if(address != null && !address.equals("")){
+            if (address != null && !address.equals("")) {
                 emp.setAddress(position);
             }
 
-            if(contract != null && !contract.equals("")){
+            if (contract != null && !contract.equals("")) {
                 emp.setContract(position);
             }
 
-            if(code != null && !code.equals("")){
+            if (code != null && !code.equals("")) {
                 emp.setCode(code);
             }
 
@@ -136,6 +145,130 @@ public class EmployeeList {
 
         return jsonObj;
     }
+
+
+    @RequestMapping("/employeeFreeSchedule")
+    public ModelAndView EmployeeFreeSchedule() {
+        ModelAndView view = new ModelAndView("EmployeeFreeSchedule");
+        view.addObject("title", "Thống kê lịch trống của GV");
+
+        List<EmployeeEntity> emps = employeeService.findAllEmployees();
+        view.addObject("employees", emps);
+
+        return view;
+    }
+
+    @RequestMapping(value = "/employeeFreeSchedule/get")
+    @ResponseBody
+    public JsonObject LoadEmployeeFreeScheduleAll(@RequestParam Map<String, String> params) {
+        JsonObject jsonObj = new JsonObject();
+
+        try {
+            Integer lectureId = null;
+            String startDate = params.get("startDate");
+            String endDate = params.get("endDate");
+
+            Map<Date, List<String>> freeDaySlot = new TreeMap<>();
+
+            if (!params.get("lecture").equals("")) {
+                lectureId = Integer.parseInt(params.get("lecture"));
+            }
+
+            List<ScheduleEntity> scheduleList = scheduleService.findScheduleByLecture(lectureId);
+            if (scheduleList != null) {
+                List<String> slotNameList = new ArrayList<>();
+
+                List<SlotEntity> slotList = slotService.findAllSlots();
+
+                for (SlotEntity aSlot : slotList) {
+                    slotNameList.add(aSlot.getSlotName());
+                }
+
+                //get all schedule in date range
+                if (!startDate.equals(endDate)) {
+                    List<ScheduleEntity> removeList = new ArrayList<>();
+                    for (ScheduleEntity aSchedule : scheduleList) {
+                        Date aDate = getDate(aSchedule.getDateId().getDate());
+                        if (aDate.before(getDate(startDate)) || aDate.after(getDate(endDate))) {
+                            removeList.add(aSchedule);
+                        }
+                    }
+                    scheduleList.removeAll(removeList);
+
+                    List<String> allDates = new ArrayList();
+                    Date date1 = getDate(startDate);
+                    Date date2 = getDate(endDate);
+
+                    Calendar c1 = Calendar.getInstance();
+                    c1.setTime(date1);
+                    Calendar c2 = Calendar.getInstance();
+                    c2.setTime(date2);
+                    while (!c2.before(c1)) {
+                        allDates.add(formatDate(c1.getTime()));
+                        c1.add(Calendar.DATE, 1);
+                    }
+
+                    for (ScheduleEntity aSchedule : scheduleList) {
+                        allDates.remove(aSchedule.getDateId().getDate());
+                    }
+
+                    for (String aDate : allDates) {
+                        List<String> tmpSlotList = new ArrayList<>();
+                        tmpSlotList.add("Trống slot cả ngày");
+                        freeDaySlot.put(getDate(aDate), tmpSlotList);
+
+                    }
+
+                    //get all remaining free slot of a employee schedule in a date
+                    for (ScheduleEntity aSchedule : scheduleList) {
+                        List<String> slotOfDayList = freeDaySlot.get(getDate(aSchedule.getDateId().getDate()));
+                        if (slotOfDayList == null) {
+                            slotOfDayList = new ArrayList<>(slotNameList);
+                        }
+                        slotOfDayList.remove(aSchedule.getDateId().getSlotId().getSlotName());
+                        freeDaySlot.put(getDate(aSchedule.getDateId().getDate()), slotOfDayList);
+                    }
+
+
+                    List<List<String>> result = new ArrayList<>();
+
+                    for (Date key : freeDaySlot.keySet()) {
+                        String totalSlot = "";
+                        for (String aSlot : freeDaySlot.get(key)) {
+                            totalSlot += aSlot+", ";
+                        }
+
+                        List<String> dataList = new ArrayList<String>();
+                        dataList.add(formatDate(key));
+                        dataList.add(totalSlot.substring(0, totalSlot.lastIndexOf(", ")));
+                        result.add(dataList);
+                    }
+
+                    Gson gson = new Gson();
+                    JsonArray array = (JsonArray) gson.toJsonTree(result);
+
+                    jsonObj.add("aaData", array);
+                }else{
+
+                    Gson gson = new Gson();
+                    JsonArray array = (JsonArray) gson.toJsonTree(new ArrayList<>());
+                    jsonObj.add("aaData", array);
+
+                }
+            }else{
+                Gson gson = new Gson();
+                JsonArray array = (JsonArray) gson.toJsonTree(new ArrayList<>());
+                jsonObj.add("aaData", array);
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return jsonObj;
+    }
+
 
     @RequestMapping(value = "/loadEmployeeList")
     @ResponseBody

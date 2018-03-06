@@ -54,7 +54,13 @@ public class ScheduleServiceImpl implements IScheduleService {
 
     @Override
     public List<ScheduleEntity> findAllSchedule() {
-        return null;
+        return ScheduleEntityJpaController.findAllSchedule();
+    }
+
+    @Override
+    public List<ScheduleEntity> findScheduleByLecture(Integer lecture) {
+        return ScheduleEntityJpaController.findScheduleByLecture(lecture);
+
     }
 
     @Override
