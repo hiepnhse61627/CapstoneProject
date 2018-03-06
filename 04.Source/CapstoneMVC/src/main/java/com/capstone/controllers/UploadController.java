@@ -2851,7 +2851,7 @@ public class UploadController {
                         String cellValue = cell.getStringCellValue().trim();
                         switch (cellValue) {
                             case "MSSV:":
-                                rollNumberColumnIndex = cell.getColumnIndex()+ 1;
+                                rollNumberColumnIndex = cell.getColumnIndex() + 1;
                                 rollNumberIndexRowIndex = cell.getRowIndex();
                                 break;
                             case "Subject":
@@ -2976,13 +2976,13 @@ public class UploadController {
 
                         //check replacement subject
                         if (subject == null) {
-                           outerloop:
-                           for (SubjectCurriculumEntity sc: subjectCurriculumList
-                                 ) {
-                               SubjectEntity s = sc.getSubjectId();
-                               List<SubjectEntity> replacedSubjects = s.getSubjectEntityList();
-                                for (SubjectEntity reSubject: replacedSubjects
-                                     ) {
+                            outerloop:
+                            for (SubjectCurriculumEntity sc : subjectCurriculumList
+                                    ) {
+                                SubjectEntity s = sc.getSubjectId();
+                                List<SubjectEntity> replacedSubjects = s.getSubjectEntityList();
+                                for (SubjectEntity reSubject : replacedSubjects
+                                        ) {
                                     reSubject.getName().equalsIgnoreCase(subjectNameValue);
                                     subject = reSubject;
                                     break outerloop;
@@ -3049,6 +3049,112 @@ public class UploadController {
         return jsonObject;
     }
 
+    @RequestMapping(value = "/uploadThesisName", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goUploadThesisName(@RequestParam("file") MultipartFile file,
+                                         HttpServletRequest request, HttpServletResponse response) {
+        JsonObject jsonObject = new JsonObject();
+
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+
+            int lastRow = spreadsheet.getLastRowNum();
+            this.totalLine = lastRow - startRowNumber + 1;
+
+            int excelDataIndex = -1;
+
+            int rollNumberColIndex = -1;
+            int vietnameseNameColIndex = -1;
+            int englishNameColIndex = -1;
+
+
+            //dynamic search and assign index column
+            for (Row r : spreadsheet) {
+                for (Cell cell : r) {
+                    if (cell.getCellTypeEnum() == CellType.STRING) {
+                        String cellValue = cell.getStringCellValue().trim();
+                        switch (cellValue.toUpperCase()) {
+                            case "MSSV":
+                                rollNumberColIndex = cell.getColumnIndex();
+                                excelDataIndex = cell.getRowIndex() + 1;
+                                break;
+                            case "TÊN LVTN":
+                                vietnameseNameColIndex = cell.getColumnIndex();
+                                break;
+                            case "G. THESIS":
+                                englishNameColIndex = cell.getColumnIndex();
+                                // excel data
+                                break;
+                        }
+
+                    }
+                }
+            }
+
+
+            this.startRowNumber = excelDataIndex;
+            if (rollNumberColIndex != -1 && vietnameseNameColIndex != -1 && englishNameColIndex != -1) {
+
+
+                //get student and check if student exists
+                row = spreadsheet.getRow(excelDataIndex);
+
+                this.currentLine = 1;
+
+                //get mark component name for later use
+                String markComponentName = Enums.MarkComponent.AVERAGE.getValue();
+                HashMap<String, List<String>> thesisName = new HashMap<>();
+                for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                    row = spreadsheet.getRow(rowIndex);
+
+
+                    Cell rollNumberCell = row.getCell(rollNumberColIndex);
+                    Cell vietnameseNameCell = row.getCell(vietnameseNameColIndex);
+                    Cell englishNameCell = row.getCell(englishNameColIndex);
+
+                    //check if cell is empty or null to end the loop
+                    if (rollNumberCell == null || rollNumberCell.getCellTypeEnum() == CellType.BLANK
+                            || vietnameseNameCell == null || vietnameseNameCell.getCellTypeEnum() == CellType.BLANK
+                            || englishNameCell == null || englishNameCell.getCellTypeEnum() == CellType.BLANK
+                            ) {
+//                        break;
+                    } else {
+
+                        String rollNumberValue = rollNumberCell.getStringCellValue().trim().toUpperCase();
+                        String vietnameseNameValue = vietnameseNameCell.getStringCellValue().trim().toUpperCase();
+                        String englishNameValue = englishNameCell.getStringCellValue().trim().toUpperCase();
+
+                        //mảng gồm 2 item [0]: tên tiếng việt, [1]: tên tiếng anh
+                        List<String> nameList = new ArrayList<>();
+                        nameList.add(vietnameseNameValue);
+                        nameList.add(englishNameValue);
+                        thesisName.put(rollNumberValue, nameList);
+                    }
+                    System.out.println("upload" + currentLine);
+                    this.currentLine++;
+                }
+                request.getSession().setAttribute("ThesisNamesList", thesisName);
+
+                jsonObject.addProperty("success", true);
+                jsonObject.addProperty("message", "Upload tên đề tài thành công !");
+            } else {
+                jsonObject.addProperty("success", false);
+                jsonObject.addProperty("message", "File không đúng định dạng !");
+            }
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+        return jsonObject;
+    }
 
 }
 

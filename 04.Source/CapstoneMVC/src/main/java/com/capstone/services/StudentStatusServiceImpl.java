@@ -39,4 +39,9 @@ public class StudentStatusServiceImpl implements IStudentStatusService {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public List<StudentStatusEntity> getStudentStatusBySemesterId(Integer semesterId) {
+        return studentStatusEntityJpaController.getStudentStatusBySemesterId(semesterId);
+    }
 }

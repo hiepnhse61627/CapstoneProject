@@ -205,10 +205,6 @@ public class GraduateController {
         boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
 
 
-        // get list semester to current semesterId
-        List<RealSemesterEntity> semesters = getToCurrentSemester(semesterId);
-        Set<Integer> semesterIds = semesters.stream().map(s -> s.getId()).collect(Collectors.toSet());
-
         int previousSemesterId = Ultilities.GetSemesterIdBeforeThisId(semesterId);
         List<StudentEntity> studentEntityList;
         if (programId < 0) {
@@ -1342,6 +1338,65 @@ public class GraduateController {
 //
 //        return jsonObj;
 //    }
+
+    //dùng cho việc update lại Student term hiện tại = 6, dùng 1 lần duy nhất
+    @RequestMapping(value = "/updateStudentTerm", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goupdateStudentTerm() {
+        JsonObject jsonObj = new JsonObject();
+
+        try {
+            StudentStatusServiceImpl studentStatusService = new StudentStatusServiceImpl();
+            //lấy của kì FALl2017
+            List<StudentStatusEntity> studentStatusList = studentStatusService.getStudentStatusBySemesterId(28);
+            StudentServiceImpl studentService = new StudentServiceImpl();
+            int i = 1;
+            for (StudentStatusEntity studentStatus :
+                    studentStatusList) {
+
+                //term đúng
+                String rightTerm = studentStatus.getTerm();
+                if (rightTerm != null) {
+                    Integer currentTerm = null;
+                    if (rightTerm.contains("ENG6")) {
+                        currentTerm = 0;
+                    } else if (rightTerm.contains("ENG5")) {
+                        currentTerm = -1;
+                    } else if (rightTerm.contains("ENG4")) {
+                        currentTerm = -2;
+                    } else if (rightTerm.contains("ENG3")) {
+                        currentTerm = -3;
+                    } else if (rightTerm.contains("ENG2")) {
+                        currentTerm = -4;
+                    }
+
+                    if (currentTerm == null) {
+                        try {
+                            currentTerm = (int) Double.parseDouble(rightTerm);
+
+                        } catch (NumberFormatException ex) {
+                            System.out.println(studentStatus.getStudentId() + " - " + rightTerm);
+                        }
+                    }
+
+                    StudentEntity student = studentStatus.getStudentId();
+                    student.setTerm(currentTerm);
+                    studentService.myUpdateStudent(student);
+                }
+            }
+
+            jsonObj.addProperty("success", true);
+            jsonObj.addProperty("message", "Done");
+        } catch (Exception e) {
+            jsonObj.addProperty("success", false);
+            jsonObj.addProperty("message", "Bug");
+            e.printStackTrace();
+        }
+
+        return jsonObj;
+    }
+
+
 }
 
 

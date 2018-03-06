@@ -57,5 +57,27 @@ public class ExStudentStatusEntityJpaController extends StudentStatusEntityJpaCo
             }
         }
     }
+
+    public List<StudentStatusEntity> getStudentStatusBySemesterId(Integer semesterId) {
+        List<StudentStatusEntity> studentStatusList ;
+        EntityManager em = getEntityManager();
+
+        try {
+            String sqlstring = "SELECT s FROM StudentStatusEntity s WHERE s.semesterId.id = :semesterId";
+            Query query = em.createQuery(sqlstring);
+            query.setParameter("semesterId", semesterId);
+
+            studentStatusList = query.getResultList();
+
+            return studentStatusList;
+        } catch (NoResultException nrEx) {
+            System.out.println(nrEx.getMessage());
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
 }
 

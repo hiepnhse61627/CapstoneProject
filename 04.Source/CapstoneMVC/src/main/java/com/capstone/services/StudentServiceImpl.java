@@ -772,4 +772,10 @@ public class StudentServiceImpl implements IStudentService {
         return subjectsStudentsReLearnMap;
     }
 
+    @Override
+    public void myUpdateStudent(StudentEntity student) {
+        studentEntityJpaController.myUpdateStudent(student);
+    }
+
+
 }

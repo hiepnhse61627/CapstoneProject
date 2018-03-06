@@ -2,6 +2,8 @@ package com.capstone.exporters;
 
 import com.capstone.entities.*;
 import com.capstone.enums.SubjectTypeEnum;
+import com.capstone.models.Enums;
+import com.capstone.models.MarkCreditTermModel;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import org.apache.poi.ss.usermodel.BorderStyle;
@@ -10,6 +12,7 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCell;
 import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -47,17 +50,19 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream is = classLoader.getResourceAsStream(EXCEL_TEMPLATE);
 
+        HashMap<String, List<String>> thesisNames = (HashMap<String, List<String>>) request.getSession().getAttribute("ThesisNamesList");
+
         XSSFWorkbook workbook = new XSSFWorkbook(is);
         // close input stream
-        is.close();
+//        is.close();
         XSSFSheet spreadsheet = workbook.getSheetAt(0);
 
-        writeDataToTable(workbook, spreadsheet, params);
+        writeDataToTable(workbook, spreadsheet, params, thesisNames);
 
         workbook.write(os);
     }
 
-    private void writeDataToTable(XSSFWorkbook workbook, XSSFSheet sheet, Map<String, String> params) throws Exception {
+    private void writeDataToTable(XSSFWorkbook workbook, XSSFSheet sheet, Map<String, String> params, HashMap<String, List<String>> thesisNames) throws Exception {
         SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
         // style
         CellStyle cellStyle = workbook.createCellStyle();
@@ -68,28 +73,83 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
         cellStyle.setAlignment(HorizontalAlignment.LEFT);
         cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
-        Map<StudentEntity, List<MarksEntity>> dataMap = processData(params);
-        for (Map.Entry<StudentEntity, List<MarksEntity>> entry : dataMap.entrySet()) {
-            sheet = workbook.cloneSheet(0, entry.getKey().getRollNumber());
+
+//        Map<StudentEntity, List<MarkCreditTermModel>> dataMap = processData2(params);
+        List<StudentAndMark> dataMap = processData2(params);
+
+        int myIndex = 1;
+        for (StudentAndMark entry : dataMap) {
+            StudentEntity student = entry.getStudent();
+            sheet = workbook.cloneSheet(0, student.getRollNumber());
             XSSFRow row = sheet.getRow(11);
-            row.getCell(2).setCellValue(entry.getKey().getFullName());
-            row.getCell(6).setCellValue(entry.getKey().getRollNumber());
+            row.getCell(2).setCellValue(student.getFullName());
+            row.getCell(6).setCellValue(student.getRollNumber());
             row = sheet.getRow(13);
-            row.getCell(2).setCellValue(sdf.format(entry.getKey().getDateOfBirth()));
+            row.getCell(2).setCellValue(sdf.format(student.getDateOfBirth()));
+
+            //ngành , chuyên ngành
             row = sheet.getRow(15);
-            row.getCell(2).setCellValue(entry.getKey().getProgramId().getFullName());
-            DocumentStudentEntity documentStudentEntity = Ultilities.getStudentLatestDocument(entry.getKey());
-            row.getCell(7).setCellValue(documentStudentEntity.getCurriculumId().getName());
+            row.getCell(2).setCellValue(student.getProgramId().getFullName());
+//            DocumentStudentEntity documentStudentEntity = Ultilities.getStudentLatestDocument(entry.getKey());
+//            row.getCell(7).setCellValue(documentStudentEntity.getCurriculumId().getName());
+            row.getCell(7).setCellValue(student.getProgramId().getFullName());
+
+            //in tên đề tài
+            if (thesisNames != null) {
+                //mảng gồm 2 item [0]: tên tiếng việt, [1]: tên tiếng anh
+                List<String> names = thesisNames.get(student.getRollNumber());
+                //tên đồ án = tiếng việt
+                row = sheet.getRow(22);
+                row.getCell(1).setCellValue(names.get(0));
+                //tên đồ án = tiếng anh
+                row = sheet.getRow(24);
+                row.getCell(2).setCellValue(names.get(1));
+            }
+
+            //điểm trung bình
+            row = sheet.getRow(26);
+            double average= entry.getAverage();
+            row.getCell(8).setCellValue(average);
+
+            //loại tốt nghiệp
+            String rankingVn = "";
+            String rankingEng ="";
+            if(average>=9){
+                rankingVn = "Xuất sắc";
+                rankingEng ="Excellent";
+            }else if(average >= 8){
+                rankingVn = "Giỏi";
+                rankingEng ="Very good";
+            }else if(average >= 7){
+                rankingVn = "Khá";
+                rankingEng ="Good";
+            }else if(average >= 6){
+                rankingVn = "Trung bình khá";
+                rankingEng ="Fairly Good";
+            }else if(average >=5){
+                rankingVn = "Trung bình";
+                rankingEng ="Ordinary";
+            }
+            row = sheet.getRow(30);
+            row.getCell(7).setCellValue(rankingVn);
+            row = sheet.getRow(31);
+            row.getCell(7).setCellValue(rankingEng);
 
             int ordinalNumber = 1;
             int rowIndex = 20;
-            int markSize = entry.getValue().size();
-            for (MarksEntity marksEntity : entry.getValue()) {
+            List<MarkCreditTermModel> marksList = entry.getMarkList();
+            int markSize = marksList.size();
+            Collections.reverse(marksList);
+            for (MarkCreditTermModel item : marksList) {
+
+                MarksEntity marksEntity = item.getMark();
+
                 row = sheet.createRow(rowIndex);
                 // ordinal number
                 XSSFCell ordinalNumberCell = row.createCell(0);
                 ordinalNumberCell.setCellStyle(cellStyle);
                 ordinalNumberCell.setCellValue("" + (markSize - ordinalNumber + 1));
+
                 // Subject code
                 SubjectEntity subjectEntity = subjectService.findSubjectById(marksEntity.getSubjectMarkComponentId().getSubjectId().getId());
                 XSSFCell subjectCodeCell = row.createCell(1);
@@ -112,8 +172,10 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
                 // credit
                 XSSFCell creditCell = row.createCell(6);
                 creditCell.setCellStyle(cellStyle);
-                Map<SubjectEntity, Integer> subjectsCredits = processCreditsForSubject(entry.getKey().getDocumentStudentEntityList());
-                creditCell.setCellValue(subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) + "");
+//                Map<SubjectEntity, Integer> subjectsCredits = processCreditsForSubject(entry.getKey().getDocumentStudentEntityList());
+//                creditCell.setCellValue(subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) + "");
+                creditCell.setCellValue(item.getCredit() + "");
+
                 // mark
                 XSSFCell markCell = row.createCell(7);
                 markCell.setCellStyle(cellStyle);
@@ -149,6 +211,9 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
                 }
                 ordinalNumber++;
             }
+//            sheet.shiftRows(21, sheet.getLastRowNum(), -1);
+            System.out.println("Done " + myIndex + " - " + dataMap.size());
+            myIndex++;
         }
         workbook.removeSheetAt(0);
     }
@@ -291,4 +356,166 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
 
         return map;
     }
+
+    private List<StudentAndMark> processData2(Map<String, String> params) {
+        List<StudentAndMark> resultMap = new ArrayList<>();
+
+        int programId = Integer.parseInt(params.get("programId"));
+        int semesterId = Integer.parseInt(params.get("semesterId"));
+
+
+        List<StudentEntity> studentEntityList;
+        if (programId < 0) {
+            studentEntityList = studentService.findAllStudents();
+        } else {
+            studentEntityList = studentService.getStudentBySemesterIdAndProgram(semesterId, programId);
+        }
+
+        List<StudentEntity> filteredStudents = new ArrayList<>();
+        //lấy ra tất cả sinh viên tốt nghiệp, trạng thái sinh viên tốt nghiệp là G
+        for (StudentEntity student : studentEntityList) {
+            List<StudentStatusEntity> statusList = student.getStudentStatusEntityList();
+
+            for (StudentStatusEntity status : statusList) {
+                //xét duyệt trạng thái kì được chọn của sinh viên
+                if (status.getSemesterId().getId() == semesterId
+                        && status.getStatus().equalsIgnoreCase(Enums.StudentStatus.Graduated.getValue())) {
+                    filteredStudents.add(student);
+                }
+            }
+        }
+
+        System.out.println(filteredStudents.size() + " students");
+        int i = 1;
+        for (StudentEntity student : filteredStudents) {
+
+            List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+            List<MarksEntity> allMarks = new ArrayList<>(student.getMarksEntityList());
+            List<MarkCreditTermModel> finalMarks = new ArrayList<>();
+            List<SubjectCurriculumEntity> subjectCurriculumList = new ArrayList<>();
+
+            for (DocumentStudentEntity docStudent : docs) {
+                CurriculumEntity curriculum = docStudent.getCurriculumId();
+                subjectCurriculumList.addAll(curriculum.getSubjectCurriculumEntityList());
+            }  //end of docStudents loop
+            for (SubjectCurriculumEntity subjectCurriculum : subjectCurriculumList) {
+                SubjectEntity subject = subjectCurriculum.getSubjectId();
+
+                //lấy ra môn bị thay thế của môn A, A thay thế B, -> lấy B
+                List<SubjectEntity> isReplacedSubject = subject.getSubjectEntityList1();
+                //lấy ra môn bị thay thế của môn A, C thay thế A, -> lấy C
+                List<SubjectEntity> replacedSubject = subject.getSubjectEntityList1();
+                //mảng này chứa tất cả môn thay thế và môn chính
+                List<SubjectEntity> checkSubjects = new ArrayList<>();
+                checkSubjects.add(subject);
+                checkSubjects.addAll(isReplacedSubject);
+                checkSubjects.addAll(replacedSubject);
+
+                List<MarksEntity> filteredMarks = allMarks.stream().filter(q -> checkSubjects.stream().anyMatch(c -> c.getId()
+                        .equalsIgnoreCase(q.getSubjectMarkComponentId().getSubjectId().getId()))
+                ).collect(Collectors.toList());
+
+                List<MarksEntity> sortedMarks = Ultilities.SortSemestersByMarks(filteredMarks);
+
+                //get latest mark
+                if (!sortedMarks.isEmpty()) {
+                    MarksEntity latestMark = sortedMarks.get(sortedMarks.size() - 1);
+                    RealSemesterEntity tmpSemester = latestMark.getSemesterId();
+                    //check xem trong một kì có học môn đó 2 lần không (trả nợ ngay trong kì)
+                    List<MarksEntity> reLearnInSameSemester = sortedMarks.stream()
+                            .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
+                            .collect(Collectors.toList());
+
+                    //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
+                    // nếu có 2 fail --> fail; nếu có 1 pass, 1 fail -> pass
+                    MarksEntity passMark = reLearnInSameSemester.stream()
+                            .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                            .findFirst().orElse(null);
+
+                    if (passMark != null) {
+                        finalMarks.add(new MarkCreditTermModel(passMark,
+                                subjectCurriculum.getSubjectCredits(),
+                                subjectCurriculum.getTermNumber() * 1.0));
+                    } else {
+                        // do something
+                    }
+                }
+
+            } //end of subjectCurriculum loop
+
+
+            Collections.sort(finalMarks, new MarkCreditTermModelComparator());
+//            resultMap.put(student, finalMarks);
+            resultMap.add(new StudentAndMark(finalMarks, student));
+            System.out.println(i + " - " + filteredStudents.size());
+            i++;
+        }
+
+        return resultMap;
+    }
+
+
+    public class MarkCreditTermModelComparator implements Comparator<MarkCreditTermModel> {
+        @Override
+        public int compare(MarkCreditTermModel o1, MarkCreditTermModel o2) {
+            return o1.getTerm().compareTo(o2.getTerm());
+        }
+    }
+
+    public class StudentAndMark {
+        List<MarkCreditTermModel> markList;
+        StudentEntity student;
+
+        public Double getAverage() {
+            return average;
+        }
+
+        public void setAverage(Double average) {
+            this.average = average;
+        }
+
+        Double average;
+
+        public StudentAndMark(List<MarkCreditTermModel> markList, StudentEntity student) {
+            this.markList = markList;
+            this.student = student;
+            this.average = caculateAverage(markList);
+        }
+
+        public List<MarkCreditTermModel> getMarkList() {
+            return markList;
+        }
+
+        public void setMarkList(List<MarkCreditTermModel> markList) {
+            this.markList = markList;
+        }
+
+        public StudentEntity getStudent() {
+            return student;
+        }
+
+        public void setStudent(StudentEntity student) {
+            this.student = student;
+        }
+
+        public Double caculateAverage(List<MarkCreditTermModel> markList) {
+            Double sumCredits = 0.0;
+            Double sumMarks = 0.0;
+            double average = 0.0;
+            for (MarkCreditTermModel item : markList) {
+                //ko tính những môn như lab, hoặc những môn pass mà ko có điểm
+                if (item.getMark().getAverageMark() != 0
+                        || item.getMark().getSubjectMarkComponentId().getSubjectId().getId().contains("LAB")) {
+                    Double credit = item.getCredit()*1.0;
+                    sumCredits += credit;
+                    sumMarks += item.getMark().getAverageMark() * credit;
+                }
+            }
+            //điểm trung bình tính = tổng số (điểm*tín chỉ) / tổng tín chỉ, làm tròn 2 chữ số thập phân
+            average = Math.round((sumMarks / sumCredits) * 100.0) / 100.0;
+
+            return average;
+        }
+    }
+
 }
