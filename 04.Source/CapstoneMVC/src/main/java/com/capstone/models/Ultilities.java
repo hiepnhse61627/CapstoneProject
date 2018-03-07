@@ -998,7 +998,8 @@ public class Ultilities {
                                             //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
                                             // nếu có 2 fail --> fail
                                             isPass = reLearnInSameSemester.stream()
-                                                    .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                                                    .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
+                                                    ||  q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
                                                     .findFirst().orElse(null);
 
                                         } else {
@@ -1028,7 +1029,8 @@ public class Ultilities {
 
                                              isPass = reLearnInSameSemester.stream()
                                                     .filter(q -> q.getAverageMark() >= tmpPassMark
-                                                            || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                                                            || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
+                                                            ||  q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
                                                     .findFirst().orElse(null);
                                         }
 

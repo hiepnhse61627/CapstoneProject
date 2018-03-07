@@ -165,6 +165,10 @@
                             <label for="thesisFile" hidden></label>
                             <input type="file" accept=".xlsx, .xls" id="thesisFile" name="file"/>
                         </div>
+                        <div class="">
+                            Bấm vào <a class="link" href="/Resources/FileTemplates/Ten_De_Tai.xlsx">Template</a> để tải
+                            về bản mẫu
+                        </div>
                         <button type="button" onclick="UploadThesisName()" class="btn btn-success"
                                 title="dùng để upload, gán tên đề tài vào bảng điểm cho học sinh tốt nghiệp">
                             Upload Tên đề tài
