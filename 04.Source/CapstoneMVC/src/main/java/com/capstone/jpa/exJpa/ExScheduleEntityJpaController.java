@@ -5,6 +5,7 @@ import com.capstone.jpa.ScheduleEntityJpaController;
 import com.capstone.models.Logger;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
@@ -145,6 +146,32 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
         }
     }
 
+    public ScheduleEntity findScheduleByDateSlotAndLectureAndRoomAndCourse(DaySlotEntity date, EmployeeEntity lecture, RoomEntity room, CourseEntity course) {
+        EntityManager em = getEntityManager();
+        ScheduleEntity ScheduleEntity = new ScheduleEntity();
+        try {
+            String sqlString = "SELECT c FROM ScheduleEntity c " +
+                    "WHERE (c.dateId = :date) " +
+                    "AND (c.empId= :lecture) AND (c.roomId= :room) AND (c.courseId= :course) " +
+                    "AND (c.isActive IS NULL OR c.isActive = 'true')";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("date", date);
+            query.setParameter("lecture", lecture);
+            query.setParameter("room", room);
+            query.setParameter("course", course);
+
+            ScheduleEntity = (ScheduleEntity) query.getSingleResult();
+
+            return ScheduleEntity;
+        } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
 
     public ScheduleEntity createSchedule(ScheduleEntity ScheduleEntity) {
         EntityManager em = null;
@@ -188,13 +215,25 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
         try {
             if (lecture != null) {
                 String sqlString = "SELECT c FROM ScheduleEntity c " +
-                        "WHERE (c.empId.id = :lecture) AND (c.parentScheduleId IS NOT NULL)";
+                        "WHERE (c.parentScheduleId IS NOT NULL)";
                 Query query = em.createQuery(sqlString);
-                query.setParameter("lecture", lecture);
 
                 List<ScheduleEntity> std = query.getResultList();
+                List<ScheduleEntity> result = new ArrayList<>();
 
-                return std;
+                for (ScheduleEntity aSchedule : std) {
+                    ScheduleEntity parentSchedule = findScheduleEntity(aSchedule.getParentScheduleId());
+                    if (parentSchedule != null) {
+                        if (parentSchedule.getEmpId() != null) {
+                            if (parentSchedule.getEmpId().getId() == lecture) {
+                                result.add(aSchedule);
+                            }
+                        }
+                    }
+
+                }
+
+                return result;
             } else {
                 String sqlString = "SELECT c FROM ScheduleEntity c " +
                         "WHERE (c.parentScheduleId IS NOT NULL)";
@@ -261,14 +300,16 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
     }
 
 
-    public List<ScheduleEntity> findScheduleByGroupnameAndCourse(CourseEntity course, String groupname) {
+    public List<ScheduleEntity> findScheduleByGroupnameAndCourseAndLecture(CourseEntity course, String groupname, EmployeeEntity emp) {
         EntityManager em = getEntityManager();
         try {
             String sqlString = "SELECT c FROM ScheduleEntity c " +
-                    "WHERE (c.courseId = :course) AND (c.groupName = :groupname) AND (c.isActive IS NULL OR c.isActive = 'true')";
+                    "WHERE (c.courseId = :course) AND (c.groupName = :groupname) AND (c.empId = :emp) AND (c.isActive IS NULL OR c.isActive = 'true')";
             Query query = em.createQuery(sqlString);
             query.setParameter("course", course);
             query.setParameter("groupname", groupname);
+            query.setParameter("emp", emp);
+
             List<ScheduleEntity> std = query.getResultList();
             return std;
 

@@ -58,7 +58,7 @@
                 </div>
                 <div class="col-md-3 text-right">
                     <button type="button" class="btn btn-success btn-with-icon" onclick="CreateSchedule()">
-                        <i class="glyphicon glyphicon-open"></i>
+                        <i class="glyphicon glyphicon-plus"></i>
                         <div>Thêm lịch học</div>
                     </button>
                 </div>
@@ -79,6 +79,7 @@
                         <th>Phòng</th>
                         <th>Giảng viên</th>
                         <th>Capacity</th>
+                        <th>IsPast</th>
                         <th>Chi tiết</th>
                         </thead>
                         <tbody></tbody>
@@ -387,6 +388,7 @@
         $('#scheduleDate').daterangepicker({
             startDate: moment(),
             endDate: moment(),
+            minDate: moment(),
 //            drops: "up",
             locale: {
                 format: 'DD/MM/YYYY'
@@ -430,7 +432,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4, 5, 6, 7, 8],
+                    "aTargets": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
                     "bSortable": false,
                     "sClass": "text-center",
                 },
@@ -444,10 +446,20 @@
                 },
                 {
                     "aTargets": [8],
+                    "bVisible": false,
+                },
+                {
+                    "aTargets": [9],
                     "mRender": function (data, type, row) {
-                        return "<a class='btn btn-success tbl-btn' onclick='EditSchedule(" + row[0] + ",\""
-                            + row[1] + "\",\"" + row[2] + "\",\"" + row[3] + "\",\"" + row[4] + "\",\"" + row[5] + "\",\"" + row[6] + "\",\"" + row[7] + "\")'>" +
-                            "<i class='glyphicon glyphicon-pencil'></i></a>";
+                        var isPast = row[8];
+                        if (isPast === "true") {
+                            return "<div></div>";
+                        } else {
+                            return "<a class='btn btn-success tbl-btn' onclick='EditSchedule(" + row[0] + ",\""
+                                + row[1] + "\",\"" + row[2] + "\",\"" + row[3] + "\",\"" + row[4] + "\",\"" + row[5] + "\",\"" + row[6] + "\",\"" + row[7] + "\")'>" +
+                                "<i class='glyphicon glyphicon-pencil'></i></a>";
+                        }
+
                     }
                 },
 
@@ -575,6 +587,7 @@
         $('#scheduleDate').daterangepicker({
             startDate: moment(),
             endDate: moment(),
+            minDate: moment(),
             singleDatePicker: true,
             locale: {
                 format: 'DD/MM/YYYY'
@@ -689,6 +702,7 @@
         $('#scheduleDate').daterangepicker({
             startDate: moment(),
             endDate: moment(),
+            minDate: moment(),
 //            drops: "up",
             locale: {
                 format: 'DD/MM/YYYY'

@@ -14,7 +14,8 @@ public interface IScheduleService {
     ScheduleEntity findScheduleByDateSlotAndLecture(DaySlotEntity dateSlot, EmployeeEntity emp);
     List<ScheduleEntity> findScheduleByGroupName(String groupName);
     List<ScheduleEntity> findScheduleByLectureHaveParentSchedule(Integer lectureId);
-    List<ScheduleEntity> findScheduleByGroupnameAndCourse(CourseEntity course, String groupName);
+    List<ScheduleEntity> findScheduleByGroupnameAndCourseAndLecture(CourseEntity course, String groupName, EmployeeEntity emp);
+    ScheduleEntity findScheduleByDateSlotAndLectureAndRoomAndCourse(DaySlotEntity date, EmployeeEntity lecture, RoomEntity room, CourseEntity course);
     List<ScheduleEntity> findAllSchedule();
     List<ScheduleEntity> findScheduleByLecture(Integer lecture);
     void saveSchedule(ScheduleEntity emp) throws Exception;

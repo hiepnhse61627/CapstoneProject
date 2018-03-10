@@ -43,7 +43,19 @@
 <section class="content">
     <div class="box">
         <div class="b-header">
-            <h1>Thống kê lịch dạy thay đổi </h1>
+            <div class="row">
+                <div class="col-md-9 title">
+                    <h1>Thống kê lịch dạy thay đổi</h1>
+                </div>
+                <div class="col-md-3 text-right">
+                    <button type="button" class="btn btn-success btn-with-icon" onclick="SyncChangedSchedule()">
+                        <i class="glyphicon glyphicon-retweet"></i>
+                        <div>Đồng bộ lịch thay đổi với FAP</div>
+                    </button>
+                </div>
+            </div>
+            <hr>
+
             <hr>
         </div>
 
@@ -59,6 +71,15 @@
                 <select id="lecture" class="select lecture-select">
                     <c:forEach var="emp" items="${employees}">
                         <option value="${emp.id}">${emp.fullName}</option>
+                    </c:forEach>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="department">Bộ môn:</label>
+                <select id="department" class="select department-select">
+                    <c:forEach var="department" items="${departments}">
+                        <option value="${department.deptId}">${department.deptName}</option>
                     </c:forEach>
                 </select>
             </div>
@@ -142,11 +163,18 @@
             placeholder: '- Chọn giáo viên -'
         });
 
+        $('#department').select2({
+            placeholder: '- Chọn bộ môn -'
+        });
+
         $('select').on('change', function (evt) {
             $('#select2-lecture-container').removeAttr('title');
+            $('#select2-department-container').removeAttr('title');
         });
 
         $("#lecture").val('').trigger('change');
+
+        $("#department").val('').trigger('change');
 
         // Show daterangepicker when click on icon
         $('.form-date-range i').click(function () {
@@ -184,6 +212,7 @@
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "startDate", "value":  $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY')}),
                     aoData.push({"name": "endDate", "value":  $('#scheduleDate').data('daterangepicker').endDate.format('DD/MM/YYYY')}),
+                    aoData.push({"name": "department", "value": $('#department').val()}),
                     aoData.push({"name": "lecture", "value": $('#lecture').val()})
             },
             "oLanguage": {
@@ -234,5 +263,38 @@
         $("#lecture").val('').trigger('change');
         $('#scheduleDate').data('daterangepicker').setStartDate(moment());
         $('#scheduleDate').data('daterangepicker').setEndDate(moment());
+        $('#scheduleDate').val('');
+    }
+
+    function SyncChangedSchedule(){
+
+        swal({
+            title: 'Đang xử lý',
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                $.ajax({
+                    type: "POST",
+                    url: "/syncFAPChangedSchedule",
+                    processData: false,
+                    contentType: false,
+                    success: function (result) {
+                        if (result.success) {
+                            swal({
+                                title: 'Thành công',
+                                text: "Đã đồng bộ lịch thay đổi!",
+                                type: 'success'
+                            }).then(function () {
+                                location.reload();
+                            });
+                        } else {
+                            swal('Đã xảy ra lỗi!', result.message, 'error');
+                        }
+                    }
+                });
+            },
+            allowOutsideClick: false
+        });
     }
 </script>

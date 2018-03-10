@@ -155,6 +155,26 @@ public class EmployeeList {
         List<EmployeeEntity> emps = employeeService.findAllEmployees();
         view.addObject("employees", emps);
 
+        List<SubjectEntity> subjects = subjectService.getAllSubjects();
+        view.addObject("subjects", subjects);
+
+        List<RoomEntity> rooms = roomService.findAllRooms();
+        view.addObject("rooms", rooms);
+
+        Set listCapacity = new HashSet();
+        for (RoomEntity room : rooms) {
+            listCapacity.add(room.getCapacity());
+        }
+        view.addObject("capacity", listCapacity);
+        
+        List<SlotEntity> slots = slotService.findAllSlots();
+        view.addObject("slots", slots);
+
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+
+        view.addObject("semesters", semesters);
+
         return view;
     }
 

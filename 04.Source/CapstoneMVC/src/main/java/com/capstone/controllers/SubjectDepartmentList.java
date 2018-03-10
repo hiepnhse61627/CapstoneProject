@@ -43,7 +43,6 @@ public class SubjectDepartmentList {
         try {
             List<SubjectDepartmentEntity> subjectDepartmentEntityList = subjectDepartmentService.findAllSubjectDepartments();
 
-
             List<List<String>> result = new ArrayList<>();
             for (SubjectDepartmentEntity subjectDepartment : subjectDepartmentEntityList) {
                 List<String> dataList = new ArrayList<String>();
