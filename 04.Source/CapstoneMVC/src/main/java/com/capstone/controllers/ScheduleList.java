@@ -775,7 +775,7 @@ public class ScheduleList {
                         if (existingSchedule != null) {
                             jsonObj.addProperty("fail", true);
                             jsonObj.addProperty("message", "Lớp này đã có lịch học vào " + existingSchedule.getDateId().getSlotId().getSlotName() +
-                                    ", ngày " + existingSchedule.getDateId().getDate() + ", giảng viên " + existingSchedule.getEmpId().getFullName() +
+                                    ", ngày " + existingSchedule.getDateId().getDate() + ", giảng viên " + (existingSchedule.getEmpId() == null? "": existingSchedule.getEmpId().getFullName()) +
                                     ", môn " + existingSchedule.getCourseId().getSubjectCode() +
                                     ", phòng " + existingSchedule.getRoomId().getName());
                             return jsonObj;
@@ -944,7 +944,7 @@ public class ScheduleList {
                         if (!existingSchedule.getId().toString().equals(params.get("scheduleId"))) {
                             jsonObj.addProperty("fail", true);
                             jsonObj.addProperty("message", "Lớp này đã có lịch học vào " + existingSchedule.getDateId().getSlotId().getSlotName() +
-                                    ", ngày " + existingSchedule.getDateId().getDate() + ", giảng viên " + existingSchedule.getEmpId().getFullName() +
+                                    ", ngày " + existingSchedule.getDateId().getDate() + ", giảng viên " + (existingSchedule.getEmpId() == null? "": existingSchedule.getEmpId().getFullName()) +
                                     ", môn " + existingSchedule.getCourseId().getSubjectCode() +
                                     ", phòng " + existingSchedule.getRoomId().getName());
                             return jsonObj;
