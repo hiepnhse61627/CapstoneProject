@@ -12,6 +12,7 @@ import javax.persistence.criteria.*;
 import javax.swing.text.Document;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ExStudentEntityJpaController extends StudentEntityJpaController {
 
@@ -331,4 +332,172 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
 
         return result;
     }
+
+    public List<StudentEntity> findStudentBySemesterId(int semesterId) {
+        EntityManager em = getEntityManager();
+        List<StudentEntity> result = new ArrayList<>();
+        try {
+
+            Query query = em.createQuery("SELECT DISTINCT a.studentId " +
+                    "FROM StudentStatusEntity a WHERE a.semesterId.id = :semesterId");
+            query.setParameter("semesterId", semesterId);
+            result = query.getResultList();
+
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            if (em != null)
+                em.close();
+        }
+        return result;
+    }
+
+    public List<Object[]> getSubjectMarkComByStudent(StudentEntity studentEntity) {
+        EntityManager em = getEntityManager();
+        List<Object[]> result = null;
+
+        try {
+            String queryStr = "SELECT m.StudentId, sm.SubjectId, r.Semester, m.Status FROM Marks m  " +
+                    "Inner Join Subject_MarkComponent sm " +
+                    "On m.SubjectMarkComponentId = sm.Id " +
+                    "Inner Join RealSemester r " +
+                    "On m.SemesterId = r.Id " +
+                    "AND m.StudentId = ?";
+            Query query = em.createNativeQuery(queryStr);
+            query.setParameter(1, studentEntity.getId());
+            result = query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    public List<Object[]> getSubjectsWithCreditsByStudent(int studentId) {
+        EntityManager em = getEntityManager();
+        List<Object[]> result = null;
+
+        try {
+            String queryStr = "Select SubjectId, SubjectCredits, b.CurriculumId From " +
+                    "(SELECT CurriculumId From Document_Student Where StudentId= ?) As a " +
+                    "Inner Join " +
+                    "(Select sc.SubjectId, sc.SubjectCredits, sc.CurriculumId " +
+                    "From Subject_Curriculum sc " +
+                    "Inner Join Subject s on sc.SubjectId = s.Id) As b " +
+                    "on a.CurriculumId =b.CurriculumId";
+            Query query = em.createNativeQuery(queryStr);
+            query.setParameter(1, studentId);
+            result = query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    public List<Object[]> getAllSubjectsStudentsReStudyInSameSemester(int semesterId) {
+        EntityManager em = getEntityManager();
+        List<Object[]> result = null;
+
+        try {
+            String queryStr = "Select s.RollNumber, s.FullName,sm.SubjectId From Marks m " +
+                    "Inner Join Student s on m.StudentId = s.Id " +
+                    "Inner Join RealSemester r On m.SemesterId = r.Id " +
+                    "Inner Join Subject_MarkComponent sm On m.subjectMarkComponentId = sm.Id " +
+                    "Where r.Id=? Group by s.RollNumber,sm.SubjectId,s.FullName HAVING count(*) > 1 Order By RollNumber";
+            Query query = em.createNativeQuery(queryStr);
+            query.setParameter(1, semesterId);
+            result = query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+
+    public List<StudentEntity> getStudentsFromMarksBySemester(int semesterId) {
+        EntityManager em = null;
+        List<StudentEntity> resultList = new ArrayList<>();
+        try {
+            em = getEntityManager();
+            Query query = em.createQuery("SELECT DISTINCT m.studentId FROM MarksEntity m " +
+                    "WHERE m.isActivated = true AND m.semesterId.id = :semesterId");
+            query.setParameter("semesterId", semesterId);
+
+            resultList = query.getResultList();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        return resultList;
+    }
+
+    public List<StudentEntity> getStudentBySemesterIdAndStatus(int semesterId, List<String> statusList) {
+        EntityManager em = getEntityManager();
+        List<StudentEntity> result = new ArrayList<>();
+        try {
+
+            Query query = em.createQuery("SELECT DISTINCT a.studentId " +
+                    "FROM StudentStatusEntity a WHERE a.semesterId.id = :semesterId AND a.status IN :statusList ");
+            query.setParameter("semesterId", semesterId);
+            query.setParameter("statusList", statusList);
+            result = query.getResultList();
+
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            if (em != null)
+                em.close();
+        }
+        return result;
+    }
+
+
+    public List<StudentEntity> getStudentBySemesterIdAndProgram(int semesterId, int programId) {
+            EntityManager em = getEntityManager();
+        List<StudentEntity> result = new ArrayList<>();
+        try {
+            Query query = null;
+            if (programId != -1) {
+                query = em.createQuery("SELECT DISTINCT a.studentId " +
+                        "FROM StudentStatusEntity a WHERE a.semesterId.id = :semesterId" +
+                        " AND a.studentId.programId.id = :programId ");
+                query.setParameter("programId", programId);
+            } else {
+                query = em.createQuery("SELECT DISTINCT a.studentId " +
+                        "FROM StudentStatusEntity a WHERE a.semesterId.id = :semesterId");
+
+            }
+            query.setParameter("semesterId", semesterId);
+            result = query.getResultList();
+
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            if (em != null)
+                em.close();
+        }
+        return result;
+    }
+
+
+    public void myUpdateStudent(StudentEntity student) {
+        try {
+            EntityManager manager = getEntityManager();
+            manager.getTransaction().begin();
+            manager.merge(student);
+            manager.flush();
+            manager.getTransaction().commit();
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            e.printStackTrace();
+        }
+    }
+
 }
+
+

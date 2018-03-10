@@ -92,14 +92,19 @@ public class ExportInterimAcademicTranscriptImpl implements IExportObject {
         int ordinalNumber = 1;
         for (Map.Entry<String, List<List<String>>> entry : reverseMap.entrySet()) {
             // data in term
+            // List<String> contains:: [0]: Subject name, [1]: Avg mark,
+            //                         [2]: Semester name, [3]: Subject credits,
+            //                         [4]: Term number
             List<List<String>> subjectMarks = entry.getValue();
             for (List<String> subjectMark : subjectMarks) {
                 row = sheet.createRow(rowIndex);
 
+                //ordinal number
                 XSSFCell ordinalNumberCell = row.createCell(0);
                 ordinalNumberCell.setCellValue(markSize - ordinalNumber + 1);
                 ordinalNumberCell.setCellStyle(style1(workbook));
 
+                //Subject name
                 XSSFCell subjectCell1 = row.createCell(1);
                 subjectCell1.setCellValue(subjectMark.get(0));
                 subjectCell1.setCellStyle(style2(workbook));
@@ -110,6 +115,7 @@ public class ExportInterimAcademicTranscriptImpl implements IExportObject {
                 RegionUtil.setBorderRight(BorderStyle.THIN, range1, sheet);
                 RegionUtil.setBorderTop(BorderStyle.THIN, range1, sheet);
 
+                //Subject name
                 XSSFCell subjectCell2 = row.createCell(3);
                 subjectCell2.setCellValue(subjectMark.get(0));
                 subjectCell2.setCellStyle(style2(workbook));
@@ -120,10 +126,12 @@ public class ExportInterimAcademicTranscriptImpl implements IExportObject {
                 RegionUtil.setBorderRight(BorderStyle.THIN, range2, sheet);
                 RegionUtil.setBorderTop(BorderStyle.THIN, range2, sheet);
 
+                //Subject credits
                 XSSFCell creditsCell = row.createCell(5);
-                creditsCell.setCellValue(subjectMark.get(2));
+                creditsCell.setCellValue(subjectMark.get(3));
                 creditsCell.setCellStyle(style1(workbook));
 
+                //Subject avg mark
                 XSSFCell markCell = row.createCell(6);
                 markCell.setCellValue(subjectMark.get(1));
                 markCell.setCellStyle(style2(workbook));
@@ -134,8 +142,9 @@ public class ExportInterimAcademicTranscriptImpl implements IExportObject {
                 RegionUtil.setBorderRight(BorderStyle.THIN, range3, sheet);
                 RegionUtil.setBorderTop(BorderStyle.THIN, range3, sheet);
 
+                //Semester name
                 XSSFCell termCell = row.createCell(8);
-                termCell.setCellValue(subjectMark.get(3));
+                termCell.setCellValue(subjectMark.get(2));
                 termCell.setCellStyle(style1(workbook));
 
                 if (ordinalNumber < markSize) {
@@ -148,7 +157,7 @@ public class ExportInterimAcademicTranscriptImpl implements IExportObject {
 
     private Map<String, List<List<String>>> processData(StudentEntity studentEntity) {
         Map<String, List<List<String>>> subjectMap = new TreeMap<>();
-        List<DocumentStudentEntity>  docs = studentEntity.getDocumentStudentEntityList();
+        List<DocumentStudentEntity> docs = studentEntity.getDocumentStudentEntityList();
 
         if (docs != null && !docs.isEmpty()) {
             for (DocumentStudentEntity doc : docs) {
@@ -157,13 +166,17 @@ public class ExportInterimAcademicTranscriptImpl implements IExportObject {
                     List<SubjectCurriculumEntity> curSubjects = cur.getSubjectCurriculumEntityList();
                     List<String> subjects = new ArrayList<>();
                     for (SubjectCurriculumEntity s : curSubjects) {
-                        if (!subjects.contains(s.getSubjectId().getId())) subjects.add(s.getSubjectId().getId());
+                        if (!subjects.contains(s.getSubjectId().getId()))
+                            subjects.add(s.getSubjectId().getId());
                     }
 
-                    EntityManagerFactory fac = Persistence.createEntityManagerFactory("CapstonePersistence");
+                    EntityManagerFactory fac = Persistence
+                            .createEntityManagerFactory("CapstonePersistence");
                     EntityManager man = fac.createEntityManager();
 
-                    TypedQuery<MarksEntity> query = man.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :id AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
+                    TypedQuery<MarksEntity> query = man.createQuery("SELECT a FROM MarksEntity a" +
+                            " WHERE a.isActivated = true and a.studentId.id = :id" +
+                            " AND a.subjectMarkComponentId.subjectId.id IN :list", MarksEntity.class);
                     query.setParameter("id", studentEntity.getId());
                     query.setParameter("list", subjects);
                     List<MarksEntity> marks = query.getResultList();
@@ -179,21 +192,26 @@ public class ExportInterimAcademicTranscriptImpl implements IExportObject {
                                 MarksEntity r = null;
                                 for (MarksEntity m : mark.getValue()) {
                                     r = m;
-                                    if (m.getStatus().toLowerCase().contains("pass") || m.getStatus().toLowerCase().contains("exempt")) {
+                                    if (m.getStatus().toLowerCase().contains("pass")
+                                            || m.getStatus().toLowerCase().contains("exempt")) {
                                         break;
                                     }
                                 }
+                                // 0: Subject Name, 1: Avg mark, 2: Semester
                                 if (r != null) {
                                     result.add(r.getSubjectMarkComponentId().getSubjectId().getName());
                                     result.add(r.getAverageMark().toString());
+                                    result.add(r.getSemesterId().getSemester());
                                 }
 
                                 SubjectCurriculumEntity c = null;
+                                //  3: subject credits, 4: term number
                                 for (SubjectCurriculumEntity s : curSubjects) {
                                     if (s.getSubjectId().getId().equals(mark.getKey())) {
                                         result.add(s.getSubjectCredits().toString());
                                         result.add(s.getTermNumber().toString());
                                         c = s;
+                                        break;
                                     }
                                 }
 

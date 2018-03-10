@@ -34,6 +34,34 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         super(emf);
     }
 
+    public List<MarksEntity> findMarksByProperties(int semesterId, int studentId) {
+        EntityManager em = null;
+        try {
+            em = getEntityManager();
+            String sqlString = "SELECT m FROM MarksEntity m " +
+                    "WHERE m.studentId.id = :studentId " +
+                    "AND m.semesterId.id = :semesterId " +
+                    "AND m.isActivated = TRUE";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("studentId", studentId);
+            query.setParameter("semesterId", semesterId);
+
+            List<MarksEntity> result = (List<MarksEntity>) query.getResultList();
+
+            return result;
+        } catch (NoResultException nrEx) {
+            System.out.println("No records were found with student Id: " + studentId);
+            return null;
+        } catch (NonUniqueResultException nuEx) {
+            System.out.println("Many records were found with: " + studentId);
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
     public List<MarksEntity> findMarksByProperties(MarksEntity marksEntity) {
         EntityManager em = null;
         try {
@@ -455,6 +483,26 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         query.setParameter("sList", semesters);
         return query.getResultList();
     }
+
+    public List<MarksEntity> getMarksByStudentIdAndSemester(int studentId, int semesterId) {
+        EntityManager manager = getEntityManager();
+        TypedQuery<MarksEntity> query = manager.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true and a.studentId.id = :studentId AND a.semesterId.id = :semesterId", MarksEntity.class);
+        query.setParameter("studentId", studentId);
+        query.setParameter("semesterId", semesterId);
+        return query.getResultList();
+    }
+
+    public List<MarksEntity> getMarksByStudentAndSubjectIdList(int studentId, List<String> subjIdList) {
+        EntityManager manager = getEntityManager();
+        TypedQuery<MarksEntity>
+                query = manager.createQuery("SELECT a FROM MarksEntity a" +
+                " WHERE a.isActivated = true and a.studentId.id = :id " +
+                "AND a.subjectMarkComponentId.subjectId.id IN :subjectIdList", MarksEntity.class);
+        query.setParameter("id", studentId);
+        query.setParameter("subjectIdList", subjIdList);
+        return query.getResultList();
+    }
+
 
     public List<MarksEntity> getStudyingStudents(String subjectId, String[] statuses) {
         EntityManager manager = getEntityManager();
@@ -923,5 +971,150 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+    }
+
+    public List<StudentEntity> getOjtStudentsFromSelectedSemesterAndBeforeFromMarks(int semesterId) {
+        EntityManager em = null;
+        List<StudentEntity> result = new ArrayList<>();
+        try {
+            if (realSemesters == null) {
+                realSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester());
+            }
+
+            //get all previous semester of selected semester (include selected semester)
+            List<Integer> allSemestersId = new ArrayList<>();
+            for (RealSemesterEntity r : realSemesters) {
+                allSemestersId.add(r.getId());
+                if (r.getId() == semesterId) {
+                    break;
+                }
+            }
+
+            em = getEntityManager();
+
+            //SubjectType = 1 = ojt type
+            Query query = em.createQuery("SELECT DISTINCT a.studentId FROM MarksEntity a WHERE a.isActivated = true " +
+                    "AND a.subjectMarkComponentId.subjectId.type = 1 AND (LOWER(a.status) LIKE '%studying%' " +
+                    "OR LOWER(a.status) LIKE '%pass%') AND a.semesterId.id IN :semesterIdList", StudentEntity.class);
+            query.setParameter("semesterIdList", allSemestersId);
+            result = query.getResultList();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        return result;
+    }
+
+    public List<StudentEntity> getOjtStudentsBeforeSelectedSemesterFromMarks(int semesterId) {
+        EntityManager em = null;
+        List<StudentEntity> result = new ArrayList<>();
+        try {
+            if (realSemesters == null) {
+                realSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester());
+            }
+
+            //get all previous semester of selected semester (exclude selected semester)
+            List<Integer> allSemestersId = new ArrayList<>();
+            for (RealSemesterEntity r : realSemesters) {
+                if (r.getId() == semesterId)
+                    break;
+                else
+                    allSemestersId.add(r.getId());
+            }
+
+            em = getEntityManager();
+
+            //SubjectType = 1 = ojt type
+            Query query = em.createQuery("SELECT DISTINCT a.studentId FROM MarksEntity a WHERE a.isActivated = true " +
+                    "AND a.subjectMarkComponentId.subjectId.type = 1 AND (LOWER(a.status) LIKE '%studying%' " +
+                    "OR LOWER(a.status) LIKE '%pass%') AND a.semesterId.id IN :semesterIdList", StudentEntity.class);
+            query.setParameter("semesterIdList", allSemestersId);
+            result = query.getResultList();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        return result;
+    }
+
+    public List<StudentEntity> getCapstoneStudentsBeforeSelectedSemesterFromMarks(int semesterId) {
+        EntityManager em = null;
+        List<StudentEntity> result = new ArrayList<>();
+        try {
+            if (realSemesters == null) {
+                realSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester());
+            }
+
+            //get all previous semester of selected semester (exclude selected semester)
+            List<Integer> allSemestersId = new ArrayList<>();
+            for (RealSemesterEntity r : realSemesters) {
+                if (r.getId() == semesterId)
+                    break;
+                else
+                    allSemestersId.add(r.getId());
+            }
+
+            em = getEntityManager();
+
+            //SubjectType = 1 = ojt type
+            Query query = em.createQuery("SELECT DISTINCT a.studentId FROM MarksEntity a WHERE a.isActivated = true " +
+                    "AND a.subjectMarkComponentId.subjectId.type = 2 AND (LOWER(a.status) LIKE '%studying%' " +
+                    "OR LOWER(a.status) LIKE '%pass%') AND a.semesterId.id IN :semesterIdList", StudentEntity.class);
+            query.setParameter("semesterIdList", allSemestersId);
+            result = query.getResultList();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        return result;
+    }
+
+    public List<MarksEntity> getStudentMarkBeforeSelectedSemesterFromMarks(int semesterId, int studentId) {
+        EntityManager em = null;
+        List<MarksEntity> result = new ArrayList<>();
+        try {
+            if (realSemesters == null) {
+                realSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester());
+            }
+
+            //get all previous semester of selected semester (exclude selected semester)
+            List<Integer> allSemestersId = new ArrayList<>();
+            for (RealSemesterEntity r : realSemesters) {
+                if (r.getId() == semesterId)
+                    break;
+                else
+                    allSemestersId.add(r.getId());
+            }
+
+            em = getEntityManager();
+
+            //SubjectType = 1 = ojt type
+            Query query = em.createQuery("SELECT DISTINCT a FROM MarksEntity a WHERE a.isActivated = true " +
+                    "AND a.studentId.id = :studentId AND (LOWER(a.status) LIKE '%studying%' " +
+                    "OR LOWER(a.status) LIKE '%pass%') AND a.semesterId.id IN :semesterIdList", StudentEntity.class);
+            query.setParameter("studentId", studentId);
+            query.setParameter("semesterIdList", allSemestersId);
+            result = query.getResultList();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        return result;
     }
 }

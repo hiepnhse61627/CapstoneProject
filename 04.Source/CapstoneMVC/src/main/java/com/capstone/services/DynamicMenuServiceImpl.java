@@ -16,4 +16,9 @@ public class DynamicMenuServiceImpl implements IDynamicMenuService {
     public List<DynamicMenuEntity> getAllMenu() {
         return controller.findDynamicMenuEntityEntities();
     }
+
+    @Override
+    public DynamicMenuEntity findDynamicMenuByLink(String link) {
+        return controller.findDynamicMenuByLink(link);
+    }
 }

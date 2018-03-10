@@ -28,6 +28,10 @@ public class CurriculumEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "Name", nullable = false, length = 50)
     private String name;
+    @Column(name = "SpecializedCredits")
+    private Integer specializedCredits;
+    @Column(name = "OjtTerm")
+    private Integer ojtTerm;
     @OneToMany(mappedBy = "curriculumId", fetch = FetchType.EAGER)
     private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
     @OneToMany(mappedBy = "curriculumId")
@@ -62,6 +66,22 @@ public class CurriculumEntity implements Serializable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Integer getSpecializedCredits() {
+        return specializedCredits;
+    }
+
+    public void setSpecializedCredits(Integer specializedCredits) {
+        this.specializedCredits = specializedCredits;
+    }
+
+    public Integer getOjtTerm() {
+        return ojtTerm;
+    }
+
+    public void setOjtTerm(Integer ojtTerm) {
+        this.ojtTerm = ojtTerm;
     }
 
     public List<SubjectCurriculumEntity> getSubjectCurriculumEntityList() {

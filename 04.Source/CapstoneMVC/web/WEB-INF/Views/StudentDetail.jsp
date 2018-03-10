@@ -29,7 +29,8 @@
                         <i class="glyphicon glyphicon-open"></i>
                         <div>Xuất dữ liêu chỉ học đi</div>
                     </button>
-                    <button type="button" style="margin-top: 4px;" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
+                    <button type="button" style="margin-top: 4px;" class="btn btn-success btn-with-icon"
+                            onclick="ExportExcel()">
                         <i class="glyphicon glyphicon-open"></i>
                         <div>XUẤT DỮ LIỆU</div>
                     </button>
@@ -45,19 +46,26 @@
                             <div class="left-content m-r-5">
                                 <label class="p-t-8">Chọn sinh viên:</label>
                             </div>
-                            <div class="left-content m-r-5">
-                                <div class="col-md-12">
-                                    <input id="total" type="number" min="0" value="7" class="form-control"/>
-                                </div>
-                            </div>
-                            <div class="right-content width-60 width-m-70">
+
+                            <div class="col-md-6 right-content width-m-70">
                                 <div class="width-40 float-left m-r-5">
                                     <select id="cb-student" class="select"> </select>
                                 </div>
-                                <button id="find" type="button" class="btn btn-primary float-left m-r-5">Tìm kiếm</button>
+                                <button id="find" type="button" class="btn btn-primary float-left m-r-5">Tìm kiếm
+                                </button>
                                 <button id="detail" type="button" class="btn btn-success float-left"
                                         style="display: none" onclick="GetAllStudentMarks()">Xem chi tiết điểm
                                 </button>
+                            </div>
+                        </div>
+                        <div class="my-input-group">
+                            <div class="left-content m-r-5">
+                                <label class="p-t-8">Số môn đề xuất:</label>
+                            </div>
+                            <div class="right-content width-60 width-m-70">
+                                <div class="col-md-2">
+                                    <input id="total" style="margin-left: -6px;" type="number" min="0" value="7" max="9" class="form-control"/>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -99,6 +107,7 @@
                                         <th>Khóa</th>
                                         <th>Điểm</th>
                                         <th>Trạng thái</th>
+                                        <th>Môn bị thay thế</th>
                                     </tr>
                                     </thead>
                                     <tbody></tbody>
@@ -401,7 +410,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4],
+                    "aTargets": [0, 1, 2, 3, 4, 5],
                     "bSortable": false,
                     "sClass": "text-center",
                 },
@@ -461,7 +470,7 @@
             "sAjaxSource": "/getStudentNotNextCourse",
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "stuId", "value": $('#cb-student').val()})
-                    aoData.push({"name": "total", "value": $('#total').val()})
+                aoData.push({"name": "total", "value": $('#total').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -559,7 +568,7 @@
             "sAjaxSource": "/getStudentNextCourseSuggestion",
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "stuId", "value": $('#cb-student').val()})
-                    aoData.push({"name": "total", "value": $('#total').val()})
+                aoData.push({"name": "total", "value": $('#total').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "",
@@ -637,7 +646,7 @@
                     }
                 },
                 {
-                    "aTargets": [0],
+                    "aTargets": [0, 1, 2],
                     "sClass": "text-center",
                 },
             ],

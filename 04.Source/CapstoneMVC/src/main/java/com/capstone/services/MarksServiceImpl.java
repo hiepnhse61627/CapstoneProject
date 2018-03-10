@@ -1,6 +1,7 @@
 package com.capstone.services;
 
 import com.capstone.entities.MarksEntity;
+import com.capstone.entities.StudentEntity;
 import com.capstone.jpa.exJpa.ExMarksEntityJpaController;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 
@@ -97,6 +98,11 @@ public class MarksServiceImpl implements IMarksService {
     }
 
     @Override
+    public List<MarksEntity> findMarksByProperties(int semesterId, int studentId) {
+        return marksEntityJpaController.findMarksByProperties(semesterId, studentId);
+    }
+
+    @Override
     public List<MarksEntity> getMarksForMarkPage(int studentId) {
         return marksEntityJpaController.getMarksForMarkPage(studentId);
     }
@@ -167,5 +173,35 @@ public class MarksServiceImpl implements IMarksService {
     @Override
     public List<List<String>> getAverageSubjectLearnedByStudent(int programId) {
          return marksEntityJpaController.getAverageSubjectLearnedByStudent(programId);
+    }
+
+    @Override
+    public List<MarksEntity> getMarksByStudentIdAndSemester(int studentId, int semesterId) {
+        return marksEntityJpaController.getMarksByStudentIdAndSemester(studentId, semesterId);
+    }
+
+    @Override
+    public List<MarksEntity> getMarksByStudentAndSubjectIdList(int studentId, List<String> subjIdList) {
+        return marksEntityJpaController.getMarksByStudentAndSubjectIdList(studentId, subjIdList);
+    }
+
+    @Override
+    public List<StudentEntity> getOjtStudentsFromSelectedSemesterAndBeforeFromMarks(int semesterId) {
+        return marksEntityJpaController.getOjtStudentsFromSelectedSemesterAndBeforeFromMarks(semesterId);
+    }
+
+    @Override
+    public List<StudentEntity> getOjtStudentsBeforeSelectedSemesterFromMarks(int semesterId) {
+        return marksEntityJpaController.getOjtStudentsBeforeSelectedSemesterFromMarks(semesterId);
+    }
+
+    @Override
+    public List<StudentEntity> getCapstoneStudentsBeforeSelectedSemesterFromMarks(int semesterId) {
+        return marksEntityJpaController.getCapstoneStudentsBeforeSelectedSemesterFromMarks(semesterId);
+    }
+
+    @Override
+    public List<MarksEntity> getStudentMarkBeforeSelectedSemesterFromMarks(int semesterId, int studentId) {
+        return marksEntityJpaController.getStudentMarkBeforeSelectedSemesterFromMarks(semesterId, studentId);
     }
 }

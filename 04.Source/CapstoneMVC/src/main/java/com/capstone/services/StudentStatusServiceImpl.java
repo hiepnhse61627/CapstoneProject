@@ -14,7 +14,11 @@ public class StudentStatusServiceImpl implements IStudentStatusService {
 
     @Override
     public void createStudentStatus(StudentStatusEntity entity) {
-        studentStatusEntityJpaController.create(entity);
+        try {
+            studentStatusEntityJpaController.create(entity);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -34,5 +38,10 @@ public class StudentStatusServiceImpl implements IStudentStatusService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public List<StudentStatusEntity> getStudentStatusBySemesterId(Integer semesterId) {
+        return studentStatusEntityJpaController.getStudentStatusBySemesterId(semesterId);
     }
 }

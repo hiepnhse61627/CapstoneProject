@@ -58,7 +58,7 @@ public class Global {
         List<MarksEntity> removeMarks;
         removeMarks = list
                 .stream()
-                .filter(c -> c.getIsActivated() == true)
+                .filter(c -> c.getIsActivated())
                 .filter(c -> sortedList.indexOf(c.getSemesterId()) <= sortedList.indexOf(temporarySemester))
                 .filter(c -> c.getStatus().toLowerCase().contains("pass") || c.getStatus().toLowerCase().contains("fail") || c.getStatus().toLowerCase().contains("exempt"))
                 .collect(Collectors.toList());
@@ -75,6 +75,29 @@ public class Global {
 
         return removeMarks;
     }
+
+    //contains NotStart
+    public static List<MarksEntity> TransformAllMarksList(List<MarksEntity> list) {
+        List<MarksEntity> removeMarks;
+        removeMarks = list
+                .stream()
+                .filter(c -> c.getIsActivated())
+                .filter(c -> sortedList.indexOf(c.getSemesterId()) <= sortedList.indexOf(temporarySemester))
+                .collect(Collectors.toList());
+        if (currentSemester.getId().intValue() != temporarySemester.getId().intValue()) {
+            for (MarksEntity mark : removeMarks) {
+                if (mark.getSemesterId() != null && mark.getSemesterId().getId() == temporarySemester.getId()) {
+                    mark.setStatus("Studying");
+                }
+//                else if (mark.getSemesterId() != null && mark.getSemesterId().getId() > temporarySemester.getId()) {
+//                    mark.setStatus("NotStart");
+//                }
+            }
+        }
+
+        return removeMarks;
+    }
+
 
     public static int CompareSemesterGap(RealSemesterEntity r1) {
         int gap = sortedList.indexOf(temporarySemester) - sortedList.indexOf(r1);

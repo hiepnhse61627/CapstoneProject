@@ -19,4 +19,5 @@ public interface ISubjectCurriculumService {
     CurriculumEntity findCurriculum(String curName, String programName);
     List<SubjectCurriculumEntity> getSubjectIds(List<Integer> curriculumIds, Integer currentTerm);
     CurriculumEntity cleanCurriculum(CurriculumEntity cur);
+    List<SubjectCurriculumEntity> getSubjectCurriculumByStudent(int studentId);
 }
