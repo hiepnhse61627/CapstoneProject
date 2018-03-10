@@ -190,7 +190,7 @@ public class EmployeeList {
 
             Map<Date, List<String>> freeDaySlot = new TreeMap<>();
 
-            if (!params.get("lecture").equals("")) {
+            if (!params.get("lecture").equals("") && !params.get("lecture").equals("-1")) {
                 lectureId = Integer.parseInt(params.get("lecture"));
             }
 
@@ -249,19 +249,50 @@ public class EmployeeList {
                         freeDaySlot.put(getDate(aSchedule.getDateId().getDate()), slotOfDayList);
                     }
 
-
                     List<List<String>> result = new ArrayList<>();
 
                     for (Date key : freeDaySlot.keySet()) {
-                        String totalSlot = "";
-                        for (String aSlot : freeDaySlot.get(key)) {
-                            totalSlot += aSlot+", ";
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTime(key);
+                        if(cal.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY){
+                            String totalSlot = "";
+                            for (String aSlot : freeDaySlot.get(key)) {
+                                totalSlot += aSlot+", ";
+                            }
+
+                            List<String> dataList = new ArrayList<String>();
+
+                            switch (cal.get(Calendar.DAY_OF_WEEK)){
+                                case Calendar.SUNDAY:
+                                    dataList.add("Chủ nhật");
+                                    break;
+                                case Calendar.MONDAY:
+                                    dataList.add("Thứ 2");
+                                    break;
+                                case Calendar.TUESDAY:
+                                    dataList.add("Thứ 3");
+                                    break;
+                                case Calendar.WEDNESDAY:
+                                    dataList.add("Thứ 4");
+                                    break;
+                                case Calendar.THURSDAY:
+                                    dataList.add("Thứ 5");
+                                    break;
+                                case Calendar.FRIDAY:
+                                    dataList.add("Thứ 6");
+                                    break;
+                                case Calendar.SATURDAY:
+                                    dataList.add("Thứ 7");
+                                    break;
+                                default:
+                                    dataList.add("");
+                                    break;
+                            }
+                            dataList.add(formatDate(key));
+                            dataList.add(totalSlot.substring(0, totalSlot.lastIndexOf(", ")));
+                            result.add(dataList);
                         }
 
-                        List<String> dataList = new ArrayList<String>();
-                        dataList.add(formatDate(key));
-                        dataList.add(totalSlot.substring(0, totalSlot.lastIndexOf(", ")));
-                        result.add(dataList);
                     }
 
                     Gson gson = new Gson();

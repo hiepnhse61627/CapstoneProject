@@ -67,6 +67,7 @@
             <div class="form-group">
                 <label for="lecture2">Giảng viên:</label>
                 <select id="lecture2" class="select lecture2-select">
+                    <option value="-1">Tất cả</option>
                     <c:forEach var="emp" items="${employees}">
                         <option value="${emp.id}">${emp.fullName}</option>
                     </c:forEach>
@@ -75,7 +76,7 @@
 
             <div class="form-group">
                 <button type="button" class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>
-                <button type="button" class="btn btn-primary" onclick="resetFilter()">Xóa bộ lọc</button>
+                <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa bộ lọc</button>
             </div>
 
             <div class="form-group">
@@ -84,8 +85,9 @@
                         <table id="table">
                             <thead>
                             <tr>
+                                <th>Thứ</th>
                                 <th>Ngày</th>
-                                <th>Slot</th>
+                                <th>Slot trống</th>
                             </tr>
                             </thead>
                         </table>
@@ -461,7 +463,7 @@
                     aoData.push({"name": "lecture", "value": $('#lecture2').val()})
             },
             "oLanguage": {
-                "sSearchPlaceholder": "Ngày, Slot...",
+                "sSearchPlaceholder": "Thứ, Ngày, Slot...",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": 'Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng',
@@ -477,7 +479,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1],
+                    "aTargets": [0, 1, 2],
                     "sClass": "text-center",
                     "bSortable": false
                 },
@@ -746,6 +748,9 @@
             table._fnPageChange(0);
             table._fnAjaxUpdate();
         }
+
+        $('#removeFilterBtn').removeAttr('disabled');
+
     }
 
     function resetFilter(){
@@ -753,6 +758,8 @@
         $('#scheduleDate2').data('daterangepicker').setStartDate(moment());
         $('#scheduleDate2').data('daterangepicker').setEndDate(moment());
         $('#scheduleDate2').val('');
+
+        $('#removeFilterBtn').attr('disabled','disabled');
 
     }
 

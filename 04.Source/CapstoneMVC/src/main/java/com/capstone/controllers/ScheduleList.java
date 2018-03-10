@@ -110,11 +110,11 @@ public class ScheduleList {
             String startDate = params.get("startDate");
             String endDate = params.get("endDate");
 
-            if (!params.get("lecture").equals("")) {
+            if (!params.get("lecture").equals("") && !params.get("lecture").equals("-1")) {
                 lectureId = Integer.parseInt(params.get("lecture"));
             }
 
-            if (!params.get("department").equals("")) {
+            if (!params.get("department").equals("") && !params.get("department").equals("-1")) {
                 departmentId = Integer.parseInt(params.get("department"));
             }
 
@@ -186,7 +186,7 @@ public class ScheduleList {
                 }
 
                 if (schedule.getEmpId() != null) {
-                    dataList.add(schedule.getEmpId().getFullName());
+                    dataList.add(schedule.getEmpId().getEmailEDU().substring(0, schedule.getEmpId().getEmailEDU().indexOf("@")));
                 } else {
                     dataList.add("");
                 }
@@ -521,10 +521,6 @@ public class ScheduleList {
         }
 
         return jsonObj;
-    }
-
-    private void changedSchedule(ChangedScheduleEntity changedSchedule, ScheduleEntity scheduleEntity, CourseEntity course, List<EmployeeEntity> employeeEntityList, EmployeeEntity emp, SlotEntity slot, DaySlotEntity daySlot, RoomEntity room) {
-
     }
 
     @RequestMapping(value = "/loadScheduleList/{employeeId}")

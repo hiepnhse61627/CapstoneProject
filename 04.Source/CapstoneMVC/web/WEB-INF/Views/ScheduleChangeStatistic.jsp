@@ -50,7 +50,7 @@
                 <div class="col-md-3 text-right">
                     <button type="button" class="btn btn-success btn-with-icon" onclick="SyncChangedSchedule()">
                         <i class="glyphicon glyphicon-retweet"></i>
-                        <div>Đồng bộ lịch thay đổi với FAP</div>
+                        <div>Đồng bộ với FAP</div>
                     </button>
                 </div>
             </div>
@@ -67,8 +67,9 @@
             </div>
 
             <div class="form-group">
-                <label for="lecture">Giảng viên:</label>
+                <label for="lecture">Giảng viên yêu cầu đổi lịch:</label>
                 <select id="lecture" class="select lecture-select">
+                    <option value="-1">Tất cả</option>
                     <c:forEach var="emp" items="${employees}">
                         <option value="${emp.id}">${emp.fullName}</option>
                     </c:forEach>
@@ -78,6 +79,7 @@
             <div class="form-group">
                 <label for="department">Bộ môn:</label>
                 <select id="department" class="select department-select">
+                    <option value="-1">Tất cả</option>
                     <c:forEach var="department" items="${departments}">
                         <option value="${department.deptId}">${department.deptName}</option>
                     </c:forEach>
@@ -85,8 +87,8 @@
             </div>
 
             <div class="form-group">
-                <button type="button" class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>
-                <button type="button" class="btn btn-primary" onclick="resetFilter()">Xóa bộ lọc</button>
+                <button type="button" class="btn btn-success" onclick="RefreshTable()" id="searchBtn">Tìm kiếm</button>
+                <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa bộ lọc</button>
             </div>
 
             <div class="form-group">
@@ -98,10 +100,10 @@
                                 <th>ID</th>
                                 <th>Mã môn</th>
                                 <th>Lớp</th>
-                                <th>Ngày</th>
+                                <th>Ngày thực dạy</th>
                                 <th>Slot</th>
                                 <th>Phòng</th>
-                                <th>Giảng viên</th>
+                                <th>GV đứng lớp</th>
                                 <th>Slot ban đầu</th>
                             </tr>
                             </thead>
@@ -257,6 +259,8 @@
             table._fnPageChange(0);
             table._fnAjaxUpdate();
         }
+        $('#removeFilterBtn').removeAttr('disabled');
+
     }
 
     function resetFilter(){
@@ -264,6 +268,10 @@
         $('#scheduleDate').data('daterangepicker').setStartDate(moment());
         $('#scheduleDate').data('daterangepicker').setEndDate(moment());
         $('#scheduleDate').val('');
+        $("#department").val('').trigger('change');
+
+        $('#removeFilterBtn').attr('disabled','disabled');
+
     }
 
     function SyncChangedSchedule(){

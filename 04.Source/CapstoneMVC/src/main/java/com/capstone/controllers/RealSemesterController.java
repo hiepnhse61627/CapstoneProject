@@ -24,6 +24,7 @@ import java.nio.channels.FileLock;
 import java.nio.channels.OverlappingFileLockException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/managerrole")
@@ -96,19 +97,25 @@ public class RealSemesterController {
 
     @RequestMapping("/semester/create")
     @ResponseBody
-    public JsonObject Create(@RequestParam String name) {
+    public JsonObject Create(@RequestParam Map<String, String> params) {
         JsonObject obj = new JsonObject();
         try {
+            String name = params.get("name");
             if (name.isEmpty()) {
                 obj.addProperty("success", false);
                 obj.addProperty("msg", "Không được để trống!");
                 return obj;
             }
 
+            String startDate = params.get("startDate");
+            String endDate = params.get("endDate");
+
             IRealSemesterService service = new RealSemesterServiceImpl();
             RealSemesterEntity semester = new RealSemesterEntity();
             semester.setActive(true);
             semester.setSemester(name);
+            semester.setStartDate(startDate);
+            semester.setEndDate(endDate);
             service.createRealSemester(semester);
             obj.addProperty("success", true);
         } catch (Exception e) {
