@@ -898,7 +898,7 @@ public class Ultilities {
                     }
 
                     rows = Arrays.asList(newPrerequisite.split("OR"));
-                }else if (oldPrerequisite != null && newPrerequisite != null){
+                } else if (oldPrerequisite != null && newPrerequisite != null) {
 
                     //kiểm tra cả 2 cũ lẫn mới
                     String[] oldSubj = oldPrerequisite.split("OR");
@@ -999,7 +999,7 @@ public class Ultilities {
                                             // nếu có 2 fail --> fail
                                             isPass = reLearnInSameSemester.stream()
                                                     .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
-                                                    ||  q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
+                                                            || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
                                                     .findFirst().orElse(null);
 
                                         } else {
@@ -1027,10 +1027,10 @@ public class Ultilities {
                                                 }
                                             }
 
-                                             isPass = reLearnInSameSemester.stream()
+                                            isPass = reLearnInSameSemester.stream()
                                                     .filter(q -> q.getAverageMark() >= tmpPassMark
                                                             || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
-                                                            ||  q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
+                                                            || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
                                                     .findFirst().orElse(null);
                                         }
 
@@ -1038,7 +1038,7 @@ public class Ultilities {
                                     }
                                     if (isPass != null) {
                                         ++countPass;
-                                    }else{
+                                    } else {
                                         failSubjs.add(cellSubject);
                                     }
 
@@ -1072,5 +1072,115 @@ public class Ultilities {
         return result;
     }
 
+    // List<SubjectId>
+    public static List<String> getStudentProcessNotStart(int stuId, int semesterId, List<MarksEntity> allMarks) {
+        IMarksService marksService = new MarksServiceImpl();
+
+//        List<MarksEntity> marks = marksService.getStudentMarkFromAndBeforeSelectedSemesterFromMarks(semesterId, stuId);
+        List<MarksEntity> marks = allMarks.stream().filter(q -> q.getStudentId().getId() == stuId)
+                .collect(Collectors.toList());
+
+        marks = Global.TransformAllMarksList(marks);
+
+        //get not start mark
+        List<MarksEntity> list = marks
+                .stream()
+                .filter(c -> c.getStatus().toLowerCase().contains("start"))
+                .filter(Ultilities.distinctByKey(c -> c.getSubjectMarkComponentId().getSubjectId().getId()))
+                .collect(Collectors.toList());
+
+        Iterator<MarksEntity> iterator = list.iterator();
+        ISubjectService subjectService = new SubjectServiceImpl();
+
+        markLoop:
+        while (iterator.hasNext()) {
+            boolean hasPassed = false;
+
+            // check prequisite
+            MarksEntity mark = iterator.next();
+            SubjectEntity entity = mark.getSubjectMarkComponentId().getSubjectId();
+
+            //check if student has passed not started subject
+            List<MarksEntity> tempMarkList = marks.stream()
+                    .filter(q -> q.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(entity.getId())
+                    ).collect(Collectors.toList());
+            if (!tempMarkList.isEmpty()) {
+                List<MarksEntity> sortedMarkList = Ultilities.SortSemestersByMarks(tempMarkList);
+                MarksEntity latestMark = null;
+
+                latestMark = sortedMarkList.get(sortedMarkList.size() - 1);
+                RealSemesterEntity tmpSemester = latestMark.getSemesterId();
+
+                List<MarksEntity> reLearnInSameSemester = sortedMarkList.stream()
+                        .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
+                        .collect(Collectors.toList());
+
+                if (!reLearnInSameSemester.isEmpty()) {
+                    //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
+                    // nếu có 2 fail --> fail
+                    MarksEntity checkPass = reLearnInSameSemester.stream()
+                            .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
+                                    || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
+                            .findFirst().orElse(null);
+                    if (checkPass != null) {
+                        hasPassed = true;
+                    } else {
+                        hasPassed = false;
+                    }
+                }
+
+
+            }
+            //kiếm môn thay thế cho not Start
+            List<SubjectEntity> replacementSubjectList = new ArrayList<>(entity.getSubjectEntityList());
+            List<MarksEntity> replacementMarks = marks.stream()
+                    .filter(q -> replacementSubjectList.stream()
+                            .anyMatch(a -> a.getId().equalsIgnoreCase(q.getSubjectMarkComponentId().getSubjectId().getId()))
+                    ).collect(Collectors.toList());
+            if (!replacementMarks.isEmpty()) {
+                List<MarksEntity> sortedMarkList2 = Ultilities.SortSemestersByMarks(replacementMarks);
+                MarksEntity latestMark2 = null;
+
+                latestMark2 = sortedMarkList2.get(sortedMarkList2.size() - 1);
+
+                RealSemesterEntity tmpSemester = latestMark2.getSemesterId();
+
+                List<MarksEntity> reLearnInSameSemester = sortedMarkList2.stream()
+                        .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
+                        .collect(Collectors.toList());
+
+                if (!reLearnInSameSemester.isEmpty()) {
+                    //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
+                    // nếu có 2 fail --> fail
+                    MarksEntity checkPass = reLearnInSameSemester.stream()
+                            .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
+                                    || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
+                            .findFirst().orElse(null);
+                    if (checkPass != null) {
+                        hasPassed = true;
+                    } else {
+                        hasPassed = false;
+                    }
+                }
+            }
+
+            if (hasPassed) {
+                iterator.remove();
+                continue markLoop;
+            }
+
+
+        }
+
+        List<String> displayList = new ArrayList<>();
+        for (MarksEntity sc : list) {
+
+            displayList.add(sc.getSubjectMarkComponentId().getSubjectId().getId());
+        }
+
+        displayList = displayList.stream().distinct().collect(Collectors.toList());
+
+        return displayList;
+    }
 
 }

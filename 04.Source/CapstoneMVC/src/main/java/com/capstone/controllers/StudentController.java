@@ -760,8 +760,98 @@ public class StudentController {
         return jsonObject;
     }
 
+    @RequestMapping("/notStartStudents")
+    public ModelAndView getNotStartStudents() {
+        ModelAndView view = new ModelAndView("StudentsNotStartPage");
+        view.addObject("title", "Danh sách sinh viên và môn chậm tiến độ");
+
+        ProgramServiceImpl programService = new ProgramServiceImpl();
+        RealSemesterServiceImpl semesterService = new RealSemesterServiceImpl();
+        List<ProgramEntity> programList = programService.getAllPrograms();
+        List<RealSemesterEntity> semesterList = semesterService.getAllSemester();
+        semesterList = Ultilities.SortSemesters(semesterList);
+        semesterList = Lists.reverse(semesterList);
+
+        view.addObject("programList", programList);
+        view.addObject("semesterList", semesterList);
 
 
+        return view;
+    }
 
+
+    @RequestMapping("/notStartStudentsData")
+    @ResponseBody
+    public JsonObject getNotStartStudentsData(@RequestParam Map<String, String> params) {
+
+        JsonObject jsonObject = new JsonObject();
+
+        Integer semesterId = Integer.parseInt(params.get("semesterId"));
+        Integer programId = Integer.parseInt(params.get("programId"));
+
+        StudentStatusServiceImpl statusService = new StudentStatusServiceImpl();
+        StudentServiceImpl studentService = new StudentServiceImpl();
+        List<StudentEntity> studentList = studentService
+                .getStudentBySemesterIdAndProgram(semesterId, programId);
+
+        List<Integer> studentIds = studentList.stream().map(q -> q.getId()).collect(Collectors.toList());
+        MarksServiceImpl marksService =new MarksServiceImpl();
+        List<MarksEntity> allMarks = marksService.getMarksBySelectedStudentsFromAndBeforeSelectedSemester(semesterId, studentIds);
+        List<List<String>> results = new ArrayList<>();
+        int i =0;
+        for (StudentEntity student : studentList) {
+            // List: SubjectId
+            if(student.getRollNumber().equalsIgnoreCase("SE62094")){
+                System.out.println("here");
+            }
+            List<String> notStartSubjects = Ultilities.getStudentProcessNotStart(student.getId(), semesterId, allMarks);
+            if(!notStartSubjects.isEmpty()){
+                List<String> studentInfo = new ArrayList<>();
+                //MSSV
+                studentInfo.add(student.getRollNumber());
+                //Tên
+                studentInfo.add(student.getFullName());
+                //Ngành
+                studentInfo.add(student.getProgramId().getName());
+                //Môn chậm tiến độ
+                String strNotStart = printList(notStartSubjects);
+                studentInfo.add(strNotStart);
+
+                results.add(studentInfo);
+            }
+            System.out.println("Done " + i++);
+        }
+
+        List<List<String>> displayList = new ArrayList<>();
+
+        //comment saving for serverSide DataTable
+        if (!results.isEmpty()) {
+//            displayList = results.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+            displayList = results;
+        }
+
+        JsonArray aaData = (JsonArray) new Gson().toJsonTree(displayList);
+
+        jsonObject.addProperty("iTotalRecords", displayList.size());
+        jsonObject.addProperty("iTotalDisplayRecords", displayList.size());
+        jsonObject.add("aaData", aaData);
+        jsonObject.addProperty("sEcho", params.get("sEcho"));
+
+        return jsonObject;
+    }
+
+    public String printList(List<String> list) {
+        String result = "";
+        if (list.size() >= 1) {
+            result += list.get(0);
+        }
+
+        if (list.size() > 1) {
+            for (int i = 1; i < list.size(); i++) {
+                result += ", " + list.get(i);
+            }
+        }
+        return result;
+    }
 
 }

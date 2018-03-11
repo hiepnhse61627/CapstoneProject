@@ -1736,7 +1736,8 @@ public class StudentDetail {
                                                     //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
                                                     // nếu có 2 fail --> fail
                                                     isPass = reLearnInSameSemester.stream()
-                                                            .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                                                            .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
+                                                            || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
                                                             .findFirst().orElse(null);
 
                                                 } else {
@@ -1766,7 +1767,8 @@ public class StudentDetail {
 
                                                     isPass = reLearnInSameSemester.stream()
                                                             .filter(q -> q.getAverageMark() >= tmpPassMark
-                                                                    || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                                                                    || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
+                                                            || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
                                                             .findFirst().orElse(null);
                                                 }
 
@@ -2109,27 +2111,19 @@ public class StudentDetail {
                         .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
                         .collect(Collectors.toList());
 
-                if (reLearnInSameSemester.size() >= 2) {
+                if (!reLearnInSameSemester.isEmpty()) {
                     //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
                     // nếu có 2 fail --> fail
                     MarksEntity checkPass = reLearnInSameSemester.stream()
-                            .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                            .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
+                            || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
                             .findFirst().orElse(null);
                     if (checkPass != null) {
                         hasPassed = true;
-                    }
-                } else {
-                    //check if lastest mark is passed
-                    // if latest mark is pass, remove notStart Subject from marks and skip the loop
-                    if (latestMark != null) {
-                        String latestMarkStatus = latestMark.getStatus();
-                        if (latestMarkStatus.equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
-                                || latestMarkStatus.equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue())) {
-                            hasPassed = true;
-                        }
+                    }else{
+                        hasPassed = false;
                     }
                 }
-
 
             }
             //kiếm môn thay thế cho not Start
@@ -2150,7 +2144,7 @@ public class StudentDetail {
                         .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
                         .collect(Collectors.toList());
 
-                if (reLearnInSameSemester.size() >= 2) {
+                if (!reLearnInSameSemester.isEmpty()) {
                     //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
                     // nếu có 2 fail --> fail
                     MarksEntity checkPass = reLearnInSameSemester.stream()
@@ -2160,18 +2154,6 @@ public class StudentDetail {
                         hasPassed = true;
                     } else {
                         hasPassed = false;
-                    }
-                } else {
-                    //check if lastest mark is passed
-                    // if latest mark is pass, remove notStart Subject from marks and skip the loop
-                    if (latestMark2 != null) {
-                        String latestMarkStatus2 = latestMark2.getStatus();
-                        if (latestMarkStatus2.equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
-                                || latestMarkStatus2.equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue())) {
-                            hasPassed = true;
-                        } else if (latestMarkStatus2.equalsIgnoreCase(Enums.MarkStatus.FAIL.getValue())) {
-                            hasPassed = false;
-                        }
                     }
                 }
 

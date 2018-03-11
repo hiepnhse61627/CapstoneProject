@@ -33,6 +33,7 @@ public class MarksServiceImpl implements IMarksService {
         }
     }
 
+    //bulk insert mark
     @Override
     public void createMarks(List<MarksEntity> marksEntities) {
         try {
@@ -203,5 +204,15 @@ public class MarksServiceImpl implements IMarksService {
     @Override
     public List<MarksEntity> getStudentMarkBeforeSelectedSemesterFromMarks(int semesterId, int studentId) {
         return marksEntityJpaController.getStudentMarkBeforeSelectedSemesterFromMarks(semesterId, studentId);
+    }
+
+    @Override
+    public List<MarksEntity> getStudentMarkFromAndBeforeSelectedSemesterFromMarks(int semesterId, int studentId) {
+        return marksEntityJpaController.getStudentMarkFromAndBeforeSelectedSemesterFromMarks(semesterId, studentId);
+    }
+
+    @Override
+    public List<MarksEntity> getMarksBySelectedStudentsFromAndBeforeSelectedSemester(int semesterId, List<Integer> studentIds) {
+        return marksEntityJpaController.getMarksBySelectedStudentsFromAndBeforeSelectedSemester(semesterId, studentIds);
     }
 }

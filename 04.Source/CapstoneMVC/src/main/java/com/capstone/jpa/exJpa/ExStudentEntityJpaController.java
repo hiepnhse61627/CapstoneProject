@@ -498,6 +498,40 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
         }
     }
 
+
+    public boolean myBulkUpdateStudents(List<StudentEntity> studentList) {
+        EntityManager em = null;
+        int bulkSize = 1000;
+        try {
+            em = getEntityManager();
+            em.getTransaction().begin();
+            for (int i = 0; i < studentList.size(); i++) {
+                if(i > 0 && i % bulkSize == 0){
+                    em.flush();
+                    em.clear();
+                    em.getTransaction().commit();
+                    em.getTransaction().begin();
+                }
+                StudentEntity student = studentList.get(i);
+                em.merge(student);
+                System.out.println("Update - " + (i + 1));
+            }
+
+            //đẩy xuống những phần còn lại
+            em.flush();
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            e.printStackTrace();
+            return false;
+        }finally {
+            if(em != null){
+                em.close();
+            }
+        }
+        return true;
+    }
+
 }
 
 

@@ -65,4 +65,9 @@ public class CurriculumServiceImpl implements  ICurriculumService {
             Logger.writeLog(e);
         }
     }
+
+    @Override
+    public CurriculumEntity getCurriculumLikeName(String name) {
+        return controller.getCurriculumLikeName(name);
+    }
 }

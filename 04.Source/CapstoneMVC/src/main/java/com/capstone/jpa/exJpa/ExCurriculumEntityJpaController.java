@@ -189,4 +189,28 @@ public class ExCurriculumEntityJpaController extends CurriculumEntityJpaControll
 
         return entity;
     }
+
+    public CurriculumEntity getCurriculumLikeName(String name) {
+        EntityManager em = null;
+
+        try {
+            em = getEntityManager();
+            TypedQuery<CurriculumEntity> query = em.createQuery(
+                    "SELECT c FROM CurriculumEntity c WHERE c.name LIKE :name", CurriculumEntity.class);
+            query.setParameter("name", "%" + name + "%");
+
+            List<CurriculumEntity> list = query.getResultList();
+            if (list.size() > 0) {
+                return list.get(0);
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            em.close();
+        }
+
+        return null;
+    }
 }
