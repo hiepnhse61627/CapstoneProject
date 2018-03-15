@@ -639,7 +639,7 @@ public class SubjectCurriculumController {
             int curriculumIndex = -1;
             int programIndex = -1;
             int creditsIndex = -1;
-            int ordinalIndex = -1;
+//            int ordinalIndex = -1;
 
             int rowIndex;
             boolean flag = false;
@@ -660,11 +660,15 @@ public class SubjectCurriculumController {
                             programIndex = cellIndex;
                         } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("credits")) {
                             creditsIndex = cellIndex;
-                        } else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("stt")) {
-                            ordinalIndex = cellIndex;
                         }
+//                        else if (cell != null && cell.getCellType() == Cell.CELL_TYPE_STRING && cell.getStringCellValue().toLowerCase().contains("stt")) {
+//                            ordinalIndex = cellIndex;
+//                        }
 
-                        if (termIndex != -1 && subjectIndex != -1 && curriculumIndex != -1 && programIndex != -1 && creditsIndex != -1 && ordinalIndex != -1) {
+                        if (termIndex != -1 && subjectIndex != -1 && curriculumIndex != -1 &&
+                                programIndex != -1 && creditsIndex != -1
+//                                && ordinalIndex != -1
+                                ) {
                             flag = true;
                             break;
                         }
@@ -695,19 +699,20 @@ public class SubjectCurriculumController {
             Map<String, String> errorList = new HashMap<>();
 
             rowIndex = 0;
+            int ordinalNumberCount = 1;
             dataLoop:
             for (rowIndex = rowIndex + 1; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
 
                 System.out.println(rowIndex + 1 + " - " + spreadsheet.getLastRowNum());
 
+                row = spreadsheet.getRow(rowIndex);
                 Cell curriculumNameCell = row.getCell(curriculumIndex);
                 Cell subjectCodeCell = row.getCell(subjectIndex);
                 Cell programNameCell = row.getCell(programIndex);
                 Cell termNoCell = row.getCell(termIndex);
                 Cell subjectCreditsCell = row.getCell(creditsIndex);
-                Cell ordinalNumberCell = row.getCell(ordinalIndex);
+//                Cell ordinalNumberCell = row.getCell(ordinalIndex);
 
-                row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
 
 
@@ -725,14 +730,49 @@ public class SubjectCurriculumController {
                             && programNameCell != null && programNameCell.getCellTypeEnum() != CellType.BLANK
                             && termNoCell != null && termNoCell.getCellTypeEnum() != CellType.BLANK
                             && subjectCreditsCell != null && subjectCreditsCell.getCellTypeEnum() != CellType.BLANK
-                            && ordinalNumberCell != null && ordinalNumberCell.getCellTypeEnum() != CellType.BLANK) {
+//                            && ordinalNumberCell != null && ordinalNumberCell.getCellTypeEnum() != CellType.BLANK
+                            ) {
 
                         String curriculumName = curriculumNameCell.getStringCellValue().trim();
                         String subjectCode = subjectCodeCell.getStringCellValue().trim();
                         String programName = programNameCell.getStringCellValue().trim();
-                        Double termNo = termNoCell.getNumericCellValue();
-                        Double subjectCredits = subjectCreditsCell.getNumericCellValue();
-                        Double ordinalNumber = ordinalNumberCell.getNumericCellValue();
+
+                        //term của subject
+                        double termNo;
+                        String tmpTerm = "";
+                        if (termNoCell.getCellTypeEnum() == CellType.NUMERIC) {
+                            tmpTerm = termNoCell.getNumericCellValue() + "";
+                        } else if (termNoCell.getCellTypeEnum() == CellType.STRING) {
+                            tmpTerm = termNoCell.getStringCellValue();
+                        }
+                        try {
+
+                            termNo = Double.parseDouble(tmpTerm);
+                        } catch (NumberFormatException nfe) {
+                            Logger.writeLog(nfe);
+                            obj.addProperty("success", false);
+                            obj.addProperty("message", nfe.getMessage());
+                            return obj;
+                        }
+
+                        //số tín chỉ của subject
+                        double subjectCredits;
+                        String tmpSubjCredits ="";
+                        if (subjectCreditsCell.getCellTypeEnum() == CellType.NUMERIC) {
+                            tmpSubjCredits = subjectCreditsCell.getNumericCellValue() + "";
+                        } else if (subjectCreditsCell.getCellTypeEnum() == CellType.STRING) {
+                            tmpSubjCredits = subjectCreditsCell.getStringCellValue();
+                        }
+                        try {
+
+                            subjectCredits = Double.parseDouble(tmpSubjCredits);
+                        } catch (NumberFormatException nfe) {
+                            Logger.writeLog(nfe);
+                            obj.addProperty("success", false);
+                            obj.addProperty("message", nfe.getMessage());
+                            return obj;
+                        }
+//                        Double ordinalNumber = ordinalNumberCell.getNumericCellValue();
 
                         boolean checkExist = allCurriculums.stream().anyMatch(q -> q.getName().equalsIgnoreCase(curriculumName));
                         ProgramEntity programEntity = programService.getProgramByName(programName);
@@ -752,24 +792,30 @@ public class SubjectCurriculumController {
                                     SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
                                     subjectCurriculumEntity.setCurriculumId(curriculumEntity);
                                     subjectCurriculumEntity.setSubjectId(subjectEntity);
-                                    subjectCurriculumEntity.setOrdinalNumber(ordinalNumber.intValue());
-                                    subjectCurriculumEntity.setTermNumber(termNo.intValue());
-                                    subjectCurriculumEntity.setSubjectCredits(subjectCredits.intValue());
+                                    //ordinal Number sẽ tuân theo thứ tự trong excel data
+                                    subjectCurriculumEntity.setOrdinalNumber(ordinalNumberCount);
+                                    subjectCurriculumEntity.setTermNumber((int)termNo);
+                                    subjectCurriculumEntity.setSubjectCredits((int)subjectCredits);
                                     subjectCurriculumEntity.setRequired(true);
 
                                     //tính tín chỉ của curriculum
                                     int currentCredit = curriculumEntity.getSpecializedCredits();
-                                    currentCredit += termNo.intValue();
+                                    currentCredit += termNo;
                                     curriculumEntity.setSpecializedCredits(currentCredit);
 
                                     //add subjectCurriculum into map
                                     map.get(curriculumName).add(subjectCurriculumEntity);
+                                    if (ordinalNumberCount % 5 == 0) {
+                                        ordinalNumberCount = 1;
+                                    } else {
+                                        ordinalNumberCount++;
+                                    }
                                 } else {
                                     //tạo mới curriculum và bỏ vào 2 mảng map và importedCurriculum để tracking
                                     curriculumEntity = new CurriculumEntity();
                                     curriculumEntity.setProgramId(programEntity);
                                     curriculumEntity.setName(curriculumName);
-                                    curriculumEntity.setSpecializedCredits(termNo.intValue());
+                                    curriculumEntity.setSpecializedCredits((int)subjectCredits);
 
                                     //bỏ curriculum vào mảng importedCurriculum
                                     importedCurriculum.add(curriculumEntity);
@@ -779,13 +825,18 @@ public class SubjectCurriculumController {
                                     SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
                                     subjectCurriculumEntity.setCurriculumId(curriculumEntity);
                                     subjectCurriculumEntity.setSubjectId(subjectEntity);
-                                    subjectCurriculumEntity.setOrdinalNumber(ordinalNumber.intValue());
-                                    subjectCurriculumEntity.setTermNumber(termNo.intValue());
-                                    subjectCurriculumEntity.setSubjectCredits(subjectCredits.intValue());
+
+                                    //ordinal Number sẽ tuân theo thứ tự trong excel data, nếu vừa được add trong map thì count sẽ = 1
+                                    ordinalNumberCount = 1;
+                                    subjectCurriculumEntity.setOrdinalNumber(ordinalNumberCount);
+
+                                    subjectCurriculumEntity.setTermNumber((int)termNo);
+                                    subjectCurriculumEntity.setSubjectCredits((int)subjectCredits);
                                     subjectCurriculumEntity.setRequired(true);
 
                                     subjectCurriculumList.add(subjectCurriculumEntity);
                                     map.put(curriculumName, subjectCurriculumList);
+                                    ordinalNumberCount++;
                                 }
                             } else {
                                 //add curriculum lỗi vào mảng chứa lỗi

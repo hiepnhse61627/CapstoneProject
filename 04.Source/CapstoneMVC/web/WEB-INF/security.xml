@@ -7,6 +7,7 @@
 
     <http auto-config="true" disable-url-rewriting="true" use-expressions="true">
         <intercept-url pattern="/login" access="isAnonymous()"/>
+        <intercept-url pattern="/googleSignIn" access="isAnonymous()"/>
         <intercept-url pattern="/register**" access="isAnonymous()"/>
         <intercept-url pattern="/auth/google" access="isAnonymous()"/>
         <intercept-url pattern="/favicon.ico" access="isAnonymous()"/>
@@ -51,7 +52,7 @@
         <intercept-url pattern="/admin/**" access="hasAnyRole('ROLE_ADMIN')"/>
 
         <!-- All other links -->
-        <intercept-url pattern="/**" access="hasAnyRole('ROLE_STAFF', 'ROLE_ADMIN', 'ROLE_MANAGER')"/>
+        <intercept-url pattern="/**" access="hasAnyRole('ROLE_STAFF', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STUDENT')"/>
 
         <form-login login-page="/login"
                     login-processing-url="/processlogin"
