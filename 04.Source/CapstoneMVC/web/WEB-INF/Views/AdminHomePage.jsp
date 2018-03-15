@@ -38,7 +38,7 @@
     </div>
 </section>
 
-<div id="markDetail" class="modal fade" role="dialog">
+<div id="userDetail" class="modal fade" role="dialog">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -83,10 +83,22 @@
                                 </div>
                             </div>
 
+                            <%--<div class="form-group">--%>
+                                <%--<label for="role" class="col-sm-3 control-label">Chức vụ</label>--%>
+                                <%--<div class="col-sm-9">--%>
+                                    <%--<select class="form-control" id="role" name="role">--%>
+                                        <%--<option value="ROLE_STUDENT">Student</option>--%>
+                                        <%--<option value="ROLE_ADMIN">Admin</option>--%>
+                                        <%--<option value="ROLE_STAFF">Staff</option>--%>
+                                        <%--<option value="ROLE_MANAGER">Manager</option>--%>
+                                    <%--</select>--%>
+                                <%--</div>--%>
+                            <%--</div>--%>
+
                             <div class="form-group">
-                                <label for="role" class="col-sm-3 control-label">Chức vụ</label>
+                                <label for="roles" class="col-sm-3 control-label">Chức vụ</label>
                                 <div class="col-sm-9">
-                                    <select class="form-control" id="role" name="role">
+                                    <select class="form-control" id="roles" name="roles[]" multiple="multiple">
                                         <option value="ROLE_STUDENT">Student</option>
                                         <option value="ROLE_ADMIN">Admin</option>
                                         <option value="ROLE_STAFF">Staff</option>
@@ -96,7 +108,7 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="role" class="col-sm-3 control-label">Đường dẫn ảnh</label>
+                                <label for="picture" class="col-sm-3 control-label">Đường dẫn ảnh</label>
                                 <div class="col-sm-9">
                                     <input type="text" class="form-control" id="picture" placeholder="picture"
                                            name="picture"/>
@@ -125,6 +137,8 @@
 
 <script>
     $(document).ready(function () {
+        $('#roles').select2();
+
         $('input').iCheck({
             checkboxClass: 'icheckbox_square-blue',
             radioClass: 'iradio_square-blue',
@@ -164,7 +178,6 @@
                 {
                     "aTargets": [0],
                     "mRender": function (data, type, row) {
-                        console.log(data);
                         if (data == "N/A") {
                             data = "/Resources/plugins/dist/img/anonymous.jpg";
                         }
@@ -174,6 +187,7 @@
                 {
                     "aTargets": [5],
                     "mRender": function (data, type, row) {
+                        console.log(data);
                         return "<a class='btn btn-success tbl-btn' onclick='Edit(\""+ data +"\")'>" +
                             "<i class='glyphicon glyphicon-pencil'></i></a>";
                     }
@@ -219,6 +233,8 @@
     function Edit(data) {
         var form = new FormData();
         form.append("userId", data);
+//        form.append("jsonRoles", JSON.stringify($('#roles').val()));
+//        form.append("roles", $('#roles').val());
 
         $.ajax({
             type: "POST",
@@ -228,17 +244,17 @@
             data: form,
             success: function (result) {
                 if (result.success) {
-                    $("#markDetail").find(".modal-title").html("Thông tin tài khoản - " + result.data.username);
+                    $("#userDetail").find(".modal-title").html("Thông tin tài khoản - " + result.data.username);
                     $('#id').val(result.data.id);
                     $('#username').val(result.data.username);
                     $('#email').val(result.data.email);
-                    $('#role').val(result.data.role);
-                    $('#studentRollNumber').val(result.data.studentRollNumber);
-                    $('#password').val(result.data.password);
+                    $('#roles').val(result.data.roles).trigger("change");
+//                    $('#studentRollNumber').val(result.data.studentRollNumber);
+//                    $('#inputPassword').val(result.data.password);
                     $('#fullname').val(result.data.fullname);
                     $('#picture').val(result.data.picture);
 
-                    $("#markDetail").modal();
+                    $("#userDetail").modal();
                 } else {
                     swal('', 'Có lỗi xảy ra, vui lòng thử lại sau', 'warning');
                 }
