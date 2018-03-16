@@ -3,6 +3,7 @@ package com.capstone.controllers;
 import com.capstone.entities.CredentialsEntity;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.RealSemesterEntity;
+import com.capstone.entities.RolesEntity;
 import com.capstone.models.CustomCredentialsEntity;
 import com.capstone.models.CustomUser;
 import com.capstone.models.Global;
@@ -209,13 +210,6 @@ public class AdminController {
 //        return ;
 //    }
 
-    @RequestMapping("/manageCredentialsRoles")
-    public ModelAndView manageCredentialsRoles()
-    {
-        ModelAndView mav = new ModelAndView("");
-        mav.addObject("title", "Phân quyền cho chức vụ");
-        return mav;
-    }
 
 
     // get all user roles to a list
@@ -227,4 +221,92 @@ public class AdminController {
         }
         return authorities;
     }
+
+    @RequestMapping("/manageRolesPage")
+    public ModelAndView manageCredentialsRoles()
+    {
+        ModelAndView mav = new ModelAndView("CreateRolesPage");
+        mav.addObject("title", "Quản lý chức vụ");
+        return mav;
+    }
+
+    @RequestMapping(value = "/currentRolesData")
+    @ResponseBody
+    public JsonObject getCurrentRolesData(Map<String, String> params) {
+        JsonObject data = new JsonObject();
+
+        try {
+            RolesServiceImpl rolesService = new RolesServiceImpl();
+
+           List<RolesEntity> allRoles = rolesService.getAllRoles();
+            List<List<String>> result = new ArrayList<>();
+            int count =1;
+            for (RolesEntity role :
+                 allRoles) {
+                List temporary = new ArrayList();
+                //index
+                temporary.add(count++);
+                //roles
+                temporary.add(role.getId());
+                //add to result list
+                result.add(temporary);
+            }
+
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
+
+            data.addProperty("iTotalRecords", result.size());
+            data.addProperty("iTotalDisplayRecords", result.size());
+            data.add("aaData", aaData);
+            data.addProperty("sEcho", params.get("sEcho"));
+
+            return data;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return data;
+    }
+
+    @RequestMapping(value = "/createNewRole", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goCreateNewRole(Map<String, String> params, @RequestParam("newRole") String newRole) {
+        JsonObject data = new JsonObject();
+
+        try {
+            RolesServiceImpl rolesService = new RolesServiceImpl();
+
+           if(newRole!= null && !newRole.isEmpty()){
+
+               List<RolesEntity> existList = rolesService.getRolesById(newRole);
+               if(!existList.isEmpty()){
+                   data.addProperty("success", false);
+                   data.addProperty("message", "Chức vụ đã tồn tại");
+                   return data;
+               }
+               RolesEntity rolesEntity = new RolesEntity();
+               rolesEntity.setId(newRole);
+              boolean result = rolesService.createNewRole(rolesEntity);
+              if(result){
+                  data.addProperty("success", true);
+                  data.addProperty("message", "Tạo chức vụ thành công");
+              }else{
+                  data.addProperty("success", false);
+                  data.addProperty("message", "Đã xảy ra lỗi!");
+              }
+           }else{
+               data.addProperty("success", false);
+               data.addProperty("message", "Role can't be empty");
+           }
+
+            return data;
+        } catch (Exception e) {
+            e.printStackTrace();
+            data.addProperty("success", false);
+            data.addProperty("message", e.getMessage());
+        }
+        return data;
+    }
+
+
+
 }

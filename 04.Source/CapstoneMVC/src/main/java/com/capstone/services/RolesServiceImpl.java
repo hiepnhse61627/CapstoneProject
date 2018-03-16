@@ -6,6 +6,7 @@ import com.capstone.jpa.exceptions.PreexistingEntityException;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.util.List;
 
 public class RolesServiceImpl implements IRolesService {
 
@@ -25,6 +26,21 @@ public class RolesServiceImpl implements IRolesService {
         } catch (PreexistingEntityException e) {
             System.out.println(e);
         }
+    }
+
+    @Override
+    public List<RolesEntity> getAllRoles() {
+        return controller.getAllRoles();
+    }
+
+    @Override
+    public boolean createNewRole(RolesEntity newRole) {
+        return controller.createNewRole(newRole);
+    }
+
+    @Override
+    public List<RolesEntity> getRolesById(String role) {
+        return controller.getRolesById(role);
     }
 
 
