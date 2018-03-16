@@ -1,5 +1,7 @@
 package com.capstone.controllers;
 
+import com.capstone.entities.*;
+import com.capstone.models.*;
 import com.capstone.entities.CredentialsEntity;
 import com.capstone.entities.MarksEntity;
 import com.capstone.entities.RealSemesterEntity;
@@ -66,19 +68,35 @@ public class AdminController {
 
         try {
             ICredentialsService credentialsService = new CredentialsServiceImpl();
+            ICredentialsRolesService credentialsRolesService = new CredentialsRolesServiceImpl();
+
             List<CredentialsEntity> userList = credentialsService.getAllCredentials();
             List<List<String>> list = new ArrayList<>();
             if (!userList.isEmpty()) {
-                userList.forEach(u -> {
+                for (CredentialsEntity u : userList) {
                     ArrayList<String> tmp = new ArrayList<>();
                     tmp.add(u.getPicture() == null || u.getPicture().isEmpty() ? "N/A" : u.getPicture());
                     tmp.add(u.getUsername());
                     tmp.add(u.getFullname() == null || u.getFullname().isEmpty() ? "N/A" : u.getFullname());
                     tmp.add(u.getEmail() == null || u.getEmail().isEmpty() ? "N/A" : u.getEmail());
-                    tmp.add(u.getRole() == null || u.getRole().isEmpty() ? "N/A" : u.getRole());
+
+                    String role = "";
+                    List<CredentialsRolesEntity> roleList = credentialsRolesService.getCredentialsRolesByCredentialsId(u.getId());
+                    if (roleList == null || roleList.size() == 0) {
+                        role = "N/A";
+                    } else {
+                        for (int i = 0; i < roleList.size(); ++i) {
+                            role += roleList.get(i).getRolesId().getId();
+                            if (i != roleList.size() - 1) {
+                                role += "<br>";
+                            }
+                        }
+                    }
+                    tmp.add(role);
+
                     tmp.add(u.getId().toString());
                     list.add(tmp);
-                });
+                }
             }
 
             List<List<String>> searchList = list.stream().filter(u ->
@@ -106,16 +124,33 @@ public class AdminController {
     @RequestMapping(value = "/edit", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject ShowEdit(@RequestParam int userId) {
+        ICredentialsService credentialsService = new CredentialsServiceImpl();
+        ICredentialsRolesService credentialsRolesService = new CredentialsRolesServiceImpl();
         JsonObject data = new JsonObject();
 
         try {
-            ICredentialsService credentialsService = new CredentialsServiceImpl();
             CredentialsEntity user = credentialsService.findCredentialById(userId);
+            List<CredentialsRolesEntity> userRolesMappingList = credentialsRolesService
+                    .getCredentialsRolesByCredentialsId(user.getId());
 
-            JsonObject result = (JsonObject) new Gson().toJsonTree(user, CredentialsEntity.class);
+            List<String> roles = new ArrayList<>();
+            for (CredentialsRolesEntity mapping : userRolesMappingList) {
+                roles.add(mapping.getRolesId().getId());
+            }
+
+            CredentialsModel model = new CredentialsModel();
+            model.setId(user.getId());
+            model.setUsername(user.getUsername());
+            model.setPassword(user.getPassword());
+            model.setFullname(user.getFullname());
+            model.setPicture(user.getPicture());
+            model.setEmail(user.getEmail());
+            model.setRoles(roles);
+
+            JsonObject userData = (JsonObject) new Gson().toJsonTree(model, CredentialsModel.class);
 
             data.addProperty("success", true);
-            data.add("data", result);
+            data.add("data", userData);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -164,17 +199,17 @@ public class AdminController {
     // save new user details
     @RequestMapping(value = "/save", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject Save(@RequestBody CredentialsEntity cred) {
+    public JsonObject Save(@RequestBody CredentialsModel cred) {
         JsonObject data = new JsonObject();
 
         try {
-            ICredentialsService service = new CredentialsServiceImpl();
+            ICredentialsService credentialsService = new CredentialsServiceImpl();
+            ICredentialsRolesService credentialsRolesService = new CredentialsRolesServiceImpl();
+
             if (cred.getId() != null) {
-                CredentialsEntity c = service.findCredentialById(cred.getId());
+                CredentialsEntity c = credentialsService.findCredentialById(cred.getId());
                 c.setUsername(cred.getUsername());
                 c.setFullname(cred.getFullname());
-                c.setRole(cred.getRole());
-                c.setStudentRollNumber(cred.getStudentRollNumber());
                 c.setPicture(cred.getPicture());
 
                 if (cred.getPassword() != null && !cred.getPassword().isEmpty()) {
@@ -182,8 +217,44 @@ public class AdminController {
                     String encodedPass = encoder.encode(cred.getPassword());
                     c.setPassword(encodedPass);
                 }
-                service.SaveCredential(c, false);
+                credentialsService.SaveCredential(c, false);
 
+                List<CredentialsRolesEntity> roleList = credentialsRolesService.getCredentialsRolesByCredentialsId(cred.getId());
+                // Create new roles
+                for (String currentRole : cred.getRoles()) {
+                    boolean exist = false;
+                    for (CredentialsRolesEntity role : roleList) {
+                        if (role.getRolesId().getId().equals(currentRole)) {
+                            exist = true;
+                            break;
+                        }
+                    }
+
+                    if (!exist) {
+                        RolesEntity newRole = new RolesEntity();
+                        newRole.setId(currentRole);
+
+                        CredentialsRolesEntity cr = new CredentialsRolesEntity();
+                        cr.setCredentialsId(c);
+                        cr.setRolesId(newRole);
+
+                        credentialsRolesService.createCredentialRoles(cr);
+                    }
+                }
+
+                for (CredentialsRolesEntity currentRole : roleList) {
+                    boolean exist = false;
+                    for (String r : cred.getRoles()) {
+                        if (currentRole.getRolesId().getId().equals(r)) {
+                            exist = true;
+                            break;
+                        }
+                    }
+
+                    if (!exist) {
+                        credentialsRolesService.deleteCredentialRoles(currentRole);
+                    }
+                }
 //                Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(c.getUsername(), c.getPassword(), getGrantedAuthorities(c), c), c.getPassword(), getGrantedAuthorities(c));
 //                SecurityContextHolder.getContext().setAuthentication(auth);
             }
@@ -213,7 +284,7 @@ public class AdminController {
 
 
     // get all user roles to a list
-    private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user){
+    private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user) {
         List<GrantedAuthority> authorities = new ArrayList<>();
         String[] roles = user.getRole().split(",");
         for (String role : roles) {
