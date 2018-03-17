@@ -12,6 +12,7 @@ public interface IScheduleService {
     ScheduleEntity findScheduleByDateSlotAndRoom(DaySlotEntity dateSlot, RoomEntity room);
     ScheduleEntity findScheduleByDateSlotAndGroupName(DaySlotEntity dateSlot, String groupName);
     ScheduleEntity findScheduleByDateSlotAndLecture(DaySlotEntity dateSlot, EmployeeEntity emp);
+    ScheduleEntity findScheduleByDateSlotAndLectureAndCourseDontCareIsActive(DaySlotEntity dateSlot, EmployeeEntity emp, CourseEntity course);
     List<ScheduleEntity> findScheduleByGroupName(String groupName);
     List<ScheduleEntity> findScheduleByLectureHaveParentSchedule(Integer lectureId);
     List<ScheduleEntity> findScheduleByGroupnameAndCourseAndLecture(CourseEntity course, String groupName, EmployeeEntity emp);
@@ -21,5 +22,8 @@ public interface IScheduleService {
     void saveSchedule(ScheduleEntity emp) throws Exception;
     ScheduleEntity createSchedule(ScheduleEntity ScheduleEntity);
     void updateSchedule(ScheduleEntity entity);
+    List<ScheduleEntity> findScheduleInRange(Integer lecture, int iDisplayStart, int iDisplayLength);
+    public ScheduleEntity findScheduleByDateSlotAndLectureAndRoomAndCourseDontCareIsActive(DaySlotEntity date, EmployeeEntity lecture, RoomEntity room, CourseEntity course);
 
-}
+
+    }

@@ -38,6 +38,11 @@ public class ScheduleServiceImpl implements IScheduleService {
     }
 
     @Override
+    public ScheduleEntity findScheduleByDateSlotAndLectureAndCourseDontCareIsActive(DaySlotEntity dateSlot, EmployeeEntity emp, CourseEntity course) {
+        return ScheduleEntityJpaController.findScheduleByDateSlotAndLectureAndCourseDontCareIsActive(dateSlot, emp, course);
+    }
+
+    @Override
     public List<ScheduleEntity> findScheduleByGroupName(String groupName) {
         return ScheduleEntityJpaController.findScheduleByGroupName(groupName);
     }
@@ -91,6 +96,16 @@ public class ScheduleServiceImpl implements IScheduleService {
             e.printStackTrace();
         }
 
+    }
+
+    @Override
+    public List<ScheduleEntity> findScheduleInRange(Integer lecture, int iDisplayStart, int iDisplayLength) {
+        return ScheduleEntityJpaController.findScheduleInRange(lecture, iDisplayStart,iDisplayLength);
+    }
+
+    @Override
+    public ScheduleEntity findScheduleByDateSlotAndLectureAndRoomAndCourseDontCareIsActive(DaySlotEntity date, EmployeeEntity lecture, RoomEntity room, CourseEntity course) {
+        return ScheduleEntityJpaController.findScheduleByDateSlotAndLectureAndRoomAndCourseDontCareIsActive(date,lecture,room, course);
     }
 
     @Override

@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 
 <style>
@@ -363,10 +364,10 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="lecture">Giáo viên:</label>
+                            <label for="lecture">Giảng viên:</label>
                             <select id="lecture" class="select lecture-select">
                                 <c:forEach var="emp" items="${employees}">
-                                    <option value="${emp.fullName}">${emp.fullName}</option>
+                                    <option value="${emp.id}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
                                 </c:forEach>
                             </select>
                         </div>
@@ -528,7 +529,7 @@
         $("#room").attr("disabled", true);
 
         $('#lecture').select2({
-            placeholder: '- Chọn giáo viên -'
+            placeholder: '- Chọn giảng viên -'
         });
 
         $('select').on('change', function (evt) {
@@ -860,7 +861,7 @@
                 alert("Số lượng không được bỏ trống");
                 isError = true;
             } else if ($("#lecture").val() === "" || $("#lecture").val() === null) {
-                alert("Giáo viên không được bỏ trống");
+                alert("Giảng viên không được bỏ trống");
                 isError = true;
             }
         } else if (type !== "create") {
@@ -874,7 +875,7 @@
                 alert("Số lượng không được bỏ trống");
                 isError = true;
             } else if ($("#lecture").val() === "" || $("#lecture").val() === null) {
-                alert("Giáo viên không được bỏ trống");
+                alert("Giảng viên không được bỏ trống");
                 isError = true;
             }
         }

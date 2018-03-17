@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <style>
     .dataTables_filter input {
@@ -44,13 +45,20 @@
     <div class="box">
         <div class="b-header">
             <div class="row">
-                <div class="col-md-9 title">
+                <div class="col-md-6 title">
                     <h1>Thống kê lịch trống của giảng viên</h1>
                 </div>
-                <div class="col-md-3 text-right">
-                    <button type="button" class="btn btn-success btn-with-icon" onclick="CreateSchedule()">
+                <div class="col-md-2 text-right">
+                    <button type="button" class="btn btn-primary btn-with-icon" onclick="CreateSchedule()">
                         <i class="glyphicon glyphicon-plus"></i>
                         <div>Thêm lịch học</div>
+                    </button>
+                </div>
+
+                <div class="col-md-3 text-right">
+                    <button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
+                        <i class="glyphicon glyphicon-open"></i>
+                        <div>XUẤT DỮ LIỆU</div>
                     </button>
                 </div>
             </div>
@@ -69,14 +77,20 @@
                 <select id="lecture2" class="select lecture2-select">
                     <option value="-1">Tất cả</option>
                     <c:forEach var="emp" items="${employees}">
-                        <option value="${emp.id}">${emp.fullName}</option>
+                        <option value="${emp.id}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
                     </c:forEach>
                 </select>
             </div>
 
             <div class="form-group">
                 <button type="button" class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>
-                <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa bộ lọc</button>
+                <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa bộ lọc
+                </button>
+            </div>
+
+            <div class="form-group" id="employeeComptence-container">
+                <label for="employeeComptence">Những môn có thể dạy:</label>
+                <span id="employeeComptence" />
             </div>
 
             <div class="form-group">
@@ -101,9 +115,9 @@
 
 <form id="export-excel" action="/exportExcel" hidden>
     <input name="objectType"/>
-    <input name="subjectId"/>
-    <input name="semesterId"/>
-    <input name="sSearch"/>
+    <input name="lecture"/>
+    <input name="startDate"/>
+    <input name="endDate"/>
 </form>
 
 <div id="scheduleModal" class="modal fade" role="dialog">
@@ -201,10 +215,10 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="lecture">Giáo viên:</label>
+                            <label for="lecture">Giảng viên:</label>
                             <select id="lecture" class="select lecture-select">
                                 <c:forEach var="emp" items="${employees}">
-                                    <option value="${emp.fullName}">${emp.fullName}</option>
+                                    <option value="${emp.id}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
                                 </c:forEach>
                             </select>
                         </div>
@@ -319,10 +333,11 @@
         });
         return arr[arr.length - 1] - arr[0] - arr.length + 1;
     }
+
     $(document).ready(function () {
 
         $('#lecture2').select2({
-            placeholder: '- Chọn giáo viên -'
+            placeholder: '- Chọn giảng viên -'
         });
 
         $('select').on('change', function (evt) {
@@ -345,13 +360,13 @@
             }
         });
 
-        $('#scheduleDate2').on('apply.daterangepicker', function(ev, picker) {
+        $('#scheduleDate2').on('apply.daterangepicker', function (ev, picker) {
             startDate = picker.startDate.format('DD/MM/YYYY');
             endDate = picker.endDate.format('DD/MM/YYYY');
             $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
         });
 
-        $('#scheduleDate2').on('cancel.daterangepicker', function(ev, picker) {
+        $('#scheduleDate2').on('cancel.daterangepicker', function (ev, picker) {
             $(this).val('');
         });
 
@@ -380,7 +395,7 @@
         $("#room").attr("disabled", true);
 
         $('#lecture').select2({
-            placeholder: '- Chọn giáo viên -'
+            placeholder: '- Chọn giảng viên -'
         });
 
         $('select').on('change', function (evt) {
@@ -437,7 +452,7 @@
         $('#scheduleDate').daterangepicker({
             startDate: moment(),
             endDate: moment(),
-            minDate:  moment(),
+            minDate: moment(),
 //            drops: "up",
             locale: {
                 format: 'DD/MM/YYYY'
@@ -456,12 +471,24 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/employeeFreeSchedule/get", // url getData.php etc
-            "fnServerParams": function (aoData) {
-                aoData.push({"name": "startDate", "value":  $('#scheduleDate2').data('daterangepicker').startDate.format('DD/MM/YYYY')}),
-                    aoData.push({"name": "endDate", "value":  $('#scheduleDate2').data('daterangepicker').endDate.format('DD/MM/YYYY')}),
-                    aoData.push({"name": "lecture", "value": $('#lecture2').val()})
+            // "sAjaxSource": "/employeeFreeSchedule/get", // url getData.php etc
+            "ajax": {
+                "url": "/employeeFreeSchedule/get",
+                "data": function (d) {
+                    d.startDate = $('#scheduleDate2').data('daterangepicker').startDate.format('DD/MM/YYYY');
+                    d.endDate = $('#scheduleDate2').data('daterangepicker').endDate.format('DD/MM/YYYY');
+                    d.lecture = $('#lecture2').val();
+                },
+                "dataSrc": function (json) {
+                    $("#employeeComptence").text(json.employeeCompetence);
+                    return json.aaData;
+                },
             },
+            // "fnServerParams": function (aoData) {
+            //     aoData.push({"name": "startDate", "value":  $('#scheduleDate2').data('daterangepicker').startDate.format('DD/MM/YYYY')}),
+            //         aoData.push({"name": "endDate", "value":  $('#scheduleDate2').data('daterangepicker').endDate.format('DD/MM/YYYY')}),
+            //         aoData.push({"name": "lecture", "value": $('#lecture2').val()})
+            // },
             "oLanguage": {
                 "sSearchPlaceholder": "Thứ, Ngày, Slot...",
                 "sSearch": "Tìm kiếm:",
@@ -606,7 +633,7 @@
         $('#scheduleDate').daterangepicker({
             startDate: moment(),
             endDate: moment(),
-            minDate:  moment(),
+            minDate: moment(),
             singleDatePicker: true,
             locale: {
                 format: 'DD/MM/YYYY'
@@ -681,7 +708,7 @@
                 alert("Số lượng không được bỏ trống");
                 isError = true;
             } else if ($("#lecture").val() === "" || $("#lecture").val() === null) {
-                alert("Giáo viên không được bỏ trống");
+                alert("Giảng viên không được bỏ trống");
                 isError = true;
             }
         } else if (type !== "create") {
@@ -695,7 +722,7 @@
                 alert("Số lượng không được bỏ trống");
                 isError = true;
             } else if ($("#lecture").val() === "" || $("#lecture").val() === null) {
-                alert("Giáo viên không được bỏ trống");
+                alert("Giảng viên không được bỏ trống");
                 isError = true;
             }
         }
@@ -721,7 +748,7 @@
         $('#scheduleDate').daterangepicker({
             startDate: moment(),
             endDate: moment(),
-            minDate:  moment(),
+            minDate: moment(),
 //            drops: "up",
             locale: {
                 format: 'DD/MM/YYYY'
@@ -753,14 +780,54 @@
 
     }
 
-    function resetFilter(){
+    function resetFilter() {
         $("#lecture2").val('').trigger('change');
         $('#scheduleDate2').data('daterangepicker').setStartDate(moment());
         $('#scheduleDate2').data('daterangepicker').setEndDate(moment());
         $('#scheduleDate2').val('');
+        $("#employeeComptence").text('');
 
-        $('#removeFilterBtn').attr('disabled','disabled');
+        $('#removeFilterBtn').attr('disabled', 'disabled');
+    }
 
+    function ExportExcel() {
+        $("input[name='objectType']").val(25);
+        $("input[name='lecture']").val($('#lecture2').val());
+        $("input[name='startDate']").val($('#scheduleDate2').data('daterangepicker').startDate.format('DD/MM/YYYY'));
+        $("input[name='endDate']").val($('#scheduleDate2').data('daterangepicker').endDate.format('DD/MM/YYYY'));
+        $("#export-excel").submit();
+        Call();
+    }
+
+
+    function Call() {
+        swal({
+            title: 'Đang xử lý',
+            html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>',
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                Run();
+            },
+            allowOutsideClick: false
+        });
+    }
+
+    function Run() {
+        $.ajax({
+            type: "GET",
+            url: "/getStatusExport",
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                $('#progress').html("<div>" + result.status + "</div>");
+                if (result.running) {
+                    setTimeout("Run()", 50);
+                } else {
+                    swal('', 'Download file thành công!', 'success');
+                }
+            }
+        });
     }
 
 

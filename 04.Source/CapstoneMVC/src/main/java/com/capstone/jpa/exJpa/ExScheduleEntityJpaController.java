@@ -134,10 +134,39 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
             query.setParameter("date", date);
             query.setParameter("lecture", lecture);
 
+
+
             ScheduleEntity = (ScheduleEntity) query.getSingleResult();
 
             return ScheduleEntity;
         } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    public ScheduleEntity findScheduleByDateSlotAndLectureAndCourseDontCareIsActive(DaySlotEntity date, EmployeeEntity lecture, CourseEntity course) {
+        EntityManager em = getEntityManager();
+        ScheduleEntity ScheduleEntity = new ScheduleEntity();
+        Query query = null;
+        try {
+            String sqlString = "SELECT c FROM ScheduleEntity c " +
+                    "WHERE (c.dateId = :date)" +
+                    "AND (c.empId= :lecture)"+
+                    "AND (c.courseId= :course)";
+            query = em.createQuery(sqlString);
+            query.setParameter("date", date);
+            query.setParameter("lecture", lecture);
+            query.setParameter("course", course);
+
+
+            ScheduleEntity = (ScheduleEntity) query.getSingleResult();
+
+            return ScheduleEntity;
+        } catch (Exception nrEx) {
             return null;
         } finally {
             if (em != null) {
@@ -152,8 +181,32 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
         try {
             String sqlString = "SELECT c FROM ScheduleEntity c " +
                     "WHERE (c.dateId = :date) " +
-                    "AND (c.empId= :lecture) AND (c.roomId= :room) AND (c.courseId= :course) " +
-                    "AND (c.isActive IS NULL OR c.isActive = 'true')";
+                    "AND (c.empId= :lecture) AND (c.roomId= :room) AND (c.courseId= :course) AND (c.isActive IS NULL OR c.isActive = 'true')";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("date", date);
+            query.setParameter("lecture", lecture);
+            query.setParameter("room", room);
+            query.setParameter("course", course);
+
+            ScheduleEntity = (ScheduleEntity) query.getSingleResult();
+
+            return ScheduleEntity;
+        } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    public ScheduleEntity findScheduleByDateSlotAndLectureAndRoomAndCourseDontCareIsActive(DaySlotEntity date, EmployeeEntity lecture, RoomEntity room, CourseEntity course) {
+        EntityManager em = getEntityManager();
+        ScheduleEntity ScheduleEntity = new ScheduleEntity();
+        try {
+            String sqlString = "SELECT c FROM ScheduleEntity c " +
+                    "WHERE (c.dateId = :date) " +
+                    "AND (c.empId= :lecture) AND (c.roomId= :room) AND (c.courseId= :course)  AND (c.isActive = 'false')";
             Query query = em.createQuery(sqlString);
             query.setParameter("date", date);
             query.setParameter("lecture", lecture);
@@ -254,6 +307,52 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
     }
 
 
+    public List<ScheduleEntity> findScheduleInRange(Integer lecture, int iDisplayStart, int iDisplayLength) {
+        EntityManager em = getEntityManager();
+        try {
+            if (lecture != null) {
+                String sqlString = "SELECT c FROM ScheduleEntity c " +
+                        "WHERE (c.isActive IS NULL) OR (c.isActive = 'true')";
+                Query query = em.createQuery(sqlString);
+                query.setFirstResult(iDisplayStart);
+                query.setMaxResults(iDisplayLength);
+                List<ScheduleEntity> std = query.getResultList();
+                List<ScheduleEntity> result = new ArrayList<>();
+
+                for (ScheduleEntity aSchedule : std) {
+                    ScheduleEntity parentSchedule = findScheduleEntity(aSchedule.getParentScheduleId());
+//                    if (parentSchedule != null) {
+                        if (aSchedule.getEmpId() != null) {
+                            if (aSchedule.getEmpId().getId() == lecture) {
+                                result.add(aSchedule);
+                            }
+//                        }
+                    }
+
+                }
+
+                return result;
+            } else {
+                String sqlString = "SELECT c FROM ScheduleEntity c " +
+                        "WHERE (c.isActive IS NULL) OR (c.isActive = 'true')";
+                Query query = em.createQuery(sqlString);
+                query.setFirstResult(iDisplayStart);
+                query.setMaxResults(iDisplayLength);
+                List<ScheduleEntity> std = query.getResultList();
+
+                return std;
+            }
+
+        } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+
     public List<ScheduleEntity> findScheduleByLecture(Integer lecture) {
         EntityManager em = getEntityManager();
         List<ScheduleEntity> std = null;
@@ -321,6 +420,8 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
             }
         }
     }
+
+
 
     public ScheduleEntity findScheduleByDateSlotAndGroupName(DaySlotEntity dateSlot, String groupName) {
         EntityManager em = getEntityManager();

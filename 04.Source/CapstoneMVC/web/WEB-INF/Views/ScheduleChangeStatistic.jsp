@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <style>
     .dataTables_filter input {
@@ -44,18 +45,22 @@
     <div class="box">
         <div class="b-header">
             <div class="row">
-                <div class="col-md-9 title">
+                <div class="col-md-6 title">
                     <h1>Thống kê lịch dạy thay đổi</h1>
                 </div>
-                <div class="col-md-3 text-right">
-                    <button type="button" class="btn btn-success btn-with-icon" onclick="SyncChangedSchedule()">
+                <div class="col-md-2 text-right">
+                    <button type="button" class="btn btn-primary btn-with-icon" onclick="SyncChangedSchedule()">
                         <i class="glyphicon glyphicon-retweet"></i>
                         <div>Đồng bộ với FAP</div>
                     </button>
                 </div>
+                <div class="col-md-3 text-right">
+                    <button type="button" class="btn btn-success btn-with-icon" onclick="ExportExcel()">
+                        <i class="glyphicon glyphicon-open"></i>
+                        <div>XUẤT DỮ LIỆU</div>
+                    </button>
+                </div>
             </div>
-            <hr>
-
             <hr>
         </div>
 
@@ -71,7 +76,7 @@
                 <select id="lecture" class="select lecture-select">
                     <option value="-1">Tất cả</option>
                     <c:forEach var="emp" items="${employees}">
-                        <option value="${emp.id}">${emp.fullName}</option>
+                        <option value="${emp.id}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
                     </c:forEach>
                 </select>
             </div>
@@ -116,11 +121,12 @@
 </section>
 
 
-<form id="export-excel" action="/exportExcel" hidden>
+<form id="export-excel" action="/exportExcelWithoutCallable" hidden>
     <input name="objectType"/>
-    <input name="subjectId"/>
-    <input name="semesterId"/>
-    <input name="sSearch"/>
+    <input name="lecture"/>
+    <input name="department"/>
+    <input name="startDate"/>
+    <input name="endDate"/>
 </form>
 
 <script>
@@ -162,7 +168,7 @@
     $(document).ready(function () {
 
         $('#lecture').select2({
-            placeholder: '- Chọn giáo viên -'
+            placeholder: '- Chọn giảng viên -'
         });
 
         $('#department').select2({
@@ -303,6 +309,47 @@
                 });
             },
             allowOutsideClick: false
+        });
+    }
+
+    function ExportExcel() {
+        $("input[name='objectType']").val(24);
+        $("input[name='lecture']").val($('#lecture').val());
+        $("input[name='department']").val($('#department').val());
+        $("input[name='startDate']").val($('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY'));
+        $("input[name='endDate']").val($('#scheduleDate').data('daterangepicker').endDate.format('DD/MM/YYYY'));
+        $("#export-excel").submit();
+        Call();
+    }
+
+
+    function Call() {
+        swal({
+            title: 'Đang xử lý',
+            html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>',
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                Run();
+            },
+            allowOutsideClick: false
+        });
+    }
+
+    function Run() {
+        $.ajax({
+            type: "GET",
+            url: "/getStatusExport",
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                $('#progress').html("<div>" + result.status + "</div>");
+                if (result.running) {
+                    setTimeout("Run()", 50);
+                } else {
+                    swal('', 'Download file thành công!', 'success');
+                }
+            }
         });
     }
 </script>

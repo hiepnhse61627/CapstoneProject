@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <style>
     .form-date-range {
@@ -67,6 +68,62 @@
         </div>
 
         <div class="b-body">
+            <div class="form-group form-date-range" style="display: none">
+                <label for="scheduleDate2">Ngày dạy:</label>
+                <input id="scheduleDate2" type="text" class="form-control"/>
+                <i class="fa fa-calendar"></i>
+            </div>
+
+            <div class="form-group">
+                <label for="lecture2">Giảng viên:</label>
+                <select id="lecture2" class="select lecture2-select">
+                    <option value="-1">Tất cả</option>
+                    <c:forEach var="emp" items="${employees}">
+                        <option value="${emp.id}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
+                    </c:forEach>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="groupName2">Lớp:</label>
+                <input id="groupName2" placeholder="- Tên lớp -" class="form-control"/>
+
+                <%--<select id="groupName2" class="select groupName2-select">--%>
+                    <%--<option value="-1">Tất cả</option>--%>
+                    <%--<c:forEach var="groupName" items="${groupNames}">--%>
+                        <%--<option value="${groupName}">${groupName2}</option>--%>
+                    <%--</c:forEach>--%>
+                <%--</select>--%>
+            </div>
+
+
+            <div class="form-group">
+                <label for="subject2">Môn học:</label>
+                <select id="subject2" class="select department2-select">
+                    <option value="-1">Tất cả</option>
+                    <c:forEach var="aSubject" items="${subjects}">
+                        <option value="${aSubject.id}">${aSubject.id} - ${aSubject.name}</option>
+                    </c:forEach>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="aTime">Slot:</label>
+                <select id="aTime" class="select aTime-select">
+                    <option value="-1">Tất cả</option>
+                    <c:forEach var="aSlot" items="${slots}">
+                        <option value="${aSlot.slotName}">${aSlot.slotName}</option>
+                    </c:forEach>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <button type="button" class="btn btn-success" onclick="RefreshTable2()" id="searchBtn">Tìm kiếm</button>
+                <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa bộ lọc
+                </button>
+            </div>
+
+
             <div class="row">
                 <div class="col-md-12">
                     <table id="tbl-schedule">
@@ -189,10 +246,10 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="lecture">Giáo viên:</label>
+                            <label for="lecture">Giảng viên:</label>
                             <select id="lecture" class="select lecture-select">
                                 <c:forEach var="emp" items="${employees}">
-                                    <option value="${emp.fullName}">${emp.fullName}</option>
+                                    <option value="${emp.id}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
                                 </c:forEach>
                             </select>
                         </div>
@@ -220,6 +277,9 @@
     var tblSchedule;
     var startDate;
     var endDate;
+
+    var startDate2;
+    var endDate2;
     var x = 0; //initlal text box count
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
@@ -330,7 +390,7 @@
         $("#room").attr("disabled", true);
 
         $('#lecture').select2({
-            placeholder: '- Chọn giáo viên -'
+            placeholder: '- Chọn giảng viên -'
         });
 
         $('select').on('change', function (evt) {
@@ -407,6 +467,62 @@
     }
 
     function LoadScheduleList() {
+        $('#lecture2').select2({
+            placeholder: '- Chọn giảng viên -'
+        });
+
+        $('#subject2').select2({
+            placeholder: '- Chọn bộ môn -'
+        });
+
+        // $('#groupName2').select2({
+        //     placeholder: '- Chọn lớp -'
+        // });
+
+        $('#aTime').select2({
+            placeholder: '- Chọn slot -'
+        });
+
+        $('select').on('change', function (evt) {
+            $('#select2-lecture2-container').removeAttr('title');
+            $('#select2-subject2-container').removeAttr('title');
+            $('#select2-aTime-container').removeAttr('title');
+            // $('#select2-groupName2-container').removeAttr('title');
+
+        });
+
+        $("#lecture2").val('').trigger('change');
+
+        $("#subject2").val('').trigger('change');
+
+        $("#aTime").val('').trigger('change');
+        $("#groupName2").val('');
+
+        // Show daterangepicker when click on icon
+        $('.form-date-range i').click(function () {
+            $(this).parent().find('input').click();
+        });
+
+        startDate2 = endDate2 = "";
+        $('#scheduleDate2').daterangepicker({
+            autoUpdateInput: false,
+            singleDatePicker: true,
+            locale: {
+                cancelLabel: 'Xóa',
+                format: 'DD/MM/YYYY'
+            }
+        });
+
+        $('#scheduleDate2').on('apply.daterangepicker', function (ev, picker) {
+            startDate2 = picker.startDate.format('DD/MM/YYYY');
+            endDate2 = picker.endDate.format('DD/MM/YYYY');
+            $(this).val(picker.startDate.format('DD/MM/YYYY'));
+        });
+
+        $('#scheduleDate2').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+
         tblSchedule = $('#tbl-schedule').dataTable({
             "bServerSide": true,
             "bFilter": true,
@@ -416,8 +532,15 @@
             "bProcessing": true,
             "bSort": false,
             "sAjaxSource": "/loadScheduleList",
+            "fnServerParams": function (aoData) {
+                aoData.push({"name": "subject", "value": $('#subject2').val()}),
+                    aoData.push({"name": "lecture", "value": $('#lecture2').val()}),
+                    aoData.push({"name": "slot", "value": $('#aTime').val()}),
+                    aoData.push({"name": "groupName", "value": $('#groupName2').val()})
+
+            },
             "oLanguage": {
-                "sSearchPlaceholder": "Tên lớp, Ngày, Mã môn",
+                "sSearchPlaceholder": "Nhập ngày",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
@@ -651,6 +774,8 @@
 
             $("select[id*='slot']").each(function (i, el) {
                 if ($(el).val() === "" || $(el).val() === null) {
+                    alert("Slot không được bỏ trống1");
+
                     alert("Slot không được bỏ trống");
                     isError = true;
                 }
@@ -662,7 +787,7 @@
                 alert("Số lượng không được bỏ trống");
                 isError = true;
             } else if ($("#lecture").val() === "" || $("#lecture").val() === null) {
-                alert("Giáo viên không được bỏ trống");
+                alert("Giảng viên không được bỏ trống");
                 isError = true;
             }
         } else if (type !== "create") {
@@ -670,13 +795,15 @@
                 alert("Thứ trong tuần không được bỏ trống");
                 isError = true;
             } else if ($("#slot").val() === "" || $("#slot").val() === null) {
+                alert("Slot không được bỏ trống2");
+
                 alert("Slot không được bỏ trống");
                 isError = true;
             } else if ($("#capacity").val() === "" || $("#capacity").val() === null) {
                 alert("Số lượng không được bỏ trống");
                 isError = true;
             } else if ($("#lecture").val() === "" || $("#lecture").val() === null) {
-                alert("Giáo viên không được bỏ trống");
+                alert("Giảng viên không được bỏ trống");
                 isError = true;
             }
         }
@@ -724,6 +851,28 @@
             // tblSchedule._fnPageChange(0);
             tblSchedule._fnAjaxUpdate();
         }
+
+    }
+
+    function RefreshTable2() {
+        if (tblSchedule != null) {
+            tblSchedule._fnPageChange(0);
+            tblSchedule._fnAjaxUpdate();
+        }
+        $('#removeFilterBtn').removeAttr('disabled');
+    }
+
+    function resetFilter() {
+        $("#lecture2").val('').trigger('change');
+        $('#scheduleDate2').data('daterangepicker').setStartDate(moment());
+        $('#scheduleDate2').data('daterangepicker').setEndDate(moment());
+        $('#scheduleDate2').val('');
+        $("#subject2").val('').trigger('change');
+        $("#aTime").val('').trigger('change');
+        $("#groupName2").val('');
+
+        $('#removeFilterBtn').attr('disabled', 'disabled');
+
     }
 
     function ToDate(str) {

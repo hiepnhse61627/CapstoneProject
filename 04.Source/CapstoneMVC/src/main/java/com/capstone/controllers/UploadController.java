@@ -1416,72 +1416,86 @@ public class UploadController {
                 row = spreadsheet.getRow(rowIndex);
 
                 Cell fullNameCell = row.getCell(fullNameIndex);
+                Cell emailEDUCell = row.getCell(emailEDUIndex);
+                Cell emailFECell = row.getCell(emailFEIndex);
+
                 if (fullNameCell != null && !fullNameCell.getStringCellValue().trim().equals("")) {
                     List<EmployeeEntity> employeeList = employeeService.findEmployeesByFullName(fullNameCell.getStringCellValue().trim());
                     if (employeeList.size() == 0) {
-                        EmployeeEntity employeeEntity = new EmployeeEntity();
-
-                        Cell codeCell = row.getCell(codeIndex);
-                        Cell positionCell = row.getCell(positionIndex);
-                        Cell emailEDUCell = row.getCell(emailEDUIndex);
-                        Cell emailFECell = row.getCell(emailFEIndex);
-                        Cell emailPersonalCell = row.getCell(emailPersonalIndex);
-                        Cell genderCell = row.getCell(genderIndex);
-                        Cell addressCell = row.getCell(addressIndex);
-                        Cell dobCell = row.getCell(dobIndex);
-                        Cell phoneCell = row.getCell(phoneIndex);
-                        Cell contractCell = row.getCell(contractIndex);
-
-                        if (codeCell != null && !codeCell.getStringCellValue().trim().equals("")) {
-                            employeeEntity.setCode(codeCell.getStringCellValue());
-                        }
-
-                        employeeEntity.setFullName(fullNameCell.getStringCellValue());
-
-                        if (positionCell != null && !positionCell.getStringCellValue().trim().equals("")) {
-                            employeeEntity.setPosition(positionCell.getStringCellValue());
-                        }
 
                         if (emailEDUCell != null && !emailEDUCell.getStringCellValue().trim().equals("")) {
-                            employeeEntity.setEmailEDU(emailEDUCell.getStringCellValue());
-                        }
+                            employeeList = employeeService.findEmployeesByFullName(fullNameCell.getStringCellValue().trim());
+                            if (employeeList.size() == 0) {
 
-                        if (emailFECell != null && !emailFECell.getStringCellValue().trim().equals("")) {
-                            employeeEntity.setEmailFE(emailFECell.getStringCellValue());
-                        }
+                                if (emailFECell != null && !emailFECell.getStringCellValue().trim().equals("")) {
+                                    employeeList = employeeService.findEmployeesByFullName(fullNameCell.getStringCellValue().trim());
+                                    if (employeeList.size() == 0) {
+                                        EmployeeEntity employeeEntity = new EmployeeEntity();
 
-                        if (emailPersonalCell != null && !emailPersonalCell.getStringCellValue().trim().equals("")) {
-                            employeeEntity.setPersonalEmail(emailPersonalCell.getStringCellValue());
-                        }
+                                        Cell codeCell = row.getCell(codeIndex);
+                                        Cell positionCell = row.getCell(positionIndex);
+                                        Cell emailPersonalCell = row.getCell(emailPersonalIndex);
+                                        Cell genderCell = row.getCell(genderIndex);
+                                        Cell addressCell = row.getCell(addressIndex);
+                                        Cell dobCell = row.getCell(dobIndex);
+                                        Cell phoneCell = row.getCell(phoneIndex);
+                                        Cell contractCell = row.getCell(contractIndex);
 
-                        boolean gender = genderCell.getStringCellValue().equals("Nam") ? true : false;
-                        employeeEntity.setGender(gender);
+                                        if (codeCell != null && !codeCell.getStringCellValue().trim().equals("")) {
+                                            employeeEntity.setCode(codeCell.getStringCellValue());
+                                        }
 
-                        if (addressCell != null && !addressCell.getStringCellValue().trim().equals("")) {
-                            employeeEntity.setAddress(addressCell.getStringCellValue());
-                        }
+                                        employeeEntity.setFullName(fullNameCell.getStringCellValue());
 
-                        String formattedDate = "";
-                        if (dobCell != null && !dobCell.toString().equals("")) {
-                            if (dobCell.getCellType() != Cell.CELL_TYPE_STRING) {
-                                DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-                                formattedDate = df.format(dobCell.getDateCellValue());
-                            } else {
-                                formattedDate = dobCell.getStringCellValue();
+                                        if (positionCell != null && !positionCell.getStringCellValue().trim().equals("")) {
+                                            employeeEntity.setPosition(positionCell.getStringCellValue());
+                                        }
+
+                                        if (emailEDUCell != null && !emailEDUCell.getStringCellValue().trim().equals("")) {
+                                            employeeEntity.setEmailEDU(emailEDUCell.getStringCellValue());
+                                        }
+
+                                        if (emailFECell != null && !emailFECell.getStringCellValue().trim().equals("")) {
+                                            employeeEntity.setEmailFE(emailFECell.getStringCellValue());
+                                        }
+
+                                        if (emailPersonalCell != null && !emailPersonalCell.getStringCellValue().trim().equals("")) {
+                                            employeeEntity.setPersonalEmail(emailPersonalCell.getStringCellValue());
+                                        }
+
+                                        boolean gender = genderCell.getStringCellValue().equals("Nam") ? true : false;
+                                        employeeEntity.setGender(gender);
+
+                                        if (addressCell != null && !addressCell.getStringCellValue().trim().equals("")) {
+                                            employeeEntity.setAddress(addressCell.getStringCellValue());
+                                        }
+
+                                        String formattedDate = "";
+                                        if (dobCell != null && !dobCell.toString().equals("")) {
+                                            if (dobCell.getCellType() != Cell.CELL_TYPE_STRING) {
+                                                DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                                                formattedDate = df.format(dobCell.getDateCellValue());
+                                            } else {
+                                                formattedDate = dobCell.getStringCellValue();
+                                            }
+                                        }
+
+                                        employeeEntity.setDateOfBirth(formattedDate);
+
+                                        if (phoneCell != null && !phoneCell.getStringCellValue().trim().equals("")) {
+                                            employeeEntity.setPhone(phoneCell.getStringCellValue());
+                                        }
+
+                                        if (contractCell != null && !contractCell.getStringCellValue().trim().equals("")) {
+                                            employeeEntity.setPhone(phoneCell.getStringCellValue());
+                                        }
+
+                                        employeeEntities.add(employeeEntity);
+                                    }
+                                }
                             }
                         }
 
-                        employeeEntity.setDateOfBirth(formattedDate);
-
-                        if (phoneCell != null && !phoneCell.getStringCellValue().trim().equals("")) {
-                            employeeEntity.setPhone(phoneCell.getStringCellValue());
-                        }
-
-                        if (contractCell != null && !contractCell.getStringCellValue().trim().equals("")) {
-                            employeeEntity.setPhone(phoneCell.getStringCellValue());
-                        }
-
-                        employeeEntities.add(employeeEntity);
 
                     }
                 }
@@ -1607,6 +1621,10 @@ public class UploadController {
                     }
                 }
 
+                if(subjectCode.equals("MAD101")){
+                    System.out.println("test");
+                }
+
                 if (subjectCode != null && !subjectCode.equals("")) {
                     List<DepartmentEntity> departmentList = departmentService.findDepartmentsByName(name);
                     if (departmentList.size() != 0) {
@@ -1619,8 +1637,12 @@ public class UploadController {
                                 subjectDepartmentEntity.setDeptId(departmentEntity);
                                 subjectDepartmentService.createSubjectDepartment(subjectDepartmentEntity);
                             }
+                        }else{
+                            System.out.println(subjectCode);
                         }
 
+                    }else{
+                        System.out.println(name);
                     }
                 }
                 this.currentLine++;
