@@ -38,45 +38,45 @@ public class RolesEntityJpaController implements Serializable {
     }
 
     public void create(RolesEntity rolesEntity) throws PreexistingEntityException, Exception {
-        if (rolesEntity.getCredentialsRolesEntityCollection() == null) {
-            rolesEntity.setCredentialsRolesEntityCollection(new ArrayList<CredentialsRolesEntity>());
+        if (rolesEntity.getRolesAuthorityEntityList() == null) {
+            rolesEntity.setRolesAuthorityEntityList(new ArrayList<RolesAuthorityEntity>());
         }
-        if (rolesEntity.getRolesAuthorityEntityCollection() == null) {
-            rolesEntity.setRolesAuthorityEntityCollection(new ArrayList<RolesAuthorityEntity>());
+        if (rolesEntity.getCredentialsRolesEntityList() == null) {
+            rolesEntity.setCredentialsRolesEntityList(new ArrayList<CredentialsRolesEntity>());
         }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            Collection<CredentialsRolesEntity> attachedCredentialsRolesEntityCollection = new ArrayList<CredentialsRolesEntity>();
-            for (CredentialsRolesEntity credentialsRolesEntityCollectionCredentialsRolesEntityToAttach : rolesEntity.getCredentialsRolesEntityCollection()) {
-                credentialsRolesEntityCollectionCredentialsRolesEntityToAttach = em.getReference(credentialsRolesEntityCollectionCredentialsRolesEntityToAttach.getClass(), credentialsRolesEntityCollectionCredentialsRolesEntityToAttach.getId());
-                attachedCredentialsRolesEntityCollection.add(credentialsRolesEntityCollectionCredentialsRolesEntityToAttach);
+            List<RolesAuthorityEntity> attachedRolesAuthorityEntityList = new ArrayList<RolesAuthorityEntity>();
+            for (RolesAuthorityEntity rolesAuthorityEntityListRolesAuthorityEntityToAttach : rolesEntity.getRolesAuthorityEntityList()) {
+                rolesAuthorityEntityListRolesAuthorityEntityToAttach = em.getReference(rolesAuthorityEntityListRolesAuthorityEntityToAttach.getClass(), rolesAuthorityEntityListRolesAuthorityEntityToAttach.getId());
+                attachedRolesAuthorityEntityList.add(rolesAuthorityEntityListRolesAuthorityEntityToAttach);
             }
-            rolesEntity.setCredentialsRolesEntityCollection(attachedCredentialsRolesEntityCollection);
-            Collection<RolesAuthorityEntity> attachedRolesAuthorityEntityCollection = new ArrayList<RolesAuthorityEntity>();
-            for (RolesAuthorityEntity rolesAuthorityEntityCollectionRolesAuthorityEntityToAttach : rolesEntity.getRolesAuthorityEntityCollection()) {
-                rolesAuthorityEntityCollectionRolesAuthorityEntityToAttach = em.getReference(rolesAuthorityEntityCollectionRolesAuthorityEntityToAttach.getClass(), rolesAuthorityEntityCollectionRolesAuthorityEntityToAttach.getId());
-                attachedRolesAuthorityEntityCollection.add(rolesAuthorityEntityCollectionRolesAuthorityEntityToAttach);
+            rolesEntity.setRolesAuthorityEntityList(attachedRolesAuthorityEntityList);
+            List<CredentialsRolesEntity> attachedCredentialsRolesEntityList = new ArrayList<CredentialsRolesEntity>();
+            for (CredentialsRolesEntity credentialsRolesEntityListCredentialsRolesEntityToAttach : rolesEntity.getCredentialsRolesEntityList()) {
+                credentialsRolesEntityListCredentialsRolesEntityToAttach = em.getReference(credentialsRolesEntityListCredentialsRolesEntityToAttach.getClass(), credentialsRolesEntityListCredentialsRolesEntityToAttach.getId());
+                attachedCredentialsRolesEntityList.add(credentialsRolesEntityListCredentialsRolesEntityToAttach);
             }
-            rolesEntity.setRolesAuthorityEntityCollection(attachedRolesAuthorityEntityCollection);
+            rolesEntity.setCredentialsRolesEntityList(attachedCredentialsRolesEntityList);
             em.persist(rolesEntity);
-            for (CredentialsRolesEntity credentialsRolesEntityCollectionCredentialsRolesEntity : rolesEntity.getCredentialsRolesEntityCollection()) {
-                RolesEntity oldRolesIdOfCredentialsRolesEntityCollectionCredentialsRolesEntity = credentialsRolesEntityCollectionCredentialsRolesEntity.getRolesId();
-                credentialsRolesEntityCollectionCredentialsRolesEntity.setRolesId(rolesEntity);
-                credentialsRolesEntityCollectionCredentialsRolesEntity = em.merge(credentialsRolesEntityCollectionCredentialsRolesEntity);
-                if (oldRolesIdOfCredentialsRolesEntityCollectionCredentialsRolesEntity != null) {
-                    oldRolesIdOfCredentialsRolesEntityCollectionCredentialsRolesEntity.getCredentialsRolesEntityCollection().remove(credentialsRolesEntityCollectionCredentialsRolesEntity);
-                    oldRolesIdOfCredentialsRolesEntityCollectionCredentialsRolesEntity = em.merge(oldRolesIdOfCredentialsRolesEntityCollectionCredentialsRolesEntity);
+            for (RolesAuthorityEntity rolesAuthorityEntityListRolesAuthorityEntity : rolesEntity.getRolesAuthorityEntityList()) {
+                RolesEntity oldRolesIdOfRolesAuthorityEntityListRolesAuthorityEntity = rolesAuthorityEntityListRolesAuthorityEntity.getRolesId();
+                rolesAuthorityEntityListRolesAuthorityEntity.setRolesId(rolesEntity);
+                rolesAuthorityEntityListRolesAuthorityEntity = em.merge(rolesAuthorityEntityListRolesAuthorityEntity);
+                if (oldRolesIdOfRolesAuthorityEntityListRolesAuthorityEntity != null) {
+                    oldRolesIdOfRolesAuthorityEntityListRolesAuthorityEntity.getRolesAuthorityEntityList().remove(rolesAuthorityEntityListRolesAuthorityEntity);
+                    oldRolesIdOfRolesAuthorityEntityListRolesAuthorityEntity = em.merge(oldRolesIdOfRolesAuthorityEntityListRolesAuthorityEntity);
                 }
             }
-            for (RolesAuthorityEntity rolesAuthorityEntityCollectionRolesAuthorityEntity : rolesEntity.getRolesAuthorityEntityCollection()) {
-                RolesEntity oldRolesIdOfRolesAuthorityEntityCollectionRolesAuthorityEntity = rolesAuthorityEntityCollectionRolesAuthorityEntity.getRolesId();
-                rolesAuthorityEntityCollectionRolesAuthorityEntity.setRolesId(rolesEntity);
-                rolesAuthorityEntityCollectionRolesAuthorityEntity = em.merge(rolesAuthorityEntityCollectionRolesAuthorityEntity);
-                if (oldRolesIdOfRolesAuthorityEntityCollectionRolesAuthorityEntity != null) {
-                    oldRolesIdOfRolesAuthorityEntityCollectionRolesAuthorityEntity.getRolesAuthorityEntityCollection().remove(rolesAuthorityEntityCollectionRolesAuthorityEntity);
-                    oldRolesIdOfRolesAuthorityEntityCollectionRolesAuthorityEntity = em.merge(oldRolesIdOfRolesAuthorityEntityCollectionRolesAuthorityEntity);
+            for (CredentialsRolesEntity credentialsRolesEntityListCredentialsRolesEntity : rolesEntity.getCredentialsRolesEntityList()) {
+                RolesEntity oldRolesIdOfCredentialsRolesEntityListCredentialsRolesEntity = credentialsRolesEntityListCredentialsRolesEntity.getRolesId();
+                credentialsRolesEntityListCredentialsRolesEntity.setRolesId(rolesEntity);
+                credentialsRolesEntityListCredentialsRolesEntity = em.merge(credentialsRolesEntityListCredentialsRolesEntity);
+                if (oldRolesIdOfCredentialsRolesEntityListCredentialsRolesEntity != null) {
+                    oldRolesIdOfCredentialsRolesEntityListCredentialsRolesEntity.getCredentialsRolesEntityList().remove(credentialsRolesEntityListCredentialsRolesEntity);
+                    oldRolesIdOfCredentialsRolesEntityListCredentialsRolesEntity = em.merge(oldRolesIdOfCredentialsRolesEntityListCredentialsRolesEntity);
                 }
             }
             em.getTransaction().commit();
@@ -98,62 +98,62 @@ public class RolesEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             RolesEntity persistentRolesEntity = em.find(RolesEntity.class, rolesEntity.getId());
-            Collection<CredentialsRolesEntity> credentialsRolesEntityCollectionOld = persistentRolesEntity.getCredentialsRolesEntityCollection();
-            Collection<CredentialsRolesEntity> credentialsRolesEntityCollectionNew = rolesEntity.getCredentialsRolesEntityCollection();
-            Collection<RolesAuthorityEntity> rolesAuthorityEntityCollectionOld = persistentRolesEntity.getRolesAuthorityEntityCollection();
-            Collection<RolesAuthorityEntity> rolesAuthorityEntityCollectionNew = rolesEntity.getRolesAuthorityEntityCollection();
+            List<RolesAuthorityEntity> rolesAuthorityEntityListOld = persistentRolesEntity.getRolesAuthorityEntityList();
+            List<RolesAuthorityEntity> rolesAuthorityEntityListNew = rolesEntity.getRolesAuthorityEntityList();
+            List<CredentialsRolesEntity> credentialsRolesEntityListOld = persistentRolesEntity.getCredentialsRolesEntityList();
+            List<CredentialsRolesEntity> credentialsRolesEntityListNew = rolesEntity.getCredentialsRolesEntityList();
             List<String> illegalOrphanMessages = null;
-            for (RolesAuthorityEntity rolesAuthorityEntityCollectionOldRolesAuthorityEntity : rolesAuthorityEntityCollectionOld) {
-                if (!rolesAuthorityEntityCollectionNew.contains(rolesAuthorityEntityCollectionOldRolesAuthorityEntity)) {
+            for (RolesAuthorityEntity rolesAuthorityEntityListOldRolesAuthorityEntity : rolesAuthorityEntityListOld) {
+                if (!rolesAuthorityEntityListNew.contains(rolesAuthorityEntityListOldRolesAuthorityEntity)) {
                     if (illegalOrphanMessages == null) {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
-                    illegalOrphanMessages.add("You must retain RolesAuthorityEntity " + rolesAuthorityEntityCollectionOldRolesAuthorityEntity + " since its rolesId field is not nullable.");
+                    illegalOrphanMessages.add("You must retain RolesAuthorityEntity " + rolesAuthorityEntityListOldRolesAuthorityEntity + " since its rolesId field is not nullable.");
                 }
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            Collection<CredentialsRolesEntity> attachedCredentialsRolesEntityCollectionNew = new ArrayList<CredentialsRolesEntity>();
-            for (CredentialsRolesEntity credentialsRolesEntityCollectionNewCredentialsRolesEntityToAttach : credentialsRolesEntityCollectionNew) {
-                credentialsRolesEntityCollectionNewCredentialsRolesEntityToAttach = em.getReference(credentialsRolesEntityCollectionNewCredentialsRolesEntityToAttach.getClass(), credentialsRolesEntityCollectionNewCredentialsRolesEntityToAttach.getId());
-                attachedCredentialsRolesEntityCollectionNew.add(credentialsRolesEntityCollectionNewCredentialsRolesEntityToAttach);
+            List<RolesAuthorityEntity> attachedRolesAuthorityEntityListNew = new ArrayList<RolesAuthorityEntity>();
+            for (RolesAuthorityEntity rolesAuthorityEntityListNewRolesAuthorityEntityToAttach : rolesAuthorityEntityListNew) {
+                rolesAuthorityEntityListNewRolesAuthorityEntityToAttach = em.getReference(rolesAuthorityEntityListNewRolesAuthorityEntityToAttach.getClass(), rolesAuthorityEntityListNewRolesAuthorityEntityToAttach.getId());
+                attachedRolesAuthorityEntityListNew.add(rolesAuthorityEntityListNewRolesAuthorityEntityToAttach);
             }
-            credentialsRolesEntityCollectionNew = attachedCredentialsRolesEntityCollectionNew;
-            rolesEntity.setCredentialsRolesEntityCollection(credentialsRolesEntityCollectionNew);
-            Collection<RolesAuthorityEntity> attachedRolesAuthorityEntityCollectionNew = new ArrayList<RolesAuthorityEntity>();
-            for (RolesAuthorityEntity rolesAuthorityEntityCollectionNewRolesAuthorityEntityToAttach : rolesAuthorityEntityCollectionNew) {
-                rolesAuthorityEntityCollectionNewRolesAuthorityEntityToAttach = em.getReference(rolesAuthorityEntityCollectionNewRolesAuthorityEntityToAttach.getClass(), rolesAuthorityEntityCollectionNewRolesAuthorityEntityToAttach.getId());
-                attachedRolesAuthorityEntityCollectionNew.add(rolesAuthorityEntityCollectionNewRolesAuthorityEntityToAttach);
+            rolesAuthorityEntityListNew = attachedRolesAuthorityEntityListNew;
+            rolesEntity.setRolesAuthorityEntityList(rolesAuthorityEntityListNew);
+            List<CredentialsRolesEntity> attachedCredentialsRolesEntityListNew = new ArrayList<CredentialsRolesEntity>();
+            for (CredentialsRolesEntity credentialsRolesEntityListNewCredentialsRolesEntityToAttach : credentialsRolesEntityListNew) {
+                credentialsRolesEntityListNewCredentialsRolesEntityToAttach = em.getReference(credentialsRolesEntityListNewCredentialsRolesEntityToAttach.getClass(), credentialsRolesEntityListNewCredentialsRolesEntityToAttach.getId());
+                attachedCredentialsRolesEntityListNew.add(credentialsRolesEntityListNewCredentialsRolesEntityToAttach);
             }
-            rolesAuthorityEntityCollectionNew = attachedRolesAuthorityEntityCollectionNew;
-            rolesEntity.setRolesAuthorityEntityCollection(rolesAuthorityEntityCollectionNew);
+            credentialsRolesEntityListNew = attachedCredentialsRolesEntityListNew;
+            rolesEntity.setCredentialsRolesEntityList(credentialsRolesEntityListNew);
             rolesEntity = em.merge(rolesEntity);
-            for (CredentialsRolesEntity credentialsRolesEntityCollectionOldCredentialsRolesEntity : credentialsRolesEntityCollectionOld) {
-                if (!credentialsRolesEntityCollectionNew.contains(credentialsRolesEntityCollectionOldCredentialsRolesEntity)) {
-                    credentialsRolesEntityCollectionOldCredentialsRolesEntity.setRolesId(null);
-                    credentialsRolesEntityCollectionOldCredentialsRolesEntity = em.merge(credentialsRolesEntityCollectionOldCredentialsRolesEntity);
-                }
-            }
-            for (CredentialsRolesEntity credentialsRolesEntityCollectionNewCredentialsRolesEntity : credentialsRolesEntityCollectionNew) {
-                if (!credentialsRolesEntityCollectionOld.contains(credentialsRolesEntityCollectionNewCredentialsRolesEntity)) {
-                    RolesEntity oldRolesIdOfCredentialsRolesEntityCollectionNewCredentialsRolesEntity = credentialsRolesEntityCollectionNewCredentialsRolesEntity.getRolesId();
-                    credentialsRolesEntityCollectionNewCredentialsRolesEntity.setRolesId(rolesEntity);
-                    credentialsRolesEntityCollectionNewCredentialsRolesEntity = em.merge(credentialsRolesEntityCollectionNewCredentialsRolesEntity);
-                    if (oldRolesIdOfCredentialsRolesEntityCollectionNewCredentialsRolesEntity != null && !oldRolesIdOfCredentialsRolesEntityCollectionNewCredentialsRolesEntity.equals(rolesEntity)) {
-                        oldRolesIdOfCredentialsRolesEntityCollectionNewCredentialsRolesEntity.getCredentialsRolesEntityCollection().remove(credentialsRolesEntityCollectionNewCredentialsRolesEntity);
-                        oldRolesIdOfCredentialsRolesEntityCollectionNewCredentialsRolesEntity = em.merge(oldRolesIdOfCredentialsRolesEntityCollectionNewCredentialsRolesEntity);
+            for (RolesAuthorityEntity rolesAuthorityEntityListNewRolesAuthorityEntity : rolesAuthorityEntityListNew) {
+                if (!rolesAuthorityEntityListOld.contains(rolesAuthorityEntityListNewRolesAuthorityEntity)) {
+                    RolesEntity oldRolesIdOfRolesAuthorityEntityListNewRolesAuthorityEntity = rolesAuthorityEntityListNewRolesAuthorityEntity.getRolesId();
+                    rolesAuthorityEntityListNewRolesAuthorityEntity.setRolesId(rolesEntity);
+                    rolesAuthorityEntityListNewRolesAuthorityEntity = em.merge(rolesAuthorityEntityListNewRolesAuthorityEntity);
+                    if (oldRolesIdOfRolesAuthorityEntityListNewRolesAuthorityEntity != null && !oldRolesIdOfRolesAuthorityEntityListNewRolesAuthorityEntity.equals(rolesEntity)) {
+                        oldRolesIdOfRolesAuthorityEntityListNewRolesAuthorityEntity.getRolesAuthorityEntityList().remove(rolesAuthorityEntityListNewRolesAuthorityEntity);
+                        oldRolesIdOfRolesAuthorityEntityListNewRolesAuthorityEntity = em.merge(oldRolesIdOfRolesAuthorityEntityListNewRolesAuthorityEntity);
                     }
                 }
             }
-            for (RolesAuthorityEntity rolesAuthorityEntityCollectionNewRolesAuthorityEntity : rolesAuthorityEntityCollectionNew) {
-                if (!rolesAuthorityEntityCollectionOld.contains(rolesAuthorityEntityCollectionNewRolesAuthorityEntity)) {
-                    RolesEntity oldRolesIdOfRolesAuthorityEntityCollectionNewRolesAuthorityEntity = rolesAuthorityEntityCollectionNewRolesAuthorityEntity.getRolesId();
-                    rolesAuthorityEntityCollectionNewRolesAuthorityEntity.setRolesId(rolesEntity);
-                    rolesAuthorityEntityCollectionNewRolesAuthorityEntity = em.merge(rolesAuthorityEntityCollectionNewRolesAuthorityEntity);
-                    if (oldRolesIdOfRolesAuthorityEntityCollectionNewRolesAuthorityEntity != null && !oldRolesIdOfRolesAuthorityEntityCollectionNewRolesAuthorityEntity.equals(rolesEntity)) {
-                        oldRolesIdOfRolesAuthorityEntityCollectionNewRolesAuthorityEntity.getRolesAuthorityEntityCollection().remove(rolesAuthorityEntityCollectionNewRolesAuthorityEntity);
-                        oldRolesIdOfRolesAuthorityEntityCollectionNewRolesAuthorityEntity = em.merge(oldRolesIdOfRolesAuthorityEntityCollectionNewRolesAuthorityEntity);
+            for (CredentialsRolesEntity credentialsRolesEntityListOldCredentialsRolesEntity : credentialsRolesEntityListOld) {
+                if (!credentialsRolesEntityListNew.contains(credentialsRolesEntityListOldCredentialsRolesEntity)) {
+                    credentialsRolesEntityListOldCredentialsRolesEntity.setRolesId(null);
+                    credentialsRolesEntityListOldCredentialsRolesEntity = em.merge(credentialsRolesEntityListOldCredentialsRolesEntity);
+                }
+            }
+            for (CredentialsRolesEntity credentialsRolesEntityListNewCredentialsRolesEntity : credentialsRolesEntityListNew) {
+                if (!credentialsRolesEntityListOld.contains(credentialsRolesEntityListNewCredentialsRolesEntity)) {
+                    RolesEntity oldRolesIdOfCredentialsRolesEntityListNewCredentialsRolesEntity = credentialsRolesEntityListNewCredentialsRolesEntity.getRolesId();
+                    credentialsRolesEntityListNewCredentialsRolesEntity.setRolesId(rolesEntity);
+                    credentialsRolesEntityListNewCredentialsRolesEntity = em.merge(credentialsRolesEntityListNewCredentialsRolesEntity);
+                    if (oldRolesIdOfCredentialsRolesEntityListNewCredentialsRolesEntity != null && !oldRolesIdOfCredentialsRolesEntityListNewCredentialsRolesEntity.equals(rolesEntity)) {
+                        oldRolesIdOfCredentialsRolesEntityListNewCredentialsRolesEntity.getCredentialsRolesEntityList().remove(credentialsRolesEntityListNewCredentialsRolesEntity);
+                        oldRolesIdOfCredentialsRolesEntityListNewCredentialsRolesEntity = em.merge(oldRolesIdOfCredentialsRolesEntityListNewCredentialsRolesEntity);
                     }
                 }
             }
@@ -161,7 +161,7 @@ public class RolesEntityJpaController implements Serializable {
         } catch (Exception ex) {
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
-                String id = rolesEntity.getId();
+                Integer id = rolesEntity.getId();
                 if (findRolesEntity(id) == null) {
                     throw new NonexistentEntityException("The rolesEntity with id " + id + " no longer exists.");
                 }
@@ -174,7 +174,7 @@ public class RolesEntityJpaController implements Serializable {
         }
     }
 
-    public void destroy(String id) throws IllegalOrphanException, NonexistentEntityException {
+    public void destroy(Integer id) throws IllegalOrphanException, NonexistentEntityException {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -187,20 +187,20 @@ public class RolesEntityJpaController implements Serializable {
                 throw new NonexistentEntityException("The rolesEntity with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
-            Collection<RolesAuthorityEntity> rolesAuthorityEntityCollectionOrphanCheck = rolesEntity.getRolesAuthorityEntityCollection();
-            for (RolesAuthorityEntity rolesAuthorityEntityCollectionOrphanCheckRolesAuthorityEntity : rolesAuthorityEntityCollectionOrphanCheck) {
+            List<RolesAuthorityEntity> rolesAuthorityEntityListOrphanCheck = rolesEntity.getRolesAuthorityEntityList();
+            for (RolesAuthorityEntity rolesAuthorityEntityListOrphanCheckRolesAuthorityEntity : rolesAuthorityEntityListOrphanCheck) {
                 if (illegalOrphanMessages == null) {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
-                illegalOrphanMessages.add("This RolesEntity (" + rolesEntity + ") cannot be destroyed since the RolesAuthorityEntity " + rolesAuthorityEntityCollectionOrphanCheckRolesAuthorityEntity + " in its rolesAuthorityEntityCollection field has a non-nullable rolesId field.");
+                illegalOrphanMessages.add("This RolesEntity (" + rolesEntity + ") cannot be destroyed since the RolesAuthorityEntity " + rolesAuthorityEntityListOrphanCheckRolesAuthorityEntity + " in its rolesAuthorityEntityList field has a non-nullable rolesId field.");
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            Collection<CredentialsRolesEntity> credentialsRolesEntityCollection = rolesEntity.getCredentialsRolesEntityCollection();
-            for (CredentialsRolesEntity credentialsRolesEntityCollectionCredentialsRolesEntity : credentialsRolesEntityCollection) {
-                credentialsRolesEntityCollectionCredentialsRolesEntity.setRolesId(null);
-                credentialsRolesEntityCollectionCredentialsRolesEntity = em.merge(credentialsRolesEntityCollectionCredentialsRolesEntity);
+            List<CredentialsRolesEntity> credentialsRolesEntityList = rolesEntity.getCredentialsRolesEntityList();
+            for (CredentialsRolesEntity credentialsRolesEntityListCredentialsRolesEntity : credentialsRolesEntityList) {
+                credentialsRolesEntityListCredentialsRolesEntity.setRolesId(null);
+                credentialsRolesEntityListCredentialsRolesEntity = em.merge(credentialsRolesEntityListCredentialsRolesEntity);
             }
             em.remove(rolesEntity);
             em.getTransaction().commit();
@@ -235,7 +235,7 @@ public class RolesEntityJpaController implements Serializable {
         }
     }
 
-    public RolesEntity findRolesEntity(String id) {
+    public RolesEntity findRolesEntity(Integer id) {
         EntityManager em = getEntityManager();
         try {
             return em.find(RolesEntity.class, id);

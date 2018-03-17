@@ -14,7 +14,7 @@ public class RolesServiceImpl implements IRolesService {
     ExRolesEntityJpaController controller = new ExRolesEntityJpaController(emf);
 
     @Override
-    public RolesEntity findRolesEntity(String id) {
+    public RolesEntity findRolesEntity(Integer id) {
         return controller.findRolesEntity(id);
     }
 
@@ -39,8 +39,8 @@ public class RolesServiceImpl implements IRolesService {
     }
 
     @Override
-    public List<RolesEntity> getRolesById(String role) {
-        return controller.getRolesById(role);
+    public List<RolesEntity> getRolesByName(String role) {
+        return controller.getRolesByName(role);
     }
 
 

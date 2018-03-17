@@ -794,32 +794,36 @@ public class StudentController {
         List<StudentEntity> studentList = studentService
                 .getStudentBySemesterIdAndProgram(semesterId, programId);
 
-        List<Integer> studentIds = studentList.stream().map(q -> q.getId()).collect(Collectors.toList());
-        MarksServiceImpl marksService =new MarksServiceImpl();
-        List<MarksEntity> allMarks = marksService.getMarksBySelectedStudentsFromAndBeforeSelectedSemester(semesterId, studentIds);
         List<List<String>> results = new ArrayList<>();
-        int i =0;
-        for (StudentEntity student : studentList) {
-            // List: SubjectId
-            if(student.getRollNumber().equalsIgnoreCase("SE62094")){
-                System.out.println("here");
-            }
-            List<String> notStartSubjects = Ultilities.getStudentProcessNotStart(student.getId(), semesterId, allMarks);
-            if(!notStartSubjects.isEmpty()){
-                List<String> studentInfo = new ArrayList<>();
-                //MSSV
-                studentInfo.add(student.getRollNumber());
-                //Tên
-                studentInfo.add(student.getFullName());
-                //Ngành
-                studentInfo.add(student.getProgramId().getName());
-                //Môn chậm tiến độ
-                String strNotStart = printList(notStartSubjects);
-                studentInfo.add(strNotStart);
+        List<Integer> studentIds = studentList.stream().map(q -> q.getId()).collect(Collectors.toList());
+        List<MarksEntity> allMarks;
+        MarksServiceImpl marksService = new MarksServiceImpl();
+        if (!studentList.isEmpty()) {
+            allMarks = marksService.getMarksBySelectedStudentsFromAndBeforeSelectedSemester(semesterId, studentIds);
 
-                results.add(studentInfo);
+            int i = 0;
+            for (StudentEntity student : studentList) {
+                // List: SubjectId
+                if (student.getRollNumber().equalsIgnoreCase("SE62094")) {
+                    System.out.println("here");
+                }
+                List<String> notStartSubjects = Ultilities.getStudentProcessNotStart(student.getId(), semesterId, allMarks);
+                if (!notStartSubjects.isEmpty()) {
+                    List<String> studentInfo = new ArrayList<>();
+                    //MSSV
+                    studentInfo.add(student.getRollNumber());
+                    //Tên
+                    studentInfo.add(student.getFullName());
+                    //Ngành
+                    studentInfo.add(student.getProgramId().getName());
+                    //Môn chậm tiến độ
+                    String strNotStart = printList(notStartSubjects);
+                    studentInfo.add(strNotStart);
+
+                    results.add(studentInfo);
+                }
+                System.out.println("Done " + i++);
             }
-            System.out.println("Done " + i++);
         }
 
         List<List<String>> displayList = new ArrayList<>();

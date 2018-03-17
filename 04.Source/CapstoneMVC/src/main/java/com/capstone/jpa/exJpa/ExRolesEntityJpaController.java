@@ -52,13 +52,13 @@ public class ExRolesEntityJpaController extends RolesEntityJpaController {
         return true;
     }
 
-    public List<RolesEntity> getRolesById(String role) {
+    public List<RolesEntity> getRolesByName(String role) {
         EntityManager em = null;
         List<RolesEntity> list;
         try {
             em = getEntityManager();
             TypedQuery<RolesEntity> query = em.createQuery(
-                    "SELECT r FROM RolesEntity r Where r.id = :role", RolesEntity.class);
+                    "SELECT r FROM RolesEntity r Where r.name = :role", RolesEntity.class);
             query.setParameter("role", role);
 
             list = query.getResultList();

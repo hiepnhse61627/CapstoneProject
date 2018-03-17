@@ -2,15 +2,8 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.Collection;
-import javax.persistence.Basic;
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.NamedQueries;
-import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import java.util.List;
+import javax.persistence.*;
 
 /**
  *
@@ -27,41 +20,52 @@ public class RolesEntity implements Serializable {
     @Id
     @Basic(optional = false)
     @Column(name = "Id")
-    private String id;
-    @OneToMany(mappedBy = "rolesId")
-    private Collection<CredentialsRolesEntity> credentialsRolesEntityCollection;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+    @Column(name = "Name")
+    private String name;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "rolesId")
-    private Collection<RolesAuthorityEntity> rolesAuthorityEntityCollection;
+    private List<RolesAuthorityEntity> rolesAuthorityEntityList;
+    @OneToMany(mappedBy = "rolesId")
+    private List<CredentialsRolesEntity> credentialsRolesEntityList;
 
     public RolesEntity() {
     }
 
-    public RolesEntity(String id) {
+    public RolesEntity(Integer id) {
         this.id = id;
     }
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public Collection<CredentialsRolesEntity> getCredentialsRolesEntityCollection() {
-        return credentialsRolesEntityCollection;
+    public String getName() {
+        return name;
     }
 
-    public void setCredentialsRolesEntityCollection(Collection<CredentialsRolesEntity> credentialsRolesEntityCollection) {
-        this.credentialsRolesEntityCollection = credentialsRolesEntityCollection;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public Collection<RolesAuthorityEntity> getRolesAuthorityEntityCollection() {
-        return rolesAuthorityEntityCollection;
+    public List<RolesAuthorityEntity> getRolesAuthorityEntityList() {
+        return rolesAuthorityEntityList;
     }
 
-    public void setRolesAuthorityEntityCollection(Collection<RolesAuthorityEntity> rolesAuthorityEntityCollection) {
-        this.rolesAuthorityEntityCollection = rolesAuthorityEntityCollection;
+    public void setRolesAuthorityEntityList(List<RolesAuthorityEntity> rolesAuthorityEntityList) {
+        this.rolesAuthorityEntityList = rolesAuthorityEntityList;
+    }
+
+    public List<CredentialsRolesEntity> getCredentialsRolesEntityList() {
+        return credentialsRolesEntityList;
+    }
+
+    public void setCredentialsRolesEntityList(List<CredentialsRolesEntity> credentialsRolesEntityList) {
+        this.credentialsRolesEntityList = credentialsRolesEntityList;
     }
 
     @Override

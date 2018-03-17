@@ -99,10 +99,9 @@
                                 <label for="roles" class="col-sm-3 control-label">Chức vụ</label>
                                 <div class="col-sm-9">
                                     <select class="form-control" id="roles" name="roles[]" multiple="multiple">
-                                        <option value="ROLE_STUDENT">Student</option>
-                                        <option value="ROLE_ADMIN">Admin</option>
-                                        <option value="ROLE_STAFF">Staff</option>
-                                        <option value="ROLE_MANAGER">Manager</option>
+                                        <c:forEach var="role" items="${roleList}">
+                                            <option value="${role.name}">${role.name}</option>
+                                        </c:forEach>
                                     </select>
                                 </div>
                             </div>

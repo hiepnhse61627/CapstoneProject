@@ -72,7 +72,8 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
         cellStyle.setBorderTop(BorderStyle.THIN);
         cellStyle.setAlignment(HorizontalAlignment.LEFT);
         cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-
+        sheet.getRow(22).setHeight((short)48);
+        sheet.getRow(24).setHeight((short)48);
 
 //        Map<StudentEntity, List<MarkCreditTermModel>> dataMap = processData2(params);
         List<StudentAndMark> dataMap = processData2(params);
@@ -81,6 +82,7 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
         for (StudentAndMark entry : dataMap) {
             StudentEntity student = entry.getStudent();
             sheet = workbook.cloneSheet(0, student.getRollNumber());
+
             XSSFRow row = sheet.getRow(11);
             row.getCell(2).setCellValue(student.getFullName());
             row.getCell(6).setCellValue(student.getRollNumber());

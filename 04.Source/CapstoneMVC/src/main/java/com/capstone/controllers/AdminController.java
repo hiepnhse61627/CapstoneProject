@@ -41,6 +41,10 @@ public class AdminController {
     @RequestMapping("/index")
     public ModelAndView Index() {
         ModelAndView view = new ModelAndView("AdminHomePage");
+        RolesServiceImpl rolesService = new RolesServiceImpl();
+        List<RolesEntity> allRoles = rolesService.getAllRoles();
+
+        view.addObject("roleList", allRoles);
         view.addObject("title", "Tài khoản");
         return view;
     }
@@ -49,6 +53,8 @@ public class AdminController {
     @RequestMapping("/change")
     public ModelAndView ChangeSemester() {
         ModelAndView view = new ModelAndView("AdminChangeSemesterTemporary");
+
+
         view.addObject("title", "Set semester");
         view.addObject("semesters", Global.getSortedList());
         view.addObject("temporarySemester", Global.getTemporarySemester().getId());
@@ -135,7 +141,7 @@ public class AdminController {
 
             List<String> roles = new ArrayList<>();
             for (CredentialsRolesEntity mapping : userRolesMappingList) {
-                roles.add(mapping.getRolesId().getId());
+                roles.add(mapping.getRolesId().getName());
             }
 
             CredentialsModel model = new CredentialsModel();
@@ -202,6 +208,8 @@ public class AdminController {
     public JsonObject Save(@RequestBody CredentialsModel cred) {
         JsonObject data = new JsonObject();
 
+        RolesServiceImpl rolesService = new RolesServiceImpl();
+        List<RolesEntity> allRoles = rolesService.getAllRoles();
         try {
             ICredentialsService credentialsService = new CredentialsServiceImpl();
             ICredentialsRolesService credentialsRolesService = new CredentialsRolesServiceImpl();
@@ -231,8 +239,8 @@ public class AdminController {
                     }
 
                     if (!exist) {
-                        RolesEntity newRole = new RolesEntity();
-                        newRole.setId(currentRole);
+                        RolesEntity newRole = allRoles.stream()
+                                .filter(q -> q.getName().equalsIgnoreCase(currentRole)).findFirst().orElse(null);
 
                         CredentialsRolesEntity cr = new CredentialsRolesEntity();
                         cr.setCredentialsId(c);
@@ -282,7 +290,6 @@ public class AdminController {
 //    }
 
 
-
     // get all user roles to a list
     private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user) {
         List<GrantedAuthority> authorities = new ArrayList<>();
@@ -294,8 +301,7 @@ public class AdminController {
     }
 
     @RequestMapping("/manageRolesPage")
-    public ModelAndView manageCredentialsRoles()
-    {
+    public ModelAndView manageCredentialsRoles() {
         ModelAndView mav = new ModelAndView("CreateRolesPage");
         mav.addObject("title", "Quản lý chức vụ");
         return mav;
@@ -309,11 +315,11 @@ public class AdminController {
         try {
             RolesServiceImpl rolesService = new RolesServiceImpl();
 
-           List<RolesEntity> allRoles = rolesService.getAllRoles();
+            List<RolesEntity> allRoles = rolesService.getAllRoles();
             List<List<String>> result = new ArrayList<>();
-            int count =1;
+            int count = 1;
             for (RolesEntity role :
-                 allRoles) {
+                    allRoles) {
                 List temporary = new ArrayList();
                 //index
                 temporary.add(count++);
@@ -346,28 +352,28 @@ public class AdminController {
         try {
             RolesServiceImpl rolesService = new RolesServiceImpl();
 
-           if(newRole!= null && !newRole.isEmpty()){
+            if (newRole != null && !newRole.isEmpty()) {
 
-               List<RolesEntity> existList = rolesService.getRolesById(newRole);
-               if(!existList.isEmpty()){
-                   data.addProperty("success", false);
-                   data.addProperty("message", "Chức vụ đã tồn tại");
-                   return data;
-               }
-               RolesEntity rolesEntity = new RolesEntity();
-               rolesEntity.setId(newRole);
-              boolean result = rolesService.createNewRole(rolesEntity);
-              if(result){
-                  data.addProperty("success", true);
-                  data.addProperty("message", "Tạo chức vụ thành công");
-              }else{
-                  data.addProperty("success", false);
-                  data.addProperty("message", "Đã xảy ra lỗi!");
-              }
-           }else{
-               data.addProperty("success", false);
-               data.addProperty("message", "Role can't be empty");
-           }
+                List<RolesEntity> existList = rolesService.getRolesByName(newRole);
+                if (!existList.isEmpty()) {
+                    data.addProperty("success", false);
+                    data.addProperty("message", "Chức vụ đã tồn tại");
+                    return data;
+                }
+                RolesEntity rolesEntity = new RolesEntity();
+                rolesEntity.setName(newRole);
+                boolean result = rolesService.createNewRole(rolesEntity);
+                if (result) {
+                    data.addProperty("success", true);
+                    data.addProperty("message", "Tạo chức vụ thành công");
+                } else {
+                    data.addProperty("success", false);
+                    data.addProperty("message", "Đã xảy ra lỗi!");
+                }
+            } else {
+                data.addProperty("success", false);
+                data.addProperty("message", "Role can't be empty");
+            }
 
             return data;
         } catch (Exception e) {
@@ -377,7 +383,6 @@ public class AdminController {
         }
         return data;
     }
-
 
 
 }

@@ -8,6 +8,7 @@ package com.capstone.entities;
 import java.io.Serializable;
 import javax.persistence.*;
 import java.util.Collection;
+import java.util.List;
 
 /**
  *
@@ -42,7 +43,7 @@ public class CredentialsEntity implements Serializable {
     @Column(name = "StudentRollNumber", length = 50)
     private String studentRollNumber;
     @OneToMany(mappedBy = "credentialsId")
-    private Collection<CredentialsRolesEntity> credentialsRolesEntityCollection;
+    private List<CredentialsRolesEntity> credentialsRolesEntityList;
 
     public CredentialsEntity() {
     }
@@ -121,12 +122,12 @@ public class CredentialsEntity implements Serializable {
         this.studentRollNumber = studentRollNumber;
     }
 
-    public Collection<CredentialsRolesEntity> getCredentialsRolesEntityCollection() {
-        return credentialsRolesEntityCollection;
+    public List<CredentialsRolesEntity> getCredentialsRolesEntityList() {
+        return credentialsRolesEntityList;
     }
 
-    public void setCredentialsRolesEntityCollection(Collection<CredentialsRolesEntity> credentialsRolesEntityCollection) {
-        this.credentialsRolesEntityCollection = credentialsRolesEntityCollection;
+    public void setCredentialsRolesEntityList(List<CredentialsRolesEntity> credentialsRolesEntityList) {
+        this.credentialsRolesEntityList = credentialsRolesEntityList;
     }
 
     @Override
