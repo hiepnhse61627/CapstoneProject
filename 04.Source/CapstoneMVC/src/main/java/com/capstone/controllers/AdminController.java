@@ -92,7 +92,7 @@ public class AdminController {
                         role = "N/A";
                     } else {
                         for (int i = 0; i < roleList.size(); ++i) {
-                            role += roleList.get(i).getRolesId().getId();
+                            role += roleList.get(i).getRolesId().getName();
                             if (i != roleList.size() - 1) {
                                 role += "<br>";
                             }
@@ -228,11 +228,12 @@ public class AdminController {
                 credentialsService.SaveCredential(c, false);
 
                 List<CredentialsRolesEntity> roleList = credentialsRolesService.getCredentialsRolesByCredentialsId(cred.getId());
+
                 // Create new roles
                 for (String currentRole : cred.getRoles()) {
                     boolean exist = false;
                     for (CredentialsRolesEntity role : roleList) {
-                        if (role.getRolesId().getId().equals(currentRole)) {
+                        if (role.getRolesId().getName().equals(currentRole)) {
                             exist = true;
                             break;
                         }
@@ -250,10 +251,11 @@ public class AdminController {
                     }
                 }
 
+                // Delete old roles
                 for (CredentialsRolesEntity currentRole : roleList) {
                     boolean exist = false;
                     for (String r : cred.getRoles()) {
-                        if (currentRole.getRolesId().getId().equals(r)) {
+                        if (currentRole.getRolesId().getName().equals(r)) {
                             exist = true;
                             break;
                         }
