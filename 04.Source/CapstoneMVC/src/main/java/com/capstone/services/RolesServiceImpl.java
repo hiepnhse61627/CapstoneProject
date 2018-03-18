@@ -43,5 +43,10 @@ public class RolesServiceImpl implements IRolesService {
         return controller.getRolesByName(role);
     }
 
+    @Override
+    public boolean updateRole(RolesEntity currentRole) {
+        return controller.updateRole(currentRole);
+    }
+
 
 }

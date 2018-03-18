@@ -52,6 +52,24 @@ public class ExRolesEntityJpaController extends RolesEntityJpaController {
         return true;
     }
 
+    public boolean updateRole(RolesEntity currentRole) {
+        EntityManager em = null;
+        try {
+            em = getEntityManager();
+            em.getTransaction().begin();
+            em.merge(currentRole);
+            em.flush();
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (em != null)
+                em.close();
+        }
+        return true;
+    }
+
     public List<RolesEntity> getRolesByName(String role) {
         EntityManager em = null;
         List<RolesEntity> list;
@@ -71,4 +89,6 @@ public class ExRolesEntityJpaController extends RolesEntityJpaController {
         }
         return list;
     }
+
+
 }

@@ -277,12 +277,6 @@ public class AdminController {
         return data;
     }
 
-    @RequestMapping("/manageRoles")
-    public ModelAndView manageRoles() {
-        ModelAndView mav = new ModelAndView("CreateRolesPage");
-        mav.addObject("title", "Tạo mới chức vụ");
-        return mav;
-    }
 
 //    @RequestMapping("/createNewRole")
 //    public JsonObject createRoles(@RequestParam String newRole){
@@ -303,7 +297,7 @@ public class AdminController {
     }
 
     @RequestMapping("/manageRolesPage")
-    public ModelAndView manageCredentialsRoles() {
+    public ModelAndView goManageRolesPage() {
         ModelAndView mav = new ModelAndView("CreateRolesPage");
         mav.addObject("title", "Quản lý chức vụ");
         return mav;
@@ -326,6 +320,8 @@ public class AdminController {
                 //index
                 temporary.add(count++);
                 //roles
+                temporary.add(role.getName());
+                //id
                 temporary.add(role.getId());
                 //add to result list
                 result.add(temporary);
@@ -386,5 +382,333 @@ public class AdminController {
         return data;
     }
 
+    @RequestMapping(value = "/updateExistRole", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goUpdateExistMenu(Map<String, String> params, @RequestParam(value = "roleId") int roleId,
+                                        @RequestParam(value = "roleName") String roleName) {
+        JsonObject data = new JsonObject();
 
+        try {
+            RolesServiceImpl rolesService = new RolesServiceImpl();
+            RolesEntity rolesEntity = rolesService.findRolesEntity(roleId);
+            if (rolesEntity != null) {
+                rolesEntity.setName(roleName);
+                //update
+                rolesService.updateRole(rolesEntity);
+                data.addProperty("success", true);
+                data.addProperty("message", "Cập nhật thành công!");
+            } else {
+                data.addProperty("success", false);
+                data.addProperty("message", "Không tìm thấy chức vụ!");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            data.addProperty("success", false);
+            data.addProperty("message", e.getMessage());
+        }
+        return data;
+    }
+
+    @RequestMapping("/manageMenuPage")
+    public ModelAndView goManageMenuPage() {
+        ModelAndView mav = new ModelAndView("ManageMenu");
+        mav.addObject("title", "Quản lý menu");
+        return mav;
+    }
+
+    @RequestMapping(value = "/currentMenuData")
+    @ResponseBody
+    public JsonObject getCurrentMenuData(Map<String, String> params) {
+        JsonObject data = new JsonObject();
+
+        try {
+            DynamicMenuServiceImpl dynamicMenuService = new DynamicMenuServiceImpl();
+
+            List<DynamicMenuEntity> allMenu = dynamicMenuService.getAllMenu();
+            List<List<String>> result = new ArrayList<>();
+            for (DynamicMenuEntity menu :
+                    allMenu) {
+                List temporary = new ArrayList();
+                //get data
+                temporary.add(menu.getFunctionGroup() == null ? "-" : menu.getFunctionGroup());
+                temporary.add(menu.getFunctionName());
+                temporary.add(menu.getGroupName() == null ? "-" : menu.getGroupName());
+                temporary.add(menu.getLink());
+                temporary.add(menu.getId());
+
+                //add to result list
+                result.add(temporary);
+            }
+
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(result);
+
+            data.addProperty("iTotalRecords", result.size());
+            data.addProperty("iTotalDisplayRecords", result.size());
+            data.add("aaData", aaData);
+            data.addProperty("sEcho", params.get("sEcho"));
+
+            return data;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return data;
+    }
+
+    @RequestMapping(value = "/createNewMenu", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goCreateNewMenu(Map<String, String> params, @RequestParam("newFunctionGroup") String newFunctionGroup,
+                                      @RequestParam("newMenuName") String newMenuName, @RequestParam("newGroupName") String newGroupName,
+                                      @RequestParam("newLink") String newLink) {
+        JsonObject data = new JsonObject();
+
+        try {
+            DynamicMenuServiceImpl dynamicMenuService = new DynamicMenuServiceImpl();
+            if (!newMenuName.isEmpty() && !newLink.isEmpty()) {
+                DynamicMenuEntity exist = dynamicMenuService.findDynamicMenuByLink(newLink);
+                if (exist != null) {
+                    data.addProperty("success", false);
+                    data.addProperty("message", "Link đã tồn tại!");
+                    return data;
+                } else {
+                    if (newFunctionGroup.trim().isEmpty()) {
+                        newFunctionGroup = null;
+                    }
+                    if (newGroupName.trim().isEmpty()) {
+                        newGroupName = null;
+                    }
+                    DynamicMenuEntity newMenu = new DynamicMenuEntity();
+                    newMenu.setFunctionGroup(newFunctionGroup);
+                    newMenu.setFunctionName(newMenuName);
+                    newMenu.setGroupName(newGroupName);
+                    newMenu.setLink(newLink);
+
+                    boolean result = dynamicMenuService.createNewMenu(newMenu);
+                    if (result) {
+                        data.addProperty("success", true);
+                        data.addProperty("message", "Tạo menu thành công");
+                    } else {
+                        data.addProperty("success", false);
+                        data.addProperty("message", "Đã xảy ra lỗi!");
+                    }
+                }
+            } else {
+                data.addProperty("success", false);
+                data.addProperty("message", "Dữ liệu gửi bị trống!");
+            }
+
+            return data;
+        } catch (Exception e) {
+            e.printStackTrace();
+            data.addProperty("success", false);
+            data.addProperty("message", e.getMessage());
+        }
+        return data;
+    }
+
+    @RequestMapping(value = "/updateExistMenu", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goUpdateExistMenu(Map<String, String> params, @RequestParam(value = "e-functionGroup") String newFunctionGroup,
+                                        @RequestParam("e-menuName") String newMenuName, @RequestParam(value = "e-groupName") String newGroupName,
+                                        @RequestParam("e-Link") String newLink, @RequestParam("e-menuId") int menuId) {
+        JsonObject data = new JsonObject();
+
+        try {
+            DynamicMenuServiceImpl dynamicMenuService = new DynamicMenuServiceImpl();
+            if (!newMenuName.isEmpty() && !newLink.isEmpty()) {
+                DynamicMenuEntity exist = dynamicMenuService.findDynamicMenuEntity(menuId);
+                if (exist != null) {
+                    if (newFunctionGroup.trim().isEmpty()) {
+                        newFunctionGroup = null;
+                    }
+                    if (newGroupName.trim().isEmpty()) {
+                        newGroupName = null;
+                    }
+                    exist.setFunctionGroup(newFunctionGroup);
+                    exist.setFunctionName(newMenuName);
+                    exist.setGroupName(newGroupName);
+                    exist.setLink(newLink);
+
+                    boolean result = dynamicMenuService.updateMenu(exist);
+                    if (result) {
+                        data.addProperty("success", true);
+                        data.addProperty("message", "Tạo menu thành công");
+                    } else {
+                        data.addProperty("success", false);
+                        data.addProperty("message", "Đã xảy ra lỗi!");
+                    }
+                } else {
+                    data.addProperty("success", false);
+                    data.addProperty("message", "Menu không tồn tại!");
+                    return data;
+                }
+            } else {
+                data.addProperty("success", false);
+                data.addProperty("message", "Dữ liệu gửi bị trống!");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            data.addProperty("success", false);
+            data.addProperty("message", e.getMessage());
+        }
+        return data;
+    }
+
+
+    @RequestMapping(value = "/deleteExistMenu", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goDeleteExistMenu(Map<String, String> params, @RequestParam("menuId") int menuId) {
+        JsonObject data = new JsonObject();
+
+        try {
+            DynamicMenuServiceImpl dynamicMenuService = new DynamicMenuServiceImpl();
+            RolesAuthorityServiceImpl rolesAuthorityService = new RolesAuthorityServiceImpl();
+            DynamicMenuEntity menu = dynamicMenuService.findDynamicMenuEntity(menuId);
+
+            //xóa tất cả những rolesAuthority liên quan đến menu
+            List<RolesAuthorityEntity> involeList = rolesAuthorityService.findRolesAuthorityByMenuId(menuId);
+            boolean checkDelete = rolesAuthorityService.deleteRolesAuthorityByIdList(involeList);
+
+            if (checkDelete) {
+                dynamicMenuService.deleteMenu(menu);
+            } else {
+                data.addProperty("success", false);
+                data.addProperty("message", "Không xóa được những phân quyền liên quan!");
+            }
+            data.addProperty("success", true);
+            data.addProperty("message", "Xóa menu thành công");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            data.addProperty("success", false);
+            data.addProperty("message", e.getMessage());
+        }
+        return data;
+    }
+
+    @RequestMapping("/manageRolesAuthorityPage")
+    public ModelAndView goManageRolesAuthorityPage() {
+        ModelAndView mav = new ModelAndView("AssignRolesAuthority");
+        RolesServiceImpl rolesService = new RolesServiceImpl();
+        List<RolesEntity> allRoles = rolesService.getAllRoles();
+        RolesAuthorityServiceImpl rolesAuthorityService = new RolesAuthorityServiceImpl();
+
+        DynamicMenuServiceImpl dynamicMenuService = new DynamicMenuServiceImpl();
+        List<DynamicMenuEntity> allMenus = dynamicMenuService.getAllMenu();
+        List<DynamicMenuEntity> noGroupName = allMenus.stream()
+                .filter(q -> q.getGroupName() == null).collect(Collectors.toList());
+
+        List<DynamicMenuEntity> haveGroupName = allMenus.stream()
+                .filter(q -> q.getGroupName() != null).collect(Collectors.toList());
+        List<GroupNameDynamicMenu> groupMenus = new ArrayList<>();
+        for (DynamicMenuEntity menu : haveGroupName) {
+            boolean exist = groupMenus.stream().anyMatch(q -> q.getGroupName().equalsIgnoreCase(menu.getGroupName()));
+            if (!exist) {
+                groupMenus.add(new GroupNameDynamicMenu(menu.getFunctionGroup(), menu.getGroupName()));
+            }
+        }
+
+
+        mav.addObject("title", "Phân quyền chức vụ");
+        mav.addObject("roleList", allRoles);
+        mav.addObject("noGroupName", noGroupName);
+        mav.addObject("haveGroupName", haveGroupName);
+        mav.addObject("groupMenus", groupMenus);
+        return mav;
+    }
+
+    //lấy tất cả menu mà roles này đang được truy cập
+    @RequestMapping(value = "/getRoleAuthorityData", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goGetRoleAuthorityData(Map<String, String> params, @RequestParam("selectedRoleId") int selectedRoleId) {
+        JsonObject data = new JsonObject();
+
+        try {
+            RolesAuthorityServiceImpl rolesAuthorityService = new RolesAuthorityServiceImpl();
+            List<DynamicMenuEntity> menuList = rolesAuthorityService.findMenuByRoleId(selectedRoleId);
+            List<Integer> menuIds = menuList.stream().map(q -> q.getId()).collect(Collectors.toList());
+
+            JsonArray authorityArray = (JsonArray) new Gson().toJsonTree(menuIds);
+            data.add("authorityArray", authorityArray);
+            data.addProperty("success", true);
+            data.addProperty("message", "Done get authority");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            data.addProperty("success", false);
+            data.addProperty("message", e.getMessage());
+        }
+        return data;
+    }
+
+    //uploadAuthority:
+    @RequestMapping(value = "/updateRolesAuthority", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goUpdateRolesAuthority(Map<String, String> params,
+                                             @RequestParam("allMenuIds") List<Integer> uploadAuthority,
+                                             @RequestParam("selectedRoleId") int selectedRoleId) {
+        JsonObject data = new JsonObject();
+
+        try {
+            DynamicMenuServiceImpl dynamicMenuService = new DynamicMenuServiceImpl();
+            RolesAuthorityServiceImpl rolesAuthorityService = new RolesAuthorityServiceImpl();
+            RolesServiceImpl rolesService = new RolesServiceImpl();
+            List<DynamicMenuEntity> allMenus = dynamicMenuService.getAllMenu();
+            RolesEntity selectedRole = rolesService.findRolesEntity(selectedRoleId);
+            if (selectedRole == null) {
+                data.addProperty("success", false);
+                data.addProperty("message", "Không tìm thấy chức vụ được chọn");
+                return data;
+            }
+
+            List<RolesAuthorityEntity> currentAuthority = rolesAuthorityService.findRolesAuthorityByRoleId(selectedRoleId);
+
+            //lấy những trang menu được thêm quyền truy cập
+            List<Integer> newAthority = uploadAuthority.stream()
+                    .filter(q -> !currentAuthority.stream().anyMatch(c -> c.getMenuId().getId() == q))
+                    .collect(Collectors.toList());
+
+            //lấy những trang bị tước quyền truy cập
+            List<RolesAuthorityEntity> removeAuthority = currentAuthority.stream()
+                    .filter(q -> !uploadAuthority.stream().anyMatch(c -> c == q.getMenuId().getId()))
+                    .collect(Collectors.toList());
+
+            boolean checkRemove = false;
+            //xóa quyền của những trang bị tước quyền truy cập
+            if (!removeAuthority.isEmpty()) {
+                checkRemove = rolesAuthorityService.deleteRolesAuthorityByIdList(removeAuthority);
+            }
+
+            //cấp quyền của những trang được thêm quyền truy cập
+            if (!newAthority.isEmpty()) {
+                for (Integer itemMenuId : newAthority) {
+                    RolesAuthorityEntity newRolesAuthority = new RolesAuthorityEntity();
+                    DynamicMenuEntity menuEntity = allMenus.stream().filter(q -> q.getId() == itemMenuId)
+                            .findFirst().orElse(null);
+                    if (menuEntity != null) {
+                        //set attribute
+                        newRolesAuthority.setMenuId(menuEntity);
+                        newRolesAuthority.setRolesId(selectedRole);
+
+                        //lưu xuống
+                        rolesAuthorityService.createRolesAuthority(newRolesAuthority);
+                    } else {
+                        System.out.println("Can't find DynamicMenuId " + itemMenuId);
+                        data.addProperty("success", false);
+                        data.addProperty("message", "Không tìm thấy trang được chọn");
+                        return data;
+                    }
+                }
+            }
+
+            data.addProperty("success", true);
+            data.addProperty("message", "Cập nhật quyền thành công");
+        } catch (Exception e) {
+            e.printStackTrace();
+            data.addProperty("success", false);
+            data.addProperty("message", e.getMessage());
+        }
+        return data;
+    }
 }

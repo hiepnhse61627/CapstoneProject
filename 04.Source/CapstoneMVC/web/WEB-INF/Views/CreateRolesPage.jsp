@@ -30,6 +30,7 @@
                             <tr>
                                 <th>No.</th>
                                 <th>Chức vụ</th>
+                                <th>Edit</th>
                             </tr>
                             </thead>
                         </table>
@@ -49,18 +50,49 @@
             </div>
             <div class="modal-body">
                 <div class="title">
-                    <label>Chọn file:</label>
+                    <label>Nhập chức vụ mới:</label>
                 </div>
                 <div class="my-content">
                     <div class="form-group">
                         <div class="col-md-6">
                             <input type="text" id="newRole" class="form-control"/>
-                        </div><br/>
+                        </div>
+                        <br/>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" onclick="CreateRole()" class="btn btn-info">Tạo</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="roleEditor" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Sửa chức vụ</h4>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="e-roleId" class="form-control"/>
+                <div class="title">
+                    <label>Tên chức vụ:</label>
+                </div>
+                <div class="my-content">
+                    <div class="form-group">
+                        <div class="col-md-6">
+                            <input type="text" id="e-roleName" class="form-control"/>
+                        </div>
+                        <br/>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="UpdateRole()" class="btn btn-info btn-md">Cập nhật</button>
             </div>
         </div>
 
@@ -101,16 +133,20 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1],
+                    "aTargets": [0, 1, 2],
                     "sClass": "text-center",
                     "bSortable": false
                 },
                 {
-                    "aTargets": [1],
+                    "aTargets": [2],
+                    //Id, function Group, func name, group name, link
                     "mRender": function (data, type, row) {
-                        return "<a onclick='GetAllStudentMarks(" + row[5] + ")'>" + data + "</a>";
+                        var result = "<a class='btn btn-success tbl-btn' onclick='editRole(" + row[2] + "," + JSON.stringify(row[1]) + ")'>" +
+                            "<i class='glyphicon glyphicon-pencil'></i></a>";
+                        return result;
                     }
                 }
+
             ],
             "bAutoWidth": false
         });
@@ -130,7 +166,7 @@
 
     function CreateRole() {
         var form = new FormData();
-        if($.trim($('#newRole').val()).length == 0){
+        if ($.trim($('#newRole').val()).length == 0) {
             swal('Cảnh báo!', "Chức vụ không được để trống", 'info');
             return;
         }
@@ -171,4 +207,50 @@
         // do something…
         $('#newRole').val("");
     })
+
+    function editRole(roleId, currentRoleName) {
+        $('#e-roleId').val(roleId);
+        $('#e-roleName').val(currentRoleName);
+        $('#roleEditor').modal('show');
+    }
+
+    function UpdateRole() {
+        var form = new FormData();
+        if ($.trim($('#e-roleName').val()).length == 0) {
+            swal('Cảnh báo!', "Chức vụ không được để trống", 'info');
+            return;
+        }
+        form.append('roleName', $.trim($('#e-roleName').val()));
+        form.append('roleId', $.trim($('#e-roleId').val()));
+
+        swal({
+            title: 'Đang xử lý',
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                $.ajax({
+                    type: "POST",
+                    url: "/admin/updateExistRole",
+                    processData: false,
+                    contentType: false,
+                    data: form,
+                    success: function (result) {
+                        if (result.success) {
+                            swal({
+                                title: 'Thành công',
+                                text: result.message,
+                                type: 'success',
+                                timer: 3000
+                            });
+                            RefreshTable();
+                        } else {
+                            swal('Đã xảy ra lỗi!', result.message, 'error');
+                        }
+                    }
+                });
+            },
+            allowOutsideClick: false
+        });
+    }
 </script>

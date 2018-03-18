@@ -21,4 +21,25 @@ public class DynamicMenuServiceImpl implements IDynamicMenuService {
     public DynamicMenuEntity findDynamicMenuByLink(String link) {
         return controller.findDynamicMenuByLink(link);
     }
+
+    @Override
+    public boolean createNewMenu(DynamicMenuEntity newMenu) {
+        return controller.createNewMenu(newMenu);
+    }
+
+    @Override
+    public DynamicMenuEntity findDynamicMenuEntity(Integer id) {
+        return controller.findDynamicMenuEntity(id);
+    }
+
+    @Override
+    public boolean updateMenu(DynamicMenuEntity menu) {
+        return controller.updateMenu(menu);
+    }
+
+    @Override
+    public boolean deleteMenu(DynamicMenuEntity menu) {
+        return controller.deleteMenu(menu);
+    }
+
 }

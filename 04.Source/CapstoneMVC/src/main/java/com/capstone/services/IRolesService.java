@@ -11,4 +11,5 @@ public interface IRolesService {
     List<RolesEntity> getAllRoles();
     boolean createNewRole(RolesEntity newRole);
     List<RolesEntity> getRolesByName(String role);
+    boolean updateRole(RolesEntity currentRole);
 }

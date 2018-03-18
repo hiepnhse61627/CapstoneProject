@@ -698,7 +698,48 @@ public class Ultilities {
     public static void GetMenu(ServletContext servletContext, CredentialsEntity user) {
         IDynamicMenuService dynamicMenuService = new DynamicMenuServiceImpl();
 
-        List<DynamicMenuEntity> list = dynamicMenuService.getAllMenu().stream().filter(s -> s.getRole().contains(user.getRole())).collect(Collectors.toList());
+        List<DynamicMenuEntity> list = dynamicMenuService.getAllMenu().stream()
+                .filter(s -> s.getRole() != null && s.getRole().contains(user.getRole()))
+                .collect(Collectors.toList());
+
+        List<DynamicMenuEntity> menuNoFunctionGroup = list.stream().filter(s -> s.getFunctionGroup() == null).collect(Collectors.toList());
+
+        List<DynamicMenuEntity> functionGroup = list.stream().filter(s -> s.getGroupName() != null).distinct().collect(Collectors.toList());
+        List<String> groups = new ArrayList<>();
+        for (DynamicMenuEntity temp : functionGroup) {
+            if (!groups.contains(temp.getGroupName())) {
+                groups.add(temp.getGroupName());
+            }
+        }
+
+        List<DynamicMenuEntity> menu = list.stream().filter(s -> s.getFunctionGroup() != null).collect(Collectors.toList());
+//        ServletContext servletContext = servletContextEvent.getServletContext();
+        servletContext.setAttribute("menu", menu);
+        servletContext.setAttribute("functionGroup", groups);
+        servletContext.setAttribute("menuNoFunctionGroup", menuNoFunctionGroup);
+        servletContext.setAttribute("role", user.getRole());
+
+    }
+
+    public static void GetMenu2(ServletContext servletContext, CredentialsEntity user) {
+        RolesAuthorityServiceImpl rolesAuthorityService = new RolesAuthorityServiceImpl();
+        CredentialsRolesServiceImpl credentialsRolesService = new CredentialsRolesServiceImpl();
+        List<CredentialsRolesEntity> userRoles = credentialsRolesService.getCredentialsRolesByCredentialsId(user.getId());
+
+        List<DynamicMenuEntity> list = new ArrayList<>();
+        for (CredentialsRolesEntity role : userRoles) {
+            int roleId = role.getRolesId().getId();
+
+            List<DynamicMenuEntity> tempList = rolesAuthorityService.findMenuByRoleId(roleId);
+            //kiểm tra trùng và add tất cả unique menu của tất cả role vào list
+            for (DynamicMenuEntity menu: tempList) {
+                boolean exist = list.stream().anyMatch(q -> q.getId() == menu.getId());
+                if(!exist){
+                    list.add(menu);
+                }
+            }
+        }
+
 
         List<DynamicMenuEntity> menuNoFunctionGroup = list.stream().filter(s -> s.getFunctionGroup() == null).collect(Collectors.toList());
 
