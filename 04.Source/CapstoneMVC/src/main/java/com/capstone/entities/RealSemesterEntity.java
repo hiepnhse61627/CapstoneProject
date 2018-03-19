@@ -42,6 +42,11 @@ public class RealSemesterEntity implements Serializable {
     private List<StudentStatusEntity> studentStatusEntityList;
     @Column(name = "IsActivated")
     private boolean active;
+    @Column(name = "StartDate")
+    private String startDate;
+    @Column(name = "EndDate")
+    private String endDate;
+
 
     public RealSemesterEntity() {
     }
@@ -88,6 +93,22 @@ public class RealSemesterEntity implements Serializable {
 
     public void setStudentStatusEntityList(List<StudentStatusEntity> studentStatusEntityList) {
         this.studentStatusEntityList = studentStatusEntityList;
+    }
+
+    public String getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(String startDate) {
+        this.startDate = startDate;
+    }
+
+    public String getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(String endDate) {
+        this.endDate = endDate;
     }
 
     @Override

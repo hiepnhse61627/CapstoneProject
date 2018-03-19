@@ -45,6 +45,9 @@ public class EmployeeList {
 
     ISubjectService subjectService = new SubjectServiceImpl();
 
+    IEmployeeCompetenceService employeeCompetenceService = new EmployeeCompetenceServiceImpl();
+
+
     @RequestMapping("/employeeList")
     public ModelAndView EmployeeListAll() {
         ModelAndView view = new ModelAndView("EmployeeList");
@@ -155,6 +158,26 @@ public class EmployeeList {
         List<EmployeeEntity> emps = employeeService.findAllEmployees();
         view.addObject("employees", emps);
 
+        List<SubjectEntity> subjects = subjectService.getAllSubjects();
+        view.addObject("subjects", subjects);
+
+        List<RoomEntity> rooms = roomService.findAllRooms();
+        view.addObject("rooms", rooms);
+
+        Set listCapacity = new HashSet();
+        for (RoomEntity room : rooms) {
+            listCapacity.add(room.getCapacity());
+        }
+        view.addObject("capacity", listCapacity);
+
+        List<SlotEntity> slots = slotService.findAllSlots();
+        view.addObject("slots", slots);
+
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+
+        view.addObject("semesters", semesters);
+
         return view;
     }
 
@@ -162,6 +185,40 @@ public class EmployeeList {
     @ResponseBody
     public JsonObject LoadEmployeeFreeScheduleAll(@RequestParam Map<String, String> params) {
         JsonObject jsonObj = new JsonObject();
+        List<List<String>> result = LoadEmployeeFreeScheduleAllImpl(params);
+
+        Integer lectureId = null;
+        if (!params.get("lecture").equals("") && !params.get("lecture").equals("-1")) {
+            lectureId = Integer.parseInt(params.get("lecture"));
+        }
+
+        jsonObj.addProperty("employeeCompetence", findEmployeCompetence(lectureId));
+
+        Gson gson = new Gson();
+        JsonArray array = (JsonArray) gson.toJsonTree(result);
+        jsonObj.add("aaData", array);
+
+
+        return jsonObj;
+    }
+
+    public String findEmployeCompetence(Integer lectureId){
+        String empCompetenceStr = "";
+        List<EmpCompetenceEntity> empCompetenceEntities = employeeCompetenceService.findEmployeeCompetencesByEmployee(lectureId);
+        if (empCompetenceEntities != null && empCompetenceEntities.size() > 0) {
+            for (EmpCompetenceEntity empComp : empCompetenceEntities) {
+                empCompetenceStr += empComp.getSubjectId().getId() + ", ";
+            }
+
+            empCompetenceStr = empCompetenceStr.substring(0, empCompetenceStr.lastIndexOf(", ") - 1);
+        } else {
+            empCompetenceStr = "Chưa có dữ liệu";
+        }
+        return empCompetenceStr;
+    }
+
+    public List<List<String>> LoadEmployeeFreeScheduleAllImpl(@RequestParam Map<String, String> params){
+        List<List<String>> result = new ArrayList<>();
 
         try {
             Integer lectureId = null;
@@ -170,9 +227,10 @@ public class EmployeeList {
 
             Map<Date, List<String>> freeDaySlot = new TreeMap<>();
 
-            if (!params.get("lecture").equals("")) {
+            if (!params.get("lecture").equals("") && !params.get("lecture").equals("-1")) {
                 lectureId = Integer.parseInt(params.get("lecture"));
             }
+
 
             List<ScheduleEntity> scheduleList = scheduleService.findScheduleByLecture(lectureId);
             if (scheduleList != null) {
@@ -230,45 +288,57 @@ public class EmployeeList {
                     }
 
 
-                    List<List<String>> result = new ArrayList<>();
 
                     for (Date key : freeDaySlot.keySet()) {
-                        String totalSlot = "";
-                        for (String aSlot : freeDaySlot.get(key)) {
-                            totalSlot += aSlot+", ";
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTime(key);
+                        if (cal.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
+                            String totalSlot = "";
+                            for (String aSlot : freeDaySlot.get(key)) {
+                                totalSlot += aSlot + ", ";
+                            }
+
+                            List<String> dataList = new ArrayList<String>();
+
+                            switch (cal.get(Calendar.DAY_OF_WEEK)) {
+                                case Calendar.SUNDAY:
+                                    dataList.add("Chủ nhật");
+                                    break;
+                                case Calendar.MONDAY:
+                                    dataList.add("Thứ 2");
+                                    break;
+                                case Calendar.TUESDAY:
+                                    dataList.add("Thứ 3");
+                                    break;
+                                case Calendar.WEDNESDAY:
+                                    dataList.add("Thứ 4");
+                                    break;
+                                case Calendar.THURSDAY:
+                                    dataList.add("Thứ 5");
+                                    break;
+                                case Calendar.FRIDAY:
+                                    dataList.add("Thứ 6");
+                                    break;
+                                case Calendar.SATURDAY:
+                                    dataList.add("Thứ 7");
+                                    break;
+                                default:
+                                    dataList.add("");
+                                    break;
+                            }
+                            dataList.add(formatDate(key));
+                            dataList.add(totalSlot.substring(0, totalSlot.lastIndexOf(", ")));
+                            result.add(dataList);
                         }
 
-                        List<String> dataList = new ArrayList<String>();
-                        dataList.add(formatDate(key));
-                        dataList.add(totalSlot.substring(0, totalSlot.lastIndexOf(", ")));
-                        result.add(dataList);
                     }
-
-                    Gson gson = new Gson();
-                    JsonArray array = (JsonArray) gson.toJsonTree(result);
-
-                    jsonObj.add("aaData", array);
-                }else{
-
-                    Gson gson = new Gson();
-                    JsonArray array = (JsonArray) gson.toJsonTree(new ArrayList<>());
-                    jsonObj.add("aaData", array);
-
                 }
-            }else{
-                Gson gson = new Gson();
-                JsonArray array = (JsonArray) gson.toJsonTree(new ArrayList<>());
-                jsonObj.add("aaData", array);
             }
-
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return jsonObj;
+        return result;
     }
-
 
     @RequestMapping(value = "/loadEmployeeList")
     @ResponseBody

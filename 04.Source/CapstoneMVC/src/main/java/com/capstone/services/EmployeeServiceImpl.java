@@ -34,6 +34,11 @@ public class EmployeeServiceImpl implements IEmployeeService {
     }
 
     @Override
+    public EmployeeEntity findEmployeeByEmail(String mail) {
+        return employeeEntityJpaController.findEmployeeByEmail(mail);
+    }
+
+    @Override
     public List<EmployeeEntity> findEmployeesByFullName(String searchValue) {
         return employeeEntityJpaController.findEmployeesByFullName(searchValue);
     }

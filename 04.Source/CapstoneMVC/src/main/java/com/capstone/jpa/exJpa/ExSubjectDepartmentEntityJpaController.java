@@ -111,9 +111,9 @@ public class ExSubjectDepartmentEntityJpaController extends SubjectDepartmentEnt
 
         try {
             String queryStr = "SELECT s FROM SubjectDepartmentEntity s" +
-                    " WHERE s.subjectId.name LIKE :name";
+                    " WHERE s.subjectId = :subject";
             TypedQuery<SubjectDepartmentEntity> query = em.createQuery(queryStr, SubjectDepartmentEntity.class);
-            query.setParameter("name", "%" + subjectEntity.getName() + "%");
+            query.setParameter("subject", subjectEntity );
 
             result = query.getResultList();
 
@@ -132,10 +132,10 @@ public class ExSubjectDepartmentEntityJpaController extends SubjectDepartmentEnt
 
         try {
             String queryStr = "SELECT s FROM SubjectDepartmentEntity s" +
-                    " WHERE s.subjectId.name LIKE :subName AND s.deptId.deptName LIKE :deptName";
+                    " WHERE s.subjectId = :subjectEntity AND s.deptId = :departmentEntity";
             TypedQuery<SubjectDepartmentEntity> query = em.createQuery(queryStr, SubjectDepartmentEntity.class);
-            query.setParameter("subName", "%" + subjectEntity.getName() + "%");
-            query.setParameter("deptName", "%" + departmentEntity.getDeptName() + "%");
+            query.setParameter("subjectEntity", subjectEntity);
+            query.setParameter("departmentEntity", departmentEntity);
 
             result = query.getResultList();
 

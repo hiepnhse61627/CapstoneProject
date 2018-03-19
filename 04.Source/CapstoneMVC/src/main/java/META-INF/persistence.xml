@@ -16,17 +16,17 @@
         <class>com.capstone.entities.CourseEntity</class>
         <class>com.capstone.entities.MarksEntity</class>
         <class>com.capstone.entities.CredentialsEntity</class>
+        <class>com.capstone.entities.SubjectMarkComponentEntity</class>
+        <class>com.capstone.entities.ProgramEntity</class>
         <class>com.capstone.entities.DynamicMenuEntity</class>
         <class>com.capstone.entities.OldRollNumberEntity</class>
-        <class>com.capstone.entities.CredentialsRolesEntity</class>
-        <class>com.capstone.entities.RolesAuthorityEntity</class>
-        <class>com.capstone.entities.RolesEntity</class>
         <class>com.capstone.entities.ScheduleEntity</class>
         <class>com.capstone.entities.EmpCompetenceEntity</class>
         <class>com.capstone.entities.DaySlotEntity</class>
         <class>com.capstone.entities.RoomEntity</class>
         <class>com.capstone.entities.SlotEntity</class>
         <class>com.capstone.entities.EmployeeEntity</class>
+
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
             <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://10.82.3.47:1433;databaseName=CapstoneProject"/>-->
@@ -42,16 +42,43 @@
             <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
             <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
             <!--<property name="javax.persistence.jdbc.password" value="danh123456"/>-->
-
-            <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;database=CapstoneProject;"/>-->
-            <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
-            <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
-            <!--<property name="javax.persistence.jdbc.password" value="hoanglong"/>-->
-            <!--son-->
             <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;database=CapstoneProject;"/>
             <property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
             <property name="javax.persistence.jdbc.user" value="sa"/>
-            <property name="javax.persistence.jdbc.password" value="."/>
+            <property name="javax.persistence.jdbc.password" value="hoanglong"/>
         </properties>
     </persistence-unit>
+
+    <!--<persistence-unit name="FapDB" transaction-type="RESOURCE_LOCAL">-->
+        <!--<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>-->
+        <!--<class>com.capstone.entities.ChangedScheduleEntity</class>-->
+        <!--<properties>-->
+            <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://116.193.67.20:1433;databaseName=AP_HCM"/>-->
+            <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
+            <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
+            <!--<property name="javax.persistence.jdbc.password" value="Kh@nhKT123456&amp;"/>-->
+        <!--</properties>-->
+    <!--</persistence-unit>-->
+
+    <persistence-unit name="FapDB" transaction-type="RESOURCE_LOCAL">
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        <class>com.capstone.entities.ChangedScheduleEntity</class>
+        <properties>
+            <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;database=AP_HCM"/>
+            <property name="javax.persistence.jdbc.user" value="sa"/>
+            <property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+            <property name="javax.persistence.jdbc.password" value="hoanglong"/>
+        </properties>
+    </persistence-unit>
+
+    <!--<persistence-unit name="FapDB" transaction-type="RESOURCE_LOCAL">-->
+        <!--<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>-->
+        <!--<class>com.capstone.entities.ChangedScheduleEntity</class>-->
+        <!--<properties>-->
+            <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://10.23.0.77;databaseName=AP_HCM"/>-->
+            <!--<property name="javax.persistence.jdbc.user" value="aphcm"/>-->
+            <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
+            <!--<property name="javax.persistence.jdbc.password" value="998ecf8427@#$@"/>-->
+        <!--</properties>-->
+    <!--</persistence-unit>-->
 </persistence>
