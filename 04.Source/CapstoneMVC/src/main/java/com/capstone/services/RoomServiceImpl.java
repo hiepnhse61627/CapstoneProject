@@ -28,6 +28,11 @@ public class RoomServiceImpl implements IRoomService {
     }
 
     @Override
+    public RoomEntity findRoomsByExactName(String searchValue) {
+        return RoomEntityJpaController.findRoomsByExactName(searchValue);
+    }
+
+    @Override
     public List<RoomEntity> findRoomsByCapacity(int searchValue) {
         return RoomEntityJpaController.findRoomsByCapacity(searchValue);
     }

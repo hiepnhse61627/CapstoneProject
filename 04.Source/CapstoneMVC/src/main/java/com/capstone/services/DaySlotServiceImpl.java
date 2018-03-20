@@ -29,6 +29,11 @@ public class DaySlotServiceImpl implements IDaySlotService {
     }
 
     @Override
+    public List<DaySlotEntity> findDaySlotByDate(String date) {
+        return DaySlotEntityJpaController.findDaySlotByDate(date);
+    }
+
+    @Override
     public List<DaySlotEntity> findAllDaySlot() {
         return null;
     }

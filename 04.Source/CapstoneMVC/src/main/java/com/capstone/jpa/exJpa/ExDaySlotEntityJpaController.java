@@ -6,6 +6,7 @@ import com.capstone.jpa.DaySlotEntityJpaController;
 import com.capstone.models.Logger;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExDaySlotEntityJpaController extends DaySlotEntityJpaController {
@@ -94,6 +95,28 @@ public class ExDaySlotEntityJpaController extends DaySlotEntityJpaController {
             query.setParameter("slotId", slotId);
 
             DaySlotEntity = (DaySlotEntity) query.getSingleResult();
+
+            return DaySlotEntity;
+        } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+
+    public List<DaySlotEntity> findDaySlotByDate(String date) {
+        EntityManager em = getEntityManager();
+        List<DaySlotEntity> DaySlotEntity = new ArrayList<>();
+        try {
+            String sqlString = "SELECT c FROM DaySlotEntity c " +
+                    "WHERE (c.date = :date)";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("date", date);
+
+            DaySlotEntity = query.getResultList();
 
             return DaySlotEntity;
         } catch (NoResultException nrEx) {
