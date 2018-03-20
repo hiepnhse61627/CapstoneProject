@@ -159,9 +159,18 @@ public class RoomList {
             daySlotEntityList = daySlotService.findDaySlotByDate(startDate);
 
             for (DaySlotEntity aDaySlot : daySlotEntityList) {
-                ScheduleEntity aSchedule = scheduleService.findScheduleByDateSlotAndRoom(aDaySlot, aRoom);
-                if (aSchedule != null) {
-                    scheduleList.add(aSchedule);
+                if (aRoom != null) {
+                    ScheduleEntity aSchedule = scheduleService.findScheduleByDateSlotAndRoom(aDaySlot, aRoom);
+                    if (aSchedule != null) {
+                        scheduleList.add(aSchedule);
+                    }
+                } else {
+                    List<ScheduleEntity> schedules = scheduleService.findScheduleByDateSlot(aDaySlot);
+                    if (schedules != null) {
+                        for (ScheduleEntity aSchedule : schedules) {
+                            scheduleList.add(aSchedule);
+                        }
+                    }
                 }
             }
 
@@ -169,7 +178,6 @@ public class RoomList {
 
                 List<String> dataList = new ArrayList<String>();
 
-                ScheduleEntity parentSchedule = scheduleService.findScheduleById(schedule.getId());
                 dataList.add(schedule.getId() + "");
                 if (schedule.getCourseId() != null) {
                     dataList.add(schedule.getCourseId().getSubjectCode());
@@ -191,6 +199,11 @@ public class RoomList {
                     dataList.add("");
                 }
 
+                if (schedule.getRoomId() != null) {
+                    dataList.add(schedule.getRoomId().getName());
+                } else {
+                    dataList.add("");
+                }
 
                 if (schedule.getEmpId() != null) {
                     dataList.add(schedule.getEmpId().getEmailEDU().substring(0, schedule.getEmpId().getEmailEDU().indexOf("@")));

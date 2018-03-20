@@ -46,7 +46,7 @@
         <div class="b-header">
             <div class="row">
                 <div class="col-md-6 title">
-                    <h1>Lịch sử phòng</h1>
+                    <h1>GV dạy thế theo môn</h1>
                 </div>
             </div>
             <hr>
@@ -60,11 +60,19 @@
             </div>
 
             <div class="form-group">
-                <label for="room">Phòng học:</label>
-                <select id="room" class="select room-select">
-                    <option value="-1">Tất cả</option>
-                    <c:forEach var="aRoom" items="${rooms}">
-                        <option value="${aRoom.id}">${aRoom.name}</option>
+                <label for="subject2">Môn học:</label>
+                <select id="subject2" class="select department2-select">
+                    <c:forEach var="aSubject" items="${subjects}">
+                        <option value="${aSubject.id}">${aSubject.id} - ${aSubject.name}</option>
+                    </c:forEach>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="aTime">Slot:</label>
+                <select id="aTime" class="select aTime-select">
+                    <c:forEach var="aSlot" items="${slots}">
+                        <option value="${aSlot.slotName}">${aSlot.slotName}</option>
                     </c:forEach>
                 </select>
             </div>
@@ -81,12 +89,10 @@
                             <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Mã môn</th>
-                                <th>Lớp</th>
-                                <th>Ngày học</th>
-                                <th>Slot</th>
-                                <th>Phòng</th>
-                                <th>GV đứng lớp</th>
+                                <th>Tên</th>
+                                <th>SĐT</th>
+                                <th>Email</th>
+                                <th>Gửi mail</th>
                             </tr>
                             </thead>
                         </table>
@@ -136,15 +142,23 @@
 
     $(document).ready(function () {
 
-        $('#room').select2({
-            placeholder: '- Chọn phòng -'
+        $('#subject2').select2({
+            placeholder: '- Chọn bộ môn -'
+        });
+
+
+        $('#aTime').select2({
+            placeholder: '- Chọn slot -'
         });
 
         $('select').on('change', function (evt) {
-            $('#select2-room-container').removeAttr('title');
+            $('#select2-subject2-container').removeAttr('title');
+            $('#select2-aTime-container').removeAttr('title');
         });
 
-        $("#room").val('').trigger('change');
+        $("#subject2").val('').trigger('change');
+
+        $("#aTime").val('').trigger('change');
 
         // Show daterangepicker when click on icon
         $('.form-date-range i').click(function () {
@@ -172,7 +186,6 @@
             $(this).val('');
         });
 
-
         table = $('#table').dataTable({
             "bServerSide": false,
             "bFilter": true,
@@ -181,14 +194,15 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/roomHistory/get", // url getData.php etc
+            "sAjaxSource": "/requestLecture/get", // url getData.php etc
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "startDate", "value":  $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY')}),
                     aoData.push({"name": "endDate", "value":  $('#scheduleDate').data('daterangepicker').endDate.format('DD/MM/YYYY')}),
-                    aoData.push({"name": "room", "value": $('#room').val()})
+                    aoData.push({"name": "subject", "value": $('#subject2').val()}),
+                    aoData.push({"name": "slot", "value": $('#aTime').val()})
             },
             "oLanguage": {
-                "sSearchPlaceholder": "Môn học, Lớp, GV...",
+                "sSearchPlaceholder": "Nhập từ khóa",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": 'Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng',
@@ -204,13 +218,27 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4, 5,6],
+                    "aTargets": [0, 1, 2, 3, 4],
                     "sClass": "text-center",
                     "bSortable": false
                 },
                 {
                     "aTargets": [0],
                     "bVisible": false,
+                },
+                {
+                    "aTargets": [4],
+                    "mRender": function (data, type, row) {
+                        var isPast = row[8];
+                        if (isPast === "true") {
+                            return "<div></div>";
+                        } else {
+                            return "<a class='btn btn-success tbl-btn' onclick='EditSchedule(" + row[0] + ",\""
+                                + row[1] + "\",\"" + row[2] + "\",\"" + row[3] + "\",\"" + row[4] +"\")'>" +
+                                "<i class='glyphicon glyphicon-mail'></i></a>";
+                        }
+
+                    }
                 },
             ],
             "bAutoWidth": false
@@ -232,7 +260,8 @@
         $('#scheduleDate').data('daterangepicker').setStartDate(moment());
         $('#scheduleDate').data('daterangepicker').setEndDate(moment());
         $('#scheduleDate').val('');
-        $("#room").val('').trigger('change');
+        $("#aTime").val('').trigger('change');
+        $("#subject2").val('').trigger('change');
 
         $('#removeFilterBtn').attr('disabled','disabled');
 

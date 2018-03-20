@@ -109,6 +109,11 @@ public class ScheduleServiceImpl implements IScheduleService {
     }
 
     @Override
+    public List<ScheduleEntity> findScheduleByDateSlot(DaySlotEntity dateSlot) {
+        return ScheduleEntityJpaController.findScheduleByDateSlot(dateSlot);
+    }
+
+    @Override
     public int getCurrentLine() {
         return ScheduleEntityJpaController.getCurrentLine();
     }

@@ -243,6 +243,26 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
         return ScheduleEntity;
     }
 
+    public List<ScheduleEntity> findScheduleByDateSlot(DaySlotEntity dateSlot) {
+        EntityManager em = getEntityManager();
+        try {
+            String sqlString = "SELECT c FROM ScheduleEntity c " +
+                    "WHERE (c.dateId = :dateSlot) AND (c.isActive IS NULL OR c.isActive = 'true')";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("dateSlot", dateSlot);
+
+            List<ScheduleEntity> std = query.getResultList();
+
+            return std;
+        } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
     public List<ScheduleEntity> findScheduleByGroupName(String groupName) {
         EntityManager em = getEntityManager();
         try {

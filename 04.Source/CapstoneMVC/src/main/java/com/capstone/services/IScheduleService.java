@@ -24,6 +24,6 @@ public interface IScheduleService {
     void updateSchedule(ScheduleEntity entity);
     List<ScheduleEntity> findScheduleInRange(Integer lecture, int iDisplayStart, int iDisplayLength);
     public ScheduleEntity findScheduleByDateSlotAndLectureAndRoomAndCourseDontCareIsActive(DaySlotEntity date, EmployeeEntity lecture, RoomEntity room, CourseEntity course);
-
+    public List<ScheduleEntity> findScheduleByDateSlot(DaySlotEntity dateSlot);
 
     }
