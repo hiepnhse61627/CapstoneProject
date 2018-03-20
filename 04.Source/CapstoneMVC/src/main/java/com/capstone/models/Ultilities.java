@@ -9,11 +9,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -732,9 +740,9 @@ public class Ultilities {
 
             List<DynamicMenuEntity> tempList = rolesAuthorityService.findMenuByRoleId(roleId);
             //kiểm tra trùng và add tất cả unique menu của tất cả role vào list
-            for (DynamicMenuEntity menu: tempList) {
+            for (DynamicMenuEntity menu : tempList) {
                 boolean exist = list.stream().anyMatch(q -> q.getId() == menu.getId());
-                if(!exist){
+                if (!exist) {
                     list.add(menu);
                 }
             }
@@ -1222,6 +1230,85 @@ public class Ultilities {
         displayList = displayList.stream().distinct().collect(Collectors.toList());
 
         return displayList;
+    }
+
+    public static CustomUser getPrincipal() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUser user = (CustomUser) authentication.getPrincipal();
+        return user;
+    }
+
+    public static void logUserAction(String str) {
+        ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+        HttpSession session = attr.getRequest().getSession(true);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+        Date now = new Date();
+        List<String> userActions = (List<String>) session.getAttribute("uActionList");
+        if (userActions == null) {
+            userActions = new ArrayList<>();
+            userActions.add(str + " - " + sdf.format(now));
+            session.setAttribute("uActionList", userActions);
+        } else {
+            userActions.add(str + " - " + sdf.format(now));
+        }
+    }
+
+    public static boolean checkUserAuthorize(HttpServletRequest request) {
+
+        CredentialsRolesServiceImpl credentialsRolesService = new CredentialsRolesServiceImpl();
+        RolesAuthorityServiceImpl rolesAuthorityService = new RolesAuthorityServiceImpl();
+        DynamicMenuServiceImpl dynamicMenuService = new DynamicMenuServiceImpl();
+        CustomUser user = getPrincipal();
+        CredentialsEntity credential = user.getUser();
+        String url = request.getRequestURI();
+
+        DynamicMenuEntity dynamicMenu = dynamicMenuService.findDynamicMenuByLink(url);
+
+        List<CredentialsRolesEntity> roles = credentialsRolesService.getCredentialsRolesByCredentialsId(credential.getId());
+        boolean permission = false;
+        if (dynamicMenu == null) {
+            return permission;
+        }
+
+        for (CredentialsRolesEntity role : roles) {
+            List<RolesAuthorityEntity> exist = rolesAuthorityService.findRolesAuthorityByRoleIdByMenuId(role.getRolesId().getId(), dynamicMenu.getId());
+            if (!exist.isEmpty()) {
+                permission = true;
+                break;
+            }
+        }
+        return permission;
+    }
+
+    //dành để check những url có link kèm theo parameter, do chỉ link gốc (không có parameter) được lưu dưới db
+    public static boolean checkUserAuthorize2(HttpServletRequest request, String noParamsUrl) {
+
+        CredentialsRolesServiceImpl credentialsRolesService = new CredentialsRolesServiceImpl();
+        RolesAuthorityServiceImpl rolesAuthorityService = new RolesAuthorityServiceImpl();
+
+        CustomUser user = getPrincipal();
+        CredentialsEntity credential = user.getUser();
+        String url = request.getRequestURI();
+        //dành
+        if (!noParamsUrl.isEmpty()) {
+            url = noParamsUrl;
+        }
+
+        List<CredentialsRolesEntity> roles = credentialsRolesService.getCredentialsRolesByCredentialsId(credential.getId());
+        boolean permission = false;
+
+        for (CredentialsRolesEntity role : roles) {
+            List<RolesAuthorityEntity> exist = rolesAuthorityService.findRolesAuthorityByRoleIdByUrl(role.getRolesId().getId(), url);
+            if (!exist.isEmpty()) {
+                permission = true;
+                break;
+            }
+        }
+        return permission;
+    }
+
+    public static ModelAndView returnDeniedPage() {
+        return new ModelAndView("/Deny");
     }
 
 }

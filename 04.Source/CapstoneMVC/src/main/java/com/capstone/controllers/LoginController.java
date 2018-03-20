@@ -1,15 +1,13 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.CredentialsEntity;
+import com.capstone.entities.CredentialsRolesEntity;
 import com.capstone.entities.DynamicMenuEntity;
 import com.capstone.models.CustomUser;
 import com.capstone.models.GoogleProfile;
 import com.capstone.models.Logger;
 import com.capstone.models.Ultilities;
-import com.capstone.services.CredentialsServiceImpl;
-import com.capstone.services.DynamicMenuServiceImpl;
-import com.capstone.services.ICredentialsService;
-import com.capstone.services.IDynamicMenuService;
+import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.apache.commons.codec.binary.Base64;
@@ -225,7 +223,7 @@ public class LoginController implements ServletContextAware {
 
                         Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(user.getUsername(), user.getPassword(), getGrantedAuthorities(user), user),
                                 user.getPassword(),
-                                getGrantedAuthorities(user));
+                                getGrantedAuthorities2(user));
                         SecurityContextHolder.getContext().setAuthentication(auth);
                         HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
                             @Override
@@ -235,7 +233,7 @@ public class LoginController implements ServletContextAware {
                         };
                         rememberMeServices.loginSuccess(wrapper, response, auth);
 
-                        Ultilities.GetMenu(context, user);
+                        Ultilities.GetMenu2(context, user);
 
                         return "redirect:/";
                     } else {
@@ -259,6 +257,16 @@ public class LoginController implements ServletContextAware {
         String[] roles = user.getRole().split(",");
         for (String role : roles) {
             authorities.add(new SimpleGrantedAuthority(role.trim()));
+        }
+        return authorities;
+    }
+    private List<GrantedAuthority> getGrantedAuthorities2(CredentialsEntity user){
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        CredentialsRolesServiceImpl credentialsRolesService = new CredentialsRolesServiceImpl();
+        List<CredentialsRolesEntity> roles = credentialsRolesService.getCredentialsRolesByCredentialsId(user.getId());
+
+        for (CredentialsRolesEntity role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role.getRolesId().getName()));
         }
         return authorities;
     }

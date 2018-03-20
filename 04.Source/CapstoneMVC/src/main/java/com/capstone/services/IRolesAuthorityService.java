@@ -12,4 +12,6 @@ public interface IRolesAuthorityService {
     boolean deleteRolesAuthorityByIdList(List<RolesAuthorityEntity> roleAuthorIds);
     List<DynamicMenuEntity> findMenuByRoleId(int roleId);
     List<RolesAuthorityEntity> findRolesAuthorityByRoleId(int roleId);
+    List<RolesAuthorityEntity> findRolesAuthorityByRoleIdByUrl(int roleId, String url);
+    List<RolesAuthorityEntity> findRolesAuthorityByRoleIdByMenuId(int roleId, int dynamicMenuId);
 }

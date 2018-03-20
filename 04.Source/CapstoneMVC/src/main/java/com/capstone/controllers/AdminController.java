@@ -27,6 +27,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -39,7 +40,13 @@ public class AdminController {
 
     // home page of admin
     @RequestMapping("/index")
-    public ModelAndView Index() {
+    public ModelAndView Index(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //loggin user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("AdminHomePage");
         RolesServiceImpl rolesService = new RolesServiceImpl();
         List<RolesEntity> allRoles = rolesService.getAllRoles();
@@ -51,7 +58,13 @@ public class AdminController {
 
     // simulate change semester page
     @RequestMapping("/change")
-    public ModelAndView ChangeSemester() {
+    public ModelAndView ChangeSemester(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //loggin user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("AdminChangeSemesterTemporary");
 
 
@@ -170,6 +183,7 @@ public class AdminController {
     public JsonObject SetTemporarySemester(@RequestParam int semesterId) {
         JsonObject data = new JsonObject();
 
+        Ultilities.logUserAction("Change " + semesterId + " to temporary semester");
         try {
             IRealSemesterService service = new RealSemesterServiceImpl();
             RealSemesterEntity tem = service.findSemesterById(semesterId);
@@ -189,6 +203,7 @@ public class AdminController {
     public JsonObject SetCurrentSemester(@RequestParam int semesterId) {
         JsonObject data = new JsonObject();
 
+        Ultilities.logUserAction("Change " + semesterId + " to current semester");
         try {
             IRealSemesterService service = new RealSemesterServiceImpl();
             RealSemesterEntity tem = service.findSemesterById(semesterId);
@@ -207,6 +222,8 @@ public class AdminController {
     @ResponseBody
     public JsonObject Save(@RequestBody CredentialsModel cred) {
         JsonObject data = new JsonObject();
+
+        Ultilities.logUserAction("Change " + cred.getEmail() + " account detail");
 
         RolesServiceImpl rolesService = new RolesServiceImpl();
         List<RolesEntity> allRoles = rolesService.getAllRoles();
@@ -297,7 +314,13 @@ public class AdminController {
     }
 
     @RequestMapping("/manageRolesPage")
-    public ModelAndView goManageRolesPage() {
+    public ModelAndView goManageRolesPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //loggin user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("CreateRolesPage");
         mav.addObject("title", "Quản lý chức vụ");
         return mav;
@@ -347,6 +370,7 @@ public class AdminController {
     public JsonObject goCreateNewRole(Map<String, String> params, @RequestParam("newRole") String newRole) {
         JsonObject data = new JsonObject();
 
+        Ultilities.logUserAction("Create " + newRole + " as new Role");
         try {
             RolesServiceImpl rolesService = new RolesServiceImpl();
 
@@ -392,6 +416,7 @@ public class AdminController {
             RolesServiceImpl rolesService = new RolesServiceImpl();
             RolesEntity rolesEntity = rolesService.findRolesEntity(roleId);
             if (rolesEntity != null) {
+                Ultilities.logUserAction("Update " + rolesEntity.getName() + " - role to " + roleName + " -role");
                 rolesEntity.setName(roleName);
                 //update
                 rolesService.updateRole(rolesEntity);
@@ -410,7 +435,13 @@ public class AdminController {
     }
 
     @RequestMapping("/manageMenuPage")
-    public ModelAndView goManageMenuPage() {
+    public ModelAndView goManageMenuPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("ManageMenu");
         mav.addObject("title", "Quản lý menu");
         return mav;
@@ -462,6 +493,7 @@ public class AdminController {
                                       @RequestParam("newLink") String newLink) {
         JsonObject data = new JsonObject();
 
+        Ultilities.logUserAction("Create new menu " + newLink + " - " + newMenuName);
         try {
             DynamicMenuServiceImpl dynamicMenuService = new DynamicMenuServiceImpl();
             if (!newMenuName.isEmpty() && !newLink.isEmpty()) {
@@ -524,6 +556,8 @@ public class AdminController {
                     if (newGroupName.trim().isEmpty()) {
                         newGroupName = null;
                     }
+                    Ultilities.logUserAction("Update " + exist.getFunctionName() + " - " + exist.getLink() + " menu");
+
                     exist.setFunctionGroup(newFunctionGroup);
                     exist.setFunctionName(newMenuName);
                     exist.setGroupName(newGroupName);
@@ -561,6 +595,7 @@ public class AdminController {
     public JsonObject goDeleteExistMenu(Map<String, String> params, @RequestParam("menuId") int menuId) {
         JsonObject data = new JsonObject();
 
+
         try {
             DynamicMenuServiceImpl dynamicMenuService = new DynamicMenuServiceImpl();
             RolesAuthorityServiceImpl rolesAuthorityService = new RolesAuthorityServiceImpl();
@@ -570,8 +605,11 @@ public class AdminController {
             List<RolesAuthorityEntity> involeList = rolesAuthorityService.findRolesAuthorityByMenuId(menuId);
             boolean checkDelete = rolesAuthorityService.deleteRolesAuthorityByIdList(involeList);
 
+            Ultilities.logUserAction("Delete " + menu.getFunctionName() + " - " + menu.getLink() + " menu");
+
             if (checkDelete) {
                 dynamicMenuService.deleteMenu(menu);
+
             } else {
                 data.addProperty("success", false);
                 data.addProperty("message", "Không xóa được những phân quyền liên quan!");
@@ -588,7 +626,13 @@ public class AdminController {
     }
 
     @RequestMapping("/manageRolesAuthorityPage")
-    public ModelAndView goManageRolesAuthorityPage() {
+    public ModelAndView goManageRolesAuthorityPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //loggin user action
+        Ultilities.logUserAction("go to "+request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("AssignRolesAuthority");
         RolesServiceImpl rolesService = new RolesServiceImpl();
         List<RolesEntity> allRoles = rolesService.getAllRoles();
@@ -650,17 +694,21 @@ public class AdminController {
                                              @RequestParam("selectedRoleId") int selectedRoleId) {
         JsonObject data = new JsonObject();
 
+
         try {
             DynamicMenuServiceImpl dynamicMenuService = new DynamicMenuServiceImpl();
             RolesAuthorityServiceImpl rolesAuthorityService = new RolesAuthorityServiceImpl();
             RolesServiceImpl rolesService = new RolesServiceImpl();
             List<DynamicMenuEntity> allMenus = dynamicMenuService.getAllMenu();
             RolesEntity selectedRole = rolesService.findRolesEntity(selectedRoleId);
+
             if (selectedRole == null) {
                 data.addProperty("success", false);
                 data.addProperty("message", "Không tìm thấy chức vụ được chọn");
                 return data;
             }
+
+            Ultilities.logUserAction("Update "  + selectedRole.getName() + " - role authority");
 
             List<RolesAuthorityEntity> currentAuthority = rolesAuthorityService.findRolesAuthorityByRoleId(selectedRoleId);
 
@@ -711,4 +759,5 @@ public class AdminController {
         }
         return data;
     }
+
 }

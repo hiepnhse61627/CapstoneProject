@@ -100,7 +100,13 @@ public class UploadController {
      * --------------STUDENTS------------
      **/
     @RequestMapping(value = "/goUploadStudentList")
-    public ModelAndView goUploadStudentListPage() {
+    public ModelAndView goUploadStudentListPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("uploadStudentList");
         view.addObject("title", "Nhập danh sách sinh viên");
 
@@ -115,7 +121,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/updateStatusForStudentsPage")
-    public ModelAndView goUpdateStatusForStudentPage() {
+    public ModelAndView goUpdateStatusForStudentPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("updateStatusForStudents");
         mav.addObject("title", "Cập nhật trạng thái cho sinh viên");
 
@@ -130,7 +142,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/importStudentCurriculumsPage")
-    public ModelAndView goImportStudentCurriculumsPage() {
+    public ModelAndView goImportStudentCurriculumsPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("ImportStudentCurriculum");
         mav.addObject("title", "Nhập khung chương trình cho sinh viên");
 
@@ -138,7 +156,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/uploadStudentCurriculumsPage")
-    public ModelAndView goUploadStudentCurriculumsPage() {
+    public ModelAndView goUploadStudentCurriculumsPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("uploadStudentCurriculums");
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
         semesters = Ultilities.SortSemesters(semesters);
@@ -170,6 +194,7 @@ public class UploadController {
 
                 try {
                     File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
+                    Ultilities.logUserAction("Upload student exist file - " + file);
                     obj = ReadFile(null, f, false, semesterId);
                 } catch (Exception e) {
                     obj = new JsonObject();
@@ -192,6 +217,7 @@ public class UploadController {
             @Override
             public JsonObject call() throws Exception {
                 JsonObject obj;
+                Ultilities.logUserAction("upload student list ");
                 if (update) {
                     obj = UpdateFile(file, null, true, semesterId);
                 } else {
@@ -216,7 +242,7 @@ public class UploadController {
     @ResponseBody
     public JsonObject updateStatusForStudents(@RequestParam("updateFile") MultipartFile file, @RequestParam("semesterId") Integer semesterId) {
         JsonObject jsonObject = new JsonObject();
-
+        Ultilities.logUserAction("Update student status (usually for graduated Student)");
         try {
             InputStream is = file.getInputStream();
 
@@ -289,6 +315,7 @@ public class UploadController {
     public JsonObject importStudentCurriculum(@RequestParam("file") MultipartFile file) {
         JsonObject jsonObject = new JsonObject();
 
+        Ultilities.logUserAction("Import student curriculum");
         try {
             InputStream is = file.getInputStream();
 
@@ -370,7 +397,7 @@ public class UploadController {
     @ResponseBody
     public JsonObject updateStudentCurriculum(@RequestParam("file") MultipartFile file) {
         JsonObject jsonObject = new JsonObject();
-
+        Ultilities.logUserAction("Update student curriculum");
         try {
             InputStream is = file.getInputStream();
 
@@ -509,7 +536,7 @@ public class UploadController {
     public JsonObject updateStudentCurriculumVer2(@RequestParam("file") MultipartFile file
             , @RequestParam("semesterId") String semesterIdStr, HttpServletRequest request) {
         JsonObject jsonObject = new JsonObject();
-
+        Ultilities.logUserAction("Update students curriculums");
         try {
             InputStream is = file.getInputStream();
 
@@ -1097,7 +1124,13 @@ public class UploadController {
      * --------------MARKS------------
      **/
     @RequestMapping(value = "/goUploadStudentMarks")
-    public ModelAndView goUploadStudentMarksPage() {
+    public ModelAndView goUploadStudentMarksPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView view = new ModelAndView("uploadStudentMarks");
         view.addObject("title", "Nhập danh sách điểm");
 
@@ -1108,7 +1141,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/importStudyingStudentPage")
-    public ModelAndView goImportStudyingStudentPage() {
+    public ModelAndView goImportStudyingStudentPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("importStudyingStudent");
         mav.addObject("title", "Nhập điểm sinh viên đang học");
 
@@ -1123,7 +1162,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/updateMarkForStudyingStudentPage")
-    public ModelAndView goUpdateMarkForStudyingStudentPage() {
+    public ModelAndView goUpdateMarkForStudyingStudentPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("updateMarkForStudyingStudent");
         mav.addObject("title", "Cập nhật điểm cho sinh viên đang học");
 
@@ -1138,7 +1183,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/importEmployeesPage")
-    public ModelAndView goImportEmployeesPage() {
+    public ModelAndView goImportEmployeesPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("importEmployees");
         mav.addObject("title", "Nhập danh sách giảng viên");
 
@@ -1146,7 +1197,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/importRoomsPage")
-    public ModelAndView goImportRoomsPage() {
+    public ModelAndView goImportRoomsPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("importRooms");
         mav.addObject("title", "Nhập danh sách phòng");
 
@@ -1154,7 +1211,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/importDepartmentsPage")
-    public ModelAndView goImportDepartmentsPage() {
+    public ModelAndView goImportDepartmentsPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("importDepartments");
         mav.addObject("title", "Nhập danh sách bộ môn");
 
@@ -1162,7 +1225,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/importSchedulesPage")
-    public ModelAndView goImportSchedulesPage() {
+    public ModelAndView goImportSchedulesPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("importSchedules");
         mav.addObject("title", "Nhập danh sách lịch dạy của GV");
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
@@ -1173,7 +1242,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/importCourseStudentsPage")
-    public ModelAndView goImportCourseStudentPage() {
+    public ModelAndView goImportCourseStudentPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("importCourseStudents");
         mav.addObject("title", "Nhập danh sách lớp của SV");
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
@@ -1224,7 +1299,7 @@ public class UploadController {
         isCancel = false;
         isPause = false;
         System.out.println("Cancel is " + String.valueOf(isCancel));
-
+        Ultilities.logUserAction("Upload exist mark file");
         Callable<JsonObject> callable = () -> {
             this.totalLine = 0;
             this.currentLine = 0;
@@ -1252,6 +1327,8 @@ public class UploadController {
         isCancel = false;
         isPause = false;
         System.out.println("Cancel is " + String.valueOf(isCancel));
+
+        Ultilities.logUserAction("Upload student mark");
 
         Callable<JsonObject> callable = () -> {
             this.totalLine = 0;
@@ -1537,6 +1614,8 @@ public class UploadController {
 
         Integer semesterId = Integer.parseInt(semesterIdStr.trim());
         RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterById(semesterId);
+        Ultilities.logUserAction("Upload studying student ( generate studying and does not generate notstart mark)");
+
         try {
             InputStream is = file.getInputStream();
 
@@ -1681,6 +1760,8 @@ public class UploadController {
 
         HashMap<StudentEntity, List<MarkModelExcel>> dataExcel = new HashMap<>();
         RealSemesterEntity selectedSemester = realSemesterService.findSemesterById(semesterId);
+
+        Ultilities.logUserAction("Upload studying student (generate studying and not start mark)");
         try {
             InputStream is = file.getInputStream();
 
@@ -1921,6 +2002,7 @@ public class UploadController {
         JsonObject jsonObject = new JsonObject();
         List<EmployeeEntity> employeeEntities = new ArrayList<EmployeeEntity>();
 
+        Ultilities.logUserAction("Upload employee");
         try {
             InputStream is = file.getInputStream();
 
@@ -2055,6 +2137,7 @@ public class UploadController {
         JsonObject jsonObject = new JsonObject();
         List<RoomEntity> roomEntities = new ArrayList<RoomEntity>();
 
+        Ultilities.logUserAction("Upload room");
         try {
             InputStream is = file.getInputStream();
 
@@ -2120,7 +2203,7 @@ public class UploadController {
     @ResponseBody
     public JsonObject importDepartments(@RequestParam("file") MultipartFile file) {
         JsonObject jsonObject = new JsonObject();
-
+        Ultilities.logUserAction("Upload departments");
         try {
             InputStream is = file.getInputStream();
 
@@ -2155,7 +2238,7 @@ public class UploadController {
                     }
                 }
 
-                if(subjectCode.equals("MAD101")){
+                if (subjectCode.equals("MAD101")) {
                     System.out.println("test");
                 }
 
@@ -2171,11 +2254,11 @@ public class UploadController {
                                 subjectDepartmentEntity.setDeptId(departmentEntity);
                                 subjectDepartmentService.createSubjectDepartment(subjectDepartmentEntity);
                             }
-                        }else{
+                        } else {
                             System.out.println(subjectCode);
                         }
 
-                    }else{
+                    } else {
                         System.out.println(name);
                     }
                 }
@@ -2206,6 +2289,8 @@ public class UploadController {
     @ResponseBody
     public JsonObject importSchedules(@RequestParam("file") MultipartFile file, @RequestParam("semesterId") String semesterIdStr) {
         JsonObject jsonObject = new JsonObject();
+        Ultilities.logUserAction("Upload schedules");
+
         List<DaySlotEntity> daySlotEntities = new ArrayList<DaySlotEntity>();
         List<ScheduleEntity> scheduleEntities = new ArrayList<ScheduleEntity>();
         List<SlotEntity> slots = null;
@@ -2466,6 +2551,7 @@ public class UploadController {
         StudentEntity student = null;
         CourseEntity course = null;
 
+        Ultilities.logUserAction("Import course student");
 //        Set<EmployeeEntity> employees = new HashSet<>();
 
         try {
@@ -2545,6 +2631,7 @@ public class UploadController {
     @RequestMapping(value = "/updateMarkForStudyingStudent", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject updateMarkForStudyingStudent(@RequestParam("updateFile") MultipartFile file, @RequestParam("semesterId") String semesterIdStr) {
+       Ultilities.logUserAction("Update mark for studying student");
         JsonObject jsonObject = new JsonObject();
         Integer semesterId = Integer.parseInt(semesterIdStr.trim());
         RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterById(semesterId);
@@ -2639,6 +2726,7 @@ public class UploadController {
     public Callable<JsonObject> UpdateStudentCredits() {
         currentLine1 = 0;
         totalLine1 = 0;
+        Ultilities.logUserAction("Update student credits");
 
         Callable<JsonObject> callable = () -> {
             JsonObject result = new JsonObject();
@@ -2842,6 +2930,7 @@ public class UploadController {
     @RequestMapping(value = "/uploadUpdatedMarks", method = RequestMethod.POST)
     @ResponseBody
     public Callable<JsonObject> uploadUpdatedMarks(@RequestParam("file") MultipartFile file) throws IOException {
+        Ultilities.logUserAction("Upload updated marks (use to update average marks)");
         Callable<JsonObject> callable = () -> {
             this.totalLine = 0;
             this.currentLine = 0;
@@ -3354,7 +3443,12 @@ public class UploadController {
 //        return obj;
 //    }
     @RequestMapping(value = "/convertToStudentQuantityPage")
-    public ModelAndView convertToStudentQuantityPage() {
+    public ModelAndView convertToStudentQuantityPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
         ModelAndView mav = new ModelAndView("Convert2StudentQuantityByClassAndSubject");
         mav.addObject("title", "Số lượng sinh viên theo lớp môn");
 
@@ -3367,6 +3461,8 @@ public class UploadController {
     public JsonObject goConvert2StudentQuantityByClassAndSubject(@RequestParam("file") MultipartFile file,
                                                                  HttpServletRequest request, HttpServletResponse response) {
         JsonObject jsonObject = new JsonObject();
+
+        Ultilities.logUserAction("Convert student quantity (use for statistic)");
 
         try {
             InputStream is = file.getInputStream();
@@ -3527,8 +3623,16 @@ public class UploadController {
         return jsonObject;
     }
 
+
+    //trang này chưa xong
     @RequestMapping(value = "/importStudentMarksFromAnotherAcademicPage")
-    public ModelAndView ImportStudentMarksFromAnotherAcademicPage() {
+    public ModelAndView ImportStudentMarksFromAnotherAcademicPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to /importStudentMarksFromAnotherAcademicPage");
+
         ModelAndView mav = new ModelAndView("ImportStudentMarksFromAnotherAcademic");
         mav.addObject("title", "Nhập điểm cho một sinh viên");
 
@@ -3536,6 +3640,7 @@ public class UploadController {
         return mav;
     }
 
+    //hàm này chưa xong, template hiện tại mà hàm này đọc không phải template đúng (hãy request template đúng và làm lại)
     @RequestMapping(value = "/importStudentMarksFromAnotherAcademic", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject goImportStudentMarksFromAnotherAcademic(@RequestParam("file") MultipartFile file,
@@ -3772,7 +3877,7 @@ public class UploadController {
     public JsonObject goUploadThesisName(@RequestParam("file") MultipartFile file,
                                          HttpServletRequest request, HttpServletResponse response) {
         JsonObject jsonObject = new JsonObject();
-
+        Ultilities.logUserAction("Upload thesis name");
         try {
             InputStream is = file.getInputStream();
 

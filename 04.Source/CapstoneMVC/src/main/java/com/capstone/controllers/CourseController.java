@@ -3,6 +3,7 @@ package com.capstone.controllers;
 import com.capstone.entities.CourseEntity;
 import com.capstone.models.DatatableModel;
 import com.capstone.models.Logger;
+import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -19,6 +20,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -32,7 +34,12 @@ public class CourseController {
     IMarksService markService = new MarksServiceImpl();
 
     @RequestMapping("/course")
-    public ModelAndView CoursePage() {
+    public ModelAndView CoursePage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
         ModelAndView view = new ModelAndView("CoursePage");
         view.addObject("title", "Danh sách khóa học");
 

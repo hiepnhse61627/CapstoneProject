@@ -1,10 +1,7 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.*;
-import com.capstone.models.Enums;
-import com.capstone.models.Logger;
-import com.capstone.models.ReadAndSaveFileToServer;
-import com.capstone.models.SubjectModel;
+import com.capstone.models.*;
 import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -51,7 +48,13 @@ public class SubjectCurriculumController {
     private final String folder = "KhungChuongTrinh";
 
     @RequestMapping("/subcurriculum")
-    public ModelAndView Index() {
+    public ModelAndView Index(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to /subcurriculum");
+
         ModelAndView view = new ModelAndView("SubjectCurriculum");
         view.addObject("title", "Các khung chương trình");
 
@@ -62,7 +65,10 @@ public class SubjectCurriculumController {
     }
 
     @RequestMapping("/createcurriculum")
-    public ModelAndView Create() {
+    public ModelAndView Create(HttpServletRequest request) {
+        //logging user action
+        Ultilities.logUserAction("go to /createcurriculum");
+
         ModelAndView view = new ModelAndView("CreateSubjectCurriculum");
         ISubjectService subjectService = new SubjectServiceImpl();
         IProgramService programService = new ProgramServiceImpl();
@@ -78,6 +84,7 @@ public class SubjectCurriculumController {
 
     @RequestMapping("/editcurriculum/{curId}")
     public ModelAndView Edit(@PathVariable("curId") int curId) {
+
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = emf.createEntityManager();
 
@@ -93,6 +100,8 @@ public class SubjectCurriculumController {
         view.addObject("effectionSemester", semesters);
 
         CurriculumEntity curriculum = curriculumService.getCurriculumById(curId);
+        //logging user action
+        Ultilities.logUserAction("go to /editcurriculum/" + curId + " (" + curriculum.getName() + ")");
         view.addObject("data", curriculum);
 
         List<SubjectCurriculumEntity> subjectCurriList = subjectCurriculumService.getSubjectCurriculums(curId);
@@ -132,6 +141,8 @@ public class SubjectCurriculumController {
         try {
             // Create subject curriculum
             ProgramEntity program = programService.getProgramById(programId);
+
+            Ultilities.logUserAction("Create curriculum " + name + " for " + program.getName() + " - program");
 
             CurriculumEntity curriculum = new CurriculumEntity();
             curriculum.setName(name);
@@ -185,9 +196,11 @@ public class SubjectCurriculumController {
         ICurriculumService curriculumService = new CurriculumServiceImpl();
         ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
 
+
         try {
             // Check curriculum is edited or not, if not updates
             CurriculumEntity currentCurriculum = curriculumService.getCurriculumById(curriculumId);
+            Ultilities.logUserAction("Edit curriculum " + currentCurriculum.getName());
 //            if (currentCurriculum.getProgramId().getId() != programId
 //                    || !currentCurriculum.getName().equalsIgnoreCase(curriculumName)) {
 //                CurriculumEntity entity = curriculumService.getCurriculumByNameAndProgramId(curriculumName, programId);
@@ -365,6 +378,7 @@ public class SubjectCurriculumController {
                                   @RequestParam("sFailMark") String failMark, @RequestParam("sCurId") String curId) {
         JsonObject jsonObj = new JsonObject();
 
+        Ultilities.logUserAction("Edit Subject " + subjectId + " in Subjectcurriculum with curriculumId - " + curId);
         try {
 
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
@@ -434,7 +448,7 @@ public class SubjectCurriculumController {
     @ResponseBody
     public Callable<JsonObject> upload(@RequestParam("file") MultipartFile file,
                                        HttpServletRequest request, @RequestParam("ojtTerm") String ojtTerm) {
-
+        Ultilities.logUserAction("Upload curriculum and subject curriculum");
         int parsedOjt = Integer.parseInt(ojtTerm);
         Callable<JsonObject> callable = new Callable<JsonObject>() {
             @Override
@@ -757,7 +771,7 @@ public class SubjectCurriculumController {
 
                         //số tín chỉ của subject
                         double subjectCredits;
-                        String tmpSubjCredits ="";
+                        String tmpSubjCredits = "";
                         if (subjectCreditsCell.getCellTypeEnum() == CellType.NUMERIC) {
                             tmpSubjCredits = subjectCreditsCell.getNumericCellValue() + "";
                         } else if (subjectCreditsCell.getCellTypeEnum() == CellType.STRING) {
@@ -794,8 +808,8 @@ public class SubjectCurriculumController {
                                     subjectCurriculumEntity.setSubjectId(subjectEntity);
                                     //ordinal Number sẽ tuân theo thứ tự trong excel data
                                     subjectCurriculumEntity.setOrdinalNumber(ordinalNumberCount);
-                                    subjectCurriculumEntity.setTermNumber((int)termNo);
-                                    subjectCurriculumEntity.setSubjectCredits((int)subjectCredits);
+                                    subjectCurriculumEntity.setTermNumber((int) termNo);
+                                    subjectCurriculumEntity.setSubjectCredits((int) subjectCredits);
                                     subjectCurriculumEntity.setRequired(true);
 
                                     //tính tín chỉ của curriculum
@@ -815,7 +829,7 @@ public class SubjectCurriculumController {
                                     curriculumEntity = new CurriculumEntity();
                                     curriculumEntity.setProgramId(programEntity);
                                     curriculumEntity.setName(curriculumName);
-                                    curriculumEntity.setSpecializedCredits((int)subjectCredits);
+                                    curriculumEntity.setSpecializedCredits((int) subjectCredits);
 
                                     //bỏ curriculum vào mảng importedCurriculum
                                     importedCurriculum.add(curriculumEntity);
@@ -830,8 +844,8 @@ public class SubjectCurriculumController {
                                     ordinalNumberCount = 1;
                                     subjectCurriculumEntity.setOrdinalNumber(ordinalNumberCount);
 
-                                    subjectCurriculumEntity.setTermNumber((int)termNo);
-                                    subjectCurriculumEntity.setSubjectCredits((int)subjectCredits);
+                                    subjectCurriculumEntity.setTermNumber((int) termNo);
+                                    subjectCurriculumEntity.setSubjectCredits((int) subjectCredits);
                                     subjectCurriculumEntity.setRequired(true);
 
                                     subjectCurriculumList.add(subjectCurriculumEntity);
@@ -939,12 +953,14 @@ public class SubjectCurriculumController {
     @RequestMapping(value = "/deletesubcurriculum", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject delete(@RequestParam int curId) {
+
         JsonObject obj = new JsonObject();
         ICurriculumService service = new CurriculumServiceImpl();
         EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
         EntityManager em = emf.createEntityManager();
         try {
             CurriculumEntity ent = service.getCurriculumById(curId);
+            Ultilities.logUserAction("Delete curriculum " + ent.getName());
             em.getTransaction().begin();
             ent = em.merge(ent);
             em.remove(ent);

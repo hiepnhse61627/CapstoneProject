@@ -44,4 +44,14 @@ public class RolesAuthorityServiceImpl implements IRolesAuthorityService{
     public List<RolesAuthorityEntity> findRolesAuthorityByRoleId(int roleId) {
         return rolesAuthorityEntityJpaController.findRolesAuthorityByRoleId(roleId);
     }
+
+    @Override
+    public List<RolesAuthorityEntity> findRolesAuthorityByRoleIdByUrl(int roleId, String url) {
+        return rolesAuthorityEntityJpaController.findRolesAuthorityByRoleIdByUrl(roleId, url);
+    }
+
+    @Override
+    public List<RolesAuthorityEntity> findRolesAuthorityByRoleIdByMenuId(int roleId, int dynamicMenuId) {
+        return rolesAuthorityEntityJpaController.findRolesAuthorityByRoleIdByMenuId(roleId, dynamicMenuId);
+    }
 }

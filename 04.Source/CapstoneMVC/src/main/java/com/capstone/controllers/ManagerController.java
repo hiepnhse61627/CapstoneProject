@@ -24,6 +24,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -34,7 +35,13 @@ import java.util.stream.Collectors;
 public class ManagerController {
 
     @RequestMapping("/changecurriculum")
-    public ModelAndView Index() {
+    public ModelAndView Index(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("ChangeCurriculum");
         view.addObject("title", "Đổi ngành");
         IStudentService studentService = new StudentServiceImpl();
@@ -48,7 +55,13 @@ public class ManagerController {
     }
 
     @RequestMapping("/studentCurriculumDetail")
-    public ModelAndView studentCurriculumDetail() {
+    public ModelAndView studentCurriculumDetail(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("StudentCurriculumDetail");
         view.addObject("title", "Đổi ngành");
         IStudentService studentService = new StudentServiceImpl();
@@ -62,7 +75,13 @@ public class ManagerController {
     }
 
     @RequestMapping("/averageStudentInClass")
-    public ModelAndView AverageClass() {
+    public ModelAndView AverageClass(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("AverageStudentInClass");
         view.addObject("title", "Sĩ số trung bình lớp môn học theo kỳ");
 
@@ -75,7 +94,13 @@ public class ManagerController {
     }
 
     @RequestMapping("/averageSubject")
-    public ModelAndView AverageSubject() {
+    public ModelAndView AverageSubject(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("AverageSubject");
         view.addObject("title", "Sĩ số trung bình môn đã học trên một sinh viên");
 
@@ -503,7 +528,7 @@ public class ManagerController {
                     if (!replaces3.isEmpty()) {
                         List<ChangeCurriculumModel> n = replaces3
                                 .stream()
-                                .map(c -> new ChangeCurriculumModel(c.getId()  + " (thay thế)", filterMarks
+                                .map(c -> new ChangeCurriculumModel(c.getId() + " (thay thế)", filterMarks
                                         .stream()
                                         .filter(a -> a.getSubjectMarkComponentId().getSubjectId().getId().equals(c.getId()))
                                         .map(a -> new MarkModel(a.getId(), a.getSemesterId().getSemester(), a.getIsActivated(), a.getAverageMark()))
@@ -565,6 +590,7 @@ public class ManagerController {
             }
 
             StudentEntity stu = studentService.findStudentById(stuId);
+            Ultilities.logUserAction("Chuyển ngành cho sinh viên");
             CurriculumEntity newCur = curriculumService.getCurriculumById(newId);
 
             DocumentStudentEntity doc = new DocumentStudentEntity();

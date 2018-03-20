@@ -18,6 +18,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.*;
 import javax.security.auth.Subject;
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -36,7 +37,13 @@ public class StudentDetail {
     }
 
     @RequestMapping("/studentDetail")
-    public ModelAndView Index() {
+    public ModelAndView Index(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to /studentDetail");
+
         ModelAndView view = new ModelAndView("StudentDetail");
         view.addObject("title", "Thông tin chi tiết sinh viên");
         IRealSemesterService service = new RealSemesterServiceImpl();

@@ -20,6 +20,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.security.auth.Subject;
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -33,7 +34,12 @@ public class GraduateController {
 
     // home page
     @RequestMapping("/graduate")
-    public ModelAndView Index() {
+    public ModelAndView Index(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to /graduate");
         ModelAndView view = new ModelAndView("StudentGraduate");
         view.addObject("title", "Danh sách xét tốt nghiệp");
 

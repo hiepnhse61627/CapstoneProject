@@ -48,7 +48,13 @@ public class StudentArrangementController {
     private boolean process2;
 
     @RequestMapping("/studentArrangement")
-    public ModelAndView StudentArrangementIndex() {
+    public ModelAndView StudentArrangementIndex(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("StudentArrangement");
         view.addObject("title", "Dự kiến xếp lớp");
 
@@ -61,7 +67,12 @@ public class StudentArrangementController {
     }
 
     @RequestMapping("/studentArrangementBySlot")
-    public ModelAndView StudentArrangementBySlotIndex() {
+    public ModelAndView StudentArrangementBySlotIndex(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
         ModelAndView view = new ModelAndView("StudentArrangementBySlot");
         view.addObject("title", "Danh sách sinh viên lớp môn theo slot");
 

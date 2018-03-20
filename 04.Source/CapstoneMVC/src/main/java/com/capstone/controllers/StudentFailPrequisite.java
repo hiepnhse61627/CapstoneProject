@@ -25,6 +25,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 import javax.security.auth.Subject;
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -32,8 +33,13 @@ import java.util.stream.Collectors;
 public class StudentFailPrequisite {
 
     @RequestMapping("/checkPrequisite")
-    public ModelAndView Index() {
+    public ModelAndView Index(HttpServletRequest request) {
         ISubjectService service = new SubjectServiceImpl();
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to /checkPrequisite");
 
         ModelAndView view = new ModelAndView("StudentFailPrequisite");
         view.addObject("title", "Danh sách sinh viên rớt môn tiên quyết");

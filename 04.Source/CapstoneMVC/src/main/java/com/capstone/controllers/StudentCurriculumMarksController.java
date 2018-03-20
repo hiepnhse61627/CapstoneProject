@@ -23,6 +23,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 @Controller
@@ -36,7 +37,12 @@ public class StudentCurriculumMarksController {
     }
 
     @RequestMapping("/index")
-    public ModelAndView Index() {
+    public ModelAndView Index(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to /studentcurriculum/index");
         ModelAndView view = new ModelAndView("StudentCurriculum");
         view.addObject("title", "Bảng điểm");
         return view;

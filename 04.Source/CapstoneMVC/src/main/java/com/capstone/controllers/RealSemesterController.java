@@ -32,6 +32,12 @@ public class RealSemesterController {
 
     @RequestMapping("/semester")
     public ModelAndView Index(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("RealSemesterList");
         IRealSemesterService realSemesterService = new RealSemesterServiceImpl();
         List<RealSemesterEntity> real = Lists.reverse(Ultilities.SortSemesters(realSemesterService.getAllSemester()));
@@ -45,7 +51,7 @@ public class RealSemesterController {
             String realPath = path + r.getSemester() + "/";
             File dir = new File(realPath);
 
-            if (r.getSemester().equals("SUMMER2017")){
+            if (r.getSemester().equals("SUMMER2017")) {
                 System.out.println("");
             }
 
@@ -82,6 +88,8 @@ public class RealSemesterController {
                 try {
                     IRealSemesterService service = new RealSemesterServiceImpl();
                     RealSemesterEntity semester = service.findSemesterById(semesterId);
+                    //logging user action
+                    Ultilities.logUserAction("Turn " + (onoff == true ? "on" : "off") + semester.getSemester());
                     semester.setActive(onoff);
                     service.update(semester);
                     System.out.println("Turned off " + semester.getSemester());
@@ -106,6 +114,7 @@ public class RealSemesterController {
                 obj.addProperty("msg", "Không được để trống!");
                 return obj;
             }
+            Ultilities.logUserAction("Create semester" + name);
 
             String startDate = params.get("startDate");
             String endDate = params.get("endDate");

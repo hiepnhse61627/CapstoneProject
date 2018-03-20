@@ -28,6 +28,7 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.persistence.*;
 import javax.security.auth.Subject;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,7 +44,13 @@ public class SubjectController {
     ServletContext context;
 
     @RequestMapping("/subject")
-    public ModelAndView Index() {
+    public ModelAndView Index(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to /subject");
+
         ModelAndView view = new ModelAndView("UploadSubject");
         view.addObject("title", "Nhập môn học");
         File dir = new File(context.getRealPath("/") + "UploadedFiles/UploadedSubjectTemplate/");
@@ -63,6 +70,7 @@ public class SubjectController {
     @ResponseBody
     public JsonObject UploadExistFile(@RequestParam("file") String fileName) {
         JsonObject result;
+        Ultilities.logUserAction("Upload exist subjects file");
         try {
             File file = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + fileName);
             result = this.ReadFile(null, file, false);
@@ -76,6 +84,7 @@ public class SubjectController {
     @RequestMapping(value = "/subject/upload", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject Upload(@RequestParam("file") MultipartFile file) {
+        Ultilities.logUserAction("Upload subjects file");
         JsonObject result = this.ReadFile(file, null, true);
         if (result.get("success").getAsBoolean()) {
             ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
@@ -85,7 +94,13 @@ public class SubjectController {
     }
 
     @RequestMapping("/subjectList")
-    public ModelAndView StudentListAll() {
+    public ModelAndView StudentListAll(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to /subjectList");
+
         ModelAndView view = new ModelAndView("SubjectPage");
         view.addObject("title", "Danh sách môn học");
 
@@ -97,7 +112,13 @@ public class SubjectController {
     }
 
     @RequestMapping("/studentCurriculumDetail")
-    public ModelAndView subjectCurriculumDetail() {
+    public ModelAndView subjectCurriculumDetail(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to /studentCurriculumDetail");
+
         ModelAndView view = new ModelAndView("StudentCurriculumDetail");
         view.addObject("title", "Danh sách sinh viên chuyển ngành");
         IStudentService studentService = new StudentServiceImpl();
@@ -379,7 +400,7 @@ public class SubjectController {
                                        @RequestParam("sNewPrerequisite") String prerequisite, @RequestParam("sNewEffectionSemester") String newEffectionSemester,
                                        @RequestParam("sNewFailMark") String newFailMark) {
         JsonObject jsonObj = new JsonObject();
-
+        Ultilities.logUserAction("Create new subject - " + subjectId);
         try {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em = emf.createEntityManager();

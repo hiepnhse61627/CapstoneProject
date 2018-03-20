@@ -3,6 +3,7 @@ package com.capstone.controllers;
 import com.capstone.entities.EmployeeEntity;
 import com.capstone.entities.RoomEntity;
 import com.capstone.entities.ScheduleEntity;
+import com.capstone.models.Ultilities;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.*;
+import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +25,12 @@ import java.util.Map;
 public class RoomList {
 
     @RequestMapping("/roomList")
-    public ModelAndView RoomListAll() {
+    public ModelAndView RoomListAll(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
         ModelAndView view = new ModelAndView("RoomList");
         view.addObject("title", "Danh sách phòng");
 

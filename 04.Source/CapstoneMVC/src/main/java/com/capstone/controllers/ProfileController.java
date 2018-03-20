@@ -3,6 +3,7 @@ package com.capstone.controllers;
 import com.capstone.entities.CredentialsEntity;
 import com.capstone.models.CustomCredentialsEntity;
 import com.capstone.models.CustomUser;
+import com.capstone.models.Ultilities;
 import com.capstone.services.CredentialsServiceImpl;
 import com.capstone.services.ICredentialsService;
 import com.capstone.services.IStudentService;
@@ -38,10 +39,11 @@ public class ProfileController {
     }
 
     @RequestMapping("/")
-    public ModelAndView Index() {
+    public ModelAndView Index(HttpServletRequest request) {
         ModelAndView view = new ModelAndView("Profile");
         view.addObject("title", "Profile");
 
+        Ultilities.logUserAction("go to " + request.getRequestURI());
         CustomUser principal = getPrincipal();
         ICredentialsService credentialsService = new CredentialsServiceImpl();
         CredentialsEntity entity = credentialsService.findCredential(principal.getUsername());
@@ -55,7 +57,7 @@ public class ProfileController {
     @ResponseBody
     public JsonObject Edit(@RequestBody CustomCredentialsEntity cred) {
         JsonObject data = new JsonObject();
-
+        Ultilities.logUserAction("Edit " + cred.getEmail() + " profile") ;
         try {
             ICredentialsService service = new CredentialsServiceImpl();
             if (cred.getId() != null) {

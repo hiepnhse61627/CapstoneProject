@@ -147,4 +147,46 @@ public class ExRolesAuthorityEntityJpaController extends RolesAuthorityEntityJpa
         }
         return resultList;
     }
+
+    public List<RolesAuthorityEntity> findRolesAuthorityByRoleIdByUrl(int roleId, String url) {
+        EntityManager em = null;
+        List<RolesAuthorityEntity> resultList = null;
+        try {
+            em = getEntityManager();
+            Query query = em.createQuery("SELECT r FROM RolesAuthorityEntity r" +
+                    " WHERE r.rolesId.id = :roleId AND r.menuId.link LIKE :url");
+            query.setParameter("roleId", roleId);
+            query.setParameter("url", "%" + url + "%");
+
+            resultList = query.getResultList();
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        return resultList;
+    }
+
+    public List<RolesAuthorityEntity> findRolesAuthorityByRoleIdByMenuId(int roleId, int dynamicMenuId) {
+        EntityManager em = null;
+        List<RolesAuthorityEntity> resultList = null;
+        try {
+            em = getEntityManager();
+            TypedQuery<RolesAuthorityEntity> query = em.createQuery("SELECT r FROM RolesAuthorityEntity r" +
+                    " WHERE r.rolesId.id = :roleId AND r.menuId.id = :dynamicMenuId", RolesAuthorityEntity.class);
+            query.setParameter("roleId", roleId);
+            query.setParameter("dynamicMenuId", dynamicMenuId);
+
+            resultList = query.getResultList();
+        } catch (Exception e) {
+            System.out.println(e);
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        return resultList;
+    }
 }
