@@ -2,6 +2,7 @@ package com.capstone.controllers;
 
 import com.capstone.entities.*;
 import com.capstone.models.Logger;
+import com.capstone.models.ScheduleModel;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import com.google.gson.Gson;
@@ -54,6 +55,32 @@ public class ScheduleList {
 
     @Autowired
     AndroidPushNotificationsService androidPushNotificationsService;
+
+
+    @RequestMapping(value = "/deacttiveAllSchedule")
+    @ResponseBody
+    public JsonObject DeacttiveAllSchedule(@RequestParam Map<String, String> params) {
+        JsonObject jsonObj = new JsonObject();
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+            EntityTransaction etx = em.getTransaction();
+            etx.begin();
+            String queryStr = "UPDATE Schedule SET isActive = 'false'";
+            Query query  = em.createNativeQuery(queryStr);
+            int countUpdated = query.executeUpdate();
+            etx.commit();
+            jsonObj.addProperty("success", true);
+            jsonObj.addProperty("countUpdated", countUpdated);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            jsonObj.addProperty("fail", true);
+            jsonObj.addProperty("message", e.getMessage());
+        }
+
+        return jsonObj;
+    }
 
     @RequestMapping("/scheduleList")
     public ModelAndView ScheduleListAll() {
@@ -165,24 +192,33 @@ public class ScheduleList {
             }
 
             // Query danh sách lịch học
-            queryStr = "SELECT s FROM ScheduleEntity s" +
+            queryStr = "SELECT *" +
+                    "  FROM Schedule s\n" +
                     (sSearch.isEmpty() && lecture.equals("") && subjectCode.equals("") && slot.equals("") && groupName.equals("") ?
-                            " WHERE s.isActive IS NULL OR s.isActive = 'true'" :
-                            "   INNER JOIN CourseEntity c ON s.courseId.id=c.id" +
-                                    "    INNER JOIN  DaySlotEntity d ON s.dateId.id=d.id " +
-                                    "    INNER JOIN  EmployeeEntity e ON s.empId.id =e.id " +
+                            " INNER JOIN  Day_Slot d ON s.DateId=d.Id " +
+                                    "WHERE s.isActive IS NULL OR s.isActive = 'true' " +
+                                    "ORDER BY \n" +
+                                    "  CONVERT(nvarchar(50), CONVERT(SMALLDATETIME, d.Date, 105), 23)" :
+                            "   INNER JOIN Course c ON s.CourseId=c.Id\n" +
+                                    "    INNER JOIN  Day_Slot d ON s.DateId=d.Id " +
+                                    "    INNER JOIN Slot sl ON d.SlotId=sl.Id " +
+                                    "    INNER JOIN  Employee e ON s.EmpId=e.Id " +
                                     "WHERE (s.isActive IS NULL OR s.isActive = 'true') AND " +
                                     "(" +
-                                    "(s.courseId.id = c.id AND c.subjectCode LIKE '%" + subjectCode + "%') AND \n" +
-                                    " (s.dateId.id = d.id AND d.date LIKE '%" + sSearch + "%') AND " +
-                                    " (s.dateId.id = d.id AND d.slotId.slotName LIKE '%" + slot + "%') AND" +
-                                    " (s.empId.id = e.id AND e.emailEDU LIKE '%" + lecture + "%') AND" +
-                                    " (s.groupName LIKE '%" + groupName + "%'))");
-            TypedQuery<ScheduleEntity> query = em.createQuery(queryStr, ScheduleEntity.class);
+                                    " (s.CourseId = c.Id AND c.SubjectCode LIKE '%" + subjectCode + "%') AND \n" +
+                                    " (s.DateId = d.Id AND d.Date LIKE '%" + sSearch + "%') AND " +
+                                    " (d.SlotId=sl.Id AND sl.SlotName LIKE '%" + slot + "%') AND " +
+                                    " (s.EmpId = e.Id AND e.EmailEDU LIKE '%" + lecture + "%') AND" +
+                                    " (s.groupName LIKE '%" + groupName + "%')" +
+                                    ")\n" +
+                                    " ORDER BY \n" +
+                                    "  CONVERT(nvarchar(50), CONVERT(SMALLDATETIME, d.Date, 105), 23)");
+            Query query = em.createNativeQuery(queryStr, ScheduleEntity.class);
             query.setFirstResult(iDisplayStart);
             query.setMaxResults(iDisplayLength);
 
             List<ScheduleEntity> scheduleList = query.getResultList();
+
 
             List<List<String>> result = new ArrayList<>();
             for (ScheduleEntity schedule : scheduleList) {
@@ -323,10 +359,36 @@ public class ScheduleList {
                         removeList.add(aSchedule);
                     }
                 }
-
                 scheduleList.removeAll(removeList);
-
             }
+
+
+            Collections.sort(scheduleList, new Comparator<ScheduleEntity>() {
+                @Override
+                public int compare(ScheduleEntity o1, ScheduleEntity o2) {
+                    try {
+                        DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                        Date aDate = df.parse(o1.getDateId().getDate());
+                        Date aDate2 = df.parse(o2.getDateId().getDate());
+                        if (aDate.compareTo(aDate2) > 0) {
+                            return 1;
+                        }
+
+                        if (aDate.compareTo(aDate2) == 0) {
+                            String slot1 = o1.getDateId().getSlotId().getSlotName();
+                            String slot2 = o2.getDateId().getSlotId().getSlotName();
+
+                            if (slot1.compareTo(slot2) > 0) {
+                                return 1;
+                            }
+                        }
+                        return -1;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return 0;
+                }
+            });
 
             for (ScheduleEntity schedule : scheduleList) {
 
@@ -853,6 +915,7 @@ public class ScheduleList {
 
 
                 String roomName = params.get("room");
+                String oldRoomName = "";
                 RoomEntity selectedRoom = null;
 
                 //find new room
@@ -899,6 +962,7 @@ public class ScheduleList {
                     if (!roomName.equals(model.getRoomId().getName()) ||
                             !model.getDateId().getDate().equals(aDaySlot.getDate())
                             || !model.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())) {
+                        oldRoomName = model.getRoomId().getName();
                         RoomEntity foundRoom = roomService.findRoomsByExactName(roomName);
                         //room exist
                         if (foundRoom != null) {
@@ -950,53 +1014,48 @@ public class ScheduleList {
 
 
                             RoomEntity selectedRoom2 = null;
-
                             //find new room
                             if (params.get("changeRoom").equals("true")) {
-                                if (params.get("changeRoom").equals("true")) {
-                                    if (rooms != null && rooms.size() > 0) {
-                                        for (RoomEntity aRoom : rooms) {
-                                            ScheduleEntity existingSchedule = scheduleService.findScheduleByDateSlotAndRoom(aSchedule.getDateId(), aRoom);
-                                            if (existingSchedule == null) {
-                                                if (model.getCourseId().getSubjectCode().contains("VOV")) {
-                                                    if (aRoom.getName().contains("VOV")) {
-                                                        selectedRoom2 = aRoom;
-                                                        break;
-                                                    }
+                                if (rooms != null && rooms.size() > 0) {
+                                    for (RoomEntity aRoom : rooms) {
+                                        ScheduleEntity existingSchedule = scheduleService.findScheduleByDateSlotAndRoom(aSchedule.getDateId(), aRoom);
+                                        if (existingSchedule == null) {
+                                            if (model.getCourseId().getSubjectCode().contains("VOV")) {
+                                                if (aRoom.getName().contains("VOV")) {
+                                                    selectedRoom2 = aRoom;
+                                                    break;
                                                 }
+                                            }
 
-                                                if (model.getCourseId().getSubjectCode().contains("LAB")) {
-                                                    if (aRoom.getNote().toLowerCase().contains("thực hành")) {
-                                                        selectedRoom2 = aRoom;
-                                                        break;
-                                                    }
+                                            if (model.getCourseId().getSubjectCode().contains("LAB")) {
+                                                if (aRoom.getNote().toLowerCase().contains("thực hành")) {
+                                                    selectedRoom2 = aRoom;
+                                                    break;
                                                 }
+                                            }
 
-                                                if (!model.getCourseId().getSubjectCode().contains("LAB") && !model.getCourseId().getSubjectCode().contains("VOV")) {
-                                                    if (!aRoom.getName().contains("VOV") && !aRoom.getNote().toLowerCase().contains("thực hành")) {
-                                                        selectedRoom2 = aRoom;
-                                                        break;
-                                                    }
+                                            if (!model.getCourseId().getSubjectCode().contains("LAB") && !model.getCourseId().getSubjectCode().contains("VOV")) {
+                                                if (!aRoom.getName().contains("VOV") && !aRoom.getNote().toLowerCase().contains("thực hành")) {
+                                                    selectedRoom2 = aRoom;
+                                                    break;
                                                 }
                                             }
                                         }
                                     }
+                                }
 
-                                    if (selectedRoom2 != null) {
-                                        aSchedule.setRoomId(selectedRoom2);
-                                    } else {
-                                        mess += "<div> Không có phòng trống vào " + aSchedule.getDateId().getSlotId().getSlotName() + ", ngày " + aSchedule.getDateId().getDate() + "</div><br/>";
-                                        continue;
-                                    }
+                                if (selectedRoom2 != null) {
+                                    aSchedule.setRoomId(selectedRoom2);
+                                } else {
+                                    mess += "<div> Không có phòng trống vào " + aSchedule.getDateId().getSlotId().getSlotName() + ", ngày " + aSchedule.getDateId().getDate() + "</div><br/>";
+                                    continue;
                                 }
                             } else {
-                                if (!roomName.equals(model.getRoomId().getName()) ||
-                                        !model.getDateId().getDate().equals(aDaySlot.getDate())
-                                        || !model.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())) {
+                                if (!roomName.equals(aSchedule.getRoomId().getName())) {
                                     RoomEntity foundRoom = roomService.findRoomsByExactName(roomName);
                                     //room exist
                                     if (foundRoom != null) {
-                                        ScheduleEntity existingSchedule = scheduleService.findScheduleByDateSlotAndRoom(aDaySlot, foundRoom);
+                                        ScheduleEntity existingSchedule = scheduleService.findScheduleByDateSlotAndRoom(aSchedule.getDateId(), foundRoom);
                                         //have another schedule
                                         if (existingSchedule != null) {
                                             jsonObj.addProperty("fail", true);
@@ -1006,7 +1065,7 @@ public class ScheduleList {
                                                     ", lớp " + existingSchedule.getGroupName());
                                             return jsonObj;
                                         } else {
-                                            model.setRoomId(foundRoom);
+                                            aSchedule.setRoomId(foundRoom);
                                         }
                                     } else {
                                         jsonObj.addProperty("fail", true);
