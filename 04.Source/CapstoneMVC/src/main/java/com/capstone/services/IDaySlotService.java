@@ -12,6 +12,7 @@ public interface IDaySlotService {
     void createDaySlotList(List<DaySlotEntity> daySlotEntityList);
     DaySlotEntity findDaySlotById(int id);
     DaySlotEntity findDaySlotByDateAndSlot(String date, SlotEntity slot);
+    List<DaySlotEntity> findDaySlotByDate(String date);
     List<DaySlotEntity> findAllDaySlot();
     void saveDateSlot(DaySlotEntity emp) throws Exception;
     DaySlotEntity createDateSlot(DaySlotEntity daySlotEntity);

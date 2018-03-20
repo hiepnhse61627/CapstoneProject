@@ -79,7 +79,7 @@
                 <select id="lecture2" class="select lecture2-select">
                     <option value="-1">Tất cả</option>
                     <c:forEach var="emp" items="${employees}">
-                        <option value="${emp.id}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
+                        <option value="${emp.emailEDU}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
                     </c:forEach>
                 </select>
             </div>
@@ -241,7 +241,7 @@
                         <div class="form-check" id="changeRoom-container">
                             <input class="form-check-input" type="checkbox" value="" id="changeRoom">
                             <label class="form-check-label" for="changeRoom">
-                                Yêu cầu chuyển phòng
+                                Tự tìm phòng trống
                             </label>
                         </div>
 
@@ -249,7 +249,7 @@
                             <label for="lecture">Giảng viên:</label>
                             <select id="lecture" class="select lecture-select">
                                 <c:forEach var="emp" items="${employees}">
-                                    <option value="${emp.id}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
+                                    <option value="${emp.fullName}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
                                 </c:forEach>
                             </select>
                         </div>
@@ -350,7 +350,6 @@
 
             });
 
-
             $("li[class*='select2-selection__choice']").each(function (i, el) {
                 $(el).removeAttr('title');
             });
@@ -387,7 +386,7 @@
         });
 
         $('#room').select2();
-        $("#room").attr("disabled", true);
+        // $("#room").attr("disabled", true);
 
         $('#lecture').select2({
             placeholder: '- Chọn giảng viên -'
@@ -699,7 +698,7 @@
         $("#slot").attr("multiple", "multiple");
         resetSelect2(0);
         $(".add_field_button").show();
-
+        $("#capacity-container").show();
         $("#scheduleModal").modal('toggle');
     }
 
@@ -749,6 +748,7 @@
 
         $("#room").val(room).trigger("change");
         $("#capacity").val(capacity).trigger("change");
+        $("#capacity-container").hide();
 
         $("#lecture").val(lecture).trigger("change");
 

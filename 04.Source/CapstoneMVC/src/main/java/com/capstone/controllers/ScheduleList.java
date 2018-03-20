@@ -121,7 +121,6 @@ public class ScheduleList {
             String groupName = "";
 //            Integer lectureId = null;
 
-
             if (!params.get("lecture").equals("") && !params.get("lecture").equals("-1")) {
                 lecture = params.get("lecture");
             }
@@ -231,6 +230,10 @@ public class ScheduleList {
                 c1.setTime(date1);
                 Calendar now1 = Calendar.getInstance();
                 now1.setTime(now);
+                now1.set(Calendar.HOUR_OF_DAY, 0);
+                now1.set(Calendar.MINUTE, 0);
+                now1.set(Calendar.SECOND, 0);
+                now1.set(Calendar.MILLISECOND, 0);
 
                 if (c1.after(now1) || c1.equals(now1)) {
                     dataList.add("false");
@@ -495,6 +498,10 @@ public class ScheduleList {
                 c1.setTime(date1);
                 Calendar now1 = Calendar.getInstance();
                 now1.setTime(now);
+                now1.set(Calendar.HOUR_OF_DAY, 0);
+                now1.set(Calendar.MINUTE, 0);
+                now1.set(Calendar.SECOND, 0);
+                now1.set(Calendar.MILLISECOND, 0);
 
                 if (c1.after(now1) || c1.equals(now1)) {
                     dataList.add("false");
@@ -792,7 +799,6 @@ public class ScheduleList {
             Type type2 = new TypeToken<List<String>>() {
             }.getType();
             List<String> slots = gson.fromJson(params.get("slots"), type2);
-
             for (String aSlotString : slots) {
                 SlotEntity aSlot = slotService.findSlotsByName(aSlotString).get(0);
                 DaySlotEntity aDaySlot = daySlotService.findDaySlotByDateAndSlot(params.get("startDate"), aSlot);
@@ -845,46 +851,74 @@ public class ScheduleList {
                     sameScheduleList.remove(model);
                 }
 
+
+                String roomName = params.get("room");
                 RoomEntity selectedRoom = null;
 
                 //find new room
-                if (params.get("changeRoom").equals("true") ||
-                        !model.getDateId().getDate().equals(aDaySlot.getDate())
-                        || !model.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())) {
-                    if (rooms != null && rooms.size() > 0) {
-                        for (RoomEntity aRoom : rooms) {
-                            ScheduleEntity existingSchedule = scheduleService.findScheduleByDateSlotAndRoom(aDaySlot, aRoom);
-                            if (existingSchedule == null) {
-                                if (model.getCourseId().getSubjectCode().contains("VOV")) {
-                                    if (aRoom.getName().contains("VOV")) {
-                                        selectedRoom = aRoom;
-                                        break;
+                if (params.get("changeRoom").equals("true")) {
+                    if (params.get("changeRoom").equals("true") || !model.getDateId().getDate().equals(aDaySlot.getDate())
+                            || !model.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())) {
+                        if (rooms != null && rooms.size() > 0) {
+                            for (RoomEntity aRoom : rooms) {
+                                ScheduleEntity existingSchedule = scheduleService.findScheduleByDateSlotAndRoom(aDaySlot, aRoom);
+                                if (existingSchedule == null) {
+                                    if (model.getCourseId().getSubjectCode().contains("VOV")) {
+                                        if (aRoom.getName().contains("VOV")) {
+                                            selectedRoom = aRoom;
+                                            break;
+                                        }
                                     }
-                                }
 
-                                if (model.getCourseId().getSubjectCode().contains("LAB")) {
-                                    if (aRoom.getNote().toLowerCase().contains("thực hành")) {
-                                        selectedRoom = aRoom;
-                                        break;
+                                    if (model.getCourseId().getSubjectCode().contains("LAB")) {
+                                        if (aRoom.getNote().toLowerCase().contains("thực hành")) {
+                                            selectedRoom = aRoom;
+                                            break;
+                                        }
                                     }
-                                }
 
-                                if (!model.getCourseId().getSubjectCode().contains("LAB") && !model.getCourseId().getSubjectCode().contains("VOV")) {
-                                    if (!aRoom.getName().contains("VOV") && !aRoom.getNote().toLowerCase().contains("thực hành")) {
-                                        selectedRoom = aRoom;
-                                        break;
+                                    if (!model.getCourseId().getSubjectCode().contains("LAB") && !model.getCourseId().getSubjectCode().contains("VOV")) {
+                                        if (!aRoom.getName().contains("VOV") && !aRoom.getNote().toLowerCase().contains("thực hành")) {
+                                            selectedRoom = aRoom;
+                                            break;
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    if (selectedRoom != null) {
-                        model.setRoomId(selectedRoom);
-                    } else {
-                        jsonObj.addProperty("fail", true);
-                        jsonObj.addProperty("message", "Không có phòng trống vào " + aDaySlot.getSlotId().getSlotName() + ",ngày " + aDaySlot.getDate());
-                        return jsonObj;
+                        if (selectedRoom != null) {
+                            model.setRoomId(selectedRoom);
+                        } else {
+                            jsonObj.addProperty("fail", true);
+                            jsonObj.addProperty("message", "Không có phòng trống vào " + aDaySlot.getSlotId().getSlotName() + ",ngày " + aDaySlot.getDate());
+                            return jsonObj;
+                        }
+                    }
+                } else {
+                    if (!roomName.equals(model.getRoomId().getName()) ||
+                            !model.getDateId().getDate().equals(aDaySlot.getDate())
+                            || !model.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())) {
+                        RoomEntity foundRoom = roomService.findRoomsByExactName(roomName);
+                        //room exist
+                        if (foundRoom != null) {
+                            ScheduleEntity existingSchedule = scheduleService.findScheduleByDateSlotAndRoom(aDaySlot, foundRoom);
+                            //have another schedule
+                            if (existingSchedule != null) {
+                                jsonObj.addProperty("fail", true);
+                                jsonObj.addProperty("message", "Phòng này đã có lịch học vào " + existingSchedule.getDateId().getSlotId().getSlotName() +
+                                        ", ngày " + existingSchedule.getDateId().getDate() + ", giảng viên " + (existingSchedule.getEmpId() == null ? "" : existingSchedule.getEmpId().getFullName()) +
+                                        ", môn " + existingSchedule.getCourseId().getSubjectCode() +
+                                        ", lớp " + existingSchedule.getGroupName());
+                                return jsonObj;
+                            } else {
+                                model.setRoomId(foundRoom);
+                            }
+                        } else {
+                            jsonObj.addProperty("fail", true);
+                            jsonObj.addProperty("message", "Không có phòng này tồn tại");
+                            return jsonObj;
+                        }
                     }
                 }
 
@@ -893,15 +927,6 @@ public class ScheduleList {
                         && model.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())
                         && model.getEmpId().equals(lectures.get(0))) {
 
-//                    model.setDateId(aDaySlot);
-//
-//                    if (lectures != null && lectures.size() > 0) {
-//                        model.setEmpId(lectures.get(0));
-//                    } else {
-//                        jsonObj.addProperty("fail", true);
-//                        jsonObj.addProperty("message", "Không có giảng viên này");
-//                        return jsonObj;
-//                    }
                     scheduleService.updateSchedule(model);
 
                     if (params.get("all").equals("true")) {
@@ -928,43 +953,69 @@ public class ScheduleList {
 
                             //find new room
                             if (params.get("changeRoom").equals("true")) {
-                                if (rooms != null && rooms.size() > 0) {
-                                    for (RoomEntity aRoom : rooms) {
-                                        ScheduleEntity existingSchedule = scheduleService.findScheduleByDateSlotAndRoom(aSchedule.getDateId(), aRoom);
-                                        if (existingSchedule == null) {
-                                            if (model.getCourseId().getSubjectCode().contains("VOV")) {
-                                                if (aRoom.getName().contains("VOV")) {
-                                                    selectedRoom2 = aRoom;
-                                                    break;
+                                if (params.get("changeRoom").equals("true")) {
+                                    if (rooms != null && rooms.size() > 0) {
+                                        for (RoomEntity aRoom : rooms) {
+                                            ScheduleEntity existingSchedule = scheduleService.findScheduleByDateSlotAndRoom(aSchedule.getDateId(), aRoom);
+                                            if (existingSchedule == null) {
+                                                if (model.getCourseId().getSubjectCode().contains("VOV")) {
+                                                    if (aRoom.getName().contains("VOV")) {
+                                                        selectedRoom2 = aRoom;
+                                                        break;
+                                                    }
                                                 }
-                                            }
 
-                                            if (model.getCourseId().getSubjectCode().contains("LAB")) {
-                                                if (aRoom.getNote().toLowerCase().contains("thực hành")) {
-                                                    selectedRoom2 = aRoom;
-                                                    break;
+                                                if (model.getCourseId().getSubjectCode().contains("LAB")) {
+                                                    if (aRoom.getNote().toLowerCase().contains("thực hành")) {
+                                                        selectedRoom2 = aRoom;
+                                                        break;
+                                                    }
                                                 }
-                                            }
 
-                                            if (!model.getCourseId().getSubjectCode().contains("LAB") && !model.getCourseId().getSubjectCode().contains("VOV")) {
-                                                if (!aRoom.getName().contains("VOV") && !aRoom.getNote().toLowerCase().contains("thực hành")) {
-                                                    selectedRoom2 = aRoom;
-                                                    break;
+                                                if (!model.getCourseId().getSubjectCode().contains("LAB") && !model.getCourseId().getSubjectCode().contains("VOV")) {
+                                                    if (!aRoom.getName().contains("VOV") && !aRoom.getNote().toLowerCase().contains("thực hành")) {
+                                                        selectedRoom2 = aRoom;
+                                                        break;
+                                                    }
                                                 }
                                             }
                                         }
                                     }
-                                }
 
-                                if (selectedRoom2 != null) {
-                                    aSchedule.setRoomId(selectedRoom2);
-                                } else {
-                                    mess += "<div> Không có phòng trống vào " + aSchedule.getDateId().getSlotId().getSlotName() + ", ngày " + aSchedule.getDateId().getDate() + "</div><br/>";
-                                    continue;
+                                    if (selectedRoom2 != null) {
+                                        aSchedule.setRoomId(selectedRoom2);
+                                    } else {
+                                        mess += "<div> Không có phòng trống vào " + aSchedule.getDateId().getSlotId().getSlotName() + ", ngày " + aSchedule.getDateId().getDate() + "</div><br/>";
+                                        continue;
+                                    }
+                                }
+                            } else {
+                                if (!roomName.equals(model.getRoomId().getName()) ||
+                                        !model.getDateId().getDate().equals(aDaySlot.getDate())
+                                        || !model.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())) {
+                                    RoomEntity foundRoom = roomService.findRoomsByExactName(roomName);
+                                    //room exist
+                                    if (foundRoom != null) {
+                                        ScheduleEntity existingSchedule = scheduleService.findScheduleByDateSlotAndRoom(aDaySlot, foundRoom);
+                                        //have another schedule
+                                        if (existingSchedule != null) {
+                                            jsonObj.addProperty("fail", true);
+                                            jsonObj.addProperty("message", "Phòng này đã có lịch học vào " + existingSchedule.getDateId().getSlotId().getSlotName() +
+                                                    ", ngày " + existingSchedule.getDateId().getDate() + ", giảng viên " + (existingSchedule.getEmpId() == null ? "" : existingSchedule.getEmpId().getFullName()) +
+                                                    ", môn " + existingSchedule.getCourseId().getSubjectCode() +
+                                                    ", lớp " + existingSchedule.getGroupName());
+                                            return jsonObj;
+                                        } else {
+                                            model.setRoomId(foundRoom);
+                                        }
+                                    } else {
+                                        jsonObj.addProperty("fail", true);
+                                        jsonObj.addProperty("message", "Không có phòng này tồn tại");
+                                        return jsonObj;
+                                    }
                                 }
                             }
 
-//                            aSchedule.setRoomId(model.getRoomId());
 
                             scheduleService.updateSchedule(aSchedule);
                         }
@@ -989,7 +1040,6 @@ public class ScheduleList {
                     model.setId(0);
                     model.setActive(true);
                     scheduleService.createSchedule(model);
-
 
                     if (params.get("all").equals("true")) {
                         for (ScheduleEntity aSchedule : sameScheduleList) {
@@ -1112,7 +1162,7 @@ public class ScheduleList {
             // Query danh sách lịch học thay đổi từ FAP
             String queryStr = "SELECT s FROM ChangedScheduleEntity s " + (latestDate == null ? "" : "WHERE (s.changedScheduleEntityPK.changedDate > :date)") + " ORDER BY s.changedScheduleEntityPK.changedDate";
             TypedQuery<ChangedScheduleEntity> query = em.createQuery(queryStr, ChangedScheduleEntity.class);
-            List<ChangedScheduleEntity> scheduleList = latestDate == null ? query.getResultList() :query.setParameter("date", latestDate).getResultList();
+            List<ChangedScheduleEntity> scheduleList = latestDate == null ? query.getResultList() : query.setParameter("date", latestDate).getResultList();
 
             List<RealSemesterEntity> realSemesterEntityList = realSemesterService.getAllSemester();
 
@@ -1159,7 +1209,7 @@ public class ScheduleList {
                             }
 
                             //find original room
-                            RoomEntity room = roomService.findRoomsByName(changedSchedule.getFromRoomNo()).get(0);
+                            RoomEntity room = roomService.findRoomsByExactName(changedSchedule.getFromRoomNo());
 
                             //find original schedule with isActive
                             ScheduleEntity scheduleEntity = scheduleService.findScheduleByDateSlotAndLectureAndRoomAndCourse(daySlot, emp, room, course);
@@ -1238,7 +1288,7 @@ public class ScheduleList {
                             RoomEntity room2 = null;
                             //find changed room
                             if (changedSchedule.getToRoomNo() != null) {
-                                room2 = roomService.findRoomsByName(changedSchedule.getToRoomNo()).get(0);
+                                room2 = roomService.findRoomsByExactName(changedSchedule.getToRoomNo());
                             } else {
                                 //dont change room
                                 room2 = room;

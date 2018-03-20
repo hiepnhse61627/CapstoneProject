@@ -359,18 +359,18 @@
                         <div class="form-check" id="changeRoom-container">
                             <input class="form-check-input" type="checkbox" value="" id="changeRoom">
                             <label class="form-check-label" for="changeRoom">
-                                Yêu cầu chuyển phòng
+                                Tự tìm phòng trống
                             </label>
                         </div>
 
-                        <div class="form-group">
-                            <label for="lecture">Giảng viên:</label>
-                            <select id="lecture" class="select lecture-select">
-                                <c:forEach var="emp" items="${employees}">
-                                    <option value="${emp.id}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
-                                </c:forEach>
-                            </select>
-                        </div>
+                        <%--<div class="form-group">--%>
+                            <%--<label for="lecture">Giảng viên:</label>--%>
+                            <%--<select id="lecture" class="select lecture-select">--%>
+                                <%--<c:forEach var="emp" items="${employees}">--%>
+                                    <%--<option value="${emp.fullName}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>--%>
+                                <%--</c:forEach>--%>
+                            <%--</select>--%>
+                        <%--</div>--%>
 
                         <div class="form-check" id="all-container">
                             <input class="form-check-input" type="checkbox" value="" id="all">
@@ -526,7 +526,7 @@
         });
 
         $('#room').select2();
-        $("#room").attr("disabled", true);
+        // $("#room").attr("disabled", true);
 
         $('#lecture').select2({
             placeholder: '- Chọn giảng viên -'
@@ -714,7 +714,7 @@
                             slots: JSON.stringify(slots),
                             room: $("#room").val(),
                             capacity: $("#capacity").val(),
-                            lecture: $("#lecture").val(),
+                            lecture: $("#employeeName").val(),
                             changeRoom: $("#changeRoom").is(":checked"),
                             all: $("#all").is(":checked"),
                         },
@@ -775,6 +775,7 @@
         $("#slot").attr("multiple", "multiple");
         resetSelect2(0);
         $(".add_field_button").show();
+        $("#capacity-container").show();
 
         $("#scheduleModal").modal('toggle');
     }
@@ -825,6 +826,7 @@
 
         $("#room").val(room).trigger("change");
         $("#capacity").val(capacity).trigger("change");
+        $("#capacity-container").hide();
 
         $("#lecture").val(lecture).trigger("change");
 
