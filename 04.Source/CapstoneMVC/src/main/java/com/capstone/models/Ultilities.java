@@ -9,11 +9,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.view.RedirectView;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -698,7 +706,48 @@ public class Ultilities {
     public static void GetMenu(ServletContext servletContext, CredentialsEntity user) {
         IDynamicMenuService dynamicMenuService = new DynamicMenuServiceImpl();
 
-        List<DynamicMenuEntity> list = dynamicMenuService.getAllMenu().stream().filter(s -> s.getRole().contains(user.getRole())).collect(Collectors.toList());
+        List<DynamicMenuEntity> list = dynamicMenuService.getAllMenu().stream()
+                .filter(s -> s.getRole() != null && s.getRole().contains(user.getRole()))
+                .collect(Collectors.toList());
+
+        List<DynamicMenuEntity> menuNoFunctionGroup = list.stream().filter(s -> s.getFunctionGroup() == null).collect(Collectors.toList());
+
+        List<DynamicMenuEntity> functionGroup = list.stream().filter(s -> s.getGroupName() != null).distinct().collect(Collectors.toList());
+        List<String> groups = new ArrayList<>();
+        for (DynamicMenuEntity temp : functionGroup) {
+            if (!groups.contains(temp.getGroupName())) {
+                groups.add(temp.getGroupName());
+            }
+        }
+
+        List<DynamicMenuEntity> menu = list.stream().filter(s -> s.getFunctionGroup() != null).collect(Collectors.toList());
+//        ServletContext servletContext = servletContextEvent.getServletContext();
+        servletContext.setAttribute("menu", menu);
+        servletContext.setAttribute("functionGroup", groups);
+        servletContext.setAttribute("menuNoFunctionGroup", menuNoFunctionGroup);
+        servletContext.setAttribute("role", user.getRole());
+
+    }
+
+    public static void GetMenu2(ServletContext servletContext, CredentialsEntity user) {
+        RolesAuthorityServiceImpl rolesAuthorityService = new RolesAuthorityServiceImpl();
+        CredentialsRolesServiceImpl credentialsRolesService = new CredentialsRolesServiceImpl();
+        List<CredentialsRolesEntity> userRoles = credentialsRolesService.getCredentialsRolesByCredentialsId(user.getId());
+
+        List<DynamicMenuEntity> list = new ArrayList<>();
+        for (CredentialsRolesEntity role : userRoles) {
+            int roleId = role.getRolesId().getId();
+
+            List<DynamicMenuEntity> tempList = rolesAuthorityService.findMenuByRoleId(roleId);
+            //kiểm tra trùng và add tất cả unique menu của tất cả role vào list
+            for (DynamicMenuEntity menu : tempList) {
+                boolean exist = list.stream().anyMatch(q -> q.getId() == menu.getId());
+                if (!exist) {
+                    list.add(menu);
+                }
+            }
+        }
+
 
         List<DynamicMenuEntity> menuNoFunctionGroup = list.stream().filter(s -> s.getFunctionGroup() == null).collect(Collectors.toList());
 
@@ -898,7 +947,7 @@ public class Ultilities {
                     }
 
                     rows = Arrays.asList(newPrerequisite.split("OR"));
-                }else if (oldPrerequisite != null && newPrerequisite != null){
+                } else if (oldPrerequisite != null && newPrerequisite != null) {
 
                     //kiểm tra cả 2 cũ lẫn mới
                     String[] oldSubj = oldPrerequisite.split("OR");
@@ -999,7 +1048,7 @@ public class Ultilities {
                                             // nếu có 2 fail --> fail
                                             isPass = reLearnInSameSemester.stream()
                                                     .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
-                                                    ||  q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
+                                                            || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
                                                     .findFirst().orElse(null);
 
                                         } else {
@@ -1027,10 +1076,10 @@ public class Ultilities {
                                                 }
                                             }
 
-                                             isPass = reLearnInSameSemester.stream()
+                                            isPass = reLearnInSameSemester.stream()
                                                     .filter(q -> q.getAverageMark() >= tmpPassMark
                                                             || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
-                                                            ||  q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
+                                                            || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
                                                     .findFirst().orElse(null);
                                         }
 
@@ -1038,7 +1087,7 @@ public class Ultilities {
                                     }
                                     if (isPass != null) {
                                         ++countPass;
-                                    }else{
+                                    } else {
                                         failSubjs.add(cellSubject);
                                     }
 
@@ -1072,5 +1121,194 @@ public class Ultilities {
         return result;
     }
 
+    // List<SubjectId>
+    public static List<String> getStudentProcessNotStart(int stuId, int semesterId, List<MarksEntity> allMarks) {
+        IMarksService marksService = new MarksServiceImpl();
+
+//        List<MarksEntity> marks = marksService.getStudentMarkFromAndBeforeSelectedSemesterFromMarks(semesterId, stuId);
+        List<MarksEntity> marks = allMarks.stream().filter(q -> q.getStudentId().getId() == stuId)
+                .collect(Collectors.toList());
+
+        marks = Global.TransformAllMarksList(marks);
+
+        //get not start mark
+        List<MarksEntity> list = marks
+                .stream()
+                .filter(c -> c.getStatus().toLowerCase().contains("start"))
+                .filter(Ultilities.distinctByKey(c -> c.getSubjectMarkComponentId().getSubjectId().getId()))
+                .collect(Collectors.toList());
+
+        Iterator<MarksEntity> iterator = list.iterator();
+        ISubjectService subjectService = new SubjectServiceImpl();
+
+        markLoop:
+        while (iterator.hasNext()) {
+            boolean hasPassed = false;
+
+            // check prequisite
+            MarksEntity mark = iterator.next();
+            SubjectEntity entity = mark.getSubjectMarkComponentId().getSubjectId();
+
+            //check if student has passed not started subject
+            List<MarksEntity> tempMarkList = marks.stream()
+                    .filter(q -> q.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(entity.getId())
+                    ).collect(Collectors.toList());
+            if (!tempMarkList.isEmpty()) {
+                List<MarksEntity> sortedMarkList = Ultilities.SortSemestersByMarks(tempMarkList);
+                MarksEntity latestMark = null;
+
+                latestMark = sortedMarkList.get(sortedMarkList.size() - 1);
+                RealSemesterEntity tmpSemester = latestMark.getSemesterId();
+
+                List<MarksEntity> reLearnInSameSemester = sortedMarkList.stream()
+                        .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
+                        .collect(Collectors.toList());
+
+                if (!reLearnInSameSemester.isEmpty()) {
+                    //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
+                    // nếu có 2 fail --> fail
+                    MarksEntity checkPass = reLearnInSameSemester.stream()
+                            .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
+                                    || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
+                            .findFirst().orElse(null);
+                    if (checkPass != null) {
+                        hasPassed = true;
+                    } else {
+                        hasPassed = false;
+                    }
+                }
+
+
+            }
+            //kiếm môn thay thế cho not Start
+            List<SubjectEntity> replacementSubjectList = new ArrayList<>(entity.getSubjectEntityList());
+            List<MarksEntity> replacementMarks = marks.stream()
+                    .filter(q -> replacementSubjectList.stream()
+                            .anyMatch(a -> a.getId().equalsIgnoreCase(q.getSubjectMarkComponentId().getSubjectId().getId()))
+                    ).collect(Collectors.toList());
+            if (!replacementMarks.isEmpty()) {
+                List<MarksEntity> sortedMarkList2 = Ultilities.SortSemestersByMarks(replacementMarks);
+                MarksEntity latestMark2 = null;
+
+                latestMark2 = sortedMarkList2.get(sortedMarkList2.size() - 1);
+
+                RealSemesterEntity tmpSemester = latestMark2.getSemesterId();
+
+                List<MarksEntity> reLearnInSameSemester = sortedMarkList2.stream()
+                        .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
+                        .collect(Collectors.toList());
+
+                if (!reLearnInSameSemester.isEmpty()) {
+                    //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
+                    // nếu có 2 fail --> fail
+                    MarksEntity checkPass = reLearnInSameSemester.stream()
+                            .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
+                                    || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
+                            .findFirst().orElse(null);
+                    if (checkPass != null) {
+                        hasPassed = true;
+                    } else {
+                        hasPassed = false;
+                    }
+                }
+            }
+
+            if (hasPassed) {
+                iterator.remove();
+                continue markLoop;
+            }
+
+
+        }
+
+        List<String> displayList = new ArrayList<>();
+        for (MarksEntity sc : list) {
+
+            displayList.add(sc.getSubjectMarkComponentId().getSubjectId().getId());
+        }
+
+        displayList = displayList.stream().distinct().collect(Collectors.toList());
+
+        return displayList;
+    }
+
+    public static CustomUser getPrincipal() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        CustomUser user = (CustomUser) authentication.getPrincipal();
+        return user;
+    }
+
+    public static void logUserAction(String str) {
+        ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+        HttpSession session = attr.getRequest().getSession(true);
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy HH:mm");
+        Date now = new Date();
+        List<String> userActions = (List<String>) session.getAttribute("uActionList");
+        if (userActions == null) {
+            userActions = new ArrayList<>();
+            userActions.add(str + " - " + sdf.format(now));
+            session.setAttribute("uActionList", userActions);
+        } else {
+            userActions.add(str + " - " + sdf.format(now));
+        }
+    }
+
+    public static boolean checkUserAuthorize(HttpServletRequest request) {
+
+        CredentialsRolesServiceImpl credentialsRolesService = new CredentialsRolesServiceImpl();
+        RolesAuthorityServiceImpl rolesAuthorityService = new RolesAuthorityServiceImpl();
+        DynamicMenuServiceImpl dynamicMenuService = new DynamicMenuServiceImpl();
+        CustomUser user = getPrincipal();
+        CredentialsEntity credential = user.getUser();
+        String url = request.getRequestURI();
+
+        DynamicMenuEntity dynamicMenu = dynamicMenuService.findDynamicMenuByLink(url);
+
+        List<CredentialsRolesEntity> roles = credentialsRolesService.getCredentialsRolesByCredentialsId(credential.getId());
+        boolean permission = false;
+        if (dynamicMenu == null) {
+            return permission;
+        }
+
+        for (CredentialsRolesEntity role : roles) {
+            List<RolesAuthorityEntity> exist = rolesAuthorityService.findRolesAuthorityByRoleIdByMenuId(role.getRolesId().getId(), dynamicMenu.getId());
+            if (!exist.isEmpty()) {
+                permission = true;
+                break;
+            }
+        }
+        return permission;
+    }
+
+    //dành để check những url có link kèm theo parameter, do chỉ link gốc (không có parameter) được lưu dưới db
+    public static boolean checkUserAuthorize2(HttpServletRequest request, String noParamsUrl) {
+
+        CredentialsRolesServiceImpl credentialsRolesService = new CredentialsRolesServiceImpl();
+        RolesAuthorityServiceImpl rolesAuthorityService = new RolesAuthorityServiceImpl();
+
+        CustomUser user = getPrincipal();
+        CredentialsEntity credential = user.getUser();
+        String url = request.getRequestURI();
+        //dành
+        if (!noParamsUrl.isEmpty()) {
+            url = noParamsUrl;
+        }
+
+        List<CredentialsRolesEntity> roles = credentialsRolesService.getCredentialsRolesByCredentialsId(credential.getId());
+        boolean permission = false;
+
+        for (CredentialsRolesEntity role : roles) {
+            List<RolesAuthorityEntity> exist = rolesAuthorityService.findRolesAuthorityByRoleIdByUrl(role.getRolesId().getId(), url);
+            if (!exist.isEmpty()) {
+                permission = true;
+                break;
+            }
+        }
+        return permission;
+    }
+
+    public static ModelAndView returnDeniedPage() {
+        return new ModelAndView("/Deny");
+    }
 
 }

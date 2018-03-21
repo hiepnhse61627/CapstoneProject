@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.*;
+import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -45,7 +46,12 @@ public class EmployeeList {
 
 
     @RequestMapping("/employeeList")
-    public ModelAndView EmployeeListAll() {
+    public ModelAndView EmployeeListAll(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
         ModelAndView view = new ModelAndView("EmployeeList");
         view.addObject("title", "Danh sách giảng viên");
 

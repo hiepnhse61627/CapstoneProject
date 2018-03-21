@@ -1,15 +1,13 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.CredentialsEntity;
+import com.capstone.entities.CredentialsRolesEntity;
 import com.capstone.entities.DynamicMenuEntity;
 import com.capstone.models.CustomUser;
 import com.capstone.models.GoogleProfile;
 import com.capstone.models.Logger;
 import com.capstone.models.Ultilities;
-import com.capstone.services.CredentialsServiceImpl;
-import com.capstone.services.DynamicMenuServiceImpl;
-import com.capstone.services.ICredentialsService;
-import com.capstone.services.IDynamicMenuService;
+import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.apache.commons.codec.binary.Base64;
@@ -27,6 +25,7 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.context.ServletContextAware;
+import org.springframework.web.servlet.view.RedirectView;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -61,6 +60,26 @@ public class LoginController implements ServletContextAware {
     @RequestMapping("/register")
     public String Register() {
         return "Register";
+    }
+
+    @RequestMapping("/googleSignIn")
+    public RedirectView methodSignIn(HttpServletResponse httpServletResponse, HttpServletRequest request) {
+        String hostname = request.getServerName();
+        int port = request.getServerPort();
+
+        //local ip của mạng trường k truy cập được ra bên ngoài
+        if (hostname.indexOf("localhost") == -1 && hostname.indexOf("xip.io") == -1) {
+            hostname += "xip.io";
+        }
+        String redirectUri = hostname + ":" + port;
+        String url = "https://accounts.google.com/o/oauth2/auth?" +
+                "client_id=633838326707-anulcphc8kqt0k2hib34r42or6ikgcv8.apps.googleusercontent.com" +
+                "&redirect_uri=http://" + redirectUri + "/auth/google" +
+                "&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto";
+
+        RedirectView redirectView = new RedirectView();
+        redirectView.setUrl(url);
+        return redirectView;
     }
 
     // Sign up
@@ -146,15 +165,15 @@ public class LoginController implements ServletContextAware {
                 url += ".xip.io";
             }
             if (url.split(":").length < 2) {
-                url += ":" +  request.getServerPort();
+                url += ":" + request.getServerPort();
             }
             System.out.println(url);
 
             // google required parameters (see document for more info)
             String POST_PARAMS = "code=" + params.get("code") +
-                    "&client_id=415843400023-vlpk1t8gu558gmt597aqtumvkco0lmme.apps.googleusercontent.com" +
-                    "&client_secret=TEORfSizWyVpF4c-p8ziwBvu" +
-                    "&redirect_uri=http://" + url +"/auth/google" +
+                    "&client_id=633838326707-anulcphc8kqt0k2hib34r42or6ikgcv8.apps.googleusercontent.com" +
+                    "&client_secret=_cvE4Tq5ljKZYj5g7LYtOpgJ" +
+                    "&redirect_uri=http://" + url + "/auth/google" +
                     "&grant_type=authorization_code";
 
             con.setDoOutput(true);
@@ -204,14 +223,17 @@ public class LoginController implements ServletContextAware {
 
                         Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(user.getUsername(), user.getPassword(), getGrantedAuthorities(user), user),
                                 user.getPassword(),
-                                getGrantedAuthorities(user));
+                                getGrantedAuthorities2(user));
                         SecurityContextHolder.getContext().setAuthentication(auth);
                         HttpServletRequestWrapper wrapper = new HttpServletRequestWrapper(request) {
-                            @Override public String getParameter(String name) { return "true"; }
+                            @Override
+                            public String getParameter(String name) {
+                                return "true";
+                            }
                         };
                         rememberMeServices.loginSuccess(wrapper, response, auth);
 
-                        Ultilities.GetMenu(context, user);
+                        Ultilities.GetMenu2(context, user);
 
                         return "redirect:/";
                     } else {
@@ -230,11 +252,21 @@ public class LoginController implements ServletContextAware {
         return "redirect:/";
     }
 
-    private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user){
+    private List<GrantedAuthority> getGrantedAuthorities(CredentialsEntity user) {
         List<GrantedAuthority> authorities = new ArrayList<>();
         String[] roles = user.getRole().split(",");
         for (String role : roles) {
             authorities.add(new SimpleGrantedAuthority(role.trim()));
+        }
+        return authorities;
+    }
+    private List<GrantedAuthority> getGrantedAuthorities2(CredentialsEntity user){
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        CredentialsRolesServiceImpl credentialsRolesService = new CredentialsRolesServiceImpl();
+        List<CredentialsRolesEntity> roles = credentialsRolesService.getCredentialsRolesByCredentialsId(user.getId());
+
+        for (CredentialsRolesEntity role : roles) {
+            authorities.add(new SimpleGrantedAuthority(role.getRolesId().getName()));
         }
         return authorities;
     }

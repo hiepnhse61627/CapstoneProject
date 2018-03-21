@@ -35,7 +35,7 @@ public class MySecurity {
 
         List<CredentialsRolesEntity> credentialsRolesList = usersRolesService.getCredentialsRolesByCredentialsId(user.getId());
         List<String> rolesList =
-                credentialsRolesList.stream().map(q -> q.getRolesId().getId()).collect(Collectors.toList());
+                credentialsRolesList.stream().map(q -> q.getRolesId().getName()).collect(Collectors.toList());
 
 //        get menu by requested link
         DynamicMenuEntity menu = menuService.findDynamicMenuByLink(url);

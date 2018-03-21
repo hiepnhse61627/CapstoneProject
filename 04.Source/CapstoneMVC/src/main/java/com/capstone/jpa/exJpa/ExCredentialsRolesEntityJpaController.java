@@ -21,7 +21,7 @@ public class ExCredentialsRolesEntityJpaController extends CredentialsRolesEntit
             em = getEntityManager();
             TypedQuery<CredentialsRolesEntity> query =
                     em.createQuery("SELECT a FROM" +
-                            " CredentialsRolesEntity a WHERE a.credentialsId = :userId", CredentialsRolesEntity.class);
+                            " CredentialsRolesEntity a WHERE a.credentialsId.id = :userId", CredentialsRolesEntity.class);
 
             query.setParameter("userId", credentialsId);
             resultList = query.getResultList();

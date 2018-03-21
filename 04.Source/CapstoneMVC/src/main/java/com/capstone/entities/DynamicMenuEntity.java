@@ -7,6 +7,7 @@ package com.capstone.entities;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import javax.persistence.*;
 
 /**
@@ -36,7 +37,7 @@ public class DynamicMenuEntity implements Serializable {
     @Column(name = "Link", length = 2147483647)
     private String link;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "menuId")
-    private Collection<RolesAuthorityEntity> rolesAuthorityEntityCollection;
+    private List<RolesAuthorityEntity> rolesAuthorityEntityList;
 
     public DynamicMenuEntity() {
     }
@@ -93,12 +94,12 @@ public class DynamicMenuEntity implements Serializable {
         this.link = link;
     }
 
-    public Collection<RolesAuthorityEntity> getRolesAuthorityEntityCollection() {
-        return rolesAuthorityEntityCollection;
+    public List<RolesAuthorityEntity> getRolesAuthorityEntityList() {
+        return rolesAuthorityEntityList;
     }
 
-    public void setRolesAuthorityEntityCollection(Collection<RolesAuthorityEntity> rolesAuthorityEntityCollection) {
-        this.rolesAuthorityEntityCollection = rolesAuthorityEntityCollection;
+    public void setRolesAuthorityEntityList(List<RolesAuthorityEntity> rolesAuthorityEntityList) {
+        this.rolesAuthorityEntityList = rolesAuthorityEntityList;
     }
 
     @Override

@@ -51,11 +51,11 @@ public class CredentialsRolesEntityJpaController implements Serializable {
             }
             em.persist(credentialsRolesEntity);
             if (credentialsId != null) {
-                credentialsId.getCredentialsRolesEntityCollection().add(credentialsRolesEntity);
+                credentialsId.getCredentialsRolesEntityList().add(credentialsRolesEntity);
                 credentialsId = em.merge(credentialsId);
             }
             if (rolesId != null) {
-                rolesId.getCredentialsRolesEntityCollection().add(credentialsRolesEntity);
+                rolesId.getCredentialsRolesEntityList().add(credentialsRolesEntity);
                 rolesId = em.merge(rolesId);
             }
             em.getTransaction().commit();
@@ -91,19 +91,19 @@ public class CredentialsRolesEntityJpaController implements Serializable {
             }
             credentialsRolesEntity = em.merge(credentialsRolesEntity);
             if (credentialsIdOld != null && !credentialsIdOld.equals(credentialsIdNew)) {
-                credentialsIdOld.getCredentialsRolesEntityCollection().remove(credentialsRolesEntity);
+                credentialsIdOld.getCredentialsRolesEntityList().remove(credentialsRolesEntity);
                 credentialsIdOld = em.merge(credentialsIdOld);
             }
             if (credentialsIdNew != null && !credentialsIdNew.equals(credentialsIdOld)) {
-                credentialsIdNew.getCredentialsRolesEntityCollection().add(credentialsRolesEntity);
+                credentialsIdNew.getCredentialsRolesEntityList().add(credentialsRolesEntity);
                 credentialsIdNew = em.merge(credentialsIdNew);
             }
             if (rolesIdOld != null && !rolesIdOld.equals(rolesIdNew)) {
-                rolesIdOld.getCredentialsRolesEntityCollection().remove(credentialsRolesEntity);
+                rolesIdOld.getCredentialsRolesEntityList().remove(credentialsRolesEntity);
                 rolesIdOld = em.merge(rolesIdOld);
             }
             if (rolesIdNew != null && !rolesIdNew.equals(rolesIdOld)) {
-                rolesIdNew.getCredentialsRolesEntityCollection().add(credentialsRolesEntity);
+                rolesIdNew.getCredentialsRolesEntityList().add(credentialsRolesEntity);
                 rolesIdNew = em.merge(rolesIdNew);
             }
             em.getTransaction().commit();
@@ -137,12 +137,12 @@ public class CredentialsRolesEntityJpaController implements Serializable {
             }
             CredentialsEntity credentialsId = credentialsRolesEntity.getCredentialsId();
             if (credentialsId != null) {
-                credentialsId.getCredentialsRolesEntityCollection().remove(credentialsRolesEntity);
+                credentialsId.getCredentialsRolesEntityList().remove(credentialsRolesEntity);
                 credentialsId = em.merge(credentialsId);
             }
             RolesEntity rolesId = credentialsRolesEntity.getRolesId();
             if (rolesId != null) {
-                rolesId.getCredentialsRolesEntityCollection().remove(credentialsRolesEntity);
+                rolesId.getCredentialsRolesEntityList().remove(credentialsRolesEntity);
                 rolesId = em.merge(rolesId);
             }
             em.remove(credentialsRolesEntity);

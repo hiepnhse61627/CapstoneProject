@@ -777,5 +777,10 @@ public class StudentServiceImpl implements IStudentService {
         studentEntityJpaController.myUpdateStudent(student);
     }
 
+    @Override
+    public boolean myBulkUpdateStudents(List<StudentEntity> studentList) {
+        return studentEntityJpaController.myBulkUpdateStudents(studentList);
+    }
+
 
 }

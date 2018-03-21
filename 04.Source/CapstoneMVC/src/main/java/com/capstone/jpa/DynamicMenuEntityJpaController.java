@@ -6,23 +6,26 @@
 package com.capstone.jpa;
 
 import com.capstone.entities.DynamicMenuEntity;
+
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
+
 import com.capstone.entities.RolesAuthorityEntity;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+
 import com.capstone.jpa.exceptions.IllegalOrphanException;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
 
 /**
- *
  * @author StormNs
  */
 public class DynamicMenuEntityJpaController implements Serializable {
@@ -30,6 +33,7 @@ public class DynamicMenuEntityJpaController implements Serializable {
     public DynamicMenuEntityJpaController(EntityManagerFactory emf) {
         this.emf = emf;
     }
+
     private EntityManagerFactory emf = null;
 
     public EntityManager getEntityManager() {
@@ -37,27 +41,27 @@ public class DynamicMenuEntityJpaController implements Serializable {
     }
 
     public void create(DynamicMenuEntity dynamicMenuEntity) throws PreexistingEntityException, Exception {
-        if (dynamicMenuEntity.getRolesAuthorityEntityCollection() == null) {
-            dynamicMenuEntity.setRolesAuthorityEntityCollection(new ArrayList<RolesAuthorityEntity>());
+        if (dynamicMenuEntity.getRolesAuthorityEntityList() == null) {
+            dynamicMenuEntity.setRolesAuthorityEntityList(new ArrayList<RolesAuthorityEntity>());
         }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            Collection<RolesAuthorityEntity> attachedRolesAuthorityEntityCollection = new ArrayList<RolesAuthorityEntity>();
-            for (RolesAuthorityEntity rolesAuthorityEntityCollectionRolesAuthorityEntityToAttach : dynamicMenuEntity.getRolesAuthorityEntityCollection()) {
-                rolesAuthorityEntityCollectionRolesAuthorityEntityToAttach = em.getReference(rolesAuthorityEntityCollectionRolesAuthorityEntityToAttach.getClass(), rolesAuthorityEntityCollectionRolesAuthorityEntityToAttach.getId());
-                attachedRolesAuthorityEntityCollection.add(rolesAuthorityEntityCollectionRolesAuthorityEntityToAttach);
+            List<RolesAuthorityEntity> attachedRolesAuthorityEntityList = new ArrayList<RolesAuthorityEntity>();
+            for (RolesAuthorityEntity rolesAuthorityEntityListRolesAuthorityEntityToAttach : dynamicMenuEntity.getRolesAuthorityEntityList()) {
+                rolesAuthorityEntityListRolesAuthorityEntityToAttach = em.getReference(rolesAuthorityEntityListRolesAuthorityEntityToAttach.getClass(), rolesAuthorityEntityListRolesAuthorityEntityToAttach.getId());
+                attachedRolesAuthorityEntityList.add(rolesAuthorityEntityListRolesAuthorityEntityToAttach);
             }
-            dynamicMenuEntity.setRolesAuthorityEntityCollection(attachedRolesAuthorityEntityCollection);
+            dynamicMenuEntity.setRolesAuthorityEntityList(attachedRolesAuthorityEntityList);
             em.persist(dynamicMenuEntity);
-            for (RolesAuthorityEntity rolesAuthorityEntityCollectionRolesAuthorityEntity : dynamicMenuEntity.getRolesAuthorityEntityCollection()) {
-                DynamicMenuEntity oldMenuIdOfRolesAuthorityEntityCollectionRolesAuthorityEntity = rolesAuthorityEntityCollectionRolesAuthorityEntity.getMenuId();
-                rolesAuthorityEntityCollectionRolesAuthorityEntity.setMenuId(dynamicMenuEntity);
-                rolesAuthorityEntityCollectionRolesAuthorityEntity = em.merge(rolesAuthorityEntityCollectionRolesAuthorityEntity);
-                if (oldMenuIdOfRolesAuthorityEntityCollectionRolesAuthorityEntity != null) {
-                    oldMenuIdOfRolesAuthorityEntityCollectionRolesAuthorityEntity.getRolesAuthorityEntityCollection().remove(rolesAuthorityEntityCollectionRolesAuthorityEntity);
-                    oldMenuIdOfRolesAuthorityEntityCollectionRolesAuthorityEntity = em.merge(oldMenuIdOfRolesAuthorityEntityCollectionRolesAuthorityEntity);
+            for (RolesAuthorityEntity rolesAuthorityEntityListRolesAuthorityEntity : dynamicMenuEntity.getRolesAuthorityEntityList()) {
+                DynamicMenuEntity oldMenuIdOfRolesAuthorityEntityListRolesAuthorityEntity = rolesAuthorityEntityListRolesAuthorityEntity.getMenuId();
+                rolesAuthorityEntityListRolesAuthorityEntity.setMenuId(dynamicMenuEntity);
+                rolesAuthorityEntityListRolesAuthorityEntity = em.merge(rolesAuthorityEntityListRolesAuthorityEntity);
+                if (oldMenuIdOfRolesAuthorityEntityListRolesAuthorityEntity != null) {
+                    oldMenuIdOfRolesAuthorityEntityListRolesAuthorityEntity.getRolesAuthorityEntityList().remove(rolesAuthorityEntityListRolesAuthorityEntity);
+                    oldMenuIdOfRolesAuthorityEntityListRolesAuthorityEntity = em.merge(oldMenuIdOfRolesAuthorityEntityListRolesAuthorityEntity);
                 }
             }
             em.getTransaction().commit();
@@ -79,36 +83,36 @@ public class DynamicMenuEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             DynamicMenuEntity persistentDynamicMenuEntity = em.find(DynamicMenuEntity.class, dynamicMenuEntity.getId());
-            Collection<RolesAuthorityEntity> rolesAuthorityEntityCollectionOld = persistentDynamicMenuEntity.getRolesAuthorityEntityCollection();
-            Collection<RolesAuthorityEntity> rolesAuthorityEntityCollectionNew = dynamicMenuEntity.getRolesAuthorityEntityCollection();
+            List<RolesAuthorityEntity> rolesAuthorityEntityListOld = persistentDynamicMenuEntity.getRolesAuthorityEntityList();
+            List<RolesAuthorityEntity> rolesAuthorityEntityListNew = dynamicMenuEntity.getRolesAuthorityEntityList();
             List<String> illegalOrphanMessages = null;
-            for (RolesAuthorityEntity rolesAuthorityEntityCollectionOldRolesAuthorityEntity : rolesAuthorityEntityCollectionOld) {
-                if (!rolesAuthorityEntityCollectionNew.contains(rolesAuthorityEntityCollectionOldRolesAuthorityEntity)) {
+            for (RolesAuthorityEntity rolesAuthorityEntityListOldRolesAuthorityEntity : rolesAuthorityEntityListOld) {
+                if (!rolesAuthorityEntityListNew.contains(rolesAuthorityEntityListOldRolesAuthorityEntity)) {
                     if (illegalOrphanMessages == null) {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
-                    illegalOrphanMessages.add("You must retain RolesAuthorityEntity " + rolesAuthorityEntityCollectionOldRolesAuthorityEntity + " since its menuId field is not nullable.");
+                    illegalOrphanMessages.add("You must retain RolesAuthorityEntity " + rolesAuthorityEntityListOldRolesAuthorityEntity + " since its menuId field is not nullable.");
                 }
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            Collection<RolesAuthorityEntity> attachedRolesAuthorityEntityCollectionNew = new ArrayList<RolesAuthorityEntity>();
-            for (RolesAuthorityEntity rolesAuthorityEntityCollectionNewRolesAuthorityEntityToAttach : rolesAuthorityEntityCollectionNew) {
-                rolesAuthorityEntityCollectionNewRolesAuthorityEntityToAttach = em.getReference(rolesAuthorityEntityCollectionNewRolesAuthorityEntityToAttach.getClass(), rolesAuthorityEntityCollectionNewRolesAuthorityEntityToAttach.getId());
-                attachedRolesAuthorityEntityCollectionNew.add(rolesAuthorityEntityCollectionNewRolesAuthorityEntityToAttach);
+            List<RolesAuthorityEntity> attachedRolesAuthorityEntityListNew = new ArrayList<RolesAuthorityEntity>();
+            for (RolesAuthorityEntity rolesAuthorityEntityListNewRolesAuthorityEntityToAttach : rolesAuthorityEntityListNew) {
+                rolesAuthorityEntityListNewRolesAuthorityEntityToAttach = em.getReference(rolesAuthorityEntityListNewRolesAuthorityEntityToAttach.getClass(), rolesAuthorityEntityListNewRolesAuthorityEntityToAttach.getId());
+                attachedRolesAuthorityEntityListNew.add(rolesAuthorityEntityListNewRolesAuthorityEntityToAttach);
             }
-            rolesAuthorityEntityCollectionNew = attachedRolesAuthorityEntityCollectionNew;
-            dynamicMenuEntity.setRolesAuthorityEntityCollection(rolesAuthorityEntityCollectionNew);
+            rolesAuthorityEntityListNew = attachedRolesAuthorityEntityListNew;
+            dynamicMenuEntity.setRolesAuthorityEntityList(rolesAuthorityEntityListNew);
             dynamicMenuEntity = em.merge(dynamicMenuEntity);
-            for (RolesAuthorityEntity rolesAuthorityEntityCollectionNewRolesAuthorityEntity : rolesAuthorityEntityCollectionNew) {
-                if (!rolesAuthorityEntityCollectionOld.contains(rolesAuthorityEntityCollectionNewRolesAuthorityEntity)) {
-                    DynamicMenuEntity oldMenuIdOfRolesAuthorityEntityCollectionNewRolesAuthorityEntity = rolesAuthorityEntityCollectionNewRolesAuthorityEntity.getMenuId();
-                    rolesAuthorityEntityCollectionNewRolesAuthorityEntity.setMenuId(dynamicMenuEntity);
-                    rolesAuthorityEntityCollectionNewRolesAuthorityEntity = em.merge(rolesAuthorityEntityCollectionNewRolesAuthorityEntity);
-                    if (oldMenuIdOfRolesAuthorityEntityCollectionNewRolesAuthorityEntity != null && !oldMenuIdOfRolesAuthorityEntityCollectionNewRolesAuthorityEntity.equals(dynamicMenuEntity)) {
-                        oldMenuIdOfRolesAuthorityEntityCollectionNewRolesAuthorityEntity.getRolesAuthorityEntityCollection().remove(rolesAuthorityEntityCollectionNewRolesAuthorityEntity);
-                        oldMenuIdOfRolesAuthorityEntityCollectionNewRolesAuthorityEntity = em.merge(oldMenuIdOfRolesAuthorityEntityCollectionNewRolesAuthorityEntity);
+            for (RolesAuthorityEntity rolesAuthorityEntityListNewRolesAuthorityEntity : rolesAuthorityEntityListNew) {
+                if (!rolesAuthorityEntityListOld.contains(rolesAuthorityEntityListNewRolesAuthorityEntity)) {
+                    DynamicMenuEntity oldMenuIdOfRolesAuthorityEntityListNewRolesAuthorityEntity = rolesAuthorityEntityListNewRolesAuthorityEntity.getMenuId();
+                    rolesAuthorityEntityListNewRolesAuthorityEntity.setMenuId(dynamicMenuEntity);
+                    rolesAuthorityEntityListNewRolesAuthorityEntity = em.merge(rolesAuthorityEntityListNewRolesAuthorityEntity);
+                    if (oldMenuIdOfRolesAuthorityEntityListNewRolesAuthorityEntity != null && !oldMenuIdOfRolesAuthorityEntityListNewRolesAuthorityEntity.equals(dynamicMenuEntity)) {
+                        oldMenuIdOfRolesAuthorityEntityListNewRolesAuthorityEntity.getRolesAuthorityEntityList().remove(rolesAuthorityEntityListNewRolesAuthorityEntity);
+                        oldMenuIdOfRolesAuthorityEntityListNewRolesAuthorityEntity = em.merge(oldMenuIdOfRolesAuthorityEntityListNewRolesAuthorityEntity);
                     }
                 }
             }
@@ -142,12 +146,12 @@ public class DynamicMenuEntityJpaController implements Serializable {
                 throw new NonexistentEntityException("The dynamicMenuEntity with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
-            Collection<RolesAuthorityEntity> rolesAuthorityEntityCollectionOrphanCheck = dynamicMenuEntity.getRolesAuthorityEntityCollection();
-            for (RolesAuthorityEntity rolesAuthorityEntityCollectionOrphanCheckRolesAuthorityEntity : rolesAuthorityEntityCollectionOrphanCheck) {
+            List<RolesAuthorityEntity> rolesAuthorityEntityListOrphanCheck = dynamicMenuEntity.getRolesAuthorityEntityList();
+            for (RolesAuthorityEntity rolesAuthorityEntityListOrphanCheckRolesAuthorityEntity : rolesAuthorityEntityListOrphanCheck) {
                 if (illegalOrphanMessages == null) {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
-                illegalOrphanMessages.add("This DynamicMenuEntity (" + dynamicMenuEntity + ") cannot be destroyed since the RolesAuthorityEntity " + rolesAuthorityEntityCollectionOrphanCheckRolesAuthorityEntity + " in its rolesAuthorityEntityCollection field has a non-nullable menuId field.");
+                illegalOrphanMessages.add("This DynamicMenuEntity (" + dynamicMenuEntity + ") cannot be destroyed since the RolesAuthorityEntity " + rolesAuthorityEntityListOrphanCheckRolesAuthorityEntity + " in its rolesAuthorityEntityList field has a non-nullable menuId field.");
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
@@ -206,6 +210,8 @@ public class DynamicMenuEntityJpaController implements Serializable {
             em.close();
         }
     }
+
+
 
 }
 

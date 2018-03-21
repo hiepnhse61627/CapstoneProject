@@ -1,5 +1,6 @@
 package com.capstone.controllers;
 
+import com.capstone.models.Ultilities;
 import com.capstone.services.OAuth2Authenticator;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -20,10 +21,12 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.DatatypeConverter;
 import java.io.InputStream;
 import java.util.*;
@@ -40,16 +43,26 @@ public class SendEmailController {
     private String status = "";
     private boolean run = true;
 
+    //check
     @RequestMapping("/index")
-    public String Index() {
-        return "SendEmail";
+    public ModelAndView Index(HttpServletRequest request)
+    {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
+        ModelAndView view = new ModelAndView("SendEmail");
+        view.addObject("title", "Gửi email");
+        return view;
     }
 
     @RequestMapping(value = "/uploadEmail", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject uploadFile(@RequestParam("file") MultipartFile file) {
+        Ultilities.logUserAction("Upload email");
         JsonObject obj = ReadFile(file);
-        ;
         return obj;
     }
 
@@ -144,6 +157,7 @@ public class SendEmailController {
         run = true;
         status = "";
 
+        Ultilities.logUserAction("Send emails");
         Callable<JsonObject> callable = () -> {
             JsonObject obj = new JsonObject();
 

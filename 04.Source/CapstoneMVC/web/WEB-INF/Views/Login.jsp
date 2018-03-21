@@ -105,34 +105,35 @@
 
             <div class="social-auth-links text-center">
                 <p>- Hoặc -</p>
-                <a id="goog" href="#" class="btn btn-block btn-social btn-google btn-flat">
+                <a id="goog" href="/googleSignIn" class="btn btn-block btn-social btn-google btn-flat">
                     <i class="fa fa-google-plus"></i> Đăng nhập bằng Google+
                 </a>
             </div>
-
-
         </div>
     </div>
 </div>
 
 <script>
-    $(function () {
-        var href = document.getElementById("goog");
-        var url = window.location.hostname;
-        if (url.indexOf("localhost") == -1 && url.indexOf("xip.io") == -1) {
-            url += ".xip.io";
-        }
-        url += ":" + (location.port == '' ? "80" : location.port);
-        href.href = "https://accounts.google.com/o/oauth2/auth?clieredirect_urint_id=415843400023-vlpk1t8gu558gmt597aqtumvkco0lmme.apps.googleusercontent.com&=http://" + url + "/auth/google&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto";
-
-        console.log(url);
-
+    // $(function () {
+    //     var href = document.getElementById("goog");
+    //     var url = window.location.hostname;
+    //     if (url.indexOf("localhost") == -1 && url.indexOf("xip.io") == -1) {
+    //         url += ".xip.io";
+    //     }
+    //     url += ":" + (location.port == '' ? "80" : location.port);
+    //     href.href = "https://accounts.google.com/o/oauth2/auth?client_id=633838326707-anulcphc8kqt0k2hib34r42or6ikgcv8.apps.googleusercontent.com&redirect_uri=http://" + url + "/auth/google&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto";
+    //
+    //     console.log(url);
+    //
+    // });
+    $(document).ready(function() {
         $('input').iCheck({
             checkboxClass: 'icheckbox_square-blue',
             radioClass: 'iradio_square-blue',
             increaseArea: '20%' // optional
         });
-    });
+    })
 </script>
+
 </body>
 </html>

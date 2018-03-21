@@ -164,7 +164,7 @@
                         <div class="col-md-6">
                             <label for="thesisFile" hidden></label>
                             <input type="file" accept=".xlsx, .xls" id="thesisFile" name="file"/>
-                        </div>
+                        </div><br/>
                         <div class="">
                             Bấm vào <a class="link" href="/Resources/FileTemplates/Ten_De_Tai.xlsx">Template</a> để tải
                             về bản mẫu

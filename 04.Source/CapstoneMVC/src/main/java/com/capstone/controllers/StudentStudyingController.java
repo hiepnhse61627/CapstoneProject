@@ -1,6 +1,7 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.MarksEntity;
+import com.capstone.models.Ultilities;
 import com.capstone.services.IMarksService;
 import com.capstone.services.ISubjectService;
 import com.capstone.services.MarksServiceImpl;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +27,13 @@ import java.util.stream.Collectors;
 public class StudentStudyingController {
 
     @RequestMapping("/studying")
-    public ModelAndView Index() {
+    public ModelAndView Index(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("Studying");
         String[] statuses = {"Studying"};
         ISubjectService subjectService = new SubjectServiceImpl();

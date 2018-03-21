@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.*;
+import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Type;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -83,7 +84,12 @@ public class ScheduleList {
     }
 
     @RequestMapping("/scheduleList")
-    public ModelAndView ScheduleListAll() {
+    public ModelAndView ScheduleListAll(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
         ModelAndView view = new ModelAndView("ScheduleList");
         view.addObject("title", "Danh sách lịch dạy");
 

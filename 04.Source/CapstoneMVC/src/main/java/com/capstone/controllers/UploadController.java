@@ -4,6 +4,7 @@ import com.capstone.exporters.ExportConvert2StudentQuantityByClassAndSubject;
 import com.capstone.exporters.IExportObject;
 import com.capstone.models.*;
 import com.capstone.services.*;
+import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -39,6 +40,8 @@ import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.capstone.models.Ultilities.distinctByKey;
@@ -98,7 +101,13 @@ public class UploadController {
      * --------------STUDENTS------------
      **/
     @RequestMapping(value = "/goUploadStudentList")
-    public ModelAndView goUploadStudentListPage() {
+    public ModelAndView goUploadStudentListPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("uploadStudentList");
         view.addObject("title", "Nhập danh sách sinh viên");
 
@@ -113,13 +122,20 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/updateStatusForStudentsPage")
-    public ModelAndView goUpdateStatusForStudentPage() {
+    public ModelAndView goUpdateStatusForStudentPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("updateStatusForStudents");
         mav.addObject("title", "Cập nhật trạng thái cho sinh viên");
 
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
         semesters = Ultilities.SortSemesters(semesters);
         semesters = semesters.stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+        semesters = Lists.reverse(semesters);
 
         mav.addObject("semesters", semesters);
 
@@ -127,7 +143,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/importStudentCurriculumsPage")
-    public ModelAndView goImportStudentCurriculumsPage() {
+    public ModelAndView goImportStudentCurriculumsPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("ImportStudentCurriculum");
         mav.addObject("title", "Nhập khung chương trình cho sinh viên");
 
@@ -135,8 +157,20 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/uploadStudentCurriculumsPage")
-    public ModelAndView goUploadStudentCurriculumsPage() {
+    public ModelAndView goUploadStudentCurriculumsPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("uploadStudentCurriculums");
+        List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+        semesters = semesters.stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+        semesters = Lists.reverse(semesters);
+
+        mav.addObject("semesters", semesters);
         mav.addObject("title", "Cập nhật khung chương trình cho sinh viên");
 
         return mav;
@@ -161,6 +195,7 @@ public class UploadController {
 
                 try {
                     File f = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + file);
+                    Ultilities.logUserAction("Upload student exist file - " + file);
                     obj = ReadFile(null, f, false, semesterId);
                 } catch (Exception e) {
                     obj = new JsonObject();
@@ -183,6 +218,7 @@ public class UploadController {
             @Override
             public JsonObject call() throws Exception {
                 JsonObject obj;
+                Ultilities.logUserAction("upload student list ");
                 if (update) {
                     obj = UpdateFile(file, null, true, semesterId);
                 } else {
@@ -201,11 +237,13 @@ public class UploadController {
         return callable;
     }
 
+    //fixed , tạo student Status nếu chưa có
+    //dành cho cập nhật trạng thái của sinh viên tốt nghiệp
     @RequestMapping(value = "/updateStatusForStudents", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject updateStatusForStudents(@RequestParam("updateFile") MultipartFile file, @RequestParam("semesterId") Integer semesterId) {
         JsonObject jsonObject = new JsonObject();
-
+        Ultilities.logUserAction("Update student status (usually for graduated Student)");
         try {
             InputStream is = file.getInputStream();
 
@@ -218,6 +256,7 @@ public class UploadController {
             this.totalLine = lastRow - startRowNumber + 1;
 
             int rollNumberIndex = 0;
+            RealSemesterEntity selectedSemester = realSemesterService.findSemesterById(semesterId);
 
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
                 System.out.println(rowIndex);
@@ -230,8 +269,26 @@ public class UploadController {
                         StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumber);
                         if (studentEntity != null) {
                             StudentStatusEntity studentStatusEntity = studentStatusService.getStudentStatusBySemesterIdAndStudentId(semesterId, studentEntity.getId());
-                            // update status
-                            studentStatusEntity.setStatus("G");
+
+                            if (studentStatusEntity != null) {
+                                // update status
+                                studentStatusEntity.setStatus("G");
+                            } else {
+                                //tạo mới student status cho những sinh viên tốt nghiệp chưa có status
+                                //vd: sinh viên A đủ tín chỉ để cấp = tốt nghiệp sau khi passed đồ án vào cuối FALL2017
+                                //  -> sinh viên A  sẽ được nhà trường xét duyệt tốt nghiệp 3 tuần sau đó
+                                //  -> sẽ tính sinh viên A tốt nghiệp vào đầu kì SPRING2018
+
+                                int previousSemesterId = Ultilities.GetSemesterIdBeforeThisId(semesterId);
+                                StudentStatusEntity previousStatus = studentStatusService.
+                                        getStudentStatusBySemesterIdAndStudentId(previousSemesterId, studentEntity.getId());
+
+                                studentStatusEntity = new StudentStatusEntity();
+                                studentStatusEntity.setStudentId(studentEntity);
+                                studentStatusEntity.setStatus("G");
+                                studentStatusEntity.setTerm(previousStatus.getTerm());
+                                studentStatusEntity.setSemesterId(selectedSemester);
+                            }
                             studentStatusService.updateStudentStatus(studentStatusEntity);
                         }
                     }
@@ -253,11 +310,13 @@ public class UploadController {
         return jsonObject;
     }
 
+
     @RequestMapping(value = "/importStudentCurriculums", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject importStudentCurriculum(@RequestParam("file") MultipartFile file) {
         JsonObject jsonObject = new JsonObject();
 
+        Ultilities.logUserAction("Import student curriculum");
         try {
             InputStream is = file.getInputStream();
 
@@ -333,11 +392,13 @@ public class UploadController {
         return jsonObject;
     }
 
+    //fix this (làm version 2 cho cái này)
+    //làm update kì hiện tại cho sinh viên, sinh ra student status
     @RequestMapping(value = "/updateStudentCurriculums", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject updateStudentCurriculum(@RequestParam("file") MultipartFile file) {
         JsonObject jsonObject = new JsonObject();
-
+        Ultilities.logUserAction("Update student curriculum");
         try {
             InputStream is = file.getInputStream();
 
@@ -469,6 +530,257 @@ public class UploadController {
         jsonObject.addProperty("success", true);
         jsonObject.addProperty("message", "Cập nhật khung chương trình cho sinh viên thành công !");
         return jsonObject;
+    }
+
+    @RequestMapping(value = "/updateStudentCurriculumsVer2", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject updateStudentCurriculumVer2(@RequestParam("file") MultipartFile file
+            , @RequestParam("semesterId") String semesterIdStr, HttpServletRequest request) {
+        JsonObject jsonObject = new JsonObject();
+        Ultilities.logUserAction("Update students curriculums");
+        try {
+            InputStream is = file.getInputStream();
+
+            String originalFileName = file.getOriginalFilename();
+            String extension = originalFileName.substring(originalFileName.lastIndexOf(".") + 1, originalFileName.length());
+
+            Workbook workbook = null;
+            Sheet spreadsheet = null;
+            Row row = null;
+            if (extension.equals(xlsExcelExtension)) {
+                workbook = new HSSFWorkbook(is);
+                spreadsheet = workbook.getSheetAt(0);
+            } else if (extension.equals(xlsxExcelExtension)) {
+                workbook = new XSSFWorkbook(is);
+                spreadsheet = workbook.getSheetAt(0);
+            } else {
+                jsonObject.addProperty("success", false);
+                jsonObject.addProperty("message", "Chỉ chấp nhận file excel");
+                return jsonObject;
+            }
+
+            int excelDataIndexRow = 3;
+            int excelDataHeader = 2;
+
+            int rollNumberIndex = 1;
+            int currentCurriculumIndex = 8; // Chuyen ngành hiện tại của kì học mới
+            int termIndex = 10; // kì (vd: kì 1, kì 2, kì 3, ...) hiện tại của sinh viên trong kì học mới(vd: FALL2017, SPring2018, ..)
+            int statusIndex = 13; // trạng thái sv kì mới (vd: HL - học lại, HD - Học đi,..)
+
+//            check định dạng
+//            row = spreadsheet.getRow(excelDataHeader);
+//            Cell rollNumberHeader = row.getCell(rollNumberIndex);
+//            Cell curriculumCell1 = row.getCell(currentCurriculumIndex);
+//            Cell curriculumCell2 = row.getCell(termIndex);
+//            Cell curriculumCell3 = row.getCell(statusIndex);
+
+            int semesterId = Integer.parseInt(semesterIdStr);
+            RealSemesterEntity selectedSemester = realSemesterService.findSemesterById(semesterId);
+
+            //list chứa student lỗi hoặc không import được curriculum, status vì lý do nào đó
+            HashMap<StudentEntity, String> cantImport = new HashMap<>();
+//            SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+            List<StudentEntity> bulkImport = new ArrayList<>();
+            int countStop = 0;
+            dataLoop:
+            for (int rowIndex = excelDataIndexRow; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
+                System.out.println(rowIndex + " - " + spreadsheet.getLastRowNum());
+                row = spreadsheet.getRow(rowIndex);
+                if (row != null) {
+                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    Cell curriculumCell = row.getCell(currentCurriculumIndex);
+                    Cell termCell = row.getCell(termIndex);
+                    Cell statusCell = row.getCell(statusIndex);
+
+                    //nếu data trắng quá 2 dòng thì sẽ dừng vòng lặp
+                    if (countStop > 2) {
+                        break dataLoop;
+                    }
+
+                    if (rollNumberCell != null && rollNumberCell.getCellTypeEnum() == CellType.BLANK) {
+                        countStop++;
+                        continue dataLoop;
+                    }
+
+                    if (rollNumberCell != null && rollNumberCell.getCellTypeEnum() != CellType.BLANK) {
+                        String rollNumberValue = "";
+                        if (rollNumberCell.getCellTypeEnum() == CellType.NUMERIC) {
+                            rollNumberValue = rollNumberCell.getNumericCellValue() + "";
+                        } else if (rollNumberCell.getCellTypeEnum() == CellType.STRING) {
+                            rollNumberValue = rollNumberCell.getStringCellValue().trim().toUpperCase();
+                        }
+                        StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumberValue);
+
+
+                        if (studentEntity != null) {
+                            // start save document student
+                            DocumentEntity documentEntity = documentService.getAllDocuments().get(0);
+
+                            if (curriculumCell != null && curriculumCell.getCellTypeEnum() != CellType.BLANK) {
+                                String curriculumName = curriculumCell.getStringCellValue().trim();
+                                List<DocumentStudentEntity> docsStudent = studentEntity.getDocumentStudentEntityList();
+
+                                CurriculumEntity exist = docsStudent.stream().filter(q -> q.getCurriculumId().getName().contains(curriculumName))
+                                        .map(q -> q.getCurriculumId())
+                                        .findFirst().orElse(null);
+                                //tạo docs student mới cho sinh viên (sinh viên chuyển qua chuyên ngành khác thì cần khung chương trình tương ứng)
+                                if (exist == null) {
+
+                                    CurriculumEntity curriculumEntity = curriculumService.getCurriculumLikeName(curriculumName);
+                                    if (curriculumEntity != null) {
+                                        DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
+                                        documentStudentEntity.setStudentId(studentEntity);
+                                        documentStudentEntity.setDocumentId(documentEntity);
+                                        documentStudentEntity.setCurriculumId(curriculumEntity);
+                                        documentStudentEntity.setCreatedDate(new Date());
+                                        studentEntity.getDocumentStudentEntityList().add(documentStudentEntity);
+                                    } else {
+                                        cantImport.put(studentEntity, curriculumName + " curriculum not exist");
+                                        continue dataLoop;
+                                    }
+
+                                }
+
+                            }
+
+                            if (termCell != null && termCell.getCellTypeEnum() != CellType.BLANK
+                                    && statusCell != null && statusCell.getCellTypeEnum() != CellType.BLANK) {
+
+                                String term = "";
+                                if (termCell.getCellTypeEnum() == CellType.NUMERIC) {
+                                    term = termCell.getNumericCellValue() + "";
+                                } else if (termCell.getCellTypeEnum() == CellType.STRING) {
+                                    term = termCell.getStringCellValue().trim();
+                                }
+                                String status = statusCell.getStringCellValue().trim().toUpperCase();
+
+                                Integer studentTerm = null;
+                                String statusTerm = null;
+                                if (term.contains("+")) {
+                                    //lấy số kì ra (vd: term = "9+")
+                                    Pattern p = Pattern.compile("(\\d)");
+                                    Matcher m = p.matcher(term);   // get a matcher object
+
+                                    m.find();
+                                    String token = m.group(0); //group 0 is always the entire match
+                                    try {
+                                        double tempTerm = Double.parseDouble(token);
+                                        studentTerm = (int) tempTerm;
+
+                                        //những ai có số kì là + thì đều + 0.1 để thành 9.1, 6.1(giả sử),
+                                        statusTerm = (tempTerm + 0.1) + "";
+
+                                    } catch (NumberFormatException ex) {
+                                        System.out.println(ex.getMessage());
+                                        cantImport.put(studentEntity, token + " term is not a number");
+                                        continue dataLoop;
+                                    }
+
+                                } else {
+                                    if (term.contains("ENG6")) {
+                                        studentTerm = 0;
+                                    } else if (term.contains("ENG5")) {
+                                        studentTerm = -1;
+                                    } else if (term.contains("ENG4")) {
+                                        studentTerm = -2;
+                                    } else if (term.contains("ENG3")) {
+                                        studentTerm = -3;
+                                    } else if (term.contains("ENG2")) {
+                                        studentTerm = -4;
+                                    }
+                                    statusTerm = term;
+
+                                    if (studentTerm == null) {
+                                        try {
+                                            double tempTerm = Double.parseDouble(term);
+                                            studentTerm = (int) tempTerm;
+                                            statusTerm = (int) tempTerm + "";
+                                        } catch (NumberFormatException ex) {
+                                            System.out.println(ex.getMessage());
+                                            cantImport.put(studentEntity, term + " term is not a number");
+
+                                            continue dataLoop;
+                                        }
+                                    }
+                                }
+                                studentEntity.setTerm(studentTerm);
+
+                                //tạo student status mớicho sinh viên
+                                List<StudentStatusEntity> statusList = new ArrayList<>(studentEntity.getStudentStatusEntityList());
+                                boolean statusExist = statusList.stream().anyMatch(q -> q.getSemesterId().getId() == selectedSemester.getId());
+
+                                if (!statusExist) {
+                                    StudentStatusEntity studentStatusEntity = new StudentStatusEntity();
+                                    studentStatusEntity.setStudentId(studentEntity);
+                                    studentStatusEntity.setStatus(status);
+                                    studentStatusEntity.setSemesterId(selectedSemester);
+                                    studentStatusEntity.setTerm(statusTerm);
+                                    studentEntity.getStudentStatusEntityList().add(studentStatusEntity);
+                                }
+
+                                bulkImport.add(studentEntity);
+//                                studentService.myUpdateStudent(studentEntity);
+                            }
+                        }
+                    }
+                }
+            }//end of dataLoop
+//            studentService.myBulkUpdateStudents(bulkImport);
+            request.getSession().setAttribute("failImportStudentCurriculumNStatus", cantImport);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", ex.getMessage());
+
+            return jsonObject;
+        }
+
+        jsonObject.addProperty("success", true);
+        jsonObject.addProperty("message", "Cập nhật khung chương trình cho sinh viên thành công !");
+        return jsonObject;
+    }
+
+    @RequestMapping("/processFailImportCurriculums")
+    @ResponseBody
+    public JsonObject GetFailImportCurriculums(@RequestParam Map<String, String> params, HttpServletRequest request) {
+        JsonObject obj = new JsonObject();
+
+        //lấy ra danh sách những sinh viên không import, update được curriculum và status, term
+        // <Student, Error>
+        HashMap<StudentEntity, String> studentList = (HashMap<StudentEntity, String>) request.getSession().getAttribute("failImportStudentCurriculumNStatus");
+
+//        final String sSearch = params.get("sSearch");
+
+//        int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
+//        int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
+//        boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
+
+        try {
+            // RollNumber, FullName, Term
+            List<List<String>> data = new ArrayList<>();
+            if (studentList != null) {
+                for (StudentEntity student :
+                        studentList.keySet()) {
+                    List<String> tempData = new ArrayList<>();
+                    tempData.add(student.getRollNumber());
+                    tempData.add(student.getFullName());
+                    tempData.add(student.getTerm() + "");
+                    String error = studentList.get(student);
+                    tempData.add(error);
+                    data.add(tempData);
+                }
+            }
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(data);
+            obj.add("aaData", aaData);
+//            obj.addProperty("sEcho", params.get("sEcho"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.writeLog(e);
+        }
+
+        return obj;
     }
 
     private JsonObject ReadFile(MultipartFile file, File file2, boolean isNewFile, String semesterId) {
@@ -813,7 +1125,13 @@ public class UploadController {
      * --------------MARKS------------
      **/
     @RequestMapping(value = "/goUploadStudentMarks")
-    public ModelAndView goUploadStudentMarksPage() {
+    public ModelAndView goUploadStudentMarksPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView view = new ModelAndView("uploadStudentMarks");
         view.addObject("title", "Nhập danh sách điểm");
 
@@ -824,13 +1142,20 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/importStudyingStudentPage")
-    public ModelAndView goImportStudyingStudentPage() {
+    public ModelAndView goImportStudyingStudentPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("importStudyingStudent");
         mav.addObject("title", "Nhập điểm sinh viên đang học");
 
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
         semesters = Ultilities.SortSemesters(semesters);
-//        semesters = semesters.stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+        semesters = semesters.stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+        semesters = Lists.reverse(semesters);
 
         mav.addObject("semesters", semesters);
 
@@ -838,13 +1163,20 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/updateMarkForStudyingStudentPage")
-    public ModelAndView goUpdateMarkForStudyingStudentPage() {
+    public ModelAndView goUpdateMarkForStudyingStudentPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("updateMarkForStudyingStudent");
         mav.addObject("title", "Cập nhật điểm cho sinh viên đang học");
 
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
         semesters = Ultilities.SortSemesters(semesters);
         semesters = semesters.stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+        semesters = Lists.reverse(semesters);
 
         mav.addObject("semesters", semesters);
 
@@ -852,7 +1184,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/importEmployeesPage")
-    public ModelAndView goImportEmployeesPage() {
+    public ModelAndView goImportEmployeesPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("importEmployees");
         mav.addObject("title", "Nhập danh sách giảng viên");
 
@@ -868,7 +1206,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/importRoomsPage")
-    public ModelAndView goImportRoomsPage() {
+    public ModelAndView goImportRoomsPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("importRooms");
         mav.addObject("title", "Nhập danh sách phòng");
 
@@ -876,7 +1220,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/importDepartmentsPage")
-    public ModelAndView goImportDepartmentsPage() {
+    public ModelAndView goImportDepartmentsPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("importDepartments");
         mav.addObject("title", "Nhập danh sách bộ môn");
 
@@ -884,7 +1234,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/importSchedulesPage")
-    public ModelAndView goImportSchedulesPage() {
+    public ModelAndView goImportSchedulesPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("importSchedules");
         mav.addObject("title", "Nhập danh sách lịch dạy của GV");
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
@@ -895,7 +1251,13 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/importCourseStudentsPage")
-    public ModelAndView goImportCourseStudentPage() {
+    public ModelAndView goImportCourseStudentPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("importCourseStudents");
         mav.addObject("title", "Nhập danh sách lớp của SV");
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
@@ -946,7 +1308,7 @@ public class UploadController {
         isCancel = false;
         isPause = false;
         System.out.println("Cancel is " + String.valueOf(isCancel));
-
+        Ultilities.logUserAction("Upload exist mark file");
         Callable<JsonObject> callable = () -> {
             this.totalLine = 0;
             this.currentLine = 0;
@@ -974,6 +1336,8 @@ public class UploadController {
         isCancel = false;
         isPause = false;
         System.out.println("Cancel is " + String.valueOf(isCancel));
+
+        Ultilities.logUserAction("Upload student mark");
 
         Callable<JsonObject> callable = () -> {
             this.totalLine = 0;
@@ -1249,6 +1613,8 @@ public class UploadController {
         return jsonObject;
     }
 
+    //fix thành import cả notStart, (làm version 2 )
+    //import diem cho hoc sinh
     @RequestMapping(value = "/uploadStudyingStudent", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject importStudyingStudent(@RequestParam("file") MultipartFile file, @RequestParam("semesterId") String semesterIdStr) {
@@ -1257,6 +1623,8 @@ public class UploadController {
 
         Integer semesterId = Integer.parseInt(semesterIdStr.trim());
         RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterById(semesterId);
+        Ultilities.logUserAction("Upload studying student ( generate studying and does not generate notstart mark)");
+
         try {
             InputStream is = file.getInputStream();
 
@@ -1389,6 +1757,253 @@ public class UploadController {
         return jsonObject;
     }
 
+    //import điểm studying và notStart cho sinh viên đang học
+    @RequestMapping(value = "/uploadStudyingStudentVer2", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject importStudyingStudentVer2(@RequestParam("file") MultipartFile file
+            , @RequestParam("semesterId") String semesterIdStr, HttpServletRequest request) {
+        JsonObject jsonObject = new JsonObject();
+        List<MarksEntity> marksEntities = new ArrayList<MarksEntity>();
+
+        Integer semesterId = Integer.parseInt(semesterIdStr.trim());
+
+        HashMap<StudentEntity, List<MarkModelExcel>> dataExcel = new HashMap<>();
+        RealSemesterEntity selectedSemester = realSemesterService.findSemesterById(semesterId);
+
+        Ultilities.logUserAction("Upload studying student (generate studying and not start mark)");
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+            int excelDataIndex = 1;
+            int lastRow = spreadsheet.getLastRowNum();
+            this.totalLine = lastRow - startRowNumber + 1;
+
+            int semesterNameIndex = 0;
+            int rollNumberIndex = 1;
+            int subjectCodeIndex = 2;
+            int averageMarkIndex = 4;
+            int statusIndex = 5;
+            int enabledIndex = 6;
+
+            this.currentLine = 0;
+            String markComponentName = Enums.MarkComponent.AVERAGE.getValue();
+            //list chứa danh sách không sinh viên không import được ,hoặc gặp lỗi
+            // Map<StudentRollNumber, error>
+            HashMap<String, String> errorList = new HashMap<>();
+
+            for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+
+                Cell rollNumberCell = row.getCell(rollNumberIndex);
+                if (rollNumberCell != null && rollNumberCell.getCellTypeEnum() != CellType.BLANK) {
+                    String rollNumber = "";
+                    if (rollNumberCell.getCellTypeEnum() == CellType.NUMERIC) {
+                        rollNumber = rollNumberCell.getNumericCellValue() + "";
+                    } else if (rollNumberCell.getCellTypeEnum() == CellType.STRING) {
+                        rollNumber = rollNumberCell.getStringCellValue().trim();
+                    }
+                    StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumber);
+                    if (studentEntity != null) {
+                        Cell semesterNameCell = row.getCell(semesterNameIndex);
+                        Cell subjectCodeCell = row.getCell(subjectCodeIndex);
+                        Cell averageMarkCell = row.getCell(averageMarkIndex);
+                        Cell statusCell = row.getCell(statusIndex);
+                        Cell enabledCell = row.getCell(enabledIndex);
+
+                        String avgString = "";
+                        double avgMark = 0.0;
+                        if (averageMarkCell.getCellTypeEnum() == CellType.NUMERIC) {
+                            avgString = averageMarkCell.getNumericCellValue() + "";
+
+                        } else if (averageMarkCell.getCellTypeEnum() == CellType.STRING) {
+                            avgString = averageMarkCell.getStringCellValue().trim();
+                        }
+                        try {
+                            avgMark = Double.parseDouble(avgString);
+                        } catch (NumberFormatException e) {
+                            System.out.println(e);
+                        }
+
+                        String subjectCode = subjectCodeCell.getStringCellValue().trim();
+                        String status = Enums.MarkStatus.STUDYING.getValue();
+                        String semesterName = semesterNameCell.getStringCellValue().trim().toUpperCase().replaceAll(" ", "");
+                        MarkModelExcel tempModel = new MarkModelExcel(avgMark, semesterName, subjectCode, status);
+
+                        if (dataExcel.containsKey(studentEntity.getRollNumber())) {
+                            List<MarkModelExcel> markList = dataExcel.get(studentEntity.getRollNumber());
+                            markList.add(tempModel);
+                        } else {
+                            List<MarkModelExcel> markList = new ArrayList<>();
+                            markList.add(tempModel);
+                            dataExcel.put(studentEntity, markList);
+                        }
+                    } else {
+                        errorList.put(rollNumber, "Rollnumber not exist!");
+                    }
+                }
+                this.currentLine++;
+            }
+
+            List<SubjectEntity> allSubjects = subjectService.getAllSubjects();
+            String semesterName = selectedSemester.getSemester();
+            for (StudentEntity studentEntity : dataExcel.keySet()) {
+
+                List<SubjectCurriculumEntity> subjectCurriculumList = subjectCurriculumService.getSubjectCurriculumByStudent(studentEntity.getId());
+
+                //lấy ra những môn học kì này sẽ học theo khung chương trình
+                List<String> subjectList = subjectCurriculumList.stream()
+                        .filter(q -> q.getTermNumber() == studentEntity.getTerm()).map(q -> q.getSubjectId().getId())
+                        .collect(Collectors.toList());
+
+                List<MarkModelExcel> excelMarks = dataExcel.get(studentEntity);
+
+//                //chứa điểm học vượt, điểm trả nợ, chứa những điểm không có trong khung chương trình kì hiện tại của sinh viên
+//                List<MarkModelExcel> markNotInCurriculums = excelMarks.stream()
+//                        .filter(q -> !subjectList.contains(q.getSubjectId())).collect(Collectors.toList());
+
+                //chứa những điểm học trong khung chương trình hiện tại theo kỳ hiện tại của sinh viên
+                List<MarkModelExcel> markInCurriculums = excelMarks.stream()
+                        .filter(q -> subjectList.contains(q.getSubjectId())).collect(Collectors.toList());
+
+                //chứa những môn chậm tiến độ
+                List<MarkModelExcel> notStartMarks = subjectList.stream()
+                        .filter(q -> !markInCurriculums.stream().anyMatch(c -> c.getSubjectId().equalsIgnoreCase(q)))
+                        .map(q -> new MarkModelExcel(-1.0, semesterName, q, Enums.MarkStatus.NOT_START.getValue()))
+                        .collect(Collectors.toList());
+
+                List<MarkModelExcel> importedMark = new ArrayList<>();
+//                importedMark.addAll(markNotInCurriculums);
+//                importedMark.addAll(markInCurriculums);
+                importedMark.addAll(excelMarks);
+                importedMark.addAll(notStartMarks);
+
+                importedMarkLoop:
+                for (MarkModelExcel item : importedMark) {
+                    SubjectEntity subjectEntity = allSubjects.stream()
+                            .filter(q -> q.getId().equalsIgnoreCase(item.getSubjectId()))
+                            .findFirst().orElse(null);
+
+                    //kiểm tra xem subject có tồn tại không
+                    if (subjectEntity == null) {
+                        errorList.put(studentEntity.getRollNumber(), item.getSubjectId() + " - subject not exist!");
+                        continue importedMarkLoop;
+                    }
+                    //tạo Mark mới
+                    MarksEntity mark = new MarksEntity();
+
+                    MarkComponentEntity markComponentEntity =
+                            markComponentService.getMarkComponentByName(markComponentName);
+
+                    String subjectMarkComponentName = subjectEntity.getId() + "_" + markComponentName;
+                    SubjectMarkComponentEntity subjectMarkComponentEntity =
+                            subjectMarkComponentService.findSubjectMarkComponentByNameAndSubjectCd(markComponentName, subjectEntity.getId());
+
+                    //set subjectMarkComponent
+                    if (subjectMarkComponentEntity != null) {
+                        mark.setSubjectMarkComponentId(subjectMarkComponentEntity);
+                    } else {
+                        subjectMarkComponentEntity = new SubjectMarkComponentEntity();
+                        subjectMarkComponentEntity.setMarkComponentId(markComponentEntity);
+                        subjectMarkComponentEntity.setName(subjectMarkComponentName);
+                        subjectMarkComponentEntity.setPercentWeight(0.0);
+                        subjectMarkComponentEntity.setSubjectId(subjectEntity);
+                        subjectMarkComponentEntity = subjectMarkComponentService.createSubjectMarkComponent(subjectMarkComponentEntity);
+                        mark.setSubjectMarkComponentId(subjectMarkComponentEntity);
+                    }
+                    //set student
+                    mark.setStudentId(studentEntity);
+                    //set Semester
+                    mark.setSemesterId(selectedSemester);
+                    //set Course, tạo Course nếu chưa tồn tại
+
+                    CourseEntity courseEntity = courseService
+                            .findCourseBySemesterAndSubjectCode(semesterName, subjectEntity.getId());
+                    if (courseEntity != null) {
+                        mark.setCourseId(courseEntity);
+                    } else {
+                        courseEntity = new CourseEntity();
+                        courseEntity.setSemester(semesterName);
+                        courseEntity.setSubjectCode(subjectEntity.getId());
+                        courseEntity = courseService.createCourse(courseEntity);
+                        mark.setCourseId(courseEntity);
+                    }
+
+                    //set mark, studying: hs chưa có điểm nên set vầy
+                    mark.setAverageMark(-1.0);
+                    mark.setStatus(item.getStatus());
+                    mark.setIsActivated(true);
+                    mark.setEnabled(true);
+
+                    //bỏ vào list để import
+                    marksEntities.add(mark);
+                }
+
+            }
+
+            //batch insert mark
+            marksService.createMarks(marksEntities);
+            //đẩy danh sách lỗi về cho user xem
+            request.getSession().setAttribute("importMarksStudyingStudentVer2Error", errorList);
+            jsonObject.addProperty("success", true);
+            jsonObject.addProperty("message", "Import sinh viên đang học thành công !");
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("fail", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+
+        return jsonObject;
+    }
+
+    //danh sách lỗi khi import điểm studying và notStart cho sinh viên đang học
+    @RequestMapping("/getFailImportMark4StudyingStudent")
+    @ResponseBody
+    public JsonObject getFailImport4StudyingStudent(@RequestParam Map<String, String> params, HttpServletRequest request) {
+        JsonObject obj = new JsonObject();
+
+        //lấy ra danh sách những sinh viên không import, update được curriculum và status, term
+        // <RollNumber, Error>
+        HashMap<String, String> studentList = (HashMap<String, String>) request.getSession()
+                .getAttribute("importMarksStudyingStudentVer2Error");
+        String type = params.get("type");
+
+//        final String sSearch = params.get("sSearch");
+
+//        int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
+//        int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
+//        boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
+
+        try {
+            // RollNumber, FullName, Term
+            List<List<String>> data = new ArrayList<>();
+            if (studentList != null) {
+                for (String rollNumber :
+                        studentList.keySet()) {
+                    List<String> tempData = new ArrayList<>();
+                    tempData.add(rollNumber);
+                    String error = studentList.get(rollNumber);
+                    tempData.add(error);
+                    data.add(tempData);
+                }
+            }
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(data);
+            obj.add("aaData", aaData);
+//            obj.addProperty("sEcho", params.get("sEcho"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.writeLog(e);
+        }
+
+        return obj;
+    }
+
 
     @RequestMapping(value = "/uploadEmployees", method = RequestMethod.POST)
     @ResponseBody
@@ -1396,6 +2011,7 @@ public class UploadController {
         JsonObject jsonObject = new JsonObject();
         List<EmployeeEntity> employeeEntities = new ArrayList<EmployeeEntity>();
 
+        Ultilities.logUserAction("Upload employee");
         try {
             InputStream is = file.getInputStream();
 
@@ -1530,6 +2146,7 @@ public class UploadController {
         JsonObject jsonObject = new JsonObject();
         List<RoomEntity> roomEntities = new ArrayList<RoomEntity>();
 
+        Ultilities.logUserAction("Upload room");
         try {
             InputStream is = file.getInputStream();
 
@@ -1595,7 +2212,7 @@ public class UploadController {
     @ResponseBody
     public JsonObject importDepartments(@RequestParam("file") MultipartFile file) {
         JsonObject jsonObject = new JsonObject();
-
+        Ultilities.logUserAction("Upload departments");
         try {
             InputStream is = file.getInputStream();
 
@@ -1752,6 +2369,8 @@ public class UploadController {
     @ResponseBody
     public JsonObject importSchedules(@RequestParam("file") MultipartFile file, @RequestParam("semesterId") String semesterIdStr) {
         JsonObject jsonObject = new JsonObject();
+        Ultilities.logUserAction("Upload schedules");
+
         List<DaySlotEntity> daySlotEntities = new ArrayList<DaySlotEntity>();
         List<ScheduleEntity> scheduleEntities = new ArrayList<ScheduleEntity>();
         List<SlotEntity> slots = null;
@@ -2012,6 +2631,7 @@ public class UploadController {
         StudentEntity student = null;
         CourseEntity course = null;
 
+        Ultilities.logUserAction("Import course student");
 //        Set<EmployeeEntity> employees = new HashSet<>();
 
         try {
@@ -2087,9 +2707,11 @@ public class UploadController {
         return jsonObject;
     }
 
+    //cập nhật điểm cho sinh viên sau khi đã có điểm Final
     @RequestMapping(value = "/updateMarkForStudyingStudent", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject updateMarkForStudyingStudent(@RequestParam("updateFile") MultipartFile file, @RequestParam("semesterId") String semesterIdStr) {
+       Ultilities.logUserAction("Update mark for studying student");
         JsonObject jsonObject = new JsonObject();
         Integer semesterId = Integer.parseInt(semesterIdStr.trim());
         RealSemesterEntity realSemesterEntity = realSemesterService.findSemesterById(semesterId);
@@ -2184,6 +2806,7 @@ public class UploadController {
     public Callable<JsonObject> UpdateStudentCredits() {
         currentLine1 = 0;
         totalLine1 = 0;
+        Ultilities.logUserAction("Update student credits");
 
         Callable<JsonObject> callable = () -> {
             JsonObject result = new JsonObject();
@@ -2387,6 +3010,7 @@ public class UploadController {
     @RequestMapping(value = "/uploadUpdatedMarks", method = RequestMethod.POST)
     @ResponseBody
     public Callable<JsonObject> uploadUpdatedMarks(@RequestParam("file") MultipartFile file) throws IOException {
+        Ultilities.logUserAction("Upload updated marks (use to update average marks)");
         Callable<JsonObject> callable = () -> {
             this.totalLine = 0;
             this.currentLine = 0;
@@ -2899,7 +3523,12 @@ public class UploadController {
 //        return obj;
 //    }
     @RequestMapping(value = "/convertToStudentQuantityPage")
-    public ModelAndView convertToStudentQuantityPage() {
+    public ModelAndView convertToStudentQuantityPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
         ModelAndView mav = new ModelAndView("Convert2StudentQuantityByClassAndSubject");
         mav.addObject("title", "Số lượng sinh viên theo lớp môn");
 
@@ -2912,6 +3541,8 @@ public class UploadController {
     public JsonObject goConvert2StudentQuantityByClassAndSubject(@RequestParam("file") MultipartFile file,
                                                                  HttpServletRequest request, HttpServletResponse response) {
         JsonObject jsonObject = new JsonObject();
+
+        Ultilities.logUserAction("Convert student quantity (use for statistic)");
 
         try {
             InputStream is = file.getInputStream();
@@ -3072,8 +3703,16 @@ public class UploadController {
         return jsonObject;
     }
 
+
+    //trang này chưa xong
     @RequestMapping(value = "/importStudentMarksFromAnotherAcademicPage")
-    public ModelAndView ImportStudentMarksFromAnotherAcademicPage() {
+    public ModelAndView ImportStudentMarksFromAnotherAcademicPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to /importStudentMarksFromAnotherAcademicPage");
+
         ModelAndView mav = new ModelAndView("ImportStudentMarksFromAnotherAcademic");
         mav.addObject("title", "Nhập điểm cho một sinh viên");
 
@@ -3081,6 +3720,7 @@ public class UploadController {
         return mav;
     }
 
+    //hàm này chưa xong, template hiện tại mà hàm này đọc không phải template đúng (hãy request template đúng và làm lại)
     @RequestMapping(value = "/importStudentMarksFromAnotherAcademic", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject goImportStudentMarksFromAnotherAcademic(@RequestParam("file") MultipartFile file,
@@ -3317,7 +3957,7 @@ public class UploadController {
     public JsonObject goUploadThesisName(@RequestParam("file") MultipartFile file,
                                          HttpServletRequest request, HttpServletResponse response) {
         JsonObject jsonObject = new JsonObject();
-
+        Ultilities.logUserAction("Upload thesis name");
         try {
             InputStream is = file.getInputStream();
 

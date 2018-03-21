@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.*;
+import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -30,7 +31,13 @@ import java.util.stream.Collectors;
 public class MarkController {
 
     @RequestMapping("/markPage")
-    public ModelAndView Index() {
+    public ModelAndView Index(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to /markPage");
+
         ModelAndView view = new ModelAndView("MarkPage");
         view.addObject("title", "Quản lý điểm");
 
@@ -103,8 +110,17 @@ public class MarkController {
     // edit mark's details
     @RequestMapping("/markPage/edit")
     @ResponseBody
-    public JsonObject EditMark(@RequestParam Map<String, String> params) {
+    public JsonObject EditMark(@RequestParam Map<String, String> params, HttpServletRequest request) {
         JsonObject jsonObj = new JsonObject();
+
+        if (!Ultilities.checkUserAuthorize2(request, "/markPage")) {
+            jsonObj.addProperty("success", false);
+            jsonObj.addProperty("message", "Không đủ quyền hạn để thực hiện");
+            return jsonObj;
+        }
+
+
+
         IMarksService markService = new MarksServiceImpl();
 
         int markId = Integer.parseInt(params.get("markId"));
@@ -116,6 +132,10 @@ public class MarkController {
             marksEntity.setAverageMark(mark);
             marksEntity.setStatus(status);
             markService.updateMark(marksEntity);
+
+            //logging user action
+            Ultilities.logUserAction("Edit " + marksEntity.getStudentId().getRollNumber() +
+                    " - " + marksEntity.getSubjectMarkComponentId().getSubjectId().getId() + " mark");
 
             jsonObj.addProperty("success", true);
         } catch (Exception e) {
@@ -130,16 +150,30 @@ public class MarkController {
     // delete a record
     @RequestMapping("/markPage/delete")
     @ResponseBody
-    public JsonObject DeleteMark(@RequestParam Map<String, String> params) {
+    public JsonObject DeleteMark(@RequestParam Map<String, String> params, HttpServletRequest request) {
         JsonObject jsonObj = new JsonObject();
+
+        if (!Ultilities.checkUserAuthorize2(request, "/markPage")) {
+            jsonObj.addProperty("success", false);
+            jsonObj.addProperty("message", "Không đủ quyền hạn để thực hiện");
+            return jsonObj;
+        }
+
         IMarksService markService = new MarksServiceImpl();
 
         int markId = Integer.parseInt(params.get("markId"));
 
         try {
+           MarksEntity marksEntity = markService.getMarkById(markId);
+           if(marksEntity != null){
+               //logging User Action
+               Ultilities.logUserAction("Delete " + marksEntity.getStudentId().getRollNumber() +
+                       " - " + marksEntity.getSubjectMarkComponentId().getSubjectId().getId() + " mark");
+
             markService.deleteMark(markId);
 
             jsonObj.addProperty("success", true);
+           }
         } catch (Exception e) {
             e.printStackTrace();
             Logger.writeLog(e);

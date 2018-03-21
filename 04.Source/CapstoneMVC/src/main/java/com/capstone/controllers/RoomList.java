@@ -1,5 +1,6 @@
 package com.capstone.controllers;
 
+import com.capstone.models.Ultilities;
 import com.capstone.entities.*;
 import com.capstone.services.*;
 import com.google.gson.Gson;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.*;
+import javax.servlet.http.HttpServletRequest;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -32,7 +34,12 @@ public class RoomList {
     IDaySlotService daySlotService = new DaySlotServiceImpl();
 
     @RequestMapping("/roomList")
-    public ModelAndView RoomListAll() {
+    public ModelAndView RoomListAll(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
         ModelAndView view = new ModelAndView("RoomList");
         view.addObject("title", "Danh sách phòng");
 

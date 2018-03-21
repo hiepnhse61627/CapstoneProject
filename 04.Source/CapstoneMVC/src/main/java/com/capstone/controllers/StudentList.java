@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.*;
+import javax.servlet.http.HttpServletRequest;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -28,7 +29,13 @@ import java.util.stream.Collectors;
 public class StudentList {
 
     @RequestMapping("/studentList")
-    public ModelAndView StudentListAll() {
+    public ModelAndView StudentListAll(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("StudentList");
         view.addObject("title", "Tra cứu sinh viên");
 
@@ -36,7 +43,13 @@ public class StudentList {
     }
 
     @RequestMapping("/studentList/{studentId}")
-    public ModelAndView StudentInfo(@PathVariable("studentId") int studentId) {
+    public ModelAndView StudentInfo(@PathVariable("studentId") int studentId, HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize2(request,"/studentList")) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("StudentInfo");
         view.addObject("title", "Thông tin sinh viên");
         view = this.GetStudentInfoData(view, studentId);
@@ -45,7 +58,13 @@ public class StudentList {
     }
 
     @RequestMapping("/studentProcess/{studentId}")
-    public ModelAndView StudentInfo2(@PathVariable("studentId") int studentId) {
+    public ModelAndView StudentInfo2(@PathVariable("studentId") int studentId, HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize2(request,"/studentProcess")) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to "+ request.getRequestURI());
+
         ModelAndView view = new ModelAndView("StudentInfo2");
         view.addObject("title", "Điểm quá trình");
         view = this.GetStudentInfoData(view, studentId);
@@ -511,7 +530,12 @@ public class StudentList {
 
 
     @RequestMapping("/myStudentInfo")
-    public ModelAndView myStudentInfoPage() {
+    public ModelAndView myStudentInfoPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
         ModelAndView view = new ModelAndView("MyStudentInfo");
         view.addObject("title", "Thông tin sinh viên");
 
@@ -548,7 +572,12 @@ public class StudentList {
 
 
     @RequestMapping("/myDetail")
-    public ModelAndView Index() {
+    public ModelAndView goStudentDetail(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
         ModelAndView view = new ModelAndView("MyStudentDetail");
         view.addObject("title", "Tiến trình học của tôi");
         StudentEntity student = getMyStudentEntity();

@@ -66,7 +66,11 @@ public class Enums {
     public enum StudentStatus {
         Graduated("G"),
         HOCDI("HD"),
-        HOCLAI("HL");
+        HOCLAI("HL"),
+        BAOLUU("BL"), //bảo lưu
+        CHO("CO"), //chờ
+        THOIHOC("TH"), //thôi học
+        TRANSFER("TF"); // từ cơ sở khác chuyển tới
 
 
         private final String value;
@@ -77,6 +81,22 @@ public class Enums {
 
         public String getValue() {
             return this.value;
+        }
+    }
+
+    public enum SubjectType {
+        NORMAL(0),
+        OJT(1),
+        CAPSTONE(2);
+
+        private final int value;
+
+        private SubjectType(final int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
         }
     }
 }
