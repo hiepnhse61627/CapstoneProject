@@ -61,6 +61,8 @@ public class ScheduleList {
     @RequestMapping(value = "/deacttiveAllSchedule")
     @ResponseBody
     public JsonObject DeacttiveAllSchedule(@RequestParam Map<String, String> params) {
+        Ultilities.logUserAction("DeacttiveAllSchedule ");
+
         JsonObject jsonObj = new JsonObject();
         try {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
@@ -120,7 +122,12 @@ public class ScheduleList {
     }
 
     @RequestMapping("/scheduleChangeStatistic")
-    public ModelAndView ScheduleChangeStatistic() {
+    public ModelAndView ScheduleChangeStatistic(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
         ModelAndView view = new ModelAndView("ScheduleChangeStatistic");
         view.addObject("title", "Danh sách đổi lịch");
 
@@ -669,6 +676,8 @@ public class ScheduleList {
     @RequestMapping(value = "/schedule/create")
     @ResponseBody
     public JsonObject CreateSchedule(@RequestParam Map<String, String> params) {
+        //logging user action
+        Ultilities.logUserAction("CreateSchedule");
         JsonObject jsonObj = new JsonObject();
         Map<StudentEntity, List<ScheduleEntity>> studentsMap = new HashMap<>();
         EmployeeEntity aLecture = null;
@@ -858,6 +867,8 @@ public class ScheduleList {
     @RequestMapping(value = "/schedule/edit")
     @ResponseBody
     public JsonObject EditSchedule(@RequestParam Map<String, String> params) {
+        //logging user action
+        Ultilities.logUserAction("EditSchedule");
         JsonObject jsonObj = new JsonObject();
         Map<StudentEntity, List<ScheduleEntity>> studentsMap = new HashMap<>();
         String mess = "";
@@ -921,7 +932,6 @@ public class ScheduleList {
 
 
                 String roomName = params.get("room");
-                String oldRoomName = "";
                 RoomEntity selectedRoom = null;
 
                 //find new room
@@ -968,7 +978,6 @@ public class ScheduleList {
                     if (!roomName.equals(model.getRoomId().getName()) ||
                             !model.getDateId().getDate().equals(aDaySlot.getDate())
                             || !model.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())) {
-                        oldRoomName = model.getRoomId().getName();
                         RoomEntity foundRoom = roomService.findRoomsByExactName(roomName);
                         //room exist
                         if (foundRoom != null) {
@@ -1153,29 +1162,12 @@ public class ScheduleList {
                 List<CourseStudentEntity> courseStudentEntityList = courseStudentService.findCourseStudentByGroupNameAndCourse(model.getGroupName(), model.getCourseId());
                 if (courseStudentEntityList != null) {
                     for (CourseStudentEntity courseStudentEntity : courseStudentEntityList) {
-//                        List<ScheduleEntity> studentSchedule = new ArrayList<>();
                         StudentEntity aStudent = courseStudentEntity.getStudentId();
                         studentList.add(aStudent);
-//                        if (studentsMap.get(aStudent) == null) {
-//                            studentsMap.put(aStudent, new ArrayList<ScheduleEntity>());
-//                        }
-//                        studentSchedule = studentsMap.get(aStudent);
-//                        studentSchedule = new ArrayList<>(studentSchedule);
-//
-//                        ScheduleEntity tmp2 = studentSchedule.stream().filter(q -> q.getRoomId().getId() == model.getRoomId().getId()
-//                                && q.getDateId().getId() == model.getDateId().getId()).findFirst().orElse(null);
-//
-//                        if (tmp2 == null) {
-//                            studentSchedule.add(model);
-//                        }
-//
-//                        studentsMap.put(aStudent, studentSchedule);
+
                     }
                 }
 
-//                for (StudentEntity key : studentsMap.keySet()) {
-//                    sendNotification("Your schedule has been changed", key.getEmail().substring(0, key.getEmail().indexOf("@")), studentsMap.get(key), androidPushNotificationsService, "edit");
-//                }
                 for (StudentEntity aStudent : studentList) {
                     sendNotification("Your schedule has been changed", aStudent.getEmail().substring(0, aStudent.getEmail().indexOf("@")), scheduleEntities, androidPushNotificationsService, "edit");
                 }
@@ -1205,6 +1197,7 @@ public class ScheduleList {
     @RequestMapping(value = "/syncFAPChangedSchedule")
     @ResponseBody
     public JsonObject SyncFAPChangedSchedule(@RequestParam Map<String, String> params) {
+        Ultilities.logUserAction("SyncFAPChangedSchedule");
         JsonObject jsonObj = new JsonObject();
         try {
             EntityManagerFactory emf2 = Persistence.createEntityManagerFactory("CapstonePersistence");

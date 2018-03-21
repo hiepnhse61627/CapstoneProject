@@ -1198,7 +1198,12 @@ public class UploadController {
     }
 
     @RequestMapping(value = "/importEmployeeCompetencesPage")
-    public ModelAndView goImportEmployeeCompetencesPage() {
+    public ModelAndView goImportEmployeeCompetencesPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
         ModelAndView mav = new ModelAndView("importEmployeeCompetences");
         mav.addObject("title", "Nhập danh sách GV-Môn học");
 
@@ -2290,6 +2295,7 @@ public class UploadController {
     public JsonObject importEmployeeCompetences(@RequestParam("file") MultipartFile file) {
         JsonObject jsonObject = new JsonObject();
         List<EmpCompetenceEntity> empCompetenceEntities = new ArrayList<>();
+        Ultilities.logUserAction("importEmployeeCompetences");
 
         try {
             InputStream is = file.getInputStream();
