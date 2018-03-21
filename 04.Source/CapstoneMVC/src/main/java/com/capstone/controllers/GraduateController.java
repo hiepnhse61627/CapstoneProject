@@ -39,7 +39,8 @@ public class GraduateController {
             return Ultilities.returnDeniedPage();
         }
         //logging user action
-        Ultilities.logUserAction("go to /graduate");
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("StudentGraduate");
         view.addObject("title", "Danh sách xét tốt nghiệp");
 
@@ -1174,7 +1175,7 @@ public class GraduateController {
                     List<SubjectCurriculumEntity> list = curriculum.getSubjectCurriculumEntityList();
                     for (SubjectCurriculumEntity s : list) {
 
-                        if (!subjects.contains(s)) {
+                        if (!subjects.contains(s) && s.getTermNumber() < 9) {
                             subjects.add(s);
                             if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
                                 ojtCredits = s.getSubjectCredits();
