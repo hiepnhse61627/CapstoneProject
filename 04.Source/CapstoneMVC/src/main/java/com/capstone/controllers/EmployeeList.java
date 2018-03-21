@@ -568,9 +568,7 @@ public class EmployeeList {
                     }
                 }
 
-
                 for (EmployeeEntity emp : selectedEmployees) {
-
                     List<String> dataList = new ArrayList<String>();
 
                     dataList.add(emp.getId() + "");
@@ -594,8 +592,6 @@ public class EmployeeList {
 
                     result.add(dataList);
                 }
-
-
             }
         } catch (Exception e) {
             e.printStackTrace();
