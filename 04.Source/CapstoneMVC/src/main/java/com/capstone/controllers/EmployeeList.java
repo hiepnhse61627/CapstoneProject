@@ -36,10 +36,6 @@ public class EmployeeList {
 
     IDaySlotService daySlotService = new DaySlotServiceImpl();
 
-    ICourseStudentService courseStudentService = new CourseStudentServiceImpl();
-
-    ICourseService courseService = new CourseServiceImpl();
-
     IEmployeeService employeeService = new EmployeeServiceImpl();
 
     IRealSemesterService realSemesterService = new RealSemesterServiceImpl();
@@ -92,6 +88,19 @@ public class EmployeeList {
             listCapacity.add(room.getCapacity());
         }
         view.addObject("capacity", listCapacity);
+
+        return view;
+    }
+
+    @RequestMapping("/requestLecture")
+    public ModelAndView RequestLecturePage() {
+        ModelAndView view = new ModelAndView("RequestLecture");
+        view.addObject("title", "Tìm GV thay thế");
+        List<SubjectEntity> subjects = subjectService.getAllSubjects();
+        view.addObject("subjects", subjects);
+
+        List<SlotEntity> slots = slotService.findAllSlots();
+        view.addObject("slots", slots);
 
         return view;
     }
@@ -208,7 +217,7 @@ public class EmployeeList {
         return jsonObj;
     }
 
-    public String findEmployeCompetence(Integer lectureId){
+    public String findEmployeCompetence(Integer lectureId) {
         String empCompetenceStr = "";
         List<EmpCompetenceEntity> empCompetenceEntities = employeeCompetenceService.findEmployeeCompetencesByEmployee(lectureId);
         if (empCompetenceEntities != null && empCompetenceEntities.size() > 0) {
@@ -223,7 +232,7 @@ public class EmployeeList {
         return empCompetenceStr;
     }
 
-    public List<List<String>> LoadEmployeeFreeScheduleAllImpl(@RequestParam Map<String, String> params){
+    public List<List<String>> LoadEmployeeFreeScheduleAllImpl(@RequestParam Map<String, String> params) {
         List<List<String>> result = new ArrayList<>();
 
         try {
@@ -292,7 +301,6 @@ public class EmployeeList {
                         slotOfDayList.remove(aSchedule.getDateId().getSlotId().getSlotName());
                         freeDaySlot.put(getDate(aSchedule.getDateId().getDate()), slotOfDayList);
                     }
-
 
 
                     for (Date key : freeDaySlot.keySet()) {
@@ -503,6 +511,109 @@ public class EmployeeList {
         }
         return obj;
     }
+
+
+    @RequestMapping(value = "/requestLecture/get")
+    @ResponseBody
+    public JsonObject RequestLecture(@RequestParam Map<String, String> params) {
+        JsonObject jsonObj = new JsonObject();
+        List<List<String>> result = new ArrayList<>();
+
+        try {
+            String subjectCode = "";
+            String slotName = "";
+            String startDate = params.get("startDate");
+
+            List<ScheduleEntity> scheduleList = new ArrayList<>();
+
+            if (!params.get("slot").equals("") && !params.get("slot").equals("-1")) {
+                slotName = params.get("slot");
+            }
+
+            if (!params.get("subject").equals("") && !params.get("subject").equals("-1")) {
+                subjectCode = params.get("subject");
+            }
+
+            if (!slotName.equals("") && !subjectCode.equals("")) {
+                List<SlotEntity> slotEntities = slotService.findSlotsByName(slotName);
+                if (slotEntities != null && slotEntities.size() > 0) {
+                    //find all schedule in the selected time
+                    DaySlotEntity aDaySlot = daySlotService.findDaySlotByDateAndSlot(startDate, slotEntities.get(0));
+                    List<ScheduleEntity> schedules = scheduleService.findScheduleByDateSlot(aDaySlot);
+                    if (schedules != null) {
+                        for (ScheduleEntity aSchedule : schedules) {
+                            scheduleList.add(aSchedule);
+                        }
+                    }
+                }
+
+                //get all lecture in db
+                List<EmployeeEntity> employeeEntities = employeeService.findAllEmployees();
+                List<EmployeeEntity> removeEmployees = new ArrayList<>();
+
+                //if lecture have schedule in selected time then all that lecture to remove list
+                for(EmployeeEntity emp : employeeEntities){
+                    for (ScheduleEntity aSchedule : scheduleList) {
+                        if(aSchedule.getEmpId().getFullName().equals(emp.getFullName())){
+                            removeEmployees.add(emp);
+                        }
+                    }
+                }
+
+                //remove lecture in remove list
+                employeeEntities.removeAll(removeEmployees);
+
+                List<EmployeeEntity> selectedEmployees = new ArrayList<>();
+
+                for(EmployeeEntity emp : employeeEntities){
+                    List<EmpCompetenceEntity> empCompList = employeeCompetenceService.findEmployeeCompetencesByEmployee(emp.getId());
+                    for(EmpCompetenceEntity empComp : empCompList){
+                        if(empComp.getSubjectId().getId().equals(subjectCode)){
+                            selectedEmployees.add(empComp.getEmployeeId());
+                        }
+                    }
+                }
+
+
+                for (EmployeeEntity emp : selectedEmployees) {
+
+                    List<String> dataList = new ArrayList<String>();
+
+                    dataList.add(emp.getId() + "");
+                    if (emp.getFullName() != null) {
+                        dataList.add(emp.getFullName());
+                    } else {
+                        dataList.add("");
+                    }
+
+                    if (emp.getPhone() != null) {
+                        dataList.add(emp.getPhone());
+                    } else {
+                        dataList.add("");
+                    }
+
+                    if (emp.getEmailEDU() != null) {
+                        dataList.add(emp.getEmailEDU());
+                    } else {
+                        dataList.add("");
+                    }
+
+                    result.add(dataList);
+                }
+
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Gson gson = new Gson();
+        JsonArray array = (JsonArray) gson.toJsonTree(result);
+
+        jsonObj.add("aaData", array);
+        return jsonObj;
+    }
+
 
 }
 
