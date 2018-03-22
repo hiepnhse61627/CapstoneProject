@@ -116,7 +116,12 @@ public class RoomList {
 
 
     @RequestMapping("/roomHistory")
-    public ModelAndView ScheduleChangeStatistic() {
+    public ModelAndView ScheduleChangeStatistic(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
         ModelAndView view = new ModelAndView("RoomHistory");
         view.addObject("title", "Lịch sử phòng");
 
@@ -149,7 +154,6 @@ public class RoomList {
         try {
             Integer roomId = null;
             String startDate = params.get("startDate");
-            String endDate = params.get("endDate");
 
             List<DaySlotEntity> daySlotEntityList = null;
             RoomEntity aRoom = null;

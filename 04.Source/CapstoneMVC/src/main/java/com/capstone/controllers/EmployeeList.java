@@ -59,7 +59,12 @@ public class EmployeeList {
     }
 
     @RequestMapping("/employeeList/{employeeId}")
-    public ModelAndView EmployeeInfo(@PathVariable("employeeId") int employeeId) {
+    public ModelAndView EmployeeInfo(@PathVariable("employeeId") int employeeId, HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
         ModelAndView view = new ModelAndView("EmployeeInfo");
         view.addObject("title", "Thông tin giảng viên");
         List<SubjectEntity> subjects = subjectService.getAllSubjects();
@@ -93,7 +98,12 @@ public class EmployeeList {
     }
 
     @RequestMapping("/requestLecture")
-    public ModelAndView RequestLecturePage() {
+    public ModelAndView RequestLecturePage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
         ModelAndView view = new ModelAndView("RequestLecture");
         view.addObject("title", "Tìm GV thay thế");
         List<SubjectEntity> subjects = subjectService.getAllSubjects();
@@ -108,6 +118,9 @@ public class EmployeeList {
     @RequestMapping(value = "/employee/edit/{employeeId}")
     @ResponseBody
     public JsonObject EditEmployee(@PathVariable("employeeId") int employeeId, @RequestParam Map<String, String> params) {
+
+        //logging user action
+        Ultilities.logUserAction("Edit employee " +employeeId);
         JsonObject jsonObj = new JsonObject();
 
         try {
@@ -166,7 +179,12 @@ public class EmployeeList {
 
 
     @RequestMapping("/employeeFreeSchedule")
-    public ModelAndView EmployeeFreeSchedule() {
+    public ModelAndView EmployeeFreeSchedule(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
         ModelAndView view = new ModelAndView("EmployeeFreeSchedule");
         view.addObject("title", "Thống kê lịch trống của GV");
 
@@ -574,9 +592,7 @@ public class EmployeeList {
                     }
                 }
 
-
                 for (EmployeeEntity emp : selectedEmployees) {
-
                     List<String> dataList = new ArrayList<String>();
 
                     dataList.add(emp.getId() + "");
@@ -600,8 +616,6 @@ public class EmployeeList {
 
                     result.add(dataList);
                 }
-
-
             }
         } catch (Exception e) {
             e.printStackTrace();

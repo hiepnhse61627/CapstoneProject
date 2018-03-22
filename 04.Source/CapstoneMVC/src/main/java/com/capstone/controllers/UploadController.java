@@ -95,6 +95,7 @@ public class UploadController {
     IStudentStatusService studentStatusService = new StudentStatusServiceImpl();
     IDepartmentService departmentService = new DepartmentServiceImpl();
     ISubjectDepartmentService subjectDepartmentService = new SubjectDepartmentServiceImpl();
+    IEmployeeCompetenceService employeeCompetenceService = new EmployeeCompetenceServiceImpl();
 
     /**
      * --------------STUDENTS------------
@@ -1196,6 +1197,19 @@ public class UploadController {
         return mav;
     }
 
+    @RequestMapping(value = "/importEmployeeCompetencesPage")
+    public ModelAndView goImportEmployeeCompetencesPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
+        ModelAndView mav = new ModelAndView("importEmployeeCompetences");
+        mav.addObject("title", "Nhập danh sách GV-Môn học");
+
+        return mav;
+    }
+
     @RequestMapping(value = "/importRoomsPage")
     public ModelAndView goImportRoomsPage(HttpServletRequest request) {
         if (!Ultilities.checkUserAuthorize(request)) {
@@ -2266,6 +2280,78 @@ public class UploadController {
             }
             jsonObject.addProperty("success", true);
             jsonObject.addProperty("message", "Import bộ môn thành công !");
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("fail", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+        return jsonObject;
+    }
+
+    @RequestMapping(value = "/uploadEmployeeCompetences", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject importEmployeeCompetences(@RequestParam("file") MultipartFile file) {
+        JsonObject jsonObject = new JsonObject();
+        List<EmpCompetenceEntity> empCompetenceEntities = new ArrayList<>();
+        Ultilities.logUserAction("importEmployeeCompetences");
+
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+            int excelDataIndex = 1;
+            int lastRow = spreadsheet.getLastRowNum();
+            this.totalLine = lastRow - startRowNumber + 1;
+
+            int accountIndex = 0;
+            int subjectIndex = 3;
+
+            this.currentLine = 0;
+            for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+
+                Cell accountCell = row.getCell(accountIndex);
+
+                String account = "";
+
+                account = accountCell.getStringCellValue().trim();
+
+                EmployeeEntity employeeEntity = null;
+                if (accountCell != null && !account.equals("")) {
+                    employeeEntity = employeeService.findEmployeeByEmail(account + "@fpt.edu.vn");
+                    if (employeeEntity == null) {
+                        employeeEntity = employeeService.findEmployeeByEmail(account + "@fe.edu.vn");
+                    }
+                }
+
+                if(employeeEntity != null){
+                    Cell subjectListCell = row.getCell(subjectIndex);
+                    String subjectListStr = subjectListCell.getStringCellValue().trim();
+                    if (subjectListCell != null && !subjectListStr.equals("")) {
+                        List<String> subjectList = Arrays.asList(subjectListStr.split("\\s*,\\s*"));
+                        for(String subject : subjectList){
+                            SubjectEntity aSubject = subjectService.findSubjectById(subject);
+
+                            if(aSubject!=null){
+                                EmpCompetenceEntity empCompetenceEntity = new EmpCompetenceEntity();
+                                empCompetenceEntity.setEmployeeId(employeeEntity);
+                                empCompetenceEntity.setSubjectId(aSubject);
+
+                                empCompetenceEntities.add(empCompetenceEntity);
+                            }
+                        }
+                    }
+                }
+                this.currentLine++;
+            }
+            employeeCompetenceService.createEmployeeCompetenceList(empCompetenceEntities);
+            jsonObject.addProperty("success", true);
+            jsonObject.addProperty("message", "Import GV-môn thành công !");
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
             Logger.writeLog(ex);

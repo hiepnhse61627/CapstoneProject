@@ -2,12 +2,14 @@ package com.capstone.controllers;
 
 import com.capstone.entities.RoomEntity;
 import com.capstone.entities.SubjectDepartmentEntity;
+import com.capstone.models.Ultilities;
 import com.capstone.services.ISubjectDepartmentService;
 import com.capstone.services.SubjectDepartmentServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import org.springframework.http.HttpRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +20,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
+import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +31,12 @@ public class SubjectDepartmentList {
     ISubjectDepartmentService subjectDepartmentService = new SubjectDepartmentServiceImpl();
 
     @RequestMapping("/subjectDepartmentList")
-    public ModelAndView SubjectDepartmentListAll() {
+    public ModelAndView SubjectDepartmentListAll(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " +request.getRequestURI());
         ModelAndView view = new ModelAndView("SubjectDepartmentList");
         view.addObject("title", "Danh sách môn thuộc bộ môn");
 
