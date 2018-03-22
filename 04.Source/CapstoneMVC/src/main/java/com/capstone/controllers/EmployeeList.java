@@ -9,16 +9,23 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
+import com.sun.mail.smtp.SMTPTransport;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.mail.Address;
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.persistence.*;
 import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -51,7 +58,7 @@ public class EmployeeList {
             return Ultilities.returnDeniedPage();
         }
         //logging user action
-        Ultilities.logUserAction("go to " +request.getRequestURI());
+        Ultilities.logUserAction("go to " + request.getRequestURI());
         ModelAndView view = new ModelAndView("EmployeeList");
         view.addObject("title", "Danh sách giảng viên");
 
@@ -64,7 +71,7 @@ public class EmployeeList {
             return Ultilities.returnDeniedPage();
         }
         //logging user action
-        Ultilities.logUserAction("go to " +request.getRequestURI());
+        Ultilities.logUserAction("go to " + request.getRequestURI());
         ModelAndView view = new ModelAndView("EmployeeInfo");
         view.addObject("title", "Thông tin giảng viên");
         List<SubjectEntity> subjects = subjectService.getAllSubjects();
@@ -103,14 +110,21 @@ public class EmployeeList {
             return Ultilities.returnDeniedPage();
         }
         //logging user action
-        Ultilities.logUserAction("go to " +request.getRequestURI());
+        Ultilities.logUserAction("go to " + request.getRequestURI());
         ModelAndView view = new ModelAndView("RequestLecture");
         view.addObject("title", "Tìm GV thay thế");
+
         List<SubjectEntity> subjects = subjectService.getAllSubjects();
         view.addObject("subjects", subjects);
 
         List<SlotEntity> slots = slotService.findAllSlots();
         view.addObject("slots", slots);
+
+        List<RoomEntity> rooms = roomService.findAllRooms();
+        view.addObject("rooms", rooms);
+
+        List<EmployeeEntity> emps = employeeService.findAllEmployees();
+        view.addObject("employees", emps);
 
         return view;
     }
@@ -120,7 +134,7 @@ public class EmployeeList {
     public JsonObject EditEmployee(@PathVariable("employeeId") int employeeId, @RequestParam Map<String, String> params) {
 
         //logging user action
-        Ultilities.logUserAction("Edit employee " +employeeId);
+        Ultilities.logUserAction("Edit employee " + employeeId);
         JsonObject jsonObj = new JsonObject();
 
         try {
@@ -184,7 +198,7 @@ public class EmployeeList {
             return Ultilities.returnDeniedPage();
         }
         //logging user action
-        Ultilities.logUserAction("go to " +request.getRequestURI());
+        Ultilities.logUserAction("go to " + request.getRequestURI());
         ModelAndView view = new ModelAndView("EmployeeFreeSchedule");
         view.addObject("title", "Thống kê lịch trống của GV");
 
@@ -570,11 +584,16 @@ public class EmployeeList {
                 List<EmployeeEntity> removeEmployees = new ArrayList<>();
 
                 //if lecture have schedule in selected time then all that lecture to remove list
-                for(EmployeeEntity emp : employeeEntities){
+                for (EmployeeEntity emp : employeeEntities) {
                     for (ScheduleEntity aSchedule : scheduleList) {
-                        if(aSchedule.getEmpId().getFullName().equals(emp.getFullName())){
-                            removeEmployees.add(emp);
+                        if (aSchedule.getEmpId() != null) {
+                            if (aSchedule.getEmpId().getFullName().equals(emp.getFullName())) {
+                                removeEmployees.add(emp);
+                            }
+                        } else {
+                            System.out.println("");
                         }
+
                     }
                 }
 
@@ -583,10 +602,10 @@ public class EmployeeList {
 
                 List<EmployeeEntity> selectedEmployees = new ArrayList<>();
 
-                for(EmployeeEntity emp : employeeEntities){
+                for (EmployeeEntity emp : employeeEntities) {
                     List<EmpCompetenceEntity> empCompList = employeeCompetenceService.findEmployeeCompetencesByEmployee(emp.getId());
-                    for(EmpCompetenceEntity empComp : empCompList){
-                        if(empComp.getSubjectId().getId().equals(subjectCode)){
+                    for (EmpCompetenceEntity empComp : empCompList) {
+                        if (empComp.getSubjectId().getId().equals(subjectCode)) {
                             selectedEmployees.add(empComp.getEmployeeId());
                         }
                     }
@@ -626,6 +645,70 @@ public class EmployeeList {
 
         jsonObj.add("aaData", array);
         return jsonObj;
+    }
+
+
+    @RequestMapping("/sendRequestLecture")
+    @ResponseBody
+    public Callable<JsonObject> SendEmail(@RequestParam String email,
+                                          @RequestParam String lectureFrom,
+                                          @RequestParam String lectureTo,
+                                          @RequestParam String date,
+                                          @RequestParam String subjectCode,
+                                          @RequestParam String slot,
+                                          @RequestParam String room,
+                                          @RequestParam String token,
+                                          @RequestParam String username,
+                                          @RequestParam String name,
+                                          @RequestParam String editor) {
+        Ultilities.logUserAction("Send emails");
+        Callable<JsonObject> callable = () -> {
+            JsonObject obj = new JsonObject();
+
+            try {
+
+                OAuth2Authenticator.initialize();
+                SMTPTransport smtpTransport = OAuth2Authenticator.connectToSmtp("smtp.gmail.com", 587, username, token, true);
+
+                Session session = OAuth2Authenticator.getSession();
+                MimeMessage mimeMessage = new MimeMessage(session);
+                Address toAddress = new InternetAddress(email);
+                Address fromAddress = new InternetAddress(username, name, "utf-8");
+                String msg = "<div>" +
+                        "<h3>Yêu cầu dạy thế</h3>" +
+                        "<h4>Dear anh/chị " + lectureTo + ",</h4>" +
+                        "<p>Anh/chị vừa nhận được yêu cầu dạy thế từ phòng đào tạo. Thông tin chi tiết như sau: </p>" +
+                        "<p>GV cần dạy thế: " + lectureFrom + "</p>" +
+                        "<p>Môn: " + subjectCode + "</p>" +
+                        "<p>Ngày: " + date + "</p>" +
+                        "<p>Slot: " + slot + "</p>" +
+                        "<p>Phòng: " + room + "</p>" +
+                        "</div>" +
+                        "</hr>" +
+                        "<h4>Thông tin thêm:</h4>" +
+                        "<div style='margin-top: 10px'>" +
+                        editor +
+                        "</div>" +
+                        "<br/>" +
+                        "<h4>Xin cám ơn.</h4>";
+                mimeMessage.setContent(msg, "text/html; charset=UTF-8");
+                mimeMessage.setFrom(fromAddress);
+                mimeMessage.setRecipient(Message.RecipientType.TO, toAddress);
+                mimeMessage.setSubject("[FUG-HCM] Yêu cầu dạy thế môn", "utf-8");
+                smtpTransport.sendMessage(mimeMessage, mimeMessage.getAllRecipients());
+
+                obj.addProperty("success", true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                obj.addProperty("success", false);
+                obj.addProperty("msg", e.getMessage());
+                e.printStackTrace();
+            }
+
+            return obj;
+        };
+
+        return callable;
     }
 
 

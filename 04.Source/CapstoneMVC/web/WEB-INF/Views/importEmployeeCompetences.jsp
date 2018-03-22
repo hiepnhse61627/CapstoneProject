@@ -57,7 +57,7 @@
                         if (result.success) {
                             swal({
                                 title: 'Thành công',
-                                text: "Đã import các giảng viên!",
+                                text: "Đã import các giảng viên-bộ môn!",
                                 type: 'success'
                             }).then(function () {
                                 location.reload();
