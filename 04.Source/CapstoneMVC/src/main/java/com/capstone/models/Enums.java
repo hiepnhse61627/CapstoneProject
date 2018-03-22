@@ -99,4 +99,19 @@ public class Enums {
             return value;
         }
     }
+
+    public enum SpecialTerm{
+        CAPSTONETERM(9),
+        OJTTERM(6);
+
+        private final int value;
+
+        SpecialTerm(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
 }

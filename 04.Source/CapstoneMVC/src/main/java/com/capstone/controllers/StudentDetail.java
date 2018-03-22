@@ -300,7 +300,16 @@ public class StudentDetail {
 
 
             //check xem điểm môn thay thế có tồn tại không
-            List<SubjectEntity> replacementSubject = subject.getSubjectEntityList();
+            List<SubjectEntity> replacementSubject = Ultilities.findBackAndForwardReplacementSubject(subject);
+            //loại subject chính ra khỏi mảng môn thay thế
+            List<SubjectEntity> replacementSubject2 = new ArrayList<>(replacementSubject);
+            for (SubjectEntity subj :
+                    replacementSubject2) {
+                if (subj.getId().equalsIgnoreCase(subject.getId())) {
+                    int index = replacementSubject2.indexOf(subj);
+                    replacementSubject.remove(index);
+                }
+            }
             List<MarksEntity> replacementSubjectMarks = list.stream()
                     .filter(q -> replacementSubject.stream()
                             .anyMatch(a -> a.getId()
@@ -1676,21 +1685,9 @@ public class StudentDetail {
                                     if (cellSubject != null) {
 
 
-                                        //khởi tạo như thế này để có thể dùng stream filter
-                                        List<SubjectEntity> isReplacedSubjects = new ArrayList<>(cellSubject.getSubjectEntityList1());
-                                        List<SubjectEntity> replaceSubjects = new ArrayList<>(cellSubject.getSubjectEntityList());
-
-                                        List<String> isReplacedSubjectCodes = isReplacedSubjects.stream()
-                                                .map(q -> q.getId()).collect(Collectors.toList());
-                                        List<String> replaceSubjectCodes = replaceSubjects.stream()
-                                                .map(q -> q.getId()).collect(Collectors.toList());
-
-                                        //mảng chính gồm môn chính [A] và môn thay thế của [A] và môn bị thay thế của [A]
-                                        //check môn thay thế
-                                        List<String> mainList = new ArrayList<>();
-                                        mainList.add(subjCode);
-                                        mainList.addAll(isReplacedSubjectCodes);
-                                        mainList.addAll(replaceSubjectCodes);
+                                        ////mảng này chứa tất cả môn thay thế và môn chính
+                                        List<SubjectEntity> checkList = Ultilities.findBackAndForwardReplacementSubject(cellSubject);
+                                        List<String> mainList = checkList.stream().map(q -> q.getId()).collect(Collectors.toList());
 
 
                                         // kiểm tra môn chính, môn thay thế và môn bị thay thế
@@ -1744,7 +1741,7 @@ public class StudentDetail {
                                                     // nếu có 2 fail --> fail
                                                     isPass = reLearnInSameSemester.stream()
                                                             .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
-                                                            || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
+                                                                    || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
                                                             .findFirst().orElse(null);
 
                                                 } else {
@@ -1775,7 +1772,7 @@ public class StudentDetail {
                                                     isPass = reLearnInSameSemester.stream()
                                                             .filter(q -> q.getAverageMark() >= tmpPassMark
                                                                     || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
-                                                            || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
+                                                                    || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
                                                             .findFirst().orElse(null);
                                                 }
 
@@ -2083,7 +2080,7 @@ public class StudentDetail {
         List<MarksEntity> marks = marksService.getStudentMarksById(stuId);
         //Fix Here
 //        marks = Global.TransformMarksList(marks);
-        marks = Global.TransformAllMarksList(marks);
+//        marks = Global.TransformAllMarksList(marks);
 
         //get not start mark
         List<MarksEntity> list = marks
@@ -2093,7 +2090,6 @@ public class StudentDetail {
                 .collect(Collectors.toList());
 
         Iterator<MarksEntity> iterator = list.iterator();
-        ISubjectService subjectService = new SubjectServiceImpl();
 
         markLoop:
         while (iterator.hasNext()) {
@@ -2101,70 +2097,29 @@ public class StudentDetail {
 
             // check prequisite
             MarksEntity mark = iterator.next();
-            SubjectEntity entity = mark.getSubjectMarkComponentId().getSubjectId();
+            SubjectEntity subject = mark.getSubjectMarkComponentId().getSubjectId();
 
-            //check if student has passed not started subject
-            List<MarksEntity> tempMarkList = marks.stream()
-                    .filter(q -> q.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(entity.getId())
-                    ).collect(Collectors.toList());
+            //mảng này chứa tất cả môn thay thế và môn chính
+            List<SubjectEntity> checkSubjects = Ultilities.findBackAndForwardReplacementSubject(subject);
+
+            List<MarksEntity> tempMarkList = marks.stream().filter(q -> checkSubjects.stream()
+                    .anyMatch(c -> c.getId().equalsIgnoreCase(q.getSubjectMarkComponentId().getSubjectId().getId()))
+            ).collect(Collectors.toList());
             if (!tempMarkList.isEmpty()) {
                 List<MarksEntity> sortedMarkList = Ultilities.SortSemestersByMarks(tempMarkList);
                 MarksEntity latestMark = null;
 
                 latestMark = sortedMarkList.get(sortedMarkList.size() - 1);
-                RealSemesterEntity tmpSemester = latestMark.getSemesterId();
+                boolean isFail = Ultilities.isLatestMarkFailOrNotVer2(latestMark, sortedMarkList);
 
-                List<MarksEntity> reLearnInSameSemester = sortedMarkList.stream()
-                        .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
-                        .collect(Collectors.toList());
-
-                if (!reLearnInSameSemester.isEmpty()) {
-                    //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
-                    // nếu có 2 fail --> fail
-                    MarksEntity checkPass = reLearnInSameSemester.stream()
-                            .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
-                            || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
-                            .findFirst().orElse(null);
-                    if (checkPass != null) {
-                        hasPassed = true;
-                    }else{
-                        hasPassed = false;
-                    }
+                if (!isFail) {
+                    hasPassed = true;
+                } else {
+                    hasPassed = false;
                 }
 
             }
-            //kiếm môn thay thế cho not Start
-            List<SubjectEntity> replacementSubjectList = new ArrayList<>(entity.getSubjectEntityList());
-            List<MarksEntity> replacementMarks = marks.stream()
-                    .filter(q -> replacementSubjectList.stream()
-                            .anyMatch(a -> a.getId().equalsIgnoreCase(q.getSubjectMarkComponentId().getSubjectId().getId()))
-                    ).collect(Collectors.toList());
-            if (!replacementMarks.isEmpty()) {
-                List<MarksEntity> sortedMarkList2 = Ultilities.SortSemestersByMarks(replacementMarks);
-                MarksEntity latestMark2 = null;
 
-                latestMark2 = sortedMarkList2.get(sortedMarkList2.size() - 1);
-
-                RealSemesterEntity tmpSemester = latestMark2.getSemesterId();
-
-                List<MarksEntity> reLearnInSameSemester = sortedMarkList2.stream()
-                        .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
-                        .collect(Collectors.toList());
-
-                if (!reLearnInSameSemester.isEmpty()) {
-                    //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
-                    // nếu có 2 fail --> fail
-                    MarksEntity checkPass = reLearnInSameSemester.stream()
-                            .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
-                            .findFirst().orElse(null);
-                    if (checkPass != null) {
-                        hasPassed = true;
-                    } else {
-                        hasPassed = false;
-                    }
-                }
-
-            }
 
             if (hasPassed) {
                 iterator.remove();
