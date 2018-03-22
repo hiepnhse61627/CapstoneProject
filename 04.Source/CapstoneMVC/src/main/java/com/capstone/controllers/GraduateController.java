@@ -1158,6 +1158,7 @@ public class GraduateController {
             List<SubjectCurriculumEntity> subjects = new ArrayList<>();
 
             SubjectEntity capstoneSubject = null;
+            int capstoneTerm = -1;
             int ojtCredits = 0;
             List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
             //lấy tín chỉ chuyên ngành
@@ -1175,13 +1176,14 @@ public class GraduateController {
                     List<SubjectCurriculumEntity> list = curriculum.getSubjectCurriculumEntityList();
                     for (SubjectCurriculumEntity s : list) {
 
-                        if (!subjects.contains(s) && s.getTermNumber() < 9) {
+                        if (!subjects.contains(s)) {
                             subjects.add(s);
                             if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
                                 ojtCredits = s.getSubjectCredits();
                             }
                             if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
                                 capstoneSubject = s.getSubjectId();
+                                capstoneTerm = s.getTermNumber();
 //                                break;
                             }
                         }
@@ -1212,9 +1214,10 @@ public class GraduateController {
                     SubjectEntity itemSubject = subjectCurriculum.getSubjectId();
                     //contains main subject and all of it replace subject
                     List<SubjectEntity> checkList = new ArrayList<>();
-                    checkList.add(itemSubject);
                     //exclude vovinam subject out
-                    if (!itemSubject.getId().contains("vov")) {
+
+                    if (!itemSubject.getId().contains("vov") && subjectCurriculum.getTermNumber() < capstoneTerm) {
+                        checkList.add(itemSubject);
                         checkList.addAll(itemSubject.getSubjectEntityList());
                         checkList.addAll(itemSubject.getSubjectEntityList1());
                         //lấy hết tất cả điểm của môn chính và môn thay thế của nó để kiểm tra xem đã pass chưa
@@ -1235,6 +1238,8 @@ public class GraduateController {
                             failSubjs.add(itemSubject);
                         }
                     }
+
+
                 }
 
                 //code cũ tính tổng tín chỉ
