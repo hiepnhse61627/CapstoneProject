@@ -86,7 +86,7 @@
                     }
                 });
                 waitForExcelFinish();
-                waitForTaskFinish(isRunning);
+                // waitForTaskFinish(isRunning);
             },
             allowOutsideClick: false
         });
@@ -114,10 +114,8 @@
             processData: false,
             contentType: false,
             success: function (result) {
-                if (result.isExcelRunning) {
-                    $('#progress').html("<h4>Duyệt file xecel</h4><div>(" + result.excelCurrent + "/" + result.excelTotal + ")</div>");
+                    $('#progress').html("<h4>Đang thêm dữ liệu</h4><div>(" + result.excelCurrent + "/" + result.excelTotal + ")</div>");
                     setTimeout("waitForExcelFinish()", 500);
-                }
             }
         });
     }

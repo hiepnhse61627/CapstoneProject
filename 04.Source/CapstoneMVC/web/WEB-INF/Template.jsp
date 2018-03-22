@@ -69,8 +69,8 @@
     <script src="/Resources/plugins/bootstrap-switch/js/bootstrap-switch.js"></script>
     <script src="/Resources/plugins/Scroller-1.4.3/js/dataTables.scroller.js"></script>
     <script src="/Resources/plugins/jQuery/jquery.hotkeys.js"></script>
-    <%--<script src="/Resources/plugins/ckeditor/ckeditor.js"></script>--%>
-    <%--<script src="/Resources/plugins/ckeditor/adapters/jquery.js"></script>--%>
+    <script src="/Resources/plugins/ckeditor/ckeditor.js"></script>
+    <script src="/Resources/plugins/ckeditor/adapters/jquery.js"></script>
 </head>
 <body class="hold-transition skin-custom sidebar-mini">
 <div class="wrapper" style="position: relative">
