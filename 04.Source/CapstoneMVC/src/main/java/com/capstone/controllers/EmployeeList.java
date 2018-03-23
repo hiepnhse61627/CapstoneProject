@@ -67,7 +67,7 @@ public class EmployeeList {
 
     @RequestMapping("/employeeList/{employeeId}")
     public ModelAndView EmployeeInfo(@PathVariable("employeeId") int employeeId, HttpServletRequest request) {
-        if (!Ultilities.checkUserAuthorize(request)) {
+        if (!Ultilities.checkUserAuthorize2(request,"/employeeList" )) {
             return Ultilities.returnDeniedPage();
         }
         //logging user action
