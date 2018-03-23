@@ -100,7 +100,7 @@ public class Enums {
         }
     }
 
-    public enum SpecialTerm{
+    public enum SpecialTerm {
         CAPSTONETERM(9),
         OJTTERM(6);
 
@@ -114,4 +114,20 @@ public class Enums {
             return value;
         }
     }
+
+    public enum GoogleAuthentication {
+        CLIENTID("1024234376610-fa3r5s7db2g82ccqecolm6rbfskbv3ci.apps.googleusercontent.com"),
+        CLIENTSECRET("Ub8YG4mCEA6mciFTauDkMsLg");
+
+        private final String value;
+
+        GoogleAuthentication(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
 }

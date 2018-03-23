@@ -3,10 +3,7 @@ package com.capstone.controllers;
 import com.capstone.entities.CredentialsEntity;
 import com.capstone.entities.CredentialsRolesEntity;
 import com.capstone.entities.DynamicMenuEntity;
-import com.capstone.models.CustomUser;
-import com.capstone.models.GoogleProfile;
-import com.capstone.models.Logger;
-import com.capstone.models.Ultilities;
+import com.capstone.models.*;
 import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -73,7 +70,7 @@ public class LoginController implements ServletContextAware {
         }
         String redirectUri = hostname + ":" + port;
         String url = "https://accounts.google.com/o/oauth2/auth?" +
-                "client_id=633838326707-anulcphc8kqt0k2hib34r42or6ikgcv8.apps.googleusercontent.com" +
+                "client_id="+ Enums.GoogleAuthentication.CLIENTID.getValue() +
                 "&redirect_uri=http://" + redirectUri + "/auth/google" +
                 "&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto";
 
@@ -171,8 +168,8 @@ public class LoginController implements ServletContextAware {
 
             // google required parameters (see document for more info)
             String POST_PARAMS = "code=" + params.get("code") +
-                    "&client_id=633838326707-anulcphc8kqt0k2hib34r42or6ikgcv8.apps.googleusercontent.com" +
-                    "&client_secret=_cvE4Tq5ljKZYj5g7LYtOpgJ" +
+                    "&client_id="+Enums.GoogleAuthentication.CLIENTID.getValue() +
+                    "&client_secret="+Enums.GoogleAuthentication.CLIENTSECRET.getValue() +
                     "&redirect_uri=http://" + url + "/auth/google" +
                     "&grant_type=authorization_code";
 
@@ -202,7 +199,7 @@ public class LoginController implements ServletContextAware {
                 profile = new Gson().fromJson(new String(valueDecoded, "UTF-8"), GoogleProfile.class);
 
                 // check fpt email domain
-                String[] domains = {"fpt.edu.vn"};
+                String[] domains = {"fpt.edu.vn", "fe.edu.vn"};
 
                 String domain = profile.getEmail().substring(profile.getEmail().indexOf('@') + 1).toLowerCase();
                 if (Arrays.asList(domains).contains(domain)) {
