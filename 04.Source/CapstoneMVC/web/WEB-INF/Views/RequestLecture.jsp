@@ -295,15 +295,9 @@
                 {
                     "aTargets": [4],
                     "mRender": function (data, type, row) {
-                        var isPast = row[8];
-                        if (isPast === "true") {
-                            return "<div></div>";
-                        } else {
                             return "<a class='btn btn-success tbl-btn' onclick='SendEmail(" + row[0] + ",\""
                                 + row[1] + "\",\"" + row[2] + "\",\"" + row[3] + "\")'>" +
                                 "<i class='glyphicon glyphicon-envelope'></i></a>";
-                        }
-
                     }
                 },
             ],

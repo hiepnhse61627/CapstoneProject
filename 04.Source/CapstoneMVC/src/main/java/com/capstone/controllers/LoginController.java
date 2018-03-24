@@ -66,7 +66,7 @@ public class LoginController implements ServletContextAware {
 
         //local ip của mạng trường k truy cập được ra bên ngoài
         if (hostname.indexOf("localhost") == -1 && hostname.indexOf("xip.io") == -1) {
-            hostname += "xip.io";
+            hostname += ".xip.io";
         }
         String redirectUri = hostname + ":" + port;
         String url = "https://accounts.google.com/o/oauth2/auth?" +
