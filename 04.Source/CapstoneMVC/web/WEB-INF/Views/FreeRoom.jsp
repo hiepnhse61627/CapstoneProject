@@ -58,10 +58,10 @@
                     <h1>Đổi phòng trống</h1>
                 </div>
                 <div class="col-md-3 text-right">
-                    <button type="button" class="btn btn-success btn-with-icon" onclick="CreateSchedule()">
-                        <i class="glyphicon glyphicon-plus"></i>
-                        <div>Thêm lịch học</div>
-                    </button>
+                    <%--<button type="button" class="btn btn-success btn-with-icon" onclick="CreateSchedule()">--%>
+                        <%--<i class="glyphicon glyphicon-plus"></i>--%>
+                        <%--<div>Thêm lịch học</div>--%>
+                    <%--</button>--%>
                 </div>
             </div>
             <hr>
@@ -145,7 +145,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Tiêu đề</h4>
+                <h4 class="modal-title">Đổi phòng</h4>
             </div>
             <div class="modal-body">
                 <div class="row">
@@ -253,7 +253,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
                 <button id="btnSubmit" type="button" class="btn btn-primary">Tạo</button>
             </div>
         </div>
@@ -438,6 +438,8 @@
             minDate: moment(),
 //            drops: "up",
             locale: {
+                applyLabel: "Chọn",
+                cancelLabel: 'Xóa',
                 format: 'DD/MM/YYYY'
             }
         }, function (start, end) {
@@ -495,6 +497,7 @@
             autoUpdateInput: false,
             singleDatePicker: true,
             locale: {
+                applyLabel: "Chọn",
                 cancelLabel: 'Xóa',
                 format: 'DD/MM/YYYY'
             }
@@ -529,8 +532,8 @@
             "ajax": {
                 "url": "/freeRoom/get",
                 "data": function (d) {
-                    // d.startDate = $('#scheduleDate2').data('daterangepicker').startDate.format('DD/MM/YYYY');
-                    d.startDate = '24/03/2018';
+                    d.startDate = $('#scheduleDate2').data('daterangepicker').startDate.format('DD/MM/YYYY');
+                    // d.startDate = '24/03/2018';
                     d.employeeId = $('#lecture2').val();
                 },
                 "dataSrc": function (json) {
@@ -690,27 +693,6 @@
         }
     });
 
-    function CreateSchedule() {
-        ClearModal();
-        // $("#btnSubmit").html("Tạo");
-        // $('#btnSubmit').data("type", "create");
-        // $("#btnSubmit").attr("data-schedule-id", 0);
-        // $("#subject").attr("disabled", false);
-        // $("#semester-container").show();
-        // $("#dayOfWeek-container").show();
-        // $("#room-container").hide();
-        // $("#changeRoom-container").hide();
-        // $("#all-container").hide();
-        // $("#class").attr("disabled", false);
-        // $("#dayOfWeek").attr("disabled", false);
-        // $("#scheduleDate").attr("disabled", false);
-        // $("#slot").attr("multiple", "multiple");
-        // resetSelect2(0);
-        // $(".add_field_button").show();
-        // $("#capacity-container").show();
-        // $("#scheduleModal").modal('toggle');
-    }
-
     function EditSchedule(scheduleId, subCode, clazz, sDate, slot, room, lecture, capacity) {
         ClearModal();
 
@@ -721,6 +703,8 @@
             minDate: moment(),
             singleDatePicker: true,
             locale: {
+                applyLabel: "Chọn",
+                cancelLabel: 'Xóa',
                 format: 'DD/MM/YYYY'
             }
         }, function (start, end) {
@@ -844,6 +828,8 @@
             minDate: moment(),
 //            drops: "up",
             locale: {
+                applyLabel: "Chọn",
+                cancelLabel: 'Xóa',
                 format: 'DD/MM/YYYY'
             }
         }, function (start, end) {
