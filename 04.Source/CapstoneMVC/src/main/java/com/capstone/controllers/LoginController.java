@@ -69,11 +69,11 @@ public class LoginController implements ServletContextAware {
 
         //local ip của mạng trường k truy cập được ra bên ngoài
         if (hostname.indexOf("localhost") == -1 && hostname.indexOf("xip.io") == -1) {
-            hostname += "xip.io";
+            hostname += ".xip.io";
         }
         String redirectUri = hostname + ":" + port;
         String url = "https://accounts.google.com/o/oauth2/auth?" +
-                "client_id=633838326707-anulcphc8kqt0k2hib34r42or6ikgcv8.apps.googleusercontent.com" +
+                "client_id=1024234376610-fa3r5s7db2g82ccqecolm6rbfskbv3ci.apps.googleusercontent.com" +
                 "&redirect_uri=http://" + redirectUri + "/auth/google" +
                 "&scope=openid%20email%20profile&&response_type=code&approval_prompt=auto";
 
@@ -171,8 +171,8 @@ public class LoginController implements ServletContextAware {
 
             // google required parameters (see document for more info)
             String POST_PARAMS = "code=" + params.get("code") +
-                    "&client_id=633838326707-anulcphc8kqt0k2hib34r42or6ikgcv8.apps.googleusercontent.com" +
-                    "&client_secret=_cvE4Tq5ljKZYj5g7LYtOpgJ" +
+                    "&client_id=1024234376610-fa3r5s7db2g82ccqecolm6rbfskbv3ci.apps.googleusercontent.com" +
+                    "&client_secret=Ub8YG4mCEA6mciFTauDkMsLg" +
                     "&redirect_uri=http://" + url + "/auth/google" +
                     "&grant_type=authorization_code";
 
