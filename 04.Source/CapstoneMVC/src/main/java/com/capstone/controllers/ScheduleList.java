@@ -870,7 +870,6 @@ public class ScheduleList {
         //logging user action
         Ultilities.logUserAction("EditSchedule");
         JsonObject jsonObj = new JsonObject();
-        Map<StudentEntity, List<ScheduleEntity>> studentsMap = new HashMap<>();
         String mess = "";
         try {
             Gson gson = new Gson();
@@ -883,40 +882,48 @@ public class ScheduleList {
                 DaySlotEntity aDaySlot = daySlotService.findDaySlotByDateAndSlot(params.get("startDate"), aSlot);
                 List<EmployeeEntity> lectures = employeeService.findEmployeesByFullName(params.get("lecture"));
                 List<RoomEntity> rooms = roomService.findRoomsByCapacity(Integer.parseInt(params.get("capacity")));
+                ScheduleEntity model = scheduleService.findScheduleById(Integer.parseInt(params.get("scheduleId")));
+                String roomName = params.get("room");
 
-                if (aDaySlot == null) {
-                    aDaySlot = new DaySlotEntity();
-                    aDaySlot.setSlotId(aSlot);
-                    aDaySlot.setDate(params.get("startDate"));
-                    daySlotService.createDateSlot(aDaySlot);
-                } else {
-                    ScheduleEntity existingSchedule = scheduleService.findScheduleByDateSlotAndGroupName(aDaySlot, params.get("clazz"));
-                    if (existingSchedule != null) {
-                        if (!existingSchedule.getId().toString().equals(params.get("scheduleId"))) {
-                            jsonObj.addProperty("fail", true);
-                            jsonObj.addProperty("message", "Lớp này đã có lịch học vào " + existingSchedule.getDateId().getSlotId().getSlotName() +
-                                    ", ngày " + existingSchedule.getDateId().getDate() + ", giảng viên " + (existingSchedule.getEmpId() == null ? "" : existingSchedule.getEmpId().getFullName()) +
-                                    ", môn " + existingSchedule.getCourseId().getSubjectCode() +
-                                    ", phòng " + existingSchedule.getRoomId().getName());
-                            return jsonObj;
-                        }
-                    }
-                    if (lectures != null && lectures.size() > 0) {
-                        existingSchedule = scheduleService.findScheduleByDateSlotAndLecture(aDaySlot, lectures.get(0));
+                if (model.getDateId().getDate().equals(aDaySlot.getDate())
+                        && model.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())
+                        && model.getEmpId().equals(lectures.get(0))) {
+
+                }else{
+                    if (aDaySlot == null) {
+                        aDaySlot = new DaySlotEntity();
+                        aDaySlot.setSlotId(aSlot);
+                        aDaySlot.setDate(params.get("startDate"));
+                        daySlotService.createDateSlot(aDaySlot);
+                    } else {
+                        ScheduleEntity existingSchedule = scheduleService.findScheduleByDateSlotAndGroupName(aDaySlot, params.get("clazz"));
                         if (existingSchedule != null) {
                             if (!existingSchedule.getId().toString().equals(params.get("scheduleId"))) {
                                 jsonObj.addProperty("fail", true);
-                                jsonObj.addProperty("message", "GV đã có lịch dạy vào " + existingSchedule.getDateId().getSlotId().getSlotName() +
-                                        ", ngày " + existingSchedule.getDateId().getDate() + ", lớp " + existingSchedule.getGroupName() +
+                                jsonObj.addProperty("message", "Lớp này đã có lịch học vào " + existingSchedule.getDateId().getSlotId().getSlotName() +
+                                        ", ngày " + existingSchedule.getDateId().getDate() + ", giảng viên " + (existingSchedule.getEmpId() == null ? "" : existingSchedule.getEmpId().getFullName()) +
                                         ", môn " + existingSchedule.getCourseId().getSubjectCode() +
                                         ", phòng " + existingSchedule.getRoomId().getName());
                                 return jsonObj;
                             }
                         }
+                        if (lectures != null && lectures.size() > 0) {
+                            existingSchedule = scheduleService.findScheduleByDateSlotAndLecture(aDaySlot, lectures.get(0));
+                            if (existingSchedule != null) {
+                                if (!existingSchedule.getId().toString().equals(params.get("scheduleId"))) {
+                                    jsonObj.addProperty("fail", true);
+                                    jsonObj.addProperty("message", "GV đã có lịch dạy vào " + existingSchedule.getDateId().getSlotId().getSlotName() +
+                                            ", ngày " + existingSchedule.getDateId().getDate() + ", lớp " + existingSchedule.getGroupName() +
+                                            ", môn " + existingSchedule.getCourseId().getSubjectCode() +
+                                            ", phòng " + existingSchedule.getRoomId().getName());
+                                    return jsonObj;
+                                }
+                            }
+                        }
                     }
                 }
 
-                ScheduleEntity model = scheduleService.findScheduleById(Integer.parseInt(params.get("scheduleId")));
+
                 List<ScheduleEntity> sameScheduleList = new ArrayList<>();
 
                 if (params.get("all").equals("true")) {
@@ -931,7 +938,6 @@ public class ScheduleList {
                 }
 
 
-                String roomName = params.get("room");
                 RoomEntity selectedRoom = null;
 
                 //find new room
@@ -1398,6 +1404,7 @@ public class ScheduleList {
 
         return jsonObj;
     }
+
 
 }
 
