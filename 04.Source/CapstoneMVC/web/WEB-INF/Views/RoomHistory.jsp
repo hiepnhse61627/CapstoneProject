@@ -157,6 +157,7 @@
             autoUpdateInput: false,
             singleDatePicker: true,
             locale: {
+                applyLabel: "Chọn",
                 cancelLabel: 'Xóa',
                 format: 'DD/MM/YYYY'
             }

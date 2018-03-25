@@ -193,6 +193,7 @@
         $('#scheduleDate').daterangepicker({
             autoUpdateInput: false,
             locale: {
+                applyLabel: "Chọn",
                 cancelLabel: 'Xóa',
                 format: 'DD/MM/YYYY'
             }

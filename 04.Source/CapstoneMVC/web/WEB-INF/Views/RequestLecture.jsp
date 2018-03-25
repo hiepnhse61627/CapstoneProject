@@ -154,7 +154,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
                 <button id="btnSubmit" type="button" class="btn btn-primary">Gửi mail</button>
             </div>
         </div>
@@ -231,6 +231,7 @@
             autoUpdateInput: false,
             singleDatePicker: true,
             locale: {
+                applyLabel: "Chọn",
                 cancelLabel: 'Xóa',
                 format: 'DD/MM/YYYY'
             }

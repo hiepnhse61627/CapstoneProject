@@ -383,7 +383,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
                 <button id="btnSubmit" type="button" class="btn btn-primary">Tạo</button>
             </div>
         </div>
@@ -590,6 +590,8 @@
             minDate:  moment(),
 //            drops: "up",
             locale: {
+                applyLabel: "Chọn",
+                cancelLabel: 'Xóa',
                 format: 'DD/MM/YYYY'
             }
         }, function (start, end) {
@@ -790,6 +792,8 @@
             minDate:  moment(),
             singleDatePicker: true,
             locale: {
+                applyLabel: "Chọn",
+                cancelLabel: 'Xóa',
                 format: 'DD/MM/YYYY'
             }
         }, function (start, end) {
@@ -906,6 +910,8 @@
             minDate:  moment(),
 //            drops: "up",
             locale: {
+                applyLabel: "Chọn",
+                cancelLabel: 'Xóa',
                 format: 'DD/MM/YYYY'
             }
         }, function (start, end) {

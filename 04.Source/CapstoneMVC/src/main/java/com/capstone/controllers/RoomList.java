@@ -299,6 +299,7 @@ public class RoomList {
                 }
             }
 
+            //find slot belong to an employee
             if (!employeeId.equals("")) {
                 List<ScheduleEntity> newScheduleList = new ArrayList<>();
                 for (ScheduleEntity schedule : scheduleList) {
@@ -306,11 +307,12 @@ public class RoomList {
                         newScheduleList.add(schedule);
                     }
                 }
-
                 scheduleList = new ArrayList<>(newScheduleList);
             }
 
             for (ScheduleEntity schedule : scheduleList) {
+
+                //add room is currently in use
                 removeRoomList.add(schedule.getRoomId().getName());
 
                 List<String> dataList = new ArrayList<String>();
@@ -371,11 +373,12 @@ public class RoomList {
                 result.add(dataList);
             }
 
+
             List<RoomEntity> allRooms = roomService.findAllRooms();
             for(RoomEntity aRoom : allRooms){
                 freeRoomList.add(aRoom.getName());
             }
-
+            //get rooms not in use by removing rooms in use in all room list
             freeRoomList.removeAll(removeRoomList);
 
         } catch (Exception e) {
