@@ -4,6 +4,7 @@ import com.capstone.entities.CourseEntity;
 import com.capstone.entities.CredentialsEntity;
 import com.capstone.jpa.exJpa.ExCourseEntityJpaController;
 import com.capstone.jpa.exJpa.ExCredentialsEntityJpaController;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
 import com.capstone.models.DatatableModel;
 
 import javax.persistence.EntityManagerFactory;
@@ -49,5 +50,16 @@ public class CredentialsServiceImpl implements ICredentialsService {
     @Override
     public List<CredentialsEntity> getAllCredentials() {
         return controller.findCredentialsEntityEntities();
+    }
+
+    @Override
+    public boolean deleteCredential(int credentialId) {
+        try {
+            controller.destroy(credentialId);
+        } catch (NonexistentEntityException e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 }

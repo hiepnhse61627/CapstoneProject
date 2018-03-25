@@ -14,6 +14,7 @@ import org.apache.poi.ss.formula.functions.Replace;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import javax.persistence.*;
 import javax.security.auth.Subject;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -439,4 +441,92 @@ public class SubjectController {
         return obj;
     }
 
+    @RequestMapping(value = "/uploadSubjectsVNName", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goUploadThesisName(@RequestParam("file") MultipartFile file,
+                                         HttpServletRequest request, HttpServletResponse response) {
+        JsonObject jsonObject = new JsonObject();
+        Ultilities.logUserAction("Upload subject name");
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+
+            int lastRow = spreadsheet.getLastRowNum();
+
+
+            int excelDataIndex = 1;
+
+            int subjectCodeIndex = 0;
+            int vietnameseNameColIndex = 2;
+            int totalLine = lastRow - excelDataIndex + 1;
+
+
+
+            int currentLine = 1;
+
+            SubjectServiceImpl subjectService = new SubjectServiceImpl();
+            List<SubjectEntity> allSubject = subjectService.getAllSubjects();
+            List<SubjectEntity> importList = new ArrayList<>();
+            if (subjectCodeIndex != -1 && vietnameseNameColIndex != -1) {
+
+
+                //get student and check if student exists
+                row = spreadsheet.getRow(excelDataIndex);
+
+                 currentLine = 1;
+
+                //get mark component name for later use
+                HashMap<String, List<String>> thesisName = new HashMap<>();
+                for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                    row = spreadsheet.getRow(rowIndex);
+
+
+                    Cell subjectCodeCell = row.getCell(subjectCodeIndex);
+                    Cell vietnameseNameCell = row.getCell(vietnameseNameColIndex);
+
+                    //check if cell is empty or null to end the loop
+                    if (subjectCodeCell == null || subjectCodeCell.getCellTypeEnum() == CellType.BLANK
+                            || vietnameseNameCell == null || vietnameseNameCell.getCellTypeEnum() == CellType.BLANK
+                            ) {
+//                        break;
+                    } else {
+
+                        String subjectCodeValue = subjectCodeCell.getStringCellValue().trim().toUpperCase();
+                        String vietnameseNameValue = vietnameseNameCell.getStringCellValue().trim();
+
+                        if(!vietnameseNameValue.isEmpty()){
+                            SubjectEntity subject =  allSubject.stream().filter(q -> q.getId().equalsIgnoreCase(subjectCodeValue))
+                                    .findFirst().orElse(null);
+
+                            if(subject != null){
+                                subject.setVnName(vietnameseNameValue);
+                                importList.add(subject);
+                            }
+                        }
+
+                    }
+                    System.out.println("upload" + currentLine);
+                    currentLine++;
+                }
+                subjectService.bulkUpdateSubjects(importList);
+
+                jsonObject.addProperty("success", true);
+                jsonObject.addProperty("message", "Upload tên đề subject thành công !");
+            } else {
+                jsonObject.addProperty("success", false);
+                jsonObject.addProperty("message", "File không đúng định dạng !");
+            }
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+        return jsonObject;
+    }
 }

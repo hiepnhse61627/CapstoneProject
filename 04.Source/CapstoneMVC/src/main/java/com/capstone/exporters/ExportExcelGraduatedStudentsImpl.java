@@ -52,6 +52,10 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
 
         HashMap<String, List<String>> thesisNames = (HashMap<String, List<String>>) request.getSession().getAttribute("ThesisNamesList");
 
+        ExportStatusReport.StatusStudentDetailExport = "Đang xử lý";
+        ExportStatusReport.StatusExportStudentDetailRunning = true;
+        ExportStatusReport.StopExporting = false;
+
         XSSFWorkbook workbook = new XSSFWorkbook(is);
         // close input stream
 //        is.close();
@@ -63,161 +67,181 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
     }
 
     private void writeDataToTable(XSSFWorkbook workbook, XSSFSheet sheet, Map<String, String> params, HashMap<String, List<String>> thesisNames) throws Exception {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        // style
-        CellStyle cellStyle = workbook.createCellStyle();
-        cellStyle.setBorderBottom(BorderStyle.THIN);
-        cellStyle.setBorderLeft(BorderStyle.THIN);
-        cellStyle.setBorderRight(BorderStyle.THIN);
-        cellStyle.setBorderTop(BorderStyle.THIN);
-        cellStyle.setAlignment(HorizontalAlignment.LEFT);
-        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        sheet.getRow(22).setHeight((short)48);
-        sheet.getRow(24).setHeight((short)48);
+
+        try {
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            // style
+            CellStyle cellStyle = workbook.createCellStyle();
+            cellStyle.setBorderBottom(BorderStyle.THIN);
+            cellStyle.setBorderLeft(BorderStyle.THIN);
+            cellStyle.setBorderRight(BorderStyle.THIN);
+            cellStyle.setBorderTop(BorderStyle.THIN);
+            cellStyle.setAlignment(HorizontalAlignment.LEFT);
+            cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+
 
 //        Map<StudentEntity, List<MarkCreditTermModel>> dataMap = processData2(params);
-        List<StudentAndMark> dataMap = processData2(params);
+            ExportStatusReport.StatusStudentDetailExport = "Đang tìm danh sách sinh viên tốt nghiệp";
+            List<StudentAndMark> dataMap = processData2(params);
+            ExportStatusReport.StatusStudentDetailExport = "Đang khởi tạo file";
+            int myIndex = 1;
+            for (StudentAndMark entry : dataMap) {
+                StudentEntity student = entry.getStudent();
+                sheet = workbook.cloneSheet(0, student.getRollNumber());
 
-        int myIndex = 1;
-        for (StudentAndMark entry : dataMap) {
-            StudentEntity student = entry.getStudent();
-            sheet = workbook.cloneSheet(0, student.getRollNumber());
+                XSSFRow row = sheet.getRow(11);
+                row.getCell(2).setCellValue(student.getFullName());
+                row.getCell(6).setCellValue(student.getRollNumber());
+                row = sheet.getRow(13);
+                row.getCell(2).setCellValue(sdf.format(student.getDateOfBirth()));
 
-            XSSFRow row = sheet.getRow(11);
-            row.getCell(2).setCellValue(student.getFullName());
-            row.getCell(6).setCellValue(student.getRollNumber());
-            row = sheet.getRow(13);
-            row.getCell(2).setCellValue(sdf.format(student.getDateOfBirth()));
-
-            //ngành , chuyên ngành
-            row = sheet.getRow(15);
-            row.getCell(2).setCellValue(student.getProgramId().getFullName());
+                //ngành , chuyên ngành
+                row = sheet.getRow(15);
+                row.getCell(2).setCellValue(student.getProgramId().getFullName());
 //            DocumentStudentEntity documentStudentEntity = Ultilities.getStudentLatestDocument(entry.getKey());
 //            row.getCell(7).setCellValue(documentStudentEntity.getCurriculumId().getName());
-            row.getCell(7).setCellValue(student.getProgramId().getFullName());
+                row.getCell(7).setCellValue(student.getProgramId().getFullName());
 
-            //in tên đề tài
-            if (thesisNames != null) {
-                //mảng gồm 2 item [0]: tên tiếng việt, [1]: tên tiếng anh
-                List<String> names = thesisNames.get(student.getRollNumber());
-                //tên đồ án = tiếng việt
-                row = sheet.getRow(22);
-                row.getCell(1).setCellValue(names.get(0));
-                //tên đồ án = tiếng anh
-                row = sheet.getRow(24);
-                row.getCell(2).setCellValue(names.get(1));
-            }
+                //in tên đề tài
+                if (thesisNames != null) {
+                    //mảng gồm 2 item [0]: tên tiếng việt, [1]: tên tiếng anh
+                    List<String> names = thesisNames.get(student.getRollNumber());
+                    //tên đồ án = tiếng việt
+                    row = sheet.getRow(22);
+                    row.getCell(1).setCellValue(names.get(0));
+                    //tên đồ án = tiếng anh
+                    row = sheet.getRow(24);
+                    row.getCell(2).setCellValue(names.get(1));
+                }
 
-            //điểm trung bình
-            row = sheet.getRow(26);
-            double average= entry.getAverage();
-            row.getCell(8).setCellValue(average);
 
-            //loại tốt nghiệp
-            String rankingVn = "";
-            String rankingEng ="";
-            if(average>=9){
-                rankingVn = "Xuất sắc";
-                rankingEng ="Excellent";
-            }else if(average >= 8){
-                rankingVn = "Giỏi";
-                rankingEng ="Very good";
-            }else if(average >= 7){
-                rankingVn = "Khá";
-                rankingEng ="Good";
-            }else if(average >= 6){
-                rankingVn = "Trung bình khá";
-                rankingEng ="Fairly Good";
-            }else if(average >=5){
-                rankingVn = "Trung bình";
-                rankingEng ="Ordinary";
-            }
-            row = sheet.getRow(30);
-            row.getCell(7).setCellValue(rankingVn);
-            row = sheet.getRow(31);
-            row.getCell(7).setCellValue(rankingEng);
+                //điểm trung bình
+                row = sheet.getRow(26);
+                double average = entry.getAverage();
+                row.getCell(8).setCellValue(average);
 
-            int ordinalNumber = 1;
-            int rowIndex = 20;
-            List<MarkCreditTermModel> marksList = entry.getMarkList();
-            int markSize = marksList.size();
-            Collections.reverse(marksList);
-            for (MarkCreditTermModel item : marksList) {
+                //loại tốt nghiệp
+                String rankingVn = "";
+                String rankingEng = "";
+                if (average >= 9) {
+                    rankingVn = "Xuất sắc";
+                    rankingEng = "Excellent";
+                } else if (average >= 8) {
+                    rankingVn = "Giỏi";
+                    rankingEng = "Very good";
+                } else if (average >= 7) {
+                    rankingVn = "Khá";
+                    rankingEng = "Good";
+                } else if (average >= 6) {
+                    rankingVn = "Trung bình khá";
+                    rankingEng = "Fairly Good";
+                } else if (average >= 5) {
+                    rankingVn = "Trung bình";
+                    rankingEng = "Ordinary";
+                }
+                row = sheet.getRow(30);
+                row.getCell(7).setCellValue(rankingVn);
+                row = sheet.getRow(31);
+                row.getCell(7).setCellValue(rankingEng);
 
-                MarksEntity marksEntity = item.getMark();
+                int ordinalNumber = 1;
+                int rowIndex = 20;
+                List<MarkCreditTermModel> marksList = entry.getMarkList();
+                int markSize = marksList.size();
+                Collections.reverse(marksList);
+                for (MarkCreditTermModel item : marksList) {
 
-                row = sheet.createRow(rowIndex);
-                // ordinal number
-                XSSFCell ordinalNumberCell = row.createCell(0);
-                ordinalNumberCell.setCellStyle(cellStyle);
-                ordinalNumberCell.setCellValue("" + (markSize - ordinalNumber + 1));
+                    MarksEntity marksEntity = item.getMark();
 
-                // Subject code
-                SubjectEntity subjectEntity = subjectService.findSubjectById(marksEntity.getSubjectMarkComponentId().getSubjectId().getId());
-                XSSFCell subjectCodeCell = row.createCell(1);
-                subjectCodeCell.setCellValue(subjectEntity.getId());
-                CellRangeAddress range1 = new CellRangeAddress(rowIndex, rowIndex, 1, 2);
-                sheet.addMergedRegion(range1);
-                RegionUtil.setBorderBottom(BorderStyle.THIN, range1, sheet);
-                RegionUtil.setBorderLeft(BorderStyle.THIN, range1, sheet);
-                RegionUtil.setBorderRight(BorderStyle.THIN, range1, sheet);
-                RegionUtil.setBorderTop(BorderStyle.THIN, range1, sheet);
-                // subject name
-                XSSFCell subjectNameCell = row.createCell(3);
-                subjectNameCell.setCellValue(subjectEntity.getName());
-                CellRangeAddress range2 = new CellRangeAddress(rowIndex, rowIndex, 3, 5);
-                sheet.addMergedRegion(range2);
-                RegionUtil.setBorderBottom(BorderStyle.THIN, range2, sheet);
-                RegionUtil.setBorderLeft(BorderStyle.THIN, range2, sheet);
-                RegionUtil.setBorderRight(BorderStyle.THIN, range2, sheet);
-                RegionUtil.setBorderTop(BorderStyle.THIN, range2, sheet);
-                // credit
-                XSSFCell creditCell = row.createCell(6);
-                creditCell.setCellStyle(cellStyle);
+                    row = sheet.createRow(rowIndex);
+                    // ordinal number
+                    XSSFCell ordinalNumberCell = row.createCell(0);
+                    ordinalNumberCell.setCellStyle(cellStyle);
+                    ordinalNumberCell.setCellValue("" + (markSize - ordinalNumber + 1));
+
+                    // Subject code
+                    SubjectEntity subjectEntity = subjectService.findSubjectById(marksEntity.getSubjectMarkComponentId().getSubjectId().getId());
+                    XSSFCell subjectCodeCell = row.createCell(1);
+                    subjectCodeCell.setCellValue(subjectEntity.getName());
+                    CellRangeAddress range1 = new CellRangeAddress(rowIndex, rowIndex, 1, 2);
+                    sheet.addMergedRegion(range1);
+                    RegionUtil.setBorderBottom(BorderStyle.THIN, range1, sheet);
+                    RegionUtil.setBorderLeft(BorderStyle.THIN, range1, sheet);
+                    RegionUtil.setBorderRight(BorderStyle.THIN, range1, sheet);
+                    RegionUtil.setBorderTop(BorderStyle.THIN, range1, sheet);
+                    // subject name
+                    XSSFCell subjectNameCell = row.createCell(3);
+                    subjectNameCell.setCellValue(subjectEntity.getVnName());
+                    CellRangeAddress range2 = new CellRangeAddress(rowIndex, rowIndex, 3, 5);
+                    sheet.addMergedRegion(range2);
+                    RegionUtil.setBorderBottom(BorderStyle.THIN, range2, sheet);
+                    RegionUtil.setBorderLeft(BorderStyle.THIN, range2, sheet);
+                    RegionUtil.setBorderRight(BorderStyle.THIN, range2, sheet);
+                    RegionUtil.setBorderTop(BorderStyle.THIN, range2, sheet);
+                    // credit
+                    XSSFCell creditCell = row.createCell(6);
+                    creditCell.setCellStyle(cellStyle);
 //                Map<SubjectEntity, Integer> subjectsCredits = processCreditsForSubject(entry.getKey().getDocumentStudentEntityList());
 //                creditCell.setCellValue(subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) + "");
-                creditCell.setCellValue(item.getCredit() + "");
+                    creditCell.setCellValue(item.getCredit());
 
-                // mark
-                XSSFCell markCell = row.createCell(7);
-                markCell.setCellStyle(cellStyle);
-                markCell.setCellValue(marksEntity.getAverageMark() + "");
-                // grade
-                XSSFCell gradeCell = row.createCell(8);
-                gradeCell.setCellStyle(cellStyle);
-                Double averageMark = marksEntity.getAverageMark();
-                if (averageMark >= 9) {
-                    gradeCell.setCellValue("A+");
-                } else if (averageMark >= 8.5) {
-                    gradeCell.setCellValue("A");
-                } else if (averageMark >= 8) {
-                    gradeCell.setCellValue("A-");
-                } else if (averageMark >= 7.5) {
-                    gradeCell.setCellValue("B+");
-                } else if (averageMark >= 7) {
-                    gradeCell.setCellValue("B");
-                } else if (averageMark >= 6.5) {
-                    gradeCell.setCellValue("B-");
-                } else if (averageMark >= 6) {
-                    gradeCell.setCellValue("C+");
-                } else if (averageMark >= 5.5) {
-                    gradeCell.setCellValue("C");
-                } else if (averageMark >= 5) {
-                    gradeCell.setCellValue("C-");
-                } else {
-                    gradeCell.setCellValue("F");
+                    // mark
+                    XSSFCell markCell = row.createCell(7);
+                    markCell.setCellStyle(cellStyle);
+                    //làm tròn 2 chữ số
+                    double round2Decimal = Math.round(marksEntity.getAverageMark() * 100.0) / 100.0;
+                    markCell.setCellValue(round2Decimal);
+                    // grade
+                    XSSFCell gradeCell = row.createCell(8);
+                    gradeCell.setCellStyle(cellStyle);
+                    Double averageMark = marksEntity.getAverageMark();
+                    if (averageMark >= 9) {
+                        gradeCell.setCellValue("A+");
+                    } else if (averageMark >= 8.5) {
+                        gradeCell.setCellValue("A");
+                    } else if (averageMark >= 8) {
+                        gradeCell.setCellValue("A-");
+                    } else if (averageMark >= 7.5) {
+                        gradeCell.setCellValue("B+");
+                    } else if (averageMark >= 7) {
+                        gradeCell.setCellValue("B");
+                    } else if (averageMark >= 6.5) {
+                        gradeCell.setCellValue("B-");
+                    } else if (averageMark >= 6) {
+                        gradeCell.setCellValue("C+");
+                    } else if (averageMark >= 5.5) {
+                        gradeCell.setCellValue("C");
+                    } else if (averageMark >= 5) {
+                        gradeCell.setCellValue("C-");
+                    } else {
+                        gradeCell.setCellValue("F");
+                    }
+
+                    if (ordinalNumber < markSize) {
+                        sheet.shiftRows(rowIndex, sheet.getLastRowNum(), 1);
+                    }
+                    ordinalNumber++;
                 }
 
-                if (ordinalNumber < markSize) {
-                    sheet.shiftRows(rowIndex, sheet.getLastRowNum(), 1);
-                }
-                ordinalNumber++;
-            }
+                //vị trí dòng ngay trên 2 tên đề tài
+                int thesisRow = rowIndex + ordinalNumber;
+                //set lại row height cho tên đồ án, vì sau khi shift column (npoi sẽ auto size lại cell, row = default height)
+                sheet.getRow(thesisRow ).setHeightInPoints(49);
+                sheet.getRow(thesisRow + 2).setHeightInPoints(49);
 //            sheet.shiftRows(21, sheet.getLastRowNum(), -1);
-            System.out.println("Done " + myIndex + " - " + dataMap.size());
-            myIndex++;
+                System.out.println("Done " + myIndex + " - " + dataMap.size());
+                myIndex++;
+            }
+            //remove first template
+            if (!dataMap.isEmpty())
+                workbook.removeSheetAt(0);
+            ExportStatusReport.StatusStudentDetailExport = "Hoàn tất tạo file";
+            ExportStatusReport.StatusExportStudentDetailRunning = false;
+            ExportStatusReport.StopExporting = false;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        workbook.removeSheetAt(0);
     }
 
     private Map<StudentEntity, List<MarksEntity>> processData(Map<String, String> params) {
@@ -508,7 +532,7 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
                 //ko tính những môn như lab, hoặc những môn pass mà ko có điểm
                 if (item.getMark().getAverageMark() != 0
                         || item.getMark().getSubjectMarkComponentId().getSubjectId().getId().contains("LAB")) {
-                    Double credit = item.getCredit()*1.0;
+                    Double credit = item.getCredit() * 1.0;
                     sumCredits += credit;
                     sumMarks += item.getMark().getAverageMark() * credit;
                 }

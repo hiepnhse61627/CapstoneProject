@@ -161,14 +161,17 @@
                 </div>
                 <div class="my-content">
                     <div class="form-group">
-                        <div class="col-md-6">
-                            <label for="thesisFile" hidden></label>
-                            <input type="file" accept=".xlsx, .xls" id="thesisFile" name="file"/>
-                        </div><br/>
-                        <div class="">
-                            Bấm vào <a class="link" href="/Resources/FileTemplates/Ten_De_Tai.xlsx">Template</a> để tải
-                            về bản mẫu
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label for="thesisFile" hidden></label>
+                                <input type="file" accept=".xlsx, .xls" id="thesisFile" name="file"/>
+                                <div class="">
+                                    Bấm vào <a class="link" href="/Resources/FileTemplates/Ten_De_Tai.xlsx">Template</a> để tải
+                                    về bản mẫu
+                                </div>
+                            </div>
                         </div>
+                        <br/>
                         <button type="button" onclick="UploadThesisName()" class="btn btn-success"
                                 title="dùng để upload, gán tên đề tài vào bảng điểm cho học sinh tốt nghiệp">
                             Upload Tên đề tài
@@ -178,7 +181,7 @@
             </div>
             <div class="modal-footer">
                 <div class="form-group">
-                    <button type="button" onclick="ExportExcelPDF2()"
+                    <button type="button" onclick="ExportExcelGraduateStudent()"
                             title="Xuất ra danh sách học sinh tốt nghiệp của kì được chọn" class="btn btn-success">
                         Export Excel
                     </button>
@@ -203,7 +206,7 @@
     <input name="semesterId"/>
 </form>
 
-<form id="export-excel-2" action="/exportExcelWithoutCallable" hidden>
+<form id="export-excel-2" action="/exportExcel" hidden>
     <input name="objectType"/>
     <input name="programId"/>
     <input name="semesterId"/>
@@ -510,6 +513,49 @@
                         'success')
                 } else {
                     swal('', 'Có lỗi xảy ra, vui lòng thử lại sau', 'warning');
+                }
+            }
+        });
+    }
+
+
+    function ExportExcelGraduateStudent() {
+        ExportExcelPDF2();
+        swal({
+            title: 'Đang xử lý',
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                isRunning = true;
+                waitForTaskFinish(isRunning);
+            },
+            allowOutsideClick: false
+        });
+    }
+
+    function waitForTaskFinish(running) {
+        $.ajax({
+            type: "GET",
+            url: "/getStatusExport",
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                console.log("task running");
+                if (result.running) {
+                    running = result.running;
+                    $('#progress').html("<div>(" + result.status + ")</div>");
+                    setTimeout(function () {
+                            waitForTaskFinish(running);
+                        }
+                        , 1000);
+                } else {
+                    swal({
+                        title: 'Thành công',
+                        text: "Tạo file thành công!",
+                        type: 'success',
+                        timer: 3000,
+                    });
                 }
             }
         });

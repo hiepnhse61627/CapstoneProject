@@ -32,6 +32,8 @@ public class SubjectEntity implements Serializable {
     private Boolean isSpecialized;
     @Column(name = "Type")
     private Integer type;
+    @Column(name = "VnName")
+    private String vnName;
     @JoinTable(name = "Replacement_Subject", joinColumns = {
         @JoinColumn(name = "SubjectId", referencedColumnName = "Id", nullable = false)}, inverseJoinColumns = {
         @JoinColumn(name = "ReplacementId", referencedColumnName = "Id", nullable = false)})
@@ -95,6 +97,14 @@ public class SubjectEntity implements Serializable {
 
     public void setType(Integer type) {
         this.type = type;
+    }
+
+    public String getVnName() {
+        return vnName;
+    }
+
+    public void setVnName(String vnName) {
+        this.vnName = vnName;
     }
 
     public List<SubjectEntity> getSubjectEntityList() {

@@ -389,7 +389,7 @@ public class SubjectCurriculumController {
             model.setSubjectID(subjectId);
             model.setSubjectName(subjectName);
             model.setCredits(Integer.parseInt(credits));
-            model.setPrerequisiteSubject(prerequisite);
+            model.setPrerequisiteSubject(prerequisite.trim().isEmpty() ? null: prerequisite);
             model.setReplacementSubject(replacement);
             model.setEffectionSemester(effectionSemester);
             if (failMark.isEmpty()) {

@@ -29,6 +29,7 @@
         <class>com.capstone.entities.RolesAuthorityEntity</class>
         <class>com.capstone.entities.RolesEntity</class>
         <class>com.capstone.entities.CredentialsRolesEntity</class>
+        <class>com.capstone.entities.GraduateDetailEntity</class>
 
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
