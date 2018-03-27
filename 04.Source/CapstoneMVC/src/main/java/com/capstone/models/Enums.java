@@ -130,4 +130,20 @@ public class Enums {
         }
     }
 
+    public enum GraduateVariable {
+        PROGRAM_ID("graduateProgramId"),
+        SEMESTER_ID("graduateSemesterId"),
+        GRADUATE_LIST("graduateListExport");
+
+        private final String value;
+
+        GraduateVariable(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
 }

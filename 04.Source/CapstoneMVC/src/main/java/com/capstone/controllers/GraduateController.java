@@ -2,6 +2,7 @@ package com.capstone.controllers;
 
 import com.capstone.entities.*;
 import com.capstone.enums.SubjectTypeEnum;
+import com.capstone.exporters.ExportExcelGraduatedStudentsImpl;
 import com.capstone.models.*;
 import com.capstone.services.*;
 import com.google.common.collect.Lists;
@@ -9,23 +10,47 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import com.sun.mail.smtp.SMTPTransport;
 import com.sun.org.apache.xpath.internal.operations.Bool;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.View;
+import org.springframework.web.servlet.ViewResolver;
+import org.springframework.web.servlet.view.InternalResourceViewResolver;
 
+import javax.mail.Address;
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 import javax.persistence.*;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.security.auth.Subject;
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.File;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+
 
 @Controller
 public class GraduateController {
+
+
     IProgramService programService = new ProgramServiceImpl();
     IRealSemesterService semesterService = new RealSemesterServiceImpl();
     IMarksService markService = new MarksServiceImpl();
@@ -1132,7 +1157,7 @@ public class GraduateController {
                                 ojtCredits = s.getSubjectCredits();
                             }
                         }
-                        if(s.getSubjectId().getType() == Enums.SubjectType.CAPSTONE.getValue()){
+                        if (s.getSubjectId().getType() == Enums.SubjectType.CAPSTONE.getValue()) {
                             capstoneSubject = s.getSubjectId();
                         }
                     }
@@ -1345,6 +1370,238 @@ public class GraduateController {
         }
 
         return jsonObj;
+    }
+
+
+    @RequestMapping(value = "/sendGraduateStudent", method = RequestMethod.POST)
+    @ResponseBody
+    public Callable<JsonObject> SendEmail(Map<String, String> params, HttpServletRequest request,
+                                          @RequestParam("username") String username,
+                                          @RequestParam("token") String token, @RequestParam("name") String name,
+                                          @RequestParam("programId") String programId,
+                                          @RequestParam("semesterId") String semesterId) {
+        Ultilities.logUserAction("Send emails graduate");
+
+        Callable<JsonObject> callable = () -> {
+            JsonObject obj = new JsonObject();
+
+            RolesServiceImpl rolesService = new RolesServiceImpl();
+            List<RolesEntity> allRoles = rolesService.getAllRoles();
+
+
+            try {
+                List<StudentAndMark> data = (List<StudentAndMark>) request.getSession().getAttribute("graduateListExport");
+                int requestProgramId = Integer.parseInt(programId);
+                int requestSemesterId = Integer.parseInt(semesterId);
+
+                Integer currentProgramId = (Integer) request.getSession()
+                        .getAttribute(Enums.GraduateVariable.PROGRAM_ID.getValue());
+                Integer currentSemesterId = (Integer) request.getSession()
+                        .getAttribute(Enums.GraduateVariable.SEMESTER_ID.getValue());
+
+                if (data == null || currentProgramId == null || currentSemesterId == null
+                        || currentProgramId != requestProgramId
+                        || currentSemesterId != requestSemesterId) {
+                    data = processData2(params, requestSemesterId, requestProgramId);
+
+                    //set lên session nếu chưa có
+                    request.getSession()
+                            .setAttribute(Enums.GraduateVariable.PROGRAM_ID.getValue(), requestProgramId);
+                    request.getSession()
+                            .setAttribute(Enums.GraduateVariable.SEMESTER_ID.getValue(), requestSemesterId);
+                    request.getSession()
+                            .setAttribute(Enums.GraduateVariable.GRADUATE_LIST.getValue(), data);
+                }
+
+                OAuth2Authenticator.initialize();
+                SMTPTransport smtpTransport = OAuth2Authenticator.connectToSmtp("smtp.gmail.com", 587, username, token, true);
+
+                //khởi tạo Marshaller
+                JAXBContext jc = JAXBContext.newInstance(StudentAndMark.class);
+                Marshaller mar = jc.createMarshaller();
+                mar.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+                mar.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+                String location = GraduateController.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+
+                String realPath = location.substring(0, location.indexOf("classes")) + "MailTemplate/";
+
+
+                for (StudentAndMark item : data) {
+                    StudentEntity student = item.getStudent();
+                    String email = student.getEmail();
+                    Session session = OAuth2Authenticator.getSession();
+                    MimeMessage mimeMessage = new MimeMessage(session);
+                    Address toAddress = new InternetAddress(email);
+                    Address fromAddress = new InternetAddress(username, name, "utf-8");
+
+                    //biến data thành xml
+                    StringWriter sw = new StringWriter();
+                    mar.marshal(item, sw);
+                    String xmlStr = sw.toString();
+
+                    //khởi tạo transformer và định dạng template
+                    TransformerFactory tf = TransformerFactory.newInstance();
+                    File f = new File(realPath + "graduate_mail.xsl");
+                    if (!f.exists()) {
+                        System.out.println("not exist");
+                    }
+                    StreamSource xslt = new StreamSource(realPath + "graduate_mail.xsl");
+                    Transformer trans = tf.newTransformer(xslt);
+
+                    //đọc xml thành stream source
+                    StreamSource xml = new StreamSource(new StringReader(xmlStr));
+
+                    //khởi tạo outputStream để đọc html
+                    StringWriter sw2 = new StringWriter();
+                    StreamResult outStream = new StreamResult(sw2);
+
+                    //transform xml thành html
+                    trans.transform(xml, outStream);
+
+                    //kết quả sau khi apply xml, stylesheet thành html
+                    String html = sw2.toString();
+
+
+                    String msg = html;
+                    mimeMessage.setContent(msg, "text/html; charset=UTF-8");
+                    mimeMessage.setFrom(fromAddress);
+                    mimeMessage.setRecipient(Message.RecipientType.TO, toAddress);
+                    mimeMessage.setSubject("[FUG-HCM] Bảng điểm học tập và xét tốt nghiệp", "utf-8");
+                    smtpTransport.sendMessage(mimeMessage, mimeMessage.getAllRecipients());
+                }
+
+
+
+                obj.addProperty("success", true);
+            } catch (Exception e) {
+                e.printStackTrace();
+                obj.addProperty("success", false);
+                obj.addProperty("msg", e.getMessage());
+                e.printStackTrace();
+            }
+
+            return obj;
+        };
+
+
+        return callable;
+    }
+
+
+    private List<StudentAndMark> processData2(Map<String, String> params, int semesterId, int programId) {
+        List<StudentAndMark> resultMap = new ArrayList<>();
+
+
+
+        List<StudentEntity> studentEntityList;
+        if (programId < 0) {
+            studentEntityList = studentService.findAllStudents();
+        } else {
+            studentEntityList = studentService.getStudentBySemesterIdAndProgram(semesterId, programId);
+        }
+
+        List<StudentEntity> filteredStudents = new ArrayList<>();
+        //lấy ra tất cả sinh viên tốt nghiệp, trạng thái sinh viên tốt nghiệp là G
+        for (StudentEntity student : studentEntityList) {
+            List<StudentStatusEntity> statusList = student.getStudentStatusEntityList();
+
+            for (StudentStatusEntity status : statusList) {
+                //xét duyệt trạng thái kì được chọn của sinh viên
+                if (status.getSemesterId().getId() == semesterId
+                        && status.getStatus().equalsIgnoreCase(Enums.StudentStatus.Graduated.getValue())) {
+                    filteredStudents.add(student);
+                }
+            }
+        }
+
+        //use 4 test
+//        List<StudentEntity> a = studentService.findAllStudents();
+//        List<StudentEntity> temp = a.stream().filter(q -> q.getRollNumber().equalsIgnoreCase("SE61822")
+////                || q.getRollNumber().equalsIgnoreCase("SE62094")
+//        ).collect(Collectors.toList());
+//        filteredStudents.addAll(temp);
+
+        System.out.println(filteredStudents.size() + " students");
+        int i = 1;
+        for (StudentEntity student : filteredStudents) {
+
+            List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+            List<MarksEntity> allMarks = new ArrayList<>(student.getMarksEntityList());
+            List<MarkCreditTermModel> finalMarks = new ArrayList<>();
+            List<SubjectCurriculumEntity> subjectCurriculumList = new ArrayList<>();
+
+            for (DocumentStudentEntity docStudent : docs) {
+                CurriculumEntity curriculum = docStudent.getCurriculumId();
+                subjectCurriculumList.addAll(curriculum.getSubjectCurriculumEntityList());
+            }  //end of docStudents loop
+            for (SubjectCurriculumEntity subjectCurriculum : subjectCurriculumList) {
+                SubjectEntity subject = subjectCurriculum.getSubjectId();
+
+                //mảng này chứa tất cả môn thay thế và môn chính
+                List<SubjectEntity> checkSubjects = Ultilities.findBackAndForwardReplacementSubject(subject);
+
+                List<MarksEntity> filteredMarks = allMarks.stream().filter(q -> checkSubjects.stream().anyMatch(c -> c.getId()
+                        .equalsIgnoreCase(q.getSubjectMarkComponentId().getSubjectId().getId()))
+                ).collect(Collectors.toList());
+
+                List<MarksEntity> sortedMarks = Ultilities.SortSemestersByMarks(filteredMarks);
+
+                //get latest mark
+                if (!sortedMarks.isEmpty()) {
+                    MarksEntity latestMark = sortedMarks.get(sortedMarks.size() - 1);
+                    RealSemesterEntity tmpSemester = latestMark.getSemesterId();
+                    //check xem trong một kì có học môn đó 2 lần không (trả nợ ngay trong kì)
+                    List<MarksEntity> reLearnInSameSemester = sortedMarks.stream()
+                            .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
+                            .collect(Collectors.toList());
+
+                    //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
+                    // nếu có 2 fail --> fail; nếu có 1 pass, 1 fail -> pass
+                    MarksEntity passMark = reLearnInSameSemester.stream()
+                            .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                            .findFirst().orElse(null);
+
+                    if (passMark != null) {
+                        finalMarks.add(new MarkCreditTermModel(passMark,
+                                subjectCurriculum.getSubjectCredits(),
+                                subjectCurriculum.getTermNumber() * 1.0));
+                    } else {
+                        // do something
+                    }
+                }
+
+            } //end of subjectCurriculum loop
+
+
+            Collections.sort(finalMarks, new MarkCreditTermModelComparator());
+//            resultMap.put(student, finalMarks);
+            resultMap.add(new StudentAndMark(finalMarks, student));
+            System.out.println(i + " - " + filteredStudents.size());
+            i++;
+        }
+
+        return resultMap;
+    }
+
+
+    // simulate change semester page
+    @RequestMapping("/testMailTemplate")
+    public ModelAndView ChangeSemester(HttpServletRequest request) {
+//        if (!Ultilities.checkUserAuthorize(request)) {
+//            return Ultilities.returnDeniedPage();
+//        }
+        //loggin user action
+//        Ultilities.logUserAction("go to " + request.getRequestURI());
+
+        ModelAndView view = new ModelAndView("TestPage");
+
+
+//        view.addObject("title", "Set semester");
+//        view.addObject("semesters", Global.getSortedList());
+//        view.addObject("temporarySemester", Global.getTemporarySemester().getId());
+//        view.addObject("currentSemester", Global.getCurrentSemester().getId());
+        return view;
     }
 
 

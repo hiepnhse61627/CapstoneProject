@@ -2,9 +2,7 @@ package com.capstone.exporters;
 
 import com.capstone.entities.*;
 import com.capstone.enums.SubjectTypeEnum;
-import com.capstone.models.Enums;
-import com.capstone.models.MarkCreditTermModel;
-import com.capstone.models.Ultilities;
+import com.capstone.models.*;
 import com.capstone.services.*;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -61,12 +59,12 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
 //        is.close();
         XSSFSheet spreadsheet = workbook.getSheetAt(0);
 
-        writeDataToTable(workbook, spreadsheet, params, thesisNames);
+        writeDataToTable(workbook, spreadsheet, params, thesisNames, request);
 
         workbook.write(os);
     }
 
-    private void writeDataToTable(XSSFWorkbook workbook, XSSFSheet sheet, Map<String, String> params, HashMap<String, List<String>> thesisNames) throws Exception {
+    private void writeDataToTable(XSSFWorkbook workbook, XSSFSheet sheet, Map<String, String> params, HashMap<String, List<String>> thesisNames, HttpServletRequest request) throws Exception {
 
         try {
 
@@ -83,13 +81,38 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
 
 //        Map<StudentEntity, List<MarkCreditTermModel>> dataMap = processData2(params);
             ExportStatusReport.StatusStudentDetailExport = "Đang tìm danh sách sinh viên tốt nghiệp";
-            List<StudentAndMark> dataMap = processData2(params);
+
+            List<StudentAndMark> dataMap = (List<StudentAndMark>) request.getSession().getAttribute("graduateListExport");
+            int requestProgramId = Integer.parseInt(params.get("programId"));
+            int requestSemesterId = Integer.parseInt(params.get("semesterId"));
+            Integer currentProgramId = (Integer) request.getSession()
+                    .getAttribute(Enums.GraduateVariable.PROGRAM_ID.getValue());
+            Integer currentSemesterId = (Integer) request.getSession()
+                    .getAttribute(Enums.GraduateVariable.SEMESTER_ID.getValue());
+
+            if (dataMap == null || currentProgramId == null || currentSemesterId == null
+                    || currentProgramId != requestProgramId
+                    || currentSemesterId != requestSemesterId) {
+                dataMap = processData2(params);
+
+                //set lên session nếu chưa có
+                request.getSession()
+                        .setAttribute(Enums.GraduateVariable.PROGRAM_ID.getValue(), requestProgramId);
+                request.getSession()
+                        .setAttribute(Enums.GraduateVariable.SEMESTER_ID.getValue(), requestSemesterId);
+                request.getSession()
+                        .setAttribute(Enums.GraduateVariable.GRADUATE_LIST.getValue(), dataMap);
+            }
+
+
+            request.getSession().setAttribute("graduateListExport", dataMap);
+
+
             ExportStatusReport.StatusStudentDetailExport = "Đang khởi tạo file";
             int myIndex = 1;
             for (StudentAndMark entry : dataMap) {
                 StudentEntity student = entry.getStudent();
                 sheet = workbook.cloneSheet(0, student.getRollNumber());
-
                 XSSFRow row = sheet.getRow(11);
                 row.getCell(2).setCellValue(student.getFullName());
                 row.getCell(6).setCellValue(student.getRollNumber());
@@ -191,7 +214,7 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
                     markCell.setCellStyle(cellStyle);
                     //làm tròn 2 chữ số
                     double round2Decimal = Math.round(marksEntity.getAverageMark() * 100.0) / 100.0;
-                    markCell.setCellValue(round2Decimal);
+                    markCell.setCellValue(round2Decimal == 0 ? "Pass" : round2Decimal + "");
                     // grade
                     XSSFCell gradeCell = row.createCell(8);
                     gradeCell.setCellStyle(cellStyle);
@@ -214,7 +237,10 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
                         gradeCell.setCellValue("C");
                     } else if (averageMark >= 5) {
                         gradeCell.setCellValue("C-");
-                    } else {
+                    }else if(averageMark == 0 && marksEntity.getStatus()
+                            .equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())){
+                        gradeCell.setCellValue("Pass");
+                    }else {
                         gradeCell.setCellValue("F");
                     }
 
@@ -227,7 +253,7 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
                 //vị trí dòng ngay trên 2 tên đề tài
                 int thesisRow = rowIndex + ordinalNumber;
                 //set lại row height cho tên đồ án, vì sau khi shift column (npoi sẽ auto size lại cell, row = default height)
-                sheet.getRow(thesisRow ).setHeightInPoints(49);
+                sheet.getRow(thesisRow).setHeightInPoints(49);
                 sheet.getRow(thesisRow + 2).setHeightInPoints(49);
 //            sheet.shiftRows(21, sheet.getLastRowNum(), -1);
                 System.out.println("Done " + myIndex + " - " + dataMap.size());
@@ -427,15 +453,8 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
             for (SubjectCurriculumEntity subjectCurriculum : subjectCurriculumList) {
                 SubjectEntity subject = subjectCurriculum.getSubjectId();
 
-                //lấy ra môn bị thay thế của môn A, A thay thế B, -> lấy B
-                List<SubjectEntity> isReplacedSubject = subject.getSubjectEntityList1();
-                //lấy ra môn bị thay thế của môn A, C thay thế A, -> lấy C
-                List<SubjectEntity> replacedSubject = subject.getSubjectEntityList1();
                 //mảng này chứa tất cả môn thay thế và môn chính
-                List<SubjectEntity> checkSubjects = new ArrayList<>();
-                checkSubjects.add(subject);
-                checkSubjects.addAll(isReplacedSubject);
-                checkSubjects.addAll(replacedSubject);
+                List<SubjectEntity> checkSubjects = Ultilities.findBackAndForwardReplacementSubject(subject);
 
                 List<MarksEntity> filteredMarks = allMarks.stream().filter(q -> checkSubjects.stream().anyMatch(c -> c.getId()
                         .equalsIgnoreCase(q.getSubjectMarkComponentId().getSubjectId().getId()))
@@ -480,68 +499,5 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
         return resultMap;
     }
 
-
-    public class MarkCreditTermModelComparator implements Comparator<MarkCreditTermModel> {
-        @Override
-        public int compare(MarkCreditTermModel o1, MarkCreditTermModel o2) {
-            return o1.getTerm().compareTo(o2.getTerm());
-        }
-    }
-
-    public class StudentAndMark {
-        List<MarkCreditTermModel> markList;
-        StudentEntity student;
-
-        public Double getAverage() {
-            return average;
-        }
-
-        public void setAverage(Double average) {
-            this.average = average;
-        }
-
-        Double average;
-
-        public StudentAndMark(List<MarkCreditTermModel> markList, StudentEntity student) {
-            this.markList = markList;
-            this.student = student;
-            this.average = caculateAverage(markList);
-        }
-
-        public List<MarkCreditTermModel> getMarkList() {
-            return markList;
-        }
-
-        public void setMarkList(List<MarkCreditTermModel> markList) {
-            this.markList = markList;
-        }
-
-        public StudentEntity getStudent() {
-            return student;
-        }
-
-        public void setStudent(StudentEntity student) {
-            this.student = student;
-        }
-
-        public Double caculateAverage(List<MarkCreditTermModel> markList) {
-            Double sumCredits = 0.0;
-            Double sumMarks = 0.0;
-            double average = 0.0;
-            for (MarkCreditTermModel item : markList) {
-                //ko tính những môn như lab, hoặc những môn pass mà ko có điểm
-                if (item.getMark().getAverageMark() != 0
-                        || item.getMark().getSubjectMarkComponentId().getSubjectId().getId().contains("LAB")) {
-                    Double credit = item.getCredit() * 1.0;
-                    sumCredits += credit;
-                    sumMarks += item.getMark().getAverageMark() * credit;
-                }
-            }
-            //điểm trung bình tính = tổng số (điểm*tín chỉ) / tổng tín chỉ, làm tròn 2 chữ số thập phân
-            average = Math.round((sumMarks / sumCredits) * 100.0) / 100.0;
-
-            return average;
-        }
-    }
 
 }

@@ -20,6 +20,7 @@ import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.*;
 
 /**
  *
@@ -27,6 +28,9 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "Program", catalog = "CapstoneProject", schema = "dbo")
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "program", propOrder = {"name", "fullName"})
+@XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "ProgramEntity.findAll", query = "SELECT p FROM ProgramEntity p")})
 public class ProgramEntity implements Serializable {
@@ -36,27 +40,38 @@ public class ProgramEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @XmlTransient
     private Integer id;
     @Basic(optional = false)
     @Column(name = "Name", nullable = false, length = 10)
+    @XmlElement(required = true)
     private String name;
     @Column(name = "FullName", length = 50)
+    @XmlElement(required = true)
     private String fullName;
     @Column(name = "OJT")
+    @XmlTransient
     private Integer ojt;
     @Column(name = "Capstone")
+    @XmlTransient
     private Integer capstone;
     @Column(name = "Graduate")
+    @XmlTransient
     private Integer graduate;
     @Column(name = "GraduateCredits")
+    @XmlTransient
     private Integer graduateCredits;
     @Column(name = "SpecializedCredits")
+    @XmlTransient
     private Integer specializedCredits;
     @OneToMany(mappedBy = "programId")
+    @XmlTransient
     private List<OldRollNumberEntity> oldRollNumberEntityList;
     @OneToMany(mappedBy = "programId")
+    @XmlTransient
     private List<StudentEntity> studentEntityList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "programId")
+    @XmlTransient
     private List<CurriculumEntity> curriculumEntityList;
 
     public ProgramEntity() {

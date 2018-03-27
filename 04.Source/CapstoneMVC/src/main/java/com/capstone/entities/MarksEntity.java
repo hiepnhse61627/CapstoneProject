@@ -17,6 +17,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
+import javax.xml.bind.annotation.*;
 
 /**
  *
@@ -24,6 +25,9 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "Marks", catalog = "CapstoneProject", schema = "dbo")
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "mark", propOrder = {"averageMark", "status", "subjectMarkComponentId"})
+@XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "MarksEntity.findAll", query = "SELECT m FROM MarksEntity m")})
 public class MarksEntity implements Serializable {
@@ -33,27 +37,36 @@ public class MarksEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @XmlTransient
     private Integer id;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "AverageMark", precision = 53)
+    @XmlElement(required = true)
     private Double averageMark;
     @Column(name = "Status", length = 50)
+    @XmlElement(required = true)
     private String status;
     @Column(name = "IsActivated")
+    @XmlTransient
     private Boolean isActivated;
     @Column(name = "IsEnabled")
+    @XmlTransient
     private Boolean isEnabled;
     @JoinColumn(name = "CourseId", referencedColumnName = "Id")
     @ManyToOne
+    @XmlTransient
     private CourseEntity courseId;
     @JoinColumn(name = "SemesterId", referencedColumnName = "Id")
     @ManyToOne
+    @XmlTransient
     private RealSemesterEntity semesterId;
     @JoinColumn(name = "StudentId", referencedColumnName = "Id")
     @ManyToOne
+    @XmlTransient
     private StudentEntity studentId;
     @JoinColumn(name = "SubjectMarkComponentId", referencedColumnName = "Id")
     @ManyToOne
+    @XmlElement(required = true)
     private SubjectMarkComponentEntity subjectMarkComponentId;
 
     public MarksEntity() {
