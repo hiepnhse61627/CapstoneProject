@@ -3,9 +3,13 @@ package com.capstone.jpa.exJpa;
 import com.capstone.entities.*;
 import com.capstone.jpa.ScheduleEntityJpaController;
 import com.capstone.models.Logger;
+import com.capstone.services.DateUtil;
 
 import javax.persistence.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
@@ -401,9 +405,15 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
     public List<ScheduleEntity> findAllSchedule() {
         EntityManager em = getEntityManager();
         List<ScheduleEntity> std = null;
+        Date now = new Date();
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        String nowStr = format.format(now);
         try {
-            String sqlString = "SELECT c FROM ScheduleEntity c ";
-            Query query = em.createQuery(sqlString);
+            String sqlString = "SELECT * FROM Schedule s"+
+                    " INNER JOIN  Day_Slot d ON s.DateId=d.Id " +
+                    "WHERE (s.isActive IS NULL OR s.isActive = 'true') " +
+                    "AND CONVERT(nvarchar(50), CONVERT(SMALLDATETIME, d.Date, 105), 23) <='"+ nowStr+"'";
+            Query query = em.createNativeQuery(sqlString, ScheduleEntity.class);
             std = query.getResultList();
 
 

@@ -44,7 +44,7 @@ public class CourseStudentServiceImpl implements ICourseStudentService {
 
     @Override
     public List<CourseStudentEntity> findAllCourseStudent() {
-        return null;
+        return CourseStudentEntityJpaController.findAllCourseStudents();
     }
 
     @Override

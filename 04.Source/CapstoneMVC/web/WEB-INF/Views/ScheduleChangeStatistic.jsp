@@ -292,6 +292,7 @@
                 $.ajax({
                     type: "POST",
                     url: "/syncFAPChangedSchedule",
+                    // url: "/countAttendanceOfClass",
                     processData: false,
                     contentType: false,
                     success: function (result) {
