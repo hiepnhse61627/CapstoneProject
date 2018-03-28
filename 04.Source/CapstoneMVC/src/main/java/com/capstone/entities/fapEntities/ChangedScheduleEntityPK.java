@@ -1,4 +1,4 @@
-package com.capstone.entities;
+package com.capstone.entities.fapEntities;
 
 import javax.persistence.*;
 import java.io.Serializable;

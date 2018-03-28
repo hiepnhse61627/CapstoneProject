@@ -1,8 +1,9 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.*;
+import com.capstone.entities.fapEntities.*;
+import com.capstone.models.Global;
 import com.capstone.models.Logger;
-import com.capstone.models.ScheduleModel;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
 import com.google.gson.Gson;
@@ -19,11 +20,11 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.persistence.*;
 import javax.servlet.http.HttpServletRequest;
+import javax.swing.text.Utilities;
 import java.lang.reflect.Type;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.capstone.models.Ultilities.sendNotification;
 import static com.capstone.services.DateUtil.formatDate;
@@ -70,7 +71,7 @@ public class ScheduleList {
             EntityTransaction etx = em.getTransaction();
             etx.begin();
             String queryStr = "UPDATE Schedule SET isActive = 'false'";
-            Query query  = em.createNativeQuery(queryStr);
+            Query query = em.createNativeQuery(queryStr);
             int countUpdated = query.executeUpdate();
             etx.commit();
             jsonObj.addProperty("success", true);
@@ -91,7 +92,7 @@ public class ScheduleList {
             return Ultilities.returnDeniedPage();
         }
         //logging user action
-        Ultilities.logUserAction("go to " +request.getRequestURI());
+        Ultilities.logUserAction("go to " + request.getRequestURI());
         ModelAndView view = new ModelAndView("ScheduleList");
         view.addObject("title", "Danh sách lịch dạy");
 
@@ -127,7 +128,7 @@ public class ScheduleList {
             return Ultilities.returnDeniedPage();
         }
         //logging user action
-        Ultilities.logUserAction("go to " +request.getRequestURI());
+        Ultilities.logUserAction("go to " + request.getRequestURI());
         ModelAndView view = new ModelAndView("ScheduleChangeStatistic");
         view.addObject("title", "Danh sách đổi lịch");
 
@@ -889,7 +890,7 @@ public class ScheduleList {
                         && model.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())
                         && model.getEmpId().equals(lectures.get(0))) {
 
-                }else{
+                } else {
                     if (aDaySlot == null) {
                         aDaySlot = new DaySlotEntity();
                         aDaySlot.setSlotId(aSlot);
@@ -1392,6 +1393,89 @@ public class ScheduleList {
                     }
                 }
             }
+
+            jsonObj.addProperty("success", true);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.writeLog(e);
+            jsonObj.addProperty("fail", true);
+            jsonObj.addProperty("message", e.getMessage());
+        }
+
+        return jsonObj;
+    }
+
+
+    @RequestMapping(value = "/countAttendanceOfClass")
+    @ResponseBody
+    public JsonObject CountAttendanceOfClass(@RequestParam Map<String, String> params) {
+        Ultilities.logUserAction("CountAttendanceOfClass");
+        JsonObject jsonObj = new JsonObject();
+        try {
+            EntityManagerFactory emf2 = Persistence.createEntityManagerFactory("FapDB");
+            EntityManager em2 = emf2.createEntityManager();
+
+            List<ScheduleEntity> scheduleLists = scheduleService.findAllSchedule();
+
+//            List<CourseStudentEntity> courseStudentEntities = courseStudentService.findAllCourseStudent();
+
+            Map<String, Integer> resultMap = new HashMap<>();
+
+
+//            for (CourseStudentEntity courseStudentEntity : courseStudentEntities) {
+//                resultMap.put(courseStudentEntity.getCourseId() + "-" + courseStudentEntity.getGroupName(), 0);
+//            }
+
+            Date now = new Date();
+            Calendar now1 = Calendar.getInstance();
+            now1.setTime(now);
+            now1.set(Calendar.HOUR_OF_DAY, 0);
+            now1.set(Calendar.MINUTE, 0);
+            now1.set(Calendar.SECOND, 0);
+            now1.set(Calendar.MILLISECOND, 0);
+
+            List<ScheduleEntity> removeList = new ArrayList<>();
+            //initialize the result map
+            for (ScheduleEntity aSchedule : scheduleLists) {
+                resultMap.put(aSchedule.getCourseId().getSubjectCode() + "-" + aSchedule.getGroupName(), 0);
+            }
+
+            RealSemesterEntity currentSemester = Global.getCurrentSemester();
+            Date startDate = DateUtil.getDate(currentSemester.getStartDate());
+            Date endDate = DateUtil.getDate(currentSemester.getEndDate());
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            String startDateStr = format.format(startDate);
+            String endDateStr = format.format(endDate);
+
+            for (ScheduleEntity aSchedule : scheduleLists) {
+                String queryStringForSubject = "SELECT * FROM Subjects WHERE SubjectCode LIKE '" + aSchedule.getCourseId().getSubjectCode() + "'";
+                Query queryForSubject = em2.createNativeQuery(queryStringForSubject, Subjects.class);
+                List<Subjects> subjectsList = queryForSubject.getResultList();
+
+                int subjectId = subjectsList != null && subjectsList.size() > 0 ? subjectsList.get(0).getSubjectID() : -1;
+
+                if (subjectId != -1) {
+
+                    String queryStringForCourse = "SELECT * FROM Courses WHERE GroupName LIKE '" + aSchedule.getGroupName() + "' AND SubjectId = " + subjectId + "" +
+                            " AND StartDate >= '" + startDateStr + "' AND  StartDate < '" + endDateStr + "'";
+                    Query queryForCourse = em2.createNativeQuery(queryStringForCourse, CoursesEntity.class);
+                    List<CoursesEntity> courseList = queryForCourse.getResultList();
+
+                    int courseId = courseList != null && courseList.size() > 0 ? courseList.get(0).getCourseID() : -1;
+
+                }
+
+
+            }
+
+
+            //get latest date when sync from FAP
+//            String queryStr2 = "SELECT * FROM Attendances WHERE  +
+//                    " ORDER BY ScheduleID";
+//            Query query2 = em2.createNativeQuery(queryStr2, AttendancesEntity.class);
+//            List<AttendancesEntity> latestRecordByChangedDate = query2.getResultList();
+
 
             jsonObj.addProperty("success", true);
 

@@ -24,6 +24,26 @@ public class ExCourseStudentEntityJpaController extends CourseStudentEntityJpaCo
         return totalLine;
     }
 
+    public List<CourseStudentEntity> findAllCourseStudents() {
+        EntityManager em = getEntityManager();
+        List<CourseStudentEntity> std = null;
+        try {
+            String sqlString = "SELECT c FROM CourseStudentEntity c ";
+            Query query = em.createQuery(sqlString);
+            std = query.getResultList();
+
+
+            return std;
+
+        } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
     public void saveCourseStudent(CourseStudentEntity CourseStudent) {
         try {
             EntityManager manager = getEntityManager();
