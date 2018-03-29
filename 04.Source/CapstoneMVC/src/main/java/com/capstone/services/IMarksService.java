@@ -50,4 +50,6 @@ public interface IMarksService {
     List<MarksEntity> getStudentMarkBeforeSelectedSemesterFromMarks(int semesterId, int studentId);
     List<MarksEntity> getStudentMarkFromAndBeforeSelectedSemesterFromMarks(int semesterId, int studentId);
     List<MarksEntity> getMarksBySelectedStudentsFromAndBeforeSelectedSemester(int semesterId, List<Integer> studentIds);
+
+    long countMarksByStudentIdAndSubjectId(int studentId, String subjectId);
 }

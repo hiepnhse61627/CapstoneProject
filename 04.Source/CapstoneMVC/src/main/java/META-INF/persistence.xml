@@ -77,7 +77,13 @@
 
     <persistence-unit name="FapDB" transaction-type="RESOURCE_LOCAL">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
-        <class>com.capstone.entities.ChangedScheduleEntity</class>
+        <class>com.capstone.entities.fapEntities.ChangedScheduleEntity</class>
+        <class>com.capstone.entities.fapEntities.AttendancesEntity</class>
+        <class>com.capstone.entities.fapEntities.AttendancesEntityPK</class>
+        <class>com.capstone.entities.fapEntities.ChangedScheduleEntityPK</class>
+        <class>com.capstone.entities.fapEntities.CoursesEntity</class>
+        <class>com.capstone.entities.fapEntities.Subjects</class>
+        <class>com.capstone.entities.fapEntities.SchedulesEntity</class>
         <properties>
             <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://10.23.0.77;databaseName=AP_HCM"/>
             <property name="javax.persistence.jdbc.user" value="aphcm"/>

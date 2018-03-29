@@ -39,10 +39,10 @@ public class ExSubjectMarkComponentJpaController extends SubjectMarkComponentEnt
             SubjectMarkComponentEntity result = (SubjectMarkComponentEntity) query.getSingleResult();
             return result;
         } catch (NoResultException nrEx) {
-            System.out.println("No records were found with: " + name + "AND" + subjectCd);
+            System.out.println("No records were found with: " + name + " AND " + subjectCd);
             return null;
         } catch (NonUniqueResultException nuEx) {
-            System.out.println("Many records were found with: " + name + "AND" + subjectCd);
+            System.out.println("Many records were found with: " + name + " AND " + subjectCd);
             return null;
         } finally {
             if (em != null) {

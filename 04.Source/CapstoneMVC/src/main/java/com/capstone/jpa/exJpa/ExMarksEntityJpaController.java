@@ -1189,4 +1189,31 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         return result;
     }
 
+    public long countMarksByStudentIdAndSubjectId(int studentId, String subjectId) {
+        EntityManager em = null;
+        long result = 0;
+        try {
+            if (realSemesters == null) {
+                realSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester());
+            }
+
+            em = getEntityManager();
+
+            //SubjectType = 1 = ojt type
+            Query query = em.createQuery("SELECT COUNT(a.id) FROM MarksEntity a WHERE a.isActivated = true " +
+                    "AND a.studentId.id = :studentId AND a.subjectMarkComponentId.subjectId.id = :subjectId");
+            query.setParameter("studentId", studentId);
+            query.setParameter("subjectId", subjectId);
+            result = (long) query.getSingleResult();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        return result;
+    }
+
 }

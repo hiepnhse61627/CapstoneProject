@@ -31,11 +31,6 @@
                 <i class="fa fa-minus"></i> Xóa tài khoản
             </button>
         </div>
-        <div class="form-group">
-            <button type="button" onclick="testMail()" class="btn btn-danger">
-                <i class="fa fa-minus"></i> MailTest
-            </button>
-        </div>
 
         <div class="b-body">
             <div class="row">
@@ -503,40 +498,5 @@
     }
 
 
-    function testMail() {
-        swal({
-            title: 'Đang xử lý',
-            html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>',
-            type: 'info',
-            onOpen: function () {
-                swal.showLoading();
-                $.ajax({
-                    type: "POST",
-                    url: "/sendGraduateStudent",
-                    // data: {
-                    //     // "email": 'longphse62094@fpt.edu.vn',
-                    //     "email": $("#email").val(),
-                    //     "lectureFrom":  $("#lectureFrom").val(),
-                    //     "lectureTo": $("#lectureTo").val(),
-                    //     "date": $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY'),
-                    //     "subjectCode": $("#subject2").val(),
-                    //     "slot": $("#aTime").val(),
-                    //     "room": $("#room").val(),
-                    //     "token": token,
-                    //     "username": username,
-                    //     "name": name,
-                    //     "editor": $('#editor').val()},
-                    success: function (result) {
-                        if (result.success) {
-                            swal('', 'Đã gửi thành công', 'success');
-                            // $("#scheduleModal").modal('toggle');
-                        } else {
-                            swal('', result.msg, 'error');
-                        }
-                    }
-                });
-            },
-            allowOutsideClick: false
-        });
-    }
+
 </script>

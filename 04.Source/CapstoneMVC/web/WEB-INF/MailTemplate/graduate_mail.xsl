@@ -145,17 +145,6 @@
                         <br/>
                         ACADEMIC TRANSCRIPT
                     </h1>
-                    <div style="width:100%;text-align:center">
-                        (Kèm theo văn bằng tốt nghiệp số
-                        ...
-                        , cấp ngày 26/01/2018)
-                    </div>
-                    <div style="width:100%;text-align:center">
-                        (Attached to Diploma
-                        ...,
-                        issued on
-                        ...)
-                    </div>
                 </div>
                 <div style="padding: 8px 10px;">
                     <div class="inline txt-left width-50 width-m-50" style="display: inline;
@@ -308,27 +297,6 @@
                 <div style="margin: 30px 0px;">
                     <div class="inline txt-left width-50 width-m-50" style="display: inline;
                     float: left;text-align: left;width: 50%;">
-                        <!--20 spacing-->
-                        <span style="white-space: pre-wrap;">Giáo dục quốc phòng: Đạt</span>
-
-                    </div>
-                    <div class="inline txt-left width-50 width-m-50" style="display: inline;
-                    float: left;text-align: left;width: 50%;">
-                        <!--5 spacing-->
-                        <span style="">Điểm trung bình chung học tập:
-                            <xsl:value-of select="./average"/>
-                        </span>
-
-                    </div>
-                </div>
-                <div style="margin: 10px 0px;">
-                    <div class="inline txt-left width-50 width-m-50" style="display: inline;
-                    float: left;text-align: left;width: 50%;">
-                        <span style="white-space: pre-wrap;">Giáo dục thể chất: Đạt</span>
-
-                    </div>
-                    <div class="inline txt-left width-50 width-m-50" style="display: inline;
-                    float: left;text-align: left;width: 50%;">
                         <span style="">Xếp hạng tốt nghiệp:
                             <xsl:variable name="avgMark" select="./average"/>
                             <xsl:choose>
@@ -350,11 +318,12 @@
                             </xsl:choose>
                         </span>
                     </div>
-                </div>
-                <div style="margin: 10px 0px;">
                     <div class="inline txt-left width-50 width-m-50" style="display: inline;
-                    float: left;text-align: left;width: 100%;">
-                        <span style="white-space: pre-wrap;">Đào tạo thực tế tại doanh nghiệp: Đạt</span>
+                    float: left;text-align: left;width: 50%;">
+                        <!--5 spacing-->
+                        <span style="">Điểm trung bình chung học tập:
+                            <xsl:value-of select="./average"/>
+                        </span>
 
                     </div>
                 </div>

@@ -48,7 +48,8 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream is = classLoader.getResourceAsStream(EXCEL_TEMPLATE);
 
-        HashMap<String, List<String>> thesisNames = (HashMap<String, List<String>>) request.getSession().getAttribute("ThesisNamesList");
+        HashMap<String, List<String>> thesisNames = (HashMap<String, List<String>>)
+                request.getSession().getAttribute(Enums.GraduateVariable.ThesisName_List.getValue());
 
         ExportStatusReport.StatusStudentDetailExport = "Đang xử lý";
         ExportStatusReport.StatusExportStudentDetailRunning = true;
@@ -82,7 +83,8 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
 //        Map<StudentEntity, List<MarkCreditTermModel>> dataMap = processData2(params);
             ExportStatusReport.StatusStudentDetailExport = "Đang tìm danh sách sinh viên tốt nghiệp";
 
-            List<StudentAndMark> dataMap = (List<StudentAndMark>) request.getSession().getAttribute("graduateListExport");
+            List<StudentAndMark> dataMap = (List<StudentAndMark>)
+                    request.getSession().getAttribute(Enums.GraduateVariable.GRADUATE_LIST.getValue());
             int requestProgramId = Integer.parseInt(params.get("programId"));
             int requestSemesterId = Integer.parseInt(params.get("semesterId"));
             Integer currentProgramId = (Integer) request.getSession()
@@ -105,7 +107,7 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
             }
 
 
-            request.getSession().setAttribute("graduateListExport", dataMap);
+            request.getSession().setAttribute(Enums.GraduateVariable.GRADUATE_LIST.getValue(), dataMap);
 
 
             ExportStatusReport.StatusStudentDetailExport = "Đang khởi tạo file";
@@ -128,7 +130,7 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
 
                 //in tên đề tài
                 if (thesisNames != null) {
-                    //mảng gồm 2 item [0]: tên tiếng việt, [1]: tên tiếng anh
+                    //thesisName<MSSV, List<Tên đồ án tiếng việt, tên đồ án tiếng anh>>
                     List<String> names = thesisNames.get(student.getRollNumber());
                     //tên đồ án = tiếng việt
                     row = sheet.getRow(22);
@@ -411,6 +413,7 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
 
     private List<StudentAndMark> processData2(Map<String, String> params) {
         List<StudentAndMark> resultMap = new ArrayList<>();
+        StudentStatusServiceImpl studentStatusService = new StudentStatusServiceImpl();
 
         int programId = Integer.parseInt(params.get("programId"));
         int semesterId = Integer.parseInt(params.get("semesterId"));
@@ -423,24 +426,25 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
             studentEntityList = studentService.getStudentBySemesterIdAndProgram(semesterId, programId);
         }
 
+
         List<StudentEntity> filteredStudents = new ArrayList<>();
+        List<StudentStatusEntity> allStatus = studentStatusService.getStudentStatusBySemesterId(semesterId);
         //lấy ra tất cả sinh viên tốt nghiệp, trạng thái sinh viên tốt nghiệp là G
         for (StudentEntity student : studentEntityList) {
-            List<StudentStatusEntity> statusList = student.getStudentStatusEntityList();
+            List<StudentStatusEntity> filterStatus = allStatus.stream().filter(q -> q.getStudentId().getId() == student.getId()
+                    && q.getStatus().equalsIgnoreCase(Enums.StudentStatus.HOCDI.getValue()))
+                    .collect(Collectors.toList());
 
-            for (StudentStatusEntity status : statusList) {
-                //xét duyệt trạng thái kì được chọn của sinh viên
-                if (status.getSemesterId().getId() == semesterId
-                        && status.getStatus().equalsIgnoreCase(Enums.StudentStatus.Graduated.getValue())) {
-                    filteredStudents.add(student);
-                }
+            //nếu sinh viên
+            if (!filterStatus.isEmpty()) {
+                filteredStudents.add(student);
             }
         }
 
         System.out.println(filteredStudents.size() + " students");
         int i = 1;
         for (StudentEntity student : filteredStudents) {
-
+            boolean failFlag = false;
             List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
             List<MarksEntity> allMarks = new ArrayList<>(student.getMarksEntityList());
             List<MarkCreditTermModel> finalMarks = new ArrayList<>();
@@ -481,17 +485,21 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
                         finalMarks.add(new MarkCreditTermModel(passMark,
                                 subjectCurriculum.getSubjectCredits(),
                                 subjectCurriculum.getTermNumber() * 1.0));
+                        failFlag = false;
                     } else {
-                        // do something
+                        //loại ra khỏi danh sách có thể tốt nghiệp
+                        failFlag = true;
+                        break;
                     }
                 }
 
             } //end of subjectCurriculum loop
 
 
-            Collections.sort(finalMarks, new MarkCreditTermModelComparator());
-//            resultMap.put(student, finalMarks);
-            resultMap.add(new StudentAndMark(finalMarks, student));
+            if (!failFlag) {
+                Collections.sort(finalMarks, new MarkCreditTermModelComparator());
+                resultMap.add(new StudentAndMark(finalMarks, student));
+            }
             System.out.println(i + " - " + filteredStudents.size());
             i++;
         }

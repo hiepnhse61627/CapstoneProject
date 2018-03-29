@@ -215,4 +215,9 @@ public class MarksServiceImpl implements IMarksService {
     public List<MarksEntity> getMarksBySelectedStudentsFromAndBeforeSelectedSemester(int semesterId, List<Integer> studentIds) {
         return marksEntityJpaController.getMarksBySelectedStudentsFromAndBeforeSelectedSemester(semesterId, studentIds);
     }
+
+    @Override
+    public long countMarksByStudentIdAndSubjectId(int studentId, String subjectId) {
+        return marksEntityJpaController.countMarksByStudentIdAndSubjectId(studentId, subjectId);
+    }
 }

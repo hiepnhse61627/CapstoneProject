@@ -415,7 +415,7 @@ public class StudentDetail {
         IMarksService marksService = new MarksServiceImpl();
 
         List<MarksEntity> list = marksService.getStudentMarksById(stuId);
-        List<MarksEntity> sortedList = Global.TransformMarksList(list);
+        List<MarksEntity> sortedList = Global.TransformAllMarksList(list);
         List<MarksEntity> filterList = sortedList
                 .stream()
                 .filter(c -> c.getStatus().toLowerCase().contains("studying"))

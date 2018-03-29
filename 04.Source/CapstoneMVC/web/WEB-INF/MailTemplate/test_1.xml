@@ -655,4 +655,9 @@
         <term>9.0</term>
     </markDetail>
     <average>6.98</average>
+    <highschoolGraduate>true</highschoolGraduate>
+    <idCard>false</idCard>
+    <birthRecords>true</birthRecords>
+    <engThesisName>haha</engThesisName>
+    <vnThesisName>hehe</vnThesisName>
 </studentInformation>

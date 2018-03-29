@@ -133,7 +133,9 @@ public class Enums {
     public enum GraduateVariable {
         PROGRAM_ID("graduateProgramId"),
         SEMESTER_ID("graduateSemesterId"),
-        GRADUATE_LIST("graduateListExport");
+        GRADUATE_LIST("graduateListExport"),
+        ThesisName_List("ThesisNamesList"),
+        Required_Documents("graduateRequiredDocuments");
 
         private final String value;
 
