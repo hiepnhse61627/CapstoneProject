@@ -99,4 +99,53 @@ public class Enums {
             return value;
         }
     }
+
+    public enum SpecialTerm {
+        CAPSTONETERM(9),
+        OJTTERM(6);
+
+        private final int value;
+
+        SpecialTerm(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+
+    public enum GoogleAuthentication {
+        CLIENTID("1024234376610-fa3r5s7db2g82ccqecolm6rbfskbv3ci.apps.googleusercontent.com"),
+        CLIENTSECRET("Ub8YG4mCEA6mciFTauDkMsLg");
+
+        private final String value;
+
+        GoogleAuthentication(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
+    public enum GraduateVariable {
+        PROGRAM_ID("graduateProgramId"),
+        SEMESTER_ID("graduateSemesterId"),
+        GRADUATE_LIST("graduateListExport"),
+        ThesisName_List("ThesisNamesList"),
+        Required_Documents("graduateRequiredDocuments");
+
+        private final String value;
+
+        GraduateVariable(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
 }

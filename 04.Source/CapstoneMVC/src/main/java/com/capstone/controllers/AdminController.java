@@ -94,15 +94,15 @@ public class AdminController {
             if (!userList.isEmpty()) {
                 for (CredentialsEntity u : userList) {
                     ArrayList<String> tmp = new ArrayList<>();
-                    tmp.add(u.getPicture() == null || u.getPicture().isEmpty() ? "N/A" : u.getPicture());
+                    tmp.add(u.getPicture() == null || u.getPicture().isEmpty() ? "-" : u.getPicture());
                     tmp.add(u.getUsername());
-                    tmp.add(u.getFullname() == null || u.getFullname().isEmpty() ? "N/A" : u.getFullname());
-                    tmp.add(u.getEmail() == null || u.getEmail().isEmpty() ? "N/A" : u.getEmail());
+                    tmp.add(u.getFullname() == null || u.getFullname().isEmpty() ? "-" : u.getFullname());
+                    tmp.add(u.getEmail() == null || u.getEmail().isEmpty() ? "-" : u.getEmail());
 
                     String role = "";
                     List<CredentialsRolesEntity> roleList = credentialsRolesService.getCredentialsRolesByCredentialsId(u.getId());
                     if (roleList == null || roleList.size() == 0) {
-                        role = "N/A";
+                        role = "-";
                     } else {
                         for (int i = 0; i < roleList.size(); ++i) {
                             role += roleList.get(i).getRolesId().getName();
@@ -230,10 +230,25 @@ public class AdminController {
         try {
             ICredentialsService credentialsService = new CredentialsServiceImpl();
             ICredentialsRolesService credentialsRolesService = new CredentialsRolesServiceImpl();
-
+            //validate data
+            if (cred.getUsername().trim().isEmpty() || cred.getPassword().trim().isEmpty()
+                    || cred.getEmail().trim().isEmpty()) {
+                data.addProperty("success", false);
+                data.addProperty("message", "Data thiếu");
+                return data;
+            }
             if (cred.getId() != null) {
                 CredentialsEntity c = credentialsService.findCredentialById(cred.getId());
-                c.setUsername(cred.getUsername());
+                if (!c.getUsername().equalsIgnoreCase(cred.getUsername())) {
+                    CredentialsEntity credentialExist = credentialsService.findCredential(cred.getUsername());
+                    if (credentialExist != null) {
+                        data.addProperty("success", false);
+                        data.addProperty("message", "Username đã tồn tại");
+                        return data;
+                    } else {
+                        c.setUsername(cred.getUsername());
+                    }
+                }
                 c.setFullname(cred.getFullname());
                 c.setPicture(cred.getPicture());
 
@@ -294,6 +309,115 @@ public class AdminController {
         return data;
     }
 
+    // create credential
+    @RequestMapping(value = "/createNewCredential", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goCreateCredential(@RequestBody CredentialsModel cred) {
+        JsonObject data = new JsonObject();
+
+        Ultilities.logUserAction("Create " + cred.getEmail() + " account ");
+
+        RolesServiceImpl rolesService = new RolesServiceImpl();
+        List<RolesEntity> allRoles = rolesService.getAllRoles();
+        try {
+            ICredentialsService credentialsService = new CredentialsServiceImpl();
+            ICredentialsRolesService credentialsRolesService = new CredentialsRolesServiceImpl();
+            if (cred.getUsername().trim().isEmpty() || cred.getEmail().trim().isEmpty()) {
+                data.addProperty("success", false);
+                data.addProperty("message", "Data không được rỗng");
+                return data;
+            }
+            CredentialsEntity credentialExist = credentialsService.findCredential(cred.getUsername());
+            if (credentialExist == null) {
+
+                CredentialsEntity c = new CredentialsEntity();
+                c.setUsername(cred.getUsername());
+                c.setFullname(cred.getFullname());
+                if (!cred.getPicture().trim().isEmpty()) {
+                    c.setPicture(cred.getPicture());
+                } else {
+                    c.setPicture(null);
+                }
+                c.setEmail(cred.getEmail());
+
+                if (cred.getPassword() != null && !cred.getPassword().isEmpty()) {
+                    PasswordEncoder encoder = new BCryptPasswordEncoder();
+                    String encodedPass = encoder.encode(cred.getPassword());
+                    c.setPassword(encodedPass);
+                }
+                credentialsService.SaveCredential(c, true);
+
+                // Create new roles
+                if(cred.getRoles() != null){
+                    for (String currentRole : cred.getRoles()) {
+
+                        RolesEntity newRole = allRoles.stream()
+                                .filter(q -> q.getName().equalsIgnoreCase(currentRole)).findFirst().orElse(null);
+
+                        CredentialsRolesEntity cr = new CredentialsRolesEntity();
+                        cr.setCredentialsId(c);
+                        cr.setRolesId(newRole);
+
+                        credentialsRolesService.createCredentialRoles(cr);
+                    }
+                }
+
+
+//                Authentication auth = new UsernamePasswordAuthenticationToken(new CustomUser(c.getUsername(), c.getPassword(), getGrantedAuthorities(c), c), c.getPassword(), getGrantedAuthorities(c));
+//                SecurityContextHolder.getContext().setAuthentication(auth);
+                data.addProperty("success", true);
+                data.addProperty("message", "Tạo tài khoản thành công");
+            } else {
+                data.addProperty("success", false);
+                data.addProperty("message", "Username đã tồn tại");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            data.addProperty("success", false);
+            data.addProperty("message", e.getMessage());
+        }
+
+        return data;
+    }
+
+    //delete credentials
+    @RequestMapping(value = "/deleteExistCredential", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goDeleteExistCredential(Map<String, String> params, @RequestParam("credentialId") int credId) {
+        JsonObject data = new JsonObject();
+
+
+        try {
+            CredentialsRolesServiceImpl credentialsRolesService = new CredentialsRolesServiceImpl();
+            CredentialsServiceImpl credentialsService = new CredentialsServiceImpl();
+            //xóa tất cả những roles liên quan đến account này
+            List<CredentialsRolesEntity> involeList = credentialsRolesService.getCredentialsRolesByCredentialsId(credId);
+            for (CredentialsRolesEntity item : involeList) {
+                credentialsRolesService.deleteCredentialRoles(item);
+            }
+            CredentialsEntity deleteCredential = credentialsService.findCredentialById(credId);
+
+            Ultilities.logUserAction("Delete " + deleteCredential.getEmail() + " account");
+
+            boolean checkDelete = credentialsService.deleteCredential(credId);
+            if (checkDelete) {
+                data.addProperty("success", true);
+                data.addProperty("message", "Xóa tài khoản thành công");
+            } else {
+                data.addProperty("success", false);
+                data.addProperty("message", "Tài khoản không tồn tại");
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            data.addProperty("success", false);
+            data.addProperty("message", e.getMessage());
+        }
+        return data;
+    }
+
 
 //    @RequestMapping("/createNewRole")
 //    public JsonObject createRoles(@RequestParam String newRole){
@@ -319,7 +443,7 @@ public class AdminController {
             return Ultilities.returnDeniedPage();
         }
         //loggin user action
-        Ultilities.logUserAction("go to " +request.getRequestURI());
+        Ultilities.logUserAction("go to " + request.getRequestURI());
 
         ModelAndView mav = new ModelAndView("CreateRolesPage");
         mav.addObject("title", "Quản lý chức vụ");
@@ -440,7 +564,7 @@ public class AdminController {
             return Ultilities.returnDeniedPage();
         }
         //logging user action
-        Ultilities.logUserAction("go to " +request.getRequestURI());
+        Ultilities.logUserAction("go to " + request.getRequestURI());
 
         ModelAndView mav = new ModelAndView("ManageMenu");
         mav.addObject("title", "Quản lý menu");
@@ -631,7 +755,7 @@ public class AdminController {
             return Ultilities.returnDeniedPage();
         }
         //loggin user action
-        Ultilities.logUserAction("go to "+request.getRequestURI());
+        Ultilities.logUserAction("go to " + request.getRequestURI());
 
         ModelAndView mav = new ModelAndView("AssignRolesAuthority");
         RolesServiceImpl rolesService = new RolesServiceImpl();
@@ -708,7 +832,7 @@ public class AdminController {
                 return data;
             }
 
-            Ultilities.logUserAction("Update "  + selectedRole.getName() + " - role authority");
+            Ultilities.logUserAction("Update " + selectedRole.getName() + " - role authority");
 
             List<RolesAuthorityEntity> currentAuthority = rolesAuthorityService.findRolesAuthorityByRoleId(selectedRoleId);
 

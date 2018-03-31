@@ -78,13 +78,13 @@ public class ExportController {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
             ExportStatusReport.StatusExportStudentDetailRunning = false;
             ExportStatusReport.StatusStudentDetailExport = "";
             ExportStatusReport.StopExporting = false;
 
             return null;
         };
+
 
         return callable;
     }
@@ -94,7 +94,9 @@ public class ExportController {
     public void exportFileWithoutCallable(@RequestParam Map<String, String> params, HttpServletRequest request, HttpServletResponse response) {
 
         exportObject = createExportImplementation(Integer.parseInt(params.get("objectType")));
-
+        ExportStatusReport.StatusExportStudentDetailRunning = true;
+        ExportStatusReport.StatusStudentDetailExport = "";
+        ExportStatusReport.StopExporting = false;
         // get output stream of the response
         OutputStream os;
         try {

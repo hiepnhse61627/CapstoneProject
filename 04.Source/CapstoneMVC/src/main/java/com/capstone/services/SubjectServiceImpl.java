@@ -78,4 +78,9 @@ public class SubjectServiceImpl implements ISubjectService {
     public List<SubjectEntity> getSubjectsByMarkStatus(String[] statuses) {
         return controller.getSubjectsByMarkStatus(statuses);
     }
+
+    @Override
+    public boolean bulkUpdateSubjects(List<SubjectEntity> subjectList) {
+        return controller.bulkUpdateSubjects(subjectList);
+    }
 }

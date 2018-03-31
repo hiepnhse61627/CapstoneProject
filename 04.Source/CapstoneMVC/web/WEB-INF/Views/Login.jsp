@@ -15,10 +15,10 @@
     <title>Trang đăng nhập</title>
     <script>
 
-        if(window.location.href.indexOf(".xip.io") === -1){
-            window.location.replace("http://127.0.0.1.xip.io:8780");
-            console.log(window.location);
-        }
+        // if(window.location.href.indexOf(".xip.io") === -1){
+        //        //     window.location.replace("http://10.82.3.47.xip.io:8780");
+        //        //     console.log(window.location);
+        //        // }
 
     </script>
     <!-- Tell the browser to be responsive to screen width -->

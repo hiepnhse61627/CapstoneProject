@@ -864,50 +864,39 @@ public class Ultilities {
         List<MarksEntity> reLearnInSameSemester = sortedList.stream()
                 .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
                 .collect(Collectors.toList());
-        if (reLearnInSameSemester.size() >= 2) {
-            //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
-            // nếu có 2 fail --> fail; nếu có 1 pass, 1 fail -> pass
-            MarksEntity checkPass = reLearnInSameSemester.stream()
-                    .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
-                    .findFirst().orElse(null);
-            if (checkPass == null) {
-                checkModel.setFailed(true);
-                checkModel.setLatestFailedMark(latestMark);
-            }
-        } else {
-            if (latestMark != null &&
-                    latestMark.getStatus().equalsIgnoreCase(Enums.MarkStatus.FAIL.getValue())) {
-                checkModel.setFailed(true);
-                checkModel.setLatestFailedMark(latestMark);
-            }
+
+        //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
+        // nếu có 2 fail --> fail; nếu có 1 pass, 1 fail -> pass
+        MarksEntity checkPass = reLearnInSameSemester.stream()
+                .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                .findFirst().orElse(null);
+        if (checkPass == null) {
+            checkModel.setFailed(true);
+            checkModel.setLatestFailedMark(latestMark);
+        }else{
+            checkModel.setFailed(false);
         }
     }
 
     public static boolean isLatestMarkFailOrNotVer2(MarksEntity latestMark, List<MarksEntity> sortedList) {
+        boolean result = false;
         RealSemesterEntity tmpSemester = latestMark.getSemesterId();
         //check xem trong một kì có học môn đó 2 lần không (trả nợ ngay trong kì)
         List<MarksEntity> reLearnInSameSemester = sortedList.stream()
                 .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
                 .collect(Collectors.toList());
-        if (reLearnInSameSemester.size() >= 2) {
-            //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
-            // nếu có 2 fail --> fail; nếu có 1 pass, 1 fail -> pass
-            MarksEntity checkPass = reLearnInSameSemester.stream()
-                    .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
-                    .findFirst().orElse(null);
-            if (checkPass != null) {
-                return false;
-            } else {
-                return true;
-            }
+
+        //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
+        // nếu có 2 fail --> fail; nếu có 1 pass, 1 fail -> pass
+        MarksEntity checkPass = reLearnInSameSemester.stream()
+                .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                .findFirst().orElse(null);
+        if (checkPass != null) {
+            result = false;
         } else {
-            if (latestMark != null &&
-                    latestMark.getStatus().equalsIgnoreCase(Enums.MarkStatus.FAIL.getValue())) {
-                return true;
-            } else {
-                return false;
-            }
+            result = true;
         }
+        return result;
     }
 
     //
@@ -980,20 +969,10 @@ public class Ultilities {
                             if (cellSubject != null) {
 
 
-                                List<SubjectEntity> isReplacedSubjects = new ArrayList<>(cellSubject.getSubjectEntityList1());
-                                List<SubjectEntity> replaceSubjects = new ArrayList<>(cellSubject.getSubjectEntityList());
+                                ////mảng này chứa tất cả môn thay thế và môn chính
+                                List<SubjectEntity> checkList = Ultilities.findBackAndForwardReplacementSubject(cellSubject);
+                                List<String> mainList = checkList.stream().map(q -> q.getId()).collect(Collectors.toList());
 
-                                List<String> isReplacedSubjectCodes = isReplacedSubjects.stream()
-                                        .map(q -> q.getId()).collect(Collectors.toList());
-                                List<String> replaceSubjectCodes = replaceSubjects.stream()
-                                        .map(q -> q.getId()).collect(Collectors.toList());
-
-                                //mảng chính gồm môn chính [A] và môn thay thế của [A] và môn bị thay thế của [A]
-                                //check môn thay thế
-                                List<String> mainList = new ArrayList<>();
-                                mainList.add(subjCode);
-                                mainList.addAll(isReplacedSubjectCodes);
-                                mainList.addAll(replaceSubjectCodes);
 
 
                                 // kiểm tra môn chính, môn thay thế và môn bị thay thế
@@ -1309,6 +1288,57 @@ public class Ultilities {
 
     public static ModelAndView returnDeniedPage() {
         return new ModelAndView("/Deny");
+    }
+
+    //kiếm môn thay thế và môn bị thay thế của môn được chọn
+    // (B) -> (A, C): A, C thay thế cho môn B; (A, E) -> D : D thay thế cho A, E
+    // môn đang được xét là A -> hàm sẽ tìm B, C, D, E
+    public static List<SubjectEntity> findBackAndForwardReplacementSubject(SubjectEntity subject){
+        //mảng này chứa tất cả môn thay thế và môn chính
+        List<SubjectEntity> checkSubjects = new ArrayList<>();
+        //lấy ra môn bị thay thế của môn A, B -> A (A thay B), -> lấy B
+        List<SubjectEntity> isReplacedSubject = subject.getSubjectEntityList1();
+        //lấy ra môn thay thế của môn A, A -> C (C thay A), -> lấy C
+        List<SubjectEntity> replacedSubject = subject.getSubjectEntityList();
+
+
+        checkSubjects.add(subject);
+        //back tracking, B -> (A, C) (môn A và C thay B, môn đang được xét là A), -> tìm C
+        for (SubjectEntity sub : isReplacedSubject) {
+            boolean duplicate = checkSubjects.contains(sub);
+            //nếu k trùng thì add B vào mảng
+            if (!duplicate) {
+                //add B
+                checkSubjects.add(sub);
+                //lấy ra môn thay thế của B, trong đó có A, C -> kiếm C để add
+                List<SubjectEntity> replacements = sub.getSubjectEntityList();
+                for (SubjectEntity reSubj : replacements) {
+                    duplicate = checkSubjects.contains(reSubj);
+                    if (duplicate) {
+                        checkSubjects.add(reSubj);
+                    }
+                }
+            }
+        }
+
+        //back tracking, (A, B) -> C (môn C thay thế cho A và B, môn đang được xét là B), -> tìm A
+        for (SubjectEntity sub : replacedSubject) {
+            boolean duplicate = checkSubjects.contains(sub);
+            //nếu k trùng thì add C vào mảng
+            if (!duplicate) {
+                //add C
+                checkSubjects.add(sub);
+                //lấy ra môn bị thay thế bởi C, trong đó có A, B -> kiếm A để add
+                List<SubjectEntity> replacements = sub.getSubjectEntityList1();
+                for (SubjectEntity reSubj : replacements) {
+                    duplicate = checkSubjects.contains(reSubj);
+                    if (duplicate) {
+                        checkSubjects.add(reSubj);
+                    }
+                }
+            }
+        }
+        return checkSubjects;
     }
 
 }

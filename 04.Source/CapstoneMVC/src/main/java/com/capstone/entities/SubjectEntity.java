@@ -8,6 +8,7 @@ package com.capstone.entities;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.*;
+import javax.xml.bind.annotation.*;
 
 /**
  *
@@ -15,6 +16,9 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "Subject", catalog = "CapstoneProject", schema = "dbo")
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "subject", propOrder = {"id", "name", "vnName"})
+@XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "SubjectEntity.findAll", query = "SELECT s FROM SubjectEntity s")})
 public class SubjectEntity implements Serializable {
@@ -23,31 +27,46 @@ public class SubjectEntity implements Serializable {
     @Id
     @Basic(optional = false)
     @Column(name = "Id", nullable = false, length = 50)
+    @XmlElement(required = true)
     private String id;
     @Column(name = "Name", length = 255)
+    @XmlElement(required = true)
     private String name;
     @Column(name = "Abbreviation", length = 255)
+    @XmlTransient
     private String abbreviation;
     @Column(name = "IsSpecialized")
+    @XmlTransient
     private Boolean isSpecialized;
     @Column(name = "Type")
+    @XmlTransient
     private Integer type;
+    @Column(name = "VnName")
+    @XmlElement(required = false)
+    private String vnName;
     @JoinTable(name = "Replacement_Subject", joinColumns = {
         @JoinColumn(name = "SubjectId", referencedColumnName = "Id", nullable = false)}, inverseJoinColumns = {
         @JoinColumn(name = "ReplacementId", referencedColumnName = "Id", nullable = false)})
     @ManyToMany
+    @XmlTransient
     private List<SubjectEntity> subjectEntityList;
     @ManyToMany(mappedBy = "subjectEntityList")
+    @XmlTransient
     private List<SubjectEntity> subjectEntityList1;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
+    @XmlTransient
     private PrequisiteEntity prequisiteEntity;
     @OneToMany(mappedBy = "subjectId")
+    @XmlTransient
     private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
     @OneToMany(mappedBy = "subjectId")
+    @XmlTransient
     private List<SubjectMarkComponentEntity> subjectMarkComponentEntityList;
     @OneToMany(mappedBy = "subjectId")
+    @XmlTransient
     private List<EmpCompetenceEntity> empCompetenceEntityCollection;
     @OneToMany(mappedBy = "subjectId")
+    @XmlTransient
     private List<SubjectDepartmentEntity> subjectDepartmentEntityList;
 
     public SubjectEntity() {
@@ -95,6 +114,14 @@ public class SubjectEntity implements Serializable {
 
     public void setType(Integer type) {
         this.type = type;
+    }
+
+    public String getVnName() {
+        return vnName;
+    }
+
+    public void setVnName(String vnName) {
+        this.vnName = vnName;
     }
 
     public List<SubjectEntity> getSubjectEntityList() {

@@ -161,14 +161,17 @@
                 </div>
                 <div class="my-content">
                     <div class="form-group">
-                        <div class="col-md-6">
-                            <label for="thesisFile" hidden></label>
-                            <input type="file" accept=".xlsx, .xls" id="thesisFile" name="file"/>
-                        </div><br/>
-                        <div class="">
-                            Bấm vào <a class="link" href="/Resources/FileTemplates/Ten_De_Tai.xlsx">Template</a> để tải
-                            về bản mẫu
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label for="thesisFile" hidden></label>
+                                <input type="file" accept=".xlsx, .xls" id="thesisFile" name="file"/>
+                                <div class="">
+                                    Bấm vào <a class="link" href="/Resources/FileTemplates/Ten_De_Tai.xlsx">Template</a> để tải
+                                    về bản mẫu
+                                </div>
+                            </div>
                         </div>
+                        <br/>
                         <button type="button" onclick="UploadThesisName()" class="btn btn-success"
                                 title="dùng để upload, gán tên đề tài vào bảng điểm cho học sinh tốt nghiệp">
                             Upload Tên đề tài
@@ -178,9 +181,13 @@
             </div>
             <div class="modal-footer">
                 <div class="form-group">
-                    <button type="button" onclick="ExportExcelPDF2()"
+                    <button type="button" onclick="ExportExcelGraduateStudent()"
                             title="Xuất ra danh sách học sinh tốt nghiệp của kì được chọn" class="btn btn-success">
                         Export Excel
+                    </button>
+                    <button type="button" onclick="Authenticate()"
+                            title="Gửi mail danh sách học sinh tốt nghiệp của kì được chọn" class="btn btn-success">
+                        Send Email
                     </button>
                 </div>
             </div>
@@ -203,7 +210,7 @@
     <input name="semesterId"/>
 </form>
 
-<form id="export-excel-2" action="/exportExcelWithoutCallable" hidden>
+<form id="export-excel-2" action="/exportExcel" hidden>
     <input name="objectType"/>
     <input name="programId"/>
     <input name="semesterId"/>
@@ -515,4 +522,147 @@
         });
     }
 
+
+    function ExportExcelGraduateStudent() {
+        ExportExcelPDF2();
+        swal({
+            title: 'Đang xử lý',
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                isRunning = true;
+                waitForTaskFinish(isRunning);
+            },
+            allowOutsideClick: false
+        });
+    }
+
+    function waitForTaskFinish(running) {
+        $.ajax({
+            type: "GET",
+            url: "/getStatusExport",
+            processData: false,
+            contentType: false,
+            success: function (result) {
+                console.log("task running");
+                if (result.running) {
+                    running = result.running;
+                    $('#progress').html("<div>(" + result.status + ")</div>");
+                    setTimeout(function () {
+                            waitForTaskFinish(running);
+                        }
+                        , 1000);
+                } else {
+                    swal({
+                        title: 'Thành công',
+                        text: "Tạo file thành công!",
+                        type: 'success',
+                        timer: 3000,
+                    });
+                }
+            }
+        });
+    }
+
+
+    var OAUTHURL = 'https://accounts.google.com/o/oauth2/auth?';
+    var VALIDURL = 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=';
+    var SCOPE = 'https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email';
+    var CLIENTID = '1024234376610-fa3r5s7db2g82ccqecolm6rbfskbv3ci.apps.googleusercontent.com';
+    var url = window.location.hostname;
+    if (url.indexOf("localhost") == -1 && url.indexOf("xip.io") == -1) {
+        url += ".xip.io";
+    }
+
+    url += ":" + (location.port == '' ? "80" : location.port);
+    var REDIRECT = "http://" + url + "/email/google";
+    var TYPE = 'token';
+    var url = OAUTHURL + 'scope=' + SCOPE + '&client_id=' + CLIENTID + '&redirect_uri=' + REDIRECT + '&response_type=' + TYPE;
+
+    function Authenticate() {
+        var win = window.open(url, "Choose a Email", 'width=800, height=600');
+
+        var pollTimer = window.setInterval(function () {
+            try {
+                if (win.document.URL.indexOf(REDIRECT) != -1) {
+                    window.clearInterval(pollTimer);
+                    var url = win.document.URL;
+                    var acToken = url.match(/#(?:access_token)=([\S\s]*?)&/)[1];
+                    var tokenType = gup(url, 'token_type');
+                    var expiresIn = gup(url, 'expires_in');
+                    win.close();
+//                    Send(acToken);
+                    validateToken(acToken);
+                }
+            } catch (e) {
+//                swal('', e.message, 'error');
+            }
+        }, 100);
+    }
+
+    function validateToken(token) {
+        $.ajax({
+            url: VALIDURL + token,
+            data: null,
+            success: function (responseText) {
+                getUserInfo(token);
+            },
+            dataType: "jsonp"
+        });
+    }
+
+    function getUserInfo(token) {
+        $.ajax({
+            url: 'https://www.googleapis.com/oauth2/v1/userinfo?access_token=' + token,
+            data: null,
+            success: function (resp) {
+                var user = resp;
+                sendMail(token, user.email, user.name);
+            },
+            dataType: "jsonp"
+        });
+    }
+
+    function gup(url, name) {
+        name = name.replace(/[[]/, "\[").replace(/[]]/, "\]");
+        var regexS = "[\?&]" + name + "=([^&#]*)";
+        var regex = new RegExp(regexS);
+        var results = regex.exec(url);
+        if (results == null)
+            return "";
+        else
+            return results[1];
+    }
+
+    function sendMail(token, username, name ) {
+        swal({
+            title: 'Đang xử lý',
+            html: '<div class="form-group">Tiến trình có thể kéo dài vài phút</div>',
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                $.ajax({
+                    type: "POST",
+                    url: "/sendGraduateStudent",
+                    data: {
+                        "programId":$("#program").val(),
+                        "semesterId": $("#semester").val(),
+                        "token": token,
+                        "username": username,
+                        "name": name,
+                        },
+                    success: function (result) {
+                        if (result.success) {
+                            swal('', 'Đã gửi thành công', 'success');
+                            // $("#scheduleModal").modal('toggle');
+                        } else {
+                            swal('', result.msg, 'error');
+                        }
+                    }
+                });
+            },
+            allowOutsideClick: false
+        });
+    }
 </script>

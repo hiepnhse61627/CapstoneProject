@@ -5,10 +5,14 @@
     <div class="box">
         <div class="b-header">
             <div class="row">
-                <div class="col-md-9 title">
+                <div class="col-md-8 title">
                     <h1>Danh sách môn học</h1>
                 </div>
-                <div class="col-md-3 text-right">
+                <div class="col-md-4 text-right">
+                    <button type="button" class="btn btn-success btn-with-icon" data-toggle="modal" data-target="#uploadSubjectsVnName">
+                        <i class="fa fa-upload"></i>
+                        <div style="margin-top: -3px">Upload tên tiếng việt</div>
+                    </button>
                     <button type="button" class="btn btn-success btn-with-icon" onclick="CreateNewSubject()">
                         <i class="fa fa-plus"></i>
                         <div style="margin-top: -3px">TẠO MÔN HỌC</div>
@@ -33,6 +37,32 @@
         </div>
     </div>
 </section>
+
+<div id="uploadSubjectsVnName" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Upload tên tiếng việt cho môn học</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <input type="file" id="nameFile" accept=".xlsx, .xls"/>
+                        <br/>
+                        <button type="button" class="btn btn-success btn-with-icon" onclick="UploadName()">
+                            <i class="fa fa-upload"></i>
+                            <div style="margin-top: -3px">Upload tên tiếng việt</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div id="subjectDetailModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
@@ -143,7 +173,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button id="btnNewSubmit" type="button" class="btn btn-primary" onclick="CreateSubject()">Tạo mới</button>
+                <button id="btnNewSubmit" type="button" class="btn btn-primary" onclick="CreateSubject()">Tạo mới
+                </button>
             </div>
         </div>
 
@@ -386,5 +417,39 @@
             tblSubject._fnAjaxUpdate();
         }
     }
+
+    function UploadName() {
+        var form = new FormData();
+        form.append('file', $('#nameFile')[0].files[0]);
+
+        swal({
+            title: 'Đang xử lý',
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                $.ajax({
+                    type: "POST",
+                    url: "/uploadSubjectsVNName",
+                    processData: false,
+                    contentType: false,
+                    data: form,
+                    success: function (result) {
+                        if (result.success) {
+                            swal({
+                                title: 'Thành công',
+                                text: result.message,
+                                type: 'success'
+                            });
+                        } else {
+                            swal('Đã xảy ra lỗi!', result.message, 'error');
+                        }
+                    }
+                });
+            },
+            allowOutsideClick: false
+        });
+    }
+
 
 </script>

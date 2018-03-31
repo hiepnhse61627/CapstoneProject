@@ -618,9 +618,9 @@ public class UploadController {
 
                             if (curriculumCell != null && curriculumCell.getCellTypeEnum() != CellType.BLANK) {
                                 String curriculumName = curriculumCell.getStringCellValue().trim();
-                                List<DocumentStudentEntity> docsStudent = studentEntity.getDocumentStudentEntityList();
+                                List<DocumentStudentEntity> docsStudent = new ArrayList<>(studentEntity.getDocumentStudentEntityList());
 
-                                CurriculumEntity exist = docsStudent.stream().filter(q -> q.getCurriculumId().getName().contains(curriculumName))
+                                CurriculumEntity exist = docsStudent.stream().filter(q -> q.getCurriculumId().getName().equalsIgnoreCase(curriculumName))
                                         .map(q -> q.getCurriculumId())
                                         .findFirst().orElse(null);
                                 //tạo docs student mới cho sinh viên (sinh viên chuyển qua chuyên ngành khác thì cần khung chương trình tương ứng)
@@ -725,7 +725,7 @@ public class UploadController {
                     }
                 }
             }//end of dataLoop
-//            studentService.myBulkUpdateStudents(bulkImport);
+            studentService.myBulkUpdateStudents(bulkImport);
             request.getSession().setAttribute("failImportStudentCurriculumNStatus", cantImport);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
@@ -1796,9 +1796,10 @@ public class UploadController {
 
             this.currentLine = 0;
             String markComponentName = Enums.MarkComponent.AVERAGE.getValue();
-            //list chứa danh sách không sinh viên không import được ,hoặc gặp lỗi
-            // Map<StudentRollNumber, error>
+            //Map<StudentRollNumber, error> chứa danh sách không sinh viên không import được ,hoặc gặp lỗi
             HashMap<String, String> errorList = new HashMap<>();
+            List<SubjectEntity> allSubjects = subjectService.getAllSubjects();
+            String semesterName = selectedSemester.getSemester();
 
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
                 row = spreadsheet.getRow(rowIndex);
@@ -1820,27 +1821,28 @@ public class UploadController {
                         Cell enabledCell = row.getCell(enabledIndex);
 
                         String avgString = "";
-                        double avgMark = 0.0;
-                        if (averageMarkCell.getCellTypeEnum() == CellType.NUMERIC) {
-                            avgString = averageMarkCell.getNumericCellValue() + "";
+//                        double avgMark = 0.0;
+//                        if (averageMarkCell.getCellTypeEnum() == CellType.NUMERIC) {
+//                            avgString = averageMarkCell.getNumericCellValue() + "";
+//
+//                        } else if (averageMarkCell.getCellTypeEnum() == CellType.STRING) {
+//                            avgString = averageMarkCell.getStringCellValue().trim();
+//                        }
+//                        try {
+//                            avgMark = Double.parseDouble(avgString);
+//                        } catch (NumberFormatException e) {
+//                            System.out.println(e);
+//                        }
 
-                        } else if (averageMarkCell.getCellTypeEnum() == CellType.STRING) {
-                            avgString = averageMarkCell.getStringCellValue().trim();
-                        }
-                        try {
-                            avgMark = Double.parseDouble(avgString);
-                        } catch (NumberFormatException e) {
-                            System.out.println(e);
-                        }
 
                         String subjectCode = subjectCodeCell.getStringCellValue().trim();
                         String status = Enums.MarkStatus.STUDYING.getValue();
-                        String semesterName = semesterNameCell.getStringCellValue().trim().toUpperCase().replaceAll(" ", "");
-                        MarkModelExcel tempModel = new MarkModelExcel(avgMark, semesterName, subjectCode, status);
+                        MarkModelExcel tempModel = new MarkModelExcel(-1, semesterName, subjectCode, status);
 
-                        if (dataExcel.containsKey(studentEntity.getRollNumber())) {
-                            List<MarkModelExcel> markList = dataExcel.get(studentEntity.getRollNumber());
+                        if (dataExcel.containsKey(studentEntity)) {
+                            List<MarkModelExcel> markList = dataExcel.get(studentEntity);
                             markList.add(tempModel);
+                            dataExcel.put(studentEntity, markList);
                         } else {
                             List<MarkModelExcel> markList = new ArrayList<>();
                             markList.add(tempModel);
@@ -1850,13 +1852,17 @@ public class UploadController {
                         errorList.put(rollNumber, "Rollnumber not exist!");
                     }
                 }
+                System.out.println("Read " + (currentLine + 1) + " - " + lastRow);
                 this.currentLine++;
             }
 
-            List<SubjectEntity> allSubjects = subjectService.getAllSubjects();
-            String semesterName = selectedSemester.getSemester();
-            for (StudentEntity studentEntity : dataExcel.keySet()) {
 
+            int i = 1;
+            for (StudentEntity studentEntity : dataExcel.keySet()) {
+                System.out.println("process " + i + " - " + dataExcel.size());
+//                if (studentEntity.getRollNumber().equalsIgnoreCase("SE62849")) {
+////                    System.out.println("bug oi");
+////                }
                 List<SubjectCurriculumEntity> subjectCurriculumList = subjectCurriculumService.getSubjectCurriculumByStudent(studentEntity.getId());
 
                 //lấy ra những môn học kì này sẽ học theo khung chương trình
@@ -1879,6 +1885,30 @@ public class UploadController {
                         .filter(q -> !markInCurriculums.stream().anyMatch(c -> c.getSubjectId().equalsIgnoreCase(q)))
                         .map(q -> new MarkModelExcel(-1.0, semesterName, q, Enums.MarkStatus.NOT_START.getValue()))
                         .collect(Collectors.toList());
+
+                //xóa những môn notStart mà sinh viên đã học rồi(sử dụng trong trường hợp sinh viên đã học trước môn của kì tới)
+                List<MarkModelExcel> removedMarks = new ArrayList<>(notStartMarks);
+                List<MarksEntity> hasLearned = studentEntity.getMarksEntityList();
+                for (int j = 0; j < removedMarks.size(); j++) {
+                    boolean alreadyLearned = false;
+                    MarkModelExcel mark = removedMarks.get(j);
+                    for (MarksEntity mItem : hasLearned) {
+                        String subId = mItem.getSubjectMarkComponentId().getSubjectId().getId();
+                        if (subId.equalsIgnoreCase(mark.getSubjectId())) {
+                            alreadyLearned = true;
+                            break;
+                        }
+                    }
+                    if (alreadyLearned)
+                        notStartMarks.remove(mark);
+                }
+
+//                for (MarkModelExcel mark : removedMarks) {
+//                    long exist = marksService.countMarksByStudentIdAndSubjectId(studentEntity.getId(), mark.getSubjectId());
+//                    if (exist > 0) {
+//                        notStartMarks.remove(mark);
+//                    }
+//                }
 
                 List<MarkModelExcel> importedMark = new ArrayList<>();
 //                importedMark.addAll(markNotInCurriculums);
@@ -1946,6 +1976,7 @@ public class UploadController {
                     //bỏ vào list để import
                     marksEntities.add(mark);
                 }
+                i++;
 
             }
 
@@ -2474,7 +2505,7 @@ public class UploadController {
 
                             if (course != null && rooms.size() > 0) {
 //                                if (!course.getSubjectCode().contains("VOV") || !course.getSubjectCode().contains("LAB")) {
-                                    employee = employeeService.findEmployeeByShortName(employeeCell.getStringCellValue());
+                                employee = employeeService.findEmployeeByShortName(employeeCell.getStringCellValue());
 //                                }
 
 //                                DaySlotEntity daySlot = daySlotService.findDaySlotByDateAndSlot(formattedDate, slots.get(0));
@@ -4060,7 +4091,7 @@ public class UploadController {
                     System.out.println("upload" + currentLine);
                     this.currentLine++;
                 }
-                request.getSession().setAttribute("ThesisNamesList", thesisName);
+                request.getSession().setAttribute(Enums.GraduateVariable.ThesisName_List.getValue(), thesisName);
 
                 jsonObject.addProperty("success", true);
                 jsonObject.addProperty("message", "Upload tên đề tài thành công !");

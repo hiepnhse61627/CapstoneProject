@@ -30,29 +30,29 @@
         <!--<intercept-url pattern="/getStudentDetail**" access="hasAnyRole('ROLE_STAFF', 'ROLE_STUDENT', 'ROLE_MANAGER')"/>-->
 
         <!-- Student functions-->
-        <intercept-url pattern="/studentcurriculum/**" access="hasAnyRole('ROLE_STUDENT')"/>
+        <!--<intercept-url pattern="/studentcurriculum/**" access="hasAnyRole('ROLE_STUDENT')"/>-->
         <!--<intercept-url pattern="/studentMarkHistory**" access="hasAnyRole('ROLE_STUDENT')"/>-->
-        <intercept-url pattern="/studentMarkHistory/**" access="hasAnyRole('ROLE_STUDENT')"/>
-        <intercept-url pattern="/student/**" access="hasAnyRole('ROLE_STUDENT', 'ROLE_MANAGER', 'ROLE_STAFF')"/>
-        <intercept-url pattern="/studentDetail**" access="hasAnyRole('ROLE_STUDENT', 'ROLE_MANAGER', 'ROLE_STAFF')"/>
-        <intercept-url pattern="/getStudent**" access="hasAnyRole('ROLE_STUDENT', 'ROLE_MANAGER', 'ROLE_STAFF')"/>
+        <!--<intercept-url pattern="/studentMarkHistory/**" access="hasAnyRole('ROLE_STUDENT')"/>-->
+        <!--<intercept-url pattern="/student/**" access="hasAnyRole('ROLE_STUDENT', 'ROLE_MANAGER', 'ROLE_STAFF')"/>-->
+        <!--<intercept-url pattern="/studentDetail**" access="hasAnyRole('ROLE_STUDENT', 'ROLE_MANAGER', 'ROLE_STAFF')"/>-->
+        <!--<intercept-url pattern="/getStudent**" access="hasAnyRole('ROLE_STUDENT', 'ROLE_MANAGER', 'ROLE_STAFF')"/>-->
         <!--<intercept-url pattern="/student**" access="hasAnyRole('ROLE_STUDENT')"/>-->
-        <intercept-url pattern="/getStudentList**" access="hasAnyRole('ROLE_STAFF', 'ROLE_STUDENT', 'ROLE_MANAGER', 'ROLE_STUDENT')"/>
+        <!--<intercept-url pattern="/getStudentList**" access="hasAnyRole('ROLE_STAFF', 'ROLE_STUDENT', 'ROLE_MANAGER', 'ROLE_STUDENT')"/>-->
 
         <!-- Manager functions-->
-        <intercept-url pattern="/manager/**" access="hasAnyRole('ROLE_MANAGER')"/>
-        <intercept-url pattern="/manager**" access="hasAnyRole('ROLE_MANAGER')"/>
-        <intercept-url pattern="/email/**" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>
-        <intercept-url pattern="/stuydingstatus**" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>
-        <intercept-url pattern="/stuydingstatus/**" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>
-        <intercept-url pattern="/passfail" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>
-        <intercept-url pattern="/passfail/**" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>
+        <!--<intercept-url pattern="/manager/**" access="hasAnyRole('ROLE_MANAGER')"/>-->
+        <!--<intercept-url pattern="/manager**" access="hasAnyRole('ROLE_MANAGER')"/>-->
+        <!--<intercept-url pattern="/email/**" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>-->
+        <!--<intercept-url pattern="/stuydingstatus**" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>-->
+        <!--<intercept-url pattern="/stuydingstatus/**" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>-->
+        <!--<intercept-url pattern="/passfail" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>-->
+        <!--<intercept-url pattern="/passfail/**" access="hasAnyRole('ROLE_MANAGER', 'ROLE_STAFF')"/>-->
 
         <!-- Admin -->
-        <intercept-url pattern="/admin/**" access="hasAnyRole('ROLE_ADMIN')"/>
+        <!--<intercept-url pattern="/admin/**" access="hasAnyRole('ROLE_ADMIN')"/>-->
 
         <!-- All other links -->
-        <intercept-url pattern="/**" access="hasAnyRole('ROLE_STAFF', 'ROLE_ADMIN', 'ROLE_MANAGER', 'ROLE_STUDENT')"/>
+        <intercept-url pattern="/**" access="isAuthenticated()"/>
 
         <form-login login-page="/login"
                     login-processing-url="/processlogin"

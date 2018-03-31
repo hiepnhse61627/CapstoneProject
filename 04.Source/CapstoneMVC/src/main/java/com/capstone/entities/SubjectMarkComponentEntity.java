@@ -8,6 +8,7 @@ package com.capstone.entities;
 import java.io.Serializable;
 import java.util.List;
 import javax.persistence.*;
+import javax.xml.bind.annotation.*;
 
 /**
  *
@@ -15,6 +16,9 @@ import javax.persistence.*;
  */
 @Entity
 @Table(name = "Subject_MarkComponent", catalog = "CapstoneProject", schema = "dbo")
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "markComponent", propOrder = {"subjectId"})
+@XmlRootElement
 @NamedQueries({
     @NamedQuery(name = "SubjectMarkComponentEntity.findAll", query = "SELECT s FROM SubjectMarkComponentEntity s")})
 public class SubjectMarkComponentEntity implements Serializable {
@@ -24,19 +28,25 @@ public class SubjectMarkComponentEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @XmlTransient
     private Integer id;
     // @Max(value=?)  @Min(value=?)//if you know range of your decimal fields consider using these annotations to enforce field validation
     @Column(name = "PercentWeight", precision = 53)
+    @XmlTransient
     private Double percentWeight;
     @Column(name = "Name", length = 2147483647)
+    @XmlTransient
     private String name;
     @JoinColumn(name = "MarkComponentId", referencedColumnName = "Id")
     @ManyToOne
+    @XmlTransient
     private MarkComponentEntity markComponentId;
     @JoinColumn(name = "SubjectId", referencedColumnName = "Id")
     @ManyToOne
+    @XmlElement(required = true)
     private SubjectEntity subjectId;
     @OneToMany(mappedBy = "subjectMarkComponentId")
+    @XmlTransient
     private List<MarksEntity> marksEntityList;
 
     public SubjectMarkComponentEntity() {

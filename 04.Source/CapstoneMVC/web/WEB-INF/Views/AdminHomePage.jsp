@@ -7,6 +7,8 @@
     }
 </style>
 
+<link rel="stylesheet" href="https://code.jquery.com/jquery-1.12.4.js"/>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.16/js/jquery.dataTables.min.js"/>
 <section class="content">
     <div class="box">
         <div class="b-header">
@@ -16,6 +18,18 @@
                 </div>
             </div>
             <hr>
+        </div>
+
+        <div class="form-group">
+            <button type="button" onclick="" class="btn btn-success" data-toggle="modal"
+                    data-target="#createCredentialModal">
+                <i class="fa fa-plus"></i> Tạo tài khoản
+            </button>
+        </div>
+        <div class="form-group">
+            <button type="button" onclick="toggleDelete()" class="btn btn-danger">
+                <i class="fa fa-minus"></i> Xóa tài khoản
+            </button>
         </div>
 
         <div class="b-body">
@@ -29,6 +43,7 @@
                         <th>Email</th>
                         <th>Chức vụ</th>
                         <th>Chỉnh sửa</th>
+                        <th>Xóa</th>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -84,21 +99,21 @@
                             </div>
 
                             <%--<div class="form-group">--%>
-                                <%--<label for="role" class="col-sm-3 control-label">Chức vụ</label>--%>
-                                <%--<div class="col-sm-9">--%>
-                                    <%--<select class="form-control" id="role" name="role">--%>
-                                        <%--<option value="ROLE_STUDENT">Student</option>--%>
-                                        <%--<option value="ROLE_ADMIN">Admin</option>--%>
-                                        <%--<option value="ROLE_STAFF">Staff</option>--%>
-                                        <%--<option value="ROLE_MANAGER">Manager</option>--%>
-                                    <%--</select>--%>
-                                <%--</div>--%>
+                            <%--<label for="role" class="col-sm-3 control-label">Chức vụ</label>--%>
+                            <%--<div class="col-sm-9">--%>
+                            <%--<select class="form-control" id="role" name="role">--%>
+                            <%--<option value="ROLE_STUDENT">Student</option>--%>
+                            <%--<option value="ROLE_ADMIN">Admin</option>--%>
+                            <%--<option value="ROLE_STAFF">Staff</option>--%>
+                            <%--<option value="ROLE_MANAGER">Manager</option>--%>
+                            <%--</select>--%>
+                            <%--</div>--%>
                             <%--</div>--%>
 
                             <div class="form-group">
                                 <label for="roles" class="col-sm-3 control-label">Chức vụ</label>
                                 <div class="col-sm-9">
-                                    <select class="form-control" id="roles" name="roles[]" multiple="multiple">
+                                    <select class="form-control select" id="roles" name="roles[]" multiple="multiple">
                                         <c:forEach var="role" items="${roleList}">
                                             <option value="${role.name}">${role.name}</option>
                                         </c:forEach>
@@ -115,12 +130,12 @@
                             </div>
 
                             <%--<div class="form-group">--%>
-                                <%--<label for="studentRollNumber" class="col-sm-3 control-label">MSSV</label>--%>
-                                <%--<div class="col-sm-9">--%>
-                                    <%--<input type="text" class="form-control" id="studentRollNumber"--%>
-                                           <%--placeholder="Rollnumber"--%>
-                                           <%--name="studentRollNumber"/>--%>
-                                <%--</div>--%>
+                            <%--<label for="studentRollNumber" class="col-sm-3 control-label">MSSV</label>--%>
+                            <%--<div class="col-sm-9">--%>
+                            <%--<input type="text" class="form-control" id="studentRollNumber"--%>
+                            <%--placeholder="Rollnumber"--%>
+                            <%--name="studentRollNumber"/>--%>
+                            <%--</div>--%>
                             <%--</div>--%>
                         </div>
                     </form>
@@ -134,17 +149,115 @@
     </div>
 </div>
 
+<div id="createCredentialModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Chỉnh sửa tài khoàn</h4>
+            </div>
+            <div class="modal-body">
+                <div class="col-md-12">
+                    <form id="createForm" class="form-horizontal">
+                        <div class="form-group">
+
+                            <div class="form-group">
+                                <label for="username" class="col-sm-3 control-label">Tài khoản</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="c-username" name="username"
+                                           placeholder="Username"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="inputPassword" class="col-sm-3 control-label">Mật khẩu</label>
+                                <div class="col-sm-9">
+                                    <input type="password" class="form-control" id="c-inputPassword" name="password"
+                                           placeholder="Password">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="fullname" class="col-sm-3 control-label">Tên người dùng</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="c-fullname" name="fullname"
+                                           placeholder="Fullname"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email" class="col-sm-3 control-label">Email</label>
+                                <div class="col-sm-9">
+                                    <input type="email" class="form-control" id="c-email" placeholder="Email"
+                                           name="email"/>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="roles" class="col-sm-3 control-label">Chức vụ</label>
+                                <div class="col-sm-9">
+                                    <select class="form-control select" id="c-roles" name="roles[]" multiple="multiple">
+                                        <c:forEach var="role" items="${roleList}">
+                                            <option value="${role.name}">${role.name}</option>
+                                        </c:forEach>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="picture" class="col-sm-3 control-label">Đường dẫn ảnh</label>
+                                <div class="col-sm-9">
+                                    <input type="text" class="form-control" id="c-picture" placeholder="picture"
+                                           name="picture"/>
+                                </div>
+                            </div>
+
+                            <%--<div class="form-group">--%>
+                            <%--<label for="studentRollNumber" class="col-sm-3 control-label">MSSV</label>--%>
+                            <%--<div class="col-sm-9">--%>
+                            <%--<input type="text" class="form-control" id="studentRollNumber"--%>
+                            <%--placeholder="Rollnumber"--%>
+                            <%--name="studentRollNumber"/>--%>
+                            <%--</div>--%>
+                            <%--</div>--%>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="CreateCredential()">Tạo</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+    var table = null;
     $(document).ready(function () {
-        $('#roles').select2();
+        $('.select').select2();
 
         $('input').iCheck({
             checkboxClass: 'icheckbox_square-blue',
             radioClass: 'iradio_square-blue',
             increaseArea: '20%' // optional
         });
+        CreateMainTable();
 
-        $('#table').dataTable({
+    });
+
+    function RefreshTable() {
+        if (table != null) {
+            table.ajax.reload();
+        } else {
+            //destroy empty table
+            $('#table').dataTable().fnDestroy();
+            CreateMainTable();
+        }
+    }
+
+    function CreateMainTable() {
+        table = $('#table').DataTable({
             "bServerSide": true,
             "bFilter": true,
             "bRetrieve": true,
@@ -170,9 +283,13 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4, 5],
+                    "aTargets": [0, 1, 2, 3, 4, 5, 6],
                     "bSortable": false,
                     "sClass": "text-center",
+                },
+                {
+                    "targets": [6],
+                    "visible": false
                 },
                 {
                     "aTargets": [0],
@@ -187,14 +304,23 @@
                     "aTargets": [5],
                     "mRender": function (data, type, row) {
                         console.log(data);
-                        return "<a class='btn btn-success tbl-btn' onclick='Edit(\""+ data +"\")'>" +
+                        return "<a class='btn btn-success tbl-btn' onclick='Edit(\"" + data + "\")'>" +
                             "<i class='glyphicon glyphicon-pencil'></i></a>";
+                    }
+                },
+                {
+                    "aTargets": [6],
+                    //Id, function Group, func name, group name, link
+                    "mRender": function (data, type, row) {
+                        var result = "<a class='btn btn-danger tbl-btn' onclick='deleteCredential(" + row[5] + ")'>" +
+                            "<i class='glyphicon glyphicon-minus-sign'></i></a>";
+                        return result;
                     }
                 }
             ],
             "bAutoWidth": false,
-        }).fnSetFilteringDelay(1000);
-    });
+        });
+    }
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -272,13 +398,105 @@
             data: form,
             success: function (data) {
                 if (data.success) {
-                    swal('', 'Thành công', 'success').then(function() {
-                        location.reload();
+                    swal('', 'Thành công', 'success').then(function () {
+                        RefreshTable();
+                        $("#userDetail").modal("hide");
                     });
                 } else {
-                    swal('', data.msg, 'error');
+                    swal('', data.message, 'error');
                 }
             }
         });
     }
+
+    function CreateCredential() {
+        if ($.trim($('#c-username').val()).length == 0) {
+            swal('Cảnh báo!', "Username không được để trống", 'info');
+            return;
+        } else if ($.trim($('#c-inputPassword').val()).length == 0) {
+            swal('Cảnh báo!', "Password không được để trống", 'info');
+            return;
+        } else if ($.trim($('#c-email').val()).length == 0) {
+            swal('Cảnh báo!', "Email không được để trống", 'info');
+            return;
+        }
+
+        var form = JSON.stringify($('#createForm').serializeJSON());
+
+        $.ajax({
+            type: "POST",
+            url: "/admin/createNewCredential",
+            processData: false,
+            contentType: "application/json",
+            data: form,
+            success: function (data) {
+                if (data.success) {
+                    swal('', data.message, 'success').then(function () {
+                        RefreshTable();
+                    });
+                } else {
+                    swal('', data.message, 'error');
+                }
+            }
+        });
+    }
+
+    function deleteCredential(credentialId) {
+        swal({
+            title: 'Xóa tài khoản',
+            text: "Một khi xóa, sẽ xóa toàn bộ tất cả phân quyền liên quan đến tài khoản này",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            cancelButtonText: "Không",
+            confirmButtonText: 'Có, hãy xóa!'
+        }).then(function (result) {
+            if (result) {
+                var form = new FormData();
+                form.append("credentialId", credentialId);
+                swal({
+                    title: 'Đang xử lý',
+                    html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+                    type: 'info',
+                    onOpen: function () {
+                        swal.showLoading();
+                        $.ajax({
+                            type: "POST",
+                            url: "/admin/deleteExistCredential",
+                            processData: false,
+                            contentType: false,
+                            data: form,
+                            success: function (result) {
+                                if (result.success) {
+                                    swal({
+                                        title: 'Thành công',
+                                        text: result.message,
+                                        type: 'success',
+                                        timer: 3000
+                                    }).then(function () {
+                                        RefreshTable();
+                                        $("#createCredentialModal").modal("hide");
+                                    });
+                                } else {
+                                    swal('Đã xảy ra lỗi!', result.message, 'error');
+                                }
+                            }
+                        });
+                    },
+                    allowOutsideClick: false
+                });
+            }
+        })
+    }
+
+    function toggleDelete() {
+        var column = table.column(6);
+
+        // Toggle the visibility
+        column.visible(!column.visible());
+    }
+
+
+
 </script>

@@ -174,13 +174,13 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 //            uSubject.setCredits(subject.getCredits());
             uSubject.setSubjectEntityList(new ArrayList<SubjectEntity>());
             uSubject.setSubjectEntityList1(new ArrayList<SubjectEntity>());
-            if (!subject.getEffectionSemester().equals("0")){
+            if (!subject.getEffectionSemester().equals("0")) {
                 uSubject.getPrequisiteEntity().setFailMark(null);
-                uSubject.getPrequisiteEntity().setPrequisiteSubs(null);
+                uSubject.getPrequisiteEntity().setPrequisiteSubs(uSubject.getPrequisiteEntity().getPrequisiteSubs());
                 uSubject.getPrequisiteEntity().setEffectionSemester(subject.getEffectionSemester());
                 uSubject.getPrequisiteEntity().setNewFailMark(subject.getFailMark());
                 uSubject.getPrequisiteEntity().setNewPrequisiteSubs(subject.getPrerequisiteSubject());
-            }else{
+            } else {
                 uSubject.getPrequisiteEntity().setNewFailMark(null);
                 uSubject.getPrequisiteEntity().setNewPrequisiteSubs(null);
                 uSubject.getPrequisiteEntity().setFailMark(subject.getFailMark());
@@ -393,6 +393,7 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 
         return null;
     }
+
     public void cleanReplacers() {
         try {
             EntityManager em = getEntityManager();
@@ -405,27 +406,63 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         }
     }
 
-    public List<Object[]> getAllReplaceSubjects(){
-        try{
+    public List<Object[]> getAllReplaceSubjects() {
+        try {
             EntityManager em = getEntityManager();
             Query query = em.createNativeQuery("SELECT SubjectId,ReplacementId FROM Replacement_Subject");
             return query.getResultList();
-        }
-        catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         return null;
     }
 
-    public List<Object[]> getAllSubjects(){
-        try{
+    public List<Object[]> getAllSubjects() {
+        try {
             EntityManager em = getEntityManager();
             Query query = em.createNativeQuery("SELECT Id, Name FROM Subject");
             return query.getResultList();
-        }
-        catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
         return null;
     }
+
+    public boolean bulkUpdateSubjects(List<SubjectEntity> subjectList) {
+        EntityManager em = null;
+        int bulkSize = 1000;
+        try {
+            em = getEntityManager();
+            em.getTransaction().begin();
+            for (int i = 0; i < subjectList.size(); i++) {
+                if (i > 0 && i % bulkSize == 0) {
+                    em.flush();
+                    em.clear();
+                    em.getTransaction().commit();
+                    em.getTransaction().begin();
+                }
+                SubjectEntity updateSubject = subjectList.get(i);
+//                SubjectEntity subject = em.find(SubjectEntity.class, updateSubject.getId());
+//                subject.setVnName(updateSubject.getVnName());
+                em.merge(updateSubject);
+                System.out.println("Update - " + (i + 1));
+            }
+
+            //đẩy xuống những phần còn lại
+            em.flush();
+
+        } catch (Exception e) {
+            em.getTransaction().rollback();
+            Logger.writeLog(e);
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        em.getTransaction().commit();
+        return true;
+    }
+
 }

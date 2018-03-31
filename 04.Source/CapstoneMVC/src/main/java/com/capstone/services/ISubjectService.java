@@ -21,4 +21,5 @@ public interface ISubjectService {
     int countStudentCredits(int studentId);
     void cleanReplacers();
     List<SubjectEntity> getSubjectsByMarkStatus(String[] statuses);
+    boolean bulkUpdateSubjects(List<SubjectEntity> subjectList);
 }
