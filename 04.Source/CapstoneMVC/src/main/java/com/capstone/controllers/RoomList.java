@@ -167,7 +167,6 @@ public class RoomList {
                 roomId = Integer.parseInt(params.get("room"));
             }
 
-
             if (roomId != null) {
                 aRoom = roomService.findRoomById(roomId);
             }

@@ -1407,38 +1407,53 @@ public class ScheduleList {
     }
 
 
+    @RequestMapping("/countAttendance")
+    public ModelAndView countAttendancePage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+        ModelAndView view = new ModelAndView("CountAttendance");
+        view.addObject("title", "Theo dõi điểm danh theo lớp");
+
+        List<SubjectEntity> subjects = subjectService.getAllSubjects();
+        view.addObject("subjects", subjects);
+
+
+        return view;
+    }
+
     @RequestMapping(value = "/countAttendanceOfClass")
     @ResponseBody
     public JsonObject CountAttendanceOfClass(@RequestParam Map<String, String> params) {
         Ultilities.logUserAction("CountAttendanceOfClass");
         JsonObject jsonObj = new JsonObject();
+        List<List<String>> result = new ArrayList<>();
+
         try {
             EntityManagerFactory emf2 = Persistence.createEntityManagerFactory("FapDB");
             EntityManager em2 = emf2.createEntityManager();
 
-            List<ScheduleEntity> scheduleLists = scheduleService.findAllSchedule();
+            String subjectCode = "";
+            if (!params.get("subject").equals("") && !params.get("subject").equals("-1")) {
+                subjectCode = params.get("subject");
+            }
 
-//            List<CourseStudentEntity> courseStudentEntities = courseStudentService.findAllCourseStudent();
+            String groupName = "";
+            if (!params.get("groupName").equals("")) {
+                groupName = params.get("groupName");
+            }
+
+            List<ScheduleEntity> scheduleLists = scheduleService.findScheduleBySubjectCodeAndGroupNameBeforeNowTime(subjectCode, groupName);
 
             Map<String, Integer> resultMap = new HashMap<>();
+            Map<String, String> totalSlotMap = new HashMap<>();
 
-
-//            for (CourseStudentEntity courseStudentEntity : courseStudentEntities) {
-//                resultMap.put(courseStudentEntity.getCourseId() + "-" + courseStudentEntity.getGroupName(), 0);
-//            }
-
-            Date now = new Date();
-            Calendar now1 = Calendar.getInstance();
-            now1.setTime(now);
-            now1.set(Calendar.HOUR_OF_DAY, 0);
-            now1.set(Calendar.MINUTE, 0);
-            now1.set(Calendar.SECOND, 0);
-            now1.set(Calendar.MILLISECOND, 0);
-
-            List<ScheduleEntity> removeList = new ArrayList<>();
             //initialize the result map
             for (ScheduleEntity aSchedule : scheduleLists) {
-                resultMap.put(aSchedule.getCourseId().getSubjectCode() + "-" + aSchedule.getGroupName(), 0);
+                resultMap.put(aSchedule.getGroupName(), 0);
+                totalSlotMap.put(aSchedule.getGroupName(), "");
             }
 
             RealSemesterEntity currentSemester = Global.getCurrentSemester();
@@ -1448,43 +1463,74 @@ public class ScheduleList {
             String startDateStr = format.format(startDate);
             String endDateStr = format.format(endDate);
 
+            Date now = new Date();
+            DateFormat format2 = new SimpleDateFormat("yyyy-MM-dd");
+            String nowStr = format2.format(now);
+
             for (ScheduleEntity aSchedule : scheduleLists) {
+                //get subject id from FAP DB
                 String queryStringForSubject = "SELECT * FROM Subjects WHERE SubjectCode LIKE '" + aSchedule.getCourseId().getSubjectCode() + "'";
                 Query queryForSubject = em2.createNativeQuery(queryStringForSubject, Subjects.class);
                 List<Subjects> subjectsList = queryForSubject.getResultList();
-
                 int subjectId = subjectsList != null && subjectsList.size() > 0 ? subjectsList.get(0).getSubjectID() : -1;
 
                 if (subjectId != -1) {
-
+                    //get course id from FAP DB
                     String queryStringForCourse = "SELECT * FROM Courses WHERE GroupName LIKE '" + aSchedule.getGroupName() + "' AND SubjectId = " + subjectId + "" +
                             " AND StartDate >= '" + startDateStr + "' AND  StartDate < '" + endDateStr + "'";
                     Query queryForCourse = em2.createNativeQuery(queryStringForCourse, CoursesEntity.class);
                     List<CoursesEntity> courseList = queryForCourse.getResultList();
-
                     int courseId = courseList != null && courseList.size() > 0 ? courseList.get(0).getCourseID() : -1;
+                    if( courseList != null && courseList.size() > 0){
+                        totalSlotMap.put(aSchedule.getGroupName(), courseList.get(0).getNumberOfSlots()+"");
+                    }
 
+                    if (courseId != -1) {
+                        //get schedule of course from FAP DB
+                        String queryStringForSchedule = "SELECT * FROM Schedules s WHERE s.CourseID = " + courseId + " " +
+                                " AND s.Date <= '" + nowStr + "'";
+                        Query queryForSchedule = em2.createNativeQuery(queryStringForSchedule, SchedulesEntity.class);
+                        List<SchedulesEntity> fapScheduleList = queryForSchedule.getResultList();
+                        int scheduleId = fapScheduleList != null && fapScheduleList.size() > 0 ? fapScheduleList.get(0).getScheduleID() : -1;
+
+                        if (scheduleId != -1) {
+                            //get schedule of course from FAP DB
+                            String queryStringForAttendance = "SELECT 1 FROM Attendances s WHERE s.ScheduleID = " + scheduleId + " " +
+                                    " AND RecordTime >= '" + startDateStr + "' AND  RecordTime < '" + endDateStr + "'";
+                            Query queryForAttendances = em2.createNativeQuery(queryStringForAttendance);
+                            List fapAttendanceList = queryForAttendances.getResultList();
+
+                            if (fapAttendanceList != null && fapAttendanceList.size() > 0) {
+                                int countAttendance = resultMap.get(aSchedule.getGroupName());
+                                ++countAttendance;
+                                resultMap.put(aSchedule.getGroupName(), countAttendance);
+                            }
+                        }
+                    }
                 }
-
 
             }
 
 
-            //get latest date when sync from FAP
-//            String queryStr2 = "SELECT * FROM Attendances WHERE  +
-//                    " ORDER BY ScheduleID";
-//            Query query2 = em2.createNativeQuery(queryStr2, AttendancesEntity.class);
-//            List<AttendancesEntity> latestRecordByChangedDate = query2.getResultList();
+            for (String key : resultMap.keySet()) {
+                List<String> dataList = new ArrayList<String>();
 
+                dataList.add(key);
+                dataList.add(resultMap.get(key) + "/"+totalSlotMap.get(key));
 
-            jsonObj.addProperty("success", true);
+                result.add(dataList);
+            }
+
 
         } catch (Exception e) {
             e.printStackTrace();
             Logger.writeLog(e);
-            jsonObj.addProperty("fail", true);
-            jsonObj.addProperty("message", e.getMessage());
         }
+
+        Gson gson = new Gson();
+        JsonArray array = (JsonArray) gson.toJsonTree(result);
+
+        jsonObj.add("aaData", array);
 
         return jsonObj;
     }

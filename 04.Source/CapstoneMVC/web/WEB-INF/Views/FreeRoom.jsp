@@ -537,7 +537,6 @@
                     d.employeeId = $('#lecture2').val();
                 },
                 "dataSrc": function (json) {
-                    console.log(json);
                     var roomListObjArr=[];
                     for (i = 0; i < json.roomList.length ; i++) {
                         roomListObjArr.push({

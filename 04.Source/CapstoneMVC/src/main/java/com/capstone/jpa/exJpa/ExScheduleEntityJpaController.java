@@ -402,7 +402,7 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
     }
 
 
-    public List<ScheduleEntity> findAllSchedule() {
+    public List<ScheduleEntity> findScheduleBySubjectCodeAndGroupNameBeforeNowTime(String subjectCode, String groupName) {
         EntityManager em = getEntityManager();
         List<ScheduleEntity> std = null;
         Date now = new Date();
@@ -411,7 +411,10 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
         try {
             String sqlString = "SELECT * FROM Schedule s"+
                     " INNER JOIN  Day_Slot d ON s.DateId=d.Id " +
+                    " INNER JOIN Course c ON s.CourseId=c.Id "+
                     "WHERE (s.isActive IS NULL OR s.isActive = 'true') " +
+                    "AND c.SubjectCode LIKE '"+subjectCode+"' " +
+                    "AND s.GroupName LIKE '%"+groupName+"%' " +
                     "AND CONVERT(nvarchar(50), CONVERT(SMALLDATETIME, d.Date, 105), 23) <='"+ nowStr+"'";
             Query query = em.createNativeQuery(sqlString, ScheduleEntity.class);
             std = query.getResultList();
@@ -458,7 +461,7 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
         ScheduleEntity ScheduleEntity = new ScheduleEntity();
         try {
             String sqlString = "SELECT c FROM ScheduleEntity c " +
-                    "WHERE (c.dateId = :date)" +
+                    "WHERE (c.dateId = :date) " +
                     "AND (c.groupName= :groupName) AND (c.isActive IS NULL OR c.isActive = 'true')";
             Query query = em.createQuery(sqlString);
             query.setParameter("date", dateSlot);
