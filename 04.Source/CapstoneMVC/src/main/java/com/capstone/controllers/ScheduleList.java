@@ -1211,7 +1211,7 @@ public class ScheduleList {
             EntityManager em2 = emf2.createEntityManager();
 
             //get latest date when sync from FAP
-            String queryStr2 = "SELECT s FROM ScheduleEntity s ORDER BY s.changedDate DESC";
+            String queryStr2 = "SELECT s FROM ScheduleEntity s WHERE (s.parentScheduleId IS NOT NULL) ORDER BY s.changedDate DESC";
             TypedQuery<ScheduleEntity> query2 = em2.createQuery(queryStr2, ScheduleEntity.class);
             query2.setMaxResults(1);
             List<ScheduleEntity> latestRecordByChangedDate = query2.getResultList();
@@ -1225,9 +1225,12 @@ public class ScheduleList {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("FapDB");
             EntityManager em = emf.createEntityManager();
             // Query danh sách lịch học thay đổi từ FAP
-            String queryStr = "SELECT s FROM ChangedScheduleEntity s " + (latestDate == null ? "" : "WHERE (s.changedScheduleEntityPK.changedDate > :date)") + " ORDER BY s.changedScheduleEntityPK.changedDate";
+            String queryStr = "SELECT s FROM ChangedScheduleEntity s " + (latestDate == null ? "" : "WHERE (s.changedScheduleEntityPK.changedDate >= :date)") + " ORDER BY s.changedScheduleEntityPK.changedDate";
+//            String queryStr = "SELECT s FROM ChangedScheduleEntity s " + (latestDate == null ? "" : "") + " ORDER BY s.changedScheduleEntityPK.changedDate";
+
             TypedQuery<ChangedScheduleEntity> query = em.createQuery(queryStr, ChangedScheduleEntity.class);
             List<ChangedScheduleEntity> scheduleList = latestDate == null ? query.getResultList() : query.setParameter("date", latestDate).getResultList();
+//            List<ChangedScheduleEntity> scheduleList = query.getResultList();
 
             List<RealSemesterEntity> realSemesterEntityList = realSemesterService.getAllSemester();
 

@@ -139,7 +139,6 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
             query.setParameter("lecture", lecture);
 
 
-
             ScheduleEntity = (ScheduleEntity) query.getSingleResult();
 
             return ScheduleEntity;
@@ -159,7 +158,7 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
         try {
             String sqlString = "SELECT c FROM ScheduleEntity c " +
                     "WHERE (c.dateId = :date)" +
-                    "AND (c.empId= :lecture)"+
+                    "AND (c.empId= :lecture)" +
                     "AND (c.courseId= :course)";
             query = em.createQuery(sqlString);
             query.setParameter("date", date);
@@ -182,17 +181,23 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
     public ScheduleEntity findScheduleByDateSlotAndLectureAndRoomAndCourse(DaySlotEntity date, EmployeeEntity lecture, RoomEntity room, CourseEntity course) {
         EntityManager em = getEntityManager();
         ScheduleEntity ScheduleEntity = new ScheduleEntity();
+        String sqlString = "SELECT c FROM ScheduleEntity c " +
+                "WHERE (c.dateId = :date) " +
+                "AND (c.empId= :lecture) AND (c.roomId= :room) AND (c.courseId= :course) AND (c.isActive IS NULL OR c.isActive = 'true')";
+        Query query = em.createQuery(sqlString);
+        query.setParameter("date", date);
+        query.setParameter("lecture", lecture);
+        query.setParameter("room", room);
+        query.setParameter("course", course);
         try {
-            String sqlString = "SELECT c FROM ScheduleEntity c " +
-                    "WHERE (c.dateId = :date) " +
-                    "AND (c.empId= :lecture) AND (c.roomId= :room) AND (c.courseId= :course) AND (c.isActive IS NULL OR c.isActive = 'true')";
-            Query query = em.createQuery(sqlString);
-            query.setParameter("date", date);
-            query.setParameter("lecture", lecture);
-            query.setParameter("room", room);
-            query.setParameter("course", course);
 
+            List<ScheduleEntity> aList = query.getResultList();
+
+            if (aList.size() > 1) {
+                System.out.println("");
+            }
             ScheduleEntity = (ScheduleEntity) query.getSingleResult();
+//            ScheduleEntity = aList.size()>1?aList.get(1):aList.get(0);
 
             return ScheduleEntity;
         } catch (NoResultException nrEx) {
@@ -346,10 +351,10 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
                 for (ScheduleEntity aSchedule : std) {
                     ScheduleEntity parentSchedule = findScheduleEntity(aSchedule.getParentScheduleId());
 //                    if (parentSchedule != null) {
-                        if (aSchedule.getEmpId() != null) {
-                            if (aSchedule.getEmpId().getId() == lecture) {
-                                result.add(aSchedule);
-                            }
+                    if (aSchedule.getEmpId() != null) {
+                        if (aSchedule.getEmpId().getId() == lecture) {
+                            result.add(aSchedule);
+                        }
 //                        }
                     }
 
@@ -409,13 +414,13 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
         DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
         String nowStr = format.format(now);
         try {
-            String sqlString = "SELECT * FROM Schedule s"+
+            String sqlString = "SELECT * FROM Schedule s" +
                     " INNER JOIN  Day_Slot d ON s.DateId=d.Id " +
-                    " INNER JOIN Course c ON s.CourseId=c.Id "+
+                    " INNER JOIN Course c ON s.CourseId=c.Id " +
                     "WHERE (s.isActive IS NULL OR s.isActive = 'true') " +
-                    "AND c.SubjectCode LIKE '"+subjectCode+"' " +
-                    "AND s.GroupName LIKE '%"+groupName+"%' " +
-                    "AND CONVERT(nvarchar(50), CONVERT(SMALLDATETIME, d.Date, 105), 23) <='"+ nowStr+"'";
+                    "AND c.SubjectCode LIKE '" + subjectCode + "' " +
+                    "AND s.GroupName LIKE '%" + groupName + "%' " +
+                    "AND CONVERT(nvarchar(50), CONVERT(SMALLDATETIME, d.Date, 105), 23) <='" + nowStr + "'";
             Query query = em.createNativeQuery(sqlString, ScheduleEntity.class);
             std = query.getResultList();
 
@@ -453,7 +458,6 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
             }
         }
     }
-
 
 
     public ScheduleEntity findScheduleByDateSlotAndGroupName(DaySlotEntity dateSlot, String groupName) {
