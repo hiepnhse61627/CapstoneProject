@@ -502,7 +502,7 @@ public class StudentDetail {
 //                    result.add(r);
 //                }
 //            }
-            List<List<String>> result = processSuggestion2(stuId, semester, total, false);
+            List<List<String>> result = processSuggestion2(stuId, semester, total, false, null, null, null);
 
             List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -729,6 +729,24 @@ public class StudentDetail {
             }
         }
 
+        //process những môn sinh viên chuẩn bi đi ojt, (ojt của BA trong tương lai có thể sẽ là kì 7)
+        if ((student.getTerm() - Global.SemesterGap() == Enums.SpecialTerm.OJTTERM.getValue() && list.isEmpty())
+                || (student.getTerm() - Global.SemesterGap() == Enums.SpecialTerm.OJTTERM2.getValue()
+                && student.getProgramId().getName().equalsIgnoreCase("BA")
+                && list.isEmpty())) {
+            ICurriculumService curriculumService = new CurriculumServiceImpl();
+            String prefix = student.getProgramId().getName();
+            String studentClass = docs.get(0).getCurriculumId().getName().split("_")[1];
+            String nextCur = prefix + "_" + studentClass + "_OJT";
+            CurriculumEntity nCur = curriculumService.getCurriculumByName(nextCur);
+            if (nCur != null) {
+                List<SubjectCurriculumEntity> cursubs = nCur.getSubjectCurriculumEntityList();
+                for (SubjectCurriculumEntity s : cursubs) {
+                    if (!list.contains(s)) list.add(s);
+                }
+            }
+        }
+
 //        List<SubjectEntity> failedPrerequisiteList = new ArrayList<>();
 
         // Check students score if exist remove
@@ -834,7 +852,8 @@ public class StudentDetail {
 //                    result = result.subList(index + 1, result.size());
 //                }
 //            }
-            List<List<String>> result = processSuggestion2(stuId, semester, total, true);
+            List<List<String>> result = processSuggestion2(stuId, semester, total,
+                    true, null, null, null);
 
             List<List<String>> set2 = result.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
 
@@ -1579,7 +1598,9 @@ public class StudentDetail {
         return suggestion;
     }
 
-    public List<List<String>> processSuggestion2(int studentId, String semester, int totalDisplay, boolean isSuggest) {
+    public List<List<String>> processSuggestion2(int studentId, String semester, int totalDisplay
+            , boolean isSuggest, List<List<String>> failList, List<List<String>> notStartList
+            , List<List<String>> nextList) {
         ISubjectService subjectService = new SubjectServiceImpl();
         IPrerequisiteService prerequisiteService = new PrerequisiteServiceImpl();
         IMarksService marksService = new MarksServiceImpl();
@@ -1590,9 +1611,15 @@ public class StudentDetail {
         List<PrequisiteEntity> allPrerequisites = prerequisiteService.getAllPrerequisite();
 
         //all marks have been sorted
-        List<List<String>> failList = processFailed2(studentId, semester);
-        List<List<String>> notStartList = processNotStart2(studentId, semester);
-        List<List<String>> nextList = processNext2(studentId, semester);
+        if(failList == null){
+            failList = processFailed2(studentId, semester);
+        }
+        if(notStartList == null){
+            notStartList = processNotStart2(studentId, semester);
+        }
+        if(nextList == null){
+            nextList = processNext2(studentId, semester);
+        }
 
         //get all subjectCode, all subjectCode stat in index 0
         List<String> failCode = failList.stream().map(q -> q.get(0)).collect(Collectors.toList());

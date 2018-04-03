@@ -130,7 +130,7 @@ public class UploadController {
         Ultilities.logUserAction("go to " + request.getRequestURI());
 
         ModelAndView mav = new ModelAndView("updateStatusForStudents");
-        mav.addObject("title", "Cập nhật trạng thái cho sinh viên");
+        mav.addObject("title", "Cập nhật trạng thái tốt nghiệp cho sinh viên");
 
         List<RealSemesterEntity> semesters = realSemesterService.getAllSemester();
         semesters = Ultilities.SortSemesters(semesters);
@@ -251,18 +251,33 @@ public class UploadController {
             XSSFSheet spreadsheet = workbook.getSheetAt(0);
 
             XSSFRow row;
-            int excelDataIndex = 1;
+            int excelDataIndex = 3;
+            int rollNumberColIndex = 1;
+            //xếp loại
+            int gradeColIndex = 5;
+            //hình thức đào tạo
+            int formColIndex = 6;
+            //số hiệu văn vằng
+            int diplomaCodeColIndex = 7;
+            //vào sổ cấp văn bằng, chứng chỉ số
+            int certificateCodeColIndex = 8;
+            //số quyết định tốt nghiệp
+            int graduateDecisionNumberColIndex = 9;
+            //ngày quyết định
+            int dateColIndex = 10;
+
+
+
             int lastRow = spreadsheet.getLastRowNum();
             this.totalLine = lastRow - startRowNumber + 1;
 
-            int rollNumberIndex = 0;
             RealSemesterEntity selectedSemester = realSemesterService.findSemesterById(semesterId);
 
             for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
                 System.out.println(rowIndex);
                 row = spreadsheet.getRow(rowIndex);
                 if (row != null) {
-                    Cell rollNumberCell = row.getCell(rollNumberIndex);
+                    Cell rollNumberCell = row.getCell(rollNumberColIndex);
                     String rollNumber = rollNumberCell.getCellType() == Cell.CELL_TYPE_STRING ?
                             rollNumberCell.getStringCellValue().trim().toUpperCase() : Integer.toString((int) rollNumberCell.getNumericCellValue()).trim().toUpperCase();
                     if (rollNumberCell != null) {
@@ -273,6 +288,26 @@ public class UploadController {
                             if (studentStatusEntity != null) {
                                 // update status
                                 studentStatusEntity.setStatus("G");
+                                String gradeValue = row.getCell(gradeColIndex).getStringCellValue();
+                                String formValue = row.getCell(formColIndex).getStringCellValue();
+
+                                String diplomaValue = "";
+                                Cell diplomaCodeCell = row.getCell(diplomaCodeColIndex);
+                                if(diplomaCodeCell.getCellTypeEnum() == CellType.STRING){
+                                    diplomaValue = diplomaCodeCell.getStringCellValue();
+                                }else if(diplomaCodeCell.getCellTypeEnum() == CellType.NUMERIC){
+                                    diplomaValue = diplomaCodeCell.getNumericCellValue()+"";
+                                }
+
+                                String certificateValue = row.getCell(certificateCodeColIndex).getStringCellValue();
+                                String graduateNumberValue = row.getCell(graduateDecisionNumberColIndex).getStringCellValue();
+                                String dateValue = row.getCell(dateColIndex).getStringCellValue();
+
+                                SimpleDateFormat sdf = new SimpleDateFormat("");
+                                Date date = sdf.parse(dateValue);
+                                GraduateDetailEntity graduateDetailEntity = new GraduateDetailEntity();
+                                graduateDetailEntity.setCertificateCode(certificateValue);
+//                                graduateDetailEntity.setDate(date);
                             } else {
                                 //tạo mới student status cho những sinh viên tốt nghiệp chưa có status
                                 //vd: sinh viên A đủ tín chỉ để cấp = tốt nghiệp sau khi passed đồ án vào cuối FALL2017
@@ -4109,5 +4144,99 @@ public class UploadController {
         return jsonObject;
     }
 
+
+    @RequestMapping(value = "/uploadRequiedDocuments", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goUploadRequiedDocuments(@RequestParam("file") MultipartFile file,
+                                               HttpServletRequest request, HttpServletResponse response) {
+        JsonObject jsonObject = new JsonObject();
+        Ultilities.logUserAction("Upload student graduate requiredDocuments");
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+
+            int lastRow = spreadsheet.getLastRowNum();
+            this.totalLine = lastRow - startRowNumber + 1;
+
+            int excelDataIndex = 4;
+
+            int rollNumberColIndex = 0;
+            int highschoolGraduateIndex = 2;
+            int idCardIndex = 3;
+            int birthRecordsIndex = 4;
+            this.startRowNumber = excelDataIndex;
+
+
+            Row dueDateRow = spreadsheet.getRow(1);
+            Row graduateTimeRow = spreadsheet.getRow(2);
+
+            String dueDate = dueDateRow.getCell(1).getStringCellValue().trim();
+            String graduateTime = graduateTimeRow.getCell(1).getStringCellValue().trim();
+
+            HashMap<String, RequiredDocuments> requiredDocuments = new HashMap<>();
+            int countStop = 0;
+            this.currentLine = 1;
+
+            for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                row = spreadsheet.getRow(rowIndex);
+
+
+                Cell rollNumberCell = row.getCell(rollNumberColIndex);
+                Cell highschoolGraduateCell = row.getCell(highschoolGraduateIndex);
+                Cell idCardCell = row.getCell(idCardIndex);
+                Cell birthRecordsCell = row.getCell(birthRecordsIndex);
+
+                //check if cell is empty or null to end the loop
+                if (rollNumberCell == null || rollNumberCell.getCellTypeEnum() == CellType.BLANK
+                        || highschoolGraduateCell == null || highschoolGraduateCell.getCellTypeEnum() == CellType.BLANK
+                        || idCardCell == null || idCardCell.getCellTypeEnum() == CellType.BLANK
+                        || birthRecordsCell == null || birthRecordsCell.getCellTypeEnum() == CellType.BLANK
+                        ) {
+                    //nếu có 2 dòng trống thì ngừng đọc, tránh trường hợp lastRow quá lớn mà k có data
+                    if (countStop > 2) {
+                        break;
+                    }
+                    countStop++;
+                } else {
+
+                    String rollNumberValue = rollNumberCell.getStringCellValue().trim().toUpperCase();
+                    String highschoolGraduateValue = highschoolGraduateCell.getStringCellValue().trim().toUpperCase();
+                    String idCardValue = idCardCell.getStringCellValue().trim().toUpperCase();
+                    String birthRecordsValue = birthRecordsCell.getStringCellValue().trim().toUpperCase();
+
+
+                    RequiredDocuments rd = new RequiredDocuments(false, false, false, dueDate, graduateTime);
+                    if (highschoolGraduateValue.equalsIgnoreCase("ĐÃ NỘP")) {
+                        rd.setHighschoolGraduate(true);
+                    }
+                    if (idCardValue.equalsIgnoreCase("ĐÃ NỘP")) {
+                        rd.setIdCard(true);
+                    }
+                    if (birthRecordsValue.equalsIgnoreCase("ĐÃ NỘP")) {
+                        rd.setBirthRecords(true);
+                    }
+                    requiredDocuments.put(rollNumberValue, rd);
+                }
+                System.out.println("upload" + currentLine);
+                this.currentLine++;
+            }
+            request.getSession().setAttribute(Enums.GraduateVariable.Required_Documents.getValue(), requiredDocuments);
+
+            jsonObject.addProperty("success", true);
+            jsonObject.addProperty("message", "Upload tên thông tin thành công !");
+
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+        return jsonObject;
+    }
 }
 

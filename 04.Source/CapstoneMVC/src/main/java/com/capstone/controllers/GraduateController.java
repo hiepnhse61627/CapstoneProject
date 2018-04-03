@@ -240,6 +240,7 @@ public class GraduateController {
         return data;
     }
 
+
     public List<List<String>> processGraduate2(Map<String, String> params) {
         List<List<String>> data = new ArrayList<>();
 
@@ -263,10 +264,13 @@ public class GraduateController {
         //loại những học sinh đã tốt nghiệp ra, chỉ add những sinh viên chưa tốt nghiệp tại kì đang xét
         List<StudentEntity> filteredList = new ArrayList<>();
         for (StudentEntity studentEntity : studentEntityList) {
+//            if (studentEntity.getRollNumber().equalsIgnoreCase("SE61726")) {
+//                System.out.println("bug");
+//            }
             List<StudentStatusEntity> studentStatusEntities = new ArrayList<>(studentEntity.getStudentStatusEntityList());
             //lấy ra status của sinh viên
             List<StudentStatusEntity> tempStatus = studentStatusEntities.stream()
-                    .filter(q -> q.getSemesterId().getId() == semesterId && q.getStatus().equalsIgnoreCase("G"))
+                    .filter(q -> q.getSemesterId().getId() == previousSemesterId && q.getStatus().equalsIgnoreCase("G"))
                     .collect(Collectors.toList());
 
             //nếu như học sinh này chưa tốt nghiệp ở kì chỉ định thì add vào mảng để mốt xét
@@ -275,6 +279,7 @@ public class GraduateController {
             }
 
         }
+
 
         MarksServiceImpl marksService = new MarksServiceImpl();
 
@@ -286,9 +291,9 @@ public class GraduateController {
 //            List<DocumentStudentEntity> documentStudentEntityList = student.getDocumentStudentEntityList();
 //            Map<SubjectEntity, Integer> subjectsCredits = processCreditsForSubject(documentStudentEntityList);
 
-            if (student.getRollNumber().equalsIgnoreCase("SE61552")) {
-                System.out.println("bug");
-            }
+//            if (student.getRollNumber().equalsIgnoreCase("SE61726")) {
+//                System.out.println("bug");
+//            }
             // get mark list of student
             List<MarksEntity> studentMarksList = allMarks.stream()
                     .filter(q -> q.getStudentId().getId() == student.getId())
@@ -327,11 +332,15 @@ public class GraduateController {
             boolean passedFlag = true;
             //subject notStart hoặc fail
             List<SubjectEntity> failSubjs = new ArrayList<>();
+            int specialRequiredSubjectCredit = 0;
 
             //duyệt tất cả những môn có trong khung chương trình
             subjectCurriculumLoop:
             for (SubjectCurriculumEntity subjectCurriculum : subjects) {
                 SubjectEntity subject = subjectCurriculum.getSubjectId();
+                if (subjectCurriculum.isRequired()) {
+                    specialRequiredSubjectCredit += subjectCurriculum.getSubjectCredits();
+                }
 
                 //mảng này chứa tất cả môn thay thế và môn chính
                 List<SubjectEntity> checkSubjects = Ultilities.findBackAndForwardReplacementSubject(subject);
@@ -349,7 +358,7 @@ public class GraduateController {
                     boolean isFailed = Ultilities.isLatestMarkFailOrNotVer2(latestMark, sortedList);
                     if (!isFailed) {
                         studentCredits += subjectCurriculum.getSubjectCredits();
-                    } else {
+                    } else if (isFailed && subjectCurriculum.isRequired()) {
                         failSubjs.add(subject);
                         passedFlag = false;
                     }
@@ -357,25 +366,31 @@ public class GraduateController {
 
             }
 
+            //trừ tín chỉ Ojt
+            specializedCredits -= 10;
+            studentCredits -= 10;
+            specialRequiredSubjectCredit -=10;
+
+
             if (isGraduate) {
-                if ((studentCredits >= specializedCredits) && (passedFlag)) {
+                if ((studentCredits >= specialRequiredSubjectCredit) && (passedFlag)) {
                     List<String> t = new ArrayList<>();
                     t.add(student.getRollNumber());
                     t.add(student.getFullName());
                     t.add(String.valueOf(student.getTerm()));
                     t.add(String.valueOf(studentCredits));
-                    t.add(String.valueOf(specializedCredits));
+                    t.add(String.valueOf(specialRequiredSubjectCredit));
                     t.add(String.valueOf(student.getId()));
                     data.add(t);
                 }
             } else {
-                if ((studentCredits < specializedCredits) || (!passedFlag)) {
+                if ((studentCredits < specialRequiredSubjectCredit) || (!passedFlag)) {
                     List<String> t = new ArrayList<>();
                     t.add(student.getRollNumber());
                     t.add(student.getFullName());
                     t.add(String.valueOf(student.getTerm()));
                     t.add(String.valueOf(studentCredits));
-                    t.add(String.valueOf(specializedCredits));
+                    t.add(String.valueOf(specialRequiredSubjectCredit));
                     t.add(String.valueOf(student.getId()));
                     data.add(t);
                 }
@@ -713,7 +728,7 @@ public class GraduateController {
                 if (student.getRollNumber().equalsIgnoreCase("SE61576")) {
                     System.out.println("bug");
                 }
-                if(i == 522 || i == 533){
+                if (i == 522 || i == 533) {
                     System.out.println("bug");
                 }
 
@@ -1398,7 +1413,8 @@ public class GraduateController {
                                           @RequestParam("username") String username,
                                           @RequestParam("token") String token, @RequestParam("name") String name,
                                           @RequestParam("programId") String programId,
-                                          @RequestParam("semesterId") String semesterId) {
+                                          @RequestParam("semesterId") String semesterId,
+                                          @RequestParam("notSendStudents") List<String> notSendStudents) {
         Ultilities.logUserAction("Send emails graduate");
 
         Callable<JsonObject> callable = () -> {
@@ -1431,11 +1447,11 @@ public class GraduateController {
                     data = processData2(params, requestSemesterId, requestProgramId);
 
                     //set lên session nếu chưa có
-                    request.getSession()
+                    session
                             .setAttribute(Enums.GraduateVariable.PROGRAM_ID.getValue(), requestProgramId);
-                    request.getSession()
+                    session
                             .setAttribute(Enums.GraduateVariable.SEMESTER_ID.getValue(), requestSemesterId);
-                    request.getSession()
+                    session
                             .setAttribute(Enums.GraduateVariable.GRADUATE_LIST.getValue(), data);
                 }
                 //set tên đồ án
@@ -1463,6 +1479,7 @@ public class GraduateController {
                     }
                 }
 
+
                 OAuth2Authenticator.initialize();
                 SMTPTransport smtpTransport = OAuth2Authenticator.connectToSmtp("smtp.gmail.com", 587, username, token, true);
 
@@ -1476,9 +1493,13 @@ public class GraduateController {
 
                 String realPath = location.substring(0, location.indexOf("classes")) + "MailTemplate/";
 
-
+                loopData:
                 for (StudentAndMark item : data) {
                     StudentEntity student = item.getStudent();
+                    //nếu sinh viên có trong mảng (sinh viên không được gửi) thì không gửi mail cho sinh viên đó
+                    if (notSendStudents.contains(student.getRollNumber())) {
+                        continue loopData;
+                    }
                     String email = student.getEmail();
                     Session oAuth2session = OAuth2Authenticator.getSession();
                     MimeMessage mimeMessage = new MimeMessage(oAuth2session);
@@ -1547,10 +1568,10 @@ public class GraduateController {
         } else {
             studentEntityList = studentService.getStudentBySemesterIdAndProgram(semesterId, programId);
         }
-
+//
         List<StudentEntity> filteredStudents = new ArrayList<>();
         List<StudentStatusEntity> allStatus = studentStatusService.getStudentStatusBySemesterId(semesterId);
-        //lấy ra tất cả sinh viên tốt nghiệp, trạng thái sinh viên tốt nghiệp là G
+
         for (StudentEntity student : studentEntityList) {
             List<StudentStatusEntity> filterStatus = allStatus.stream().filter(q -> q.getStudentId().getId() == student.getId()
                     && q.getStatus().equalsIgnoreCase(Enums.StudentStatus.HOCDI.getValue()))
@@ -1567,7 +1588,8 @@ public class GraduateController {
         //use 4 test
 //        List<StudentEntity> a = studentService.findAllStudents();
 //        List<StudentEntity> temp = a.stream().filter(q -> q.getRollNumber().equalsIgnoreCase("SE61822")
-////                || q.getRollNumber().equalsIgnoreCase("SE62094")
+//                || q.getRollNumber().equalsIgnoreCase("SE62094")
+//                || q.getRollNumber().equalsIgnoreCase("SE62137")
 //        ).collect(Collectors.toList());
 //        filteredStudents.addAll(temp);
 
@@ -1635,6 +1657,38 @@ public class GraduateController {
         }
 
         return resultMap;
+    }
+
+    //lấy sinh viên đủ dk tốt nghiệp
+    @RequestMapping(value = "/getStudentGraduate4Mail", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goGetStudentGraduate(Map<String, String> params, HttpServletRequest request,
+                                           @RequestParam("semesterId") int semesterId,
+                                           @RequestParam("programId") int programId) {
+        JsonObject data = new JsonObject();
+        try {
+
+            HttpSession session = request.getSession();
+            List<StudentAndMark> list = processData2(params, semesterId, programId);
+            session.setAttribute(Enums.GraduateVariable.PROGRAM_ID.getValue(), programId);
+            session.setAttribute(Enums.GraduateVariable.SEMESTER_ID.getValue(), semesterId);
+            session.setAttribute(Enums.GraduateVariable.GRADUATE_LIST.getValue(), list);
+
+            List<String> result = new ArrayList<>();
+            for (StudentAndMark item : list) {
+                StudentEntity student = item.getStudent();
+                result.add(student.getRollNumber());
+            }
+            JsonArray resultData = (JsonArray) new Gson().toJsonTree(result);
+            data.addProperty("success", true);
+            data.addProperty("message", "Tìm thành công");
+            data.add("studentList", resultData);
+        } catch (Exception e) {
+            e.printStackTrace();
+            data.addProperty("success", false);
+            data.addProperty("message", e.getMessage());
+        }
+        return data;
     }
 
 

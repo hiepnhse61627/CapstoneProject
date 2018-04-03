@@ -102,7 +102,8 @@ public class Enums {
 
     public enum SpecialTerm {
         CAPSTONETERM(9),
-        OJTTERM(6);
+        OJTTERM(6),
+        OJTTERM2(7);
 
         private final int value;
 

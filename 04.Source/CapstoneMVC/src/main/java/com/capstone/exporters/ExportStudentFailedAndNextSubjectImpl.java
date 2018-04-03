@@ -117,7 +117,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 tinchi.setCellValue(student.getPassCredits());
 
                 // failed subject
-                List<List<String>> marks = processFailedSubject(student, semester);
+                List<List<String>> marks = processFailedSubject2(student, semester);
                 if (marks != null && !marks.isEmpty()) {
                     String failedSubject = "";
                     for (int i = 0; i < marks.size(); i++) {
@@ -135,7 +135,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 }
 
                 // next subject
-                List<List<String>> nextSubjects = processNextSubject(student, semester);
+                List<List<String>> nextSubjects = processNextSubject2(student, semester);
                 if (nextSubjects != null && !nextSubjects.isEmpty()) {
                     String next = "";
                     for (List<String> subjects2 : nextSubjects) {
@@ -181,7 +181,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 }
 
                 // current subject
-                List<List<String>> slowSubject = processNotStart(student.getId(), semester);
+                List<List<String>> slowSubject = processNotStart2(student.getId(), semester);
                 if (slowSubject != null && !slowSubject.isEmpty()) {
                     String next = "";
                     for (List<String> subjects2 : slowSubject) {
@@ -204,7 +204,8 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 }
 
                 // current subject
-                List<List<String>> suggestSubjects = processSuggestion(student.getId(), semester, total);
+                List<List<String>> suggestSubjects = processSuggestion2(student.getId(), semester, total
+                        ,marks,slowSubject,nextSubjects);
                 if (suggestSubjects != null && !suggestSubjects.isEmpty()) {
                     String next = "";
                     for (List<String> subjects2 : suggestSubjects) {
@@ -237,9 +238,19 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
         return detail.processFailed(student.getId(), semester);
     }
 
+    private List<List<String>> processFailedSubject2(StudentEntity student, String semester) {
+        StudentDetail detail = new StudentDetail();
+        return detail.processFailed2(student.getId(), semester);
+    }
+
     private List<List<String>> processNextSubject(StudentEntity student, String semester) {
         StudentDetail detail = new StudentDetail();
         return detail.processNext(student.getId(), semester, true, false);
+    }
+
+    private List<List<String>> processNextSubject2(StudentEntity student, String semester) {
+        StudentDetail detail = new StudentDetail();
+        return detail.processNext2(student.getId(), semester);
     }
 
     public List<List<String>> processCurrentSubject(int stuId, String semester) {
@@ -250,6 +261,11 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
     public List<List<String>> processNotStart(int stuId, String semester) {
         StudentDetail detail = new StudentDetail();
         return detail.processNotStart(stuId, semester);
+    }
+
+    public List<List<String>> processNotStart2(int stuId, String semester) {
+        StudentDetail detail = new StudentDetail();
+        return detail.processNotStart2(stuId, semester);
     }
 
     public List<List<String>> processSuggestion(int stuId, String semester, int totalDisplay) {
@@ -269,6 +285,16 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
                 result = result.subList(index + 1, result.size());
             }
         }
+        return result;
+    }
+
+    public List<List<String>> processSuggestion2(int stuId, String semester, int totalDisplay,
+                                                 List<List<String>> failList, List<List<String>> notStartList
+            , List<List<String>> nextList) {
+        StudentDetail detail = new StudentDetail();
+        List<List<String>> result = detail.processSuggestion2(stuId, semester, totalDisplay, true,
+                failList, notStartList, nextList);
+
         return result;
     }
 }

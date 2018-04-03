@@ -17,7 +17,7 @@
                         <label>Chọn file:</label>
                     </div>
                     <div class="">
-                        Bấm vào <a class="link" href="/Resources/FileTemplates/Update_Status_Student_Graduate.xlsx">Template</a> để tải
+                        Bấm vào <a class="link" href="/Resources/FileTemplates/Quyetdinh_totNghiep.xlsx">Template</a> để tải
                         về bản mẫu
                     </div><br/>
                     <div class="my-content">

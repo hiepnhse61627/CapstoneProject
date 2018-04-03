@@ -31,16 +31,21 @@ public class GraduateDetailEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "StudentId")
     private Integer studentId;
+    //số hiệu văn bằng
     @Column(name = "DiplomaCode")
     private String diplomaCode;
+    //vào sổ cấp văn bằng, chứng chỉ số
     @Column(name = "CertificateCode")
     private String certificateCode;
+    //số quyết định tốt nghiệp
     @Column(name = "GraduateDecisionNumber")
     private String graduateDecisionNumber;
+    //hình thức đào tạo
     @Column(name = "Form")
     private String form;
     @Column(name = "Date")
     private String date;
+    //xếp loại
     @Column(name = "Graded")
     private String graded;
 

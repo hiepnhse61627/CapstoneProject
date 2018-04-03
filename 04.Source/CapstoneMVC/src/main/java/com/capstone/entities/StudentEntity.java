@@ -19,7 +19,7 @@ import javax.xml.bind.annotation.*;
         @UniqueConstraint(columnNames = {"RollNumber"})})
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "student", propOrder = {"rollNumber", "fullName", "dateOfBirth", "programId"})
+@XmlType(name = "student", propOrder = {"rollNumber", "fullName", "dateOfBirth", "gender", "programId"})
 @XmlRootElement
 @NamedQueries({
         @NamedQuery(name = "StudentEntity.findAll", query = "SELECT s FROM StudentEntity s")})
@@ -47,7 +47,7 @@ public class StudentEntity implements Serializable {
     @XmlElement(required = true)
     private Date dateOfBirth;
     @Column(name = "Gender")
-    @XmlTransient
+    @XmlElement(required = true)
     private Boolean gender;
     @Column(name = "Term")
     @XmlTransient

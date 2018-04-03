@@ -20,6 +20,9 @@ public class RequiredDocuments {
         this.graduateTime = graduateTime;
     }
 
+    public RequiredDocuments() {
+    }
+
     public boolean hasHighschoolGraduate() {
         return highschoolGraduate;
     }

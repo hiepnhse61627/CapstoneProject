@@ -868,7 +868,8 @@ public class Ultilities {
         //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
         // nếu có 2 fail --> fail; nếu có 1 pass, 1 fail -> pass
         MarksEntity checkPass = reLearnInSameSemester.stream()
-                .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
+                        || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
                 .findFirst().orElse(null);
         if (checkPass == null) {
             checkModel.setFailed(true);
@@ -889,7 +890,8 @@ public class Ultilities {
         //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
         // nếu có 2 fail --> fail; nếu có 1 pass, 1 fail -> pass
         MarksEntity checkPass = reLearnInSameSemester.stream()
-                .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())
+                        || q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
                 .findFirst().orElse(null);
         if (checkPass != null) {
             result = false;
@@ -1294,6 +1296,9 @@ public class Ultilities {
     // (B) -> (A, C): A, C thay thế cho môn B; (A, E) -> D : D thay thế cho A, E
     // môn đang được xét là A -> hàm sẽ tìm B, C, D, E
     public static List<SubjectEntity> findBackAndForwardReplacementSubject(SubjectEntity subject){
+//        if(subject.getId().equalsIgnoreCase("SSG102")){
+//            System.out.println("bug");
+//        }
         //mảng này chứa tất cả môn thay thế và môn chính
         List<SubjectEntity> checkSubjects = new ArrayList<>();
         //lấy ra môn bị thay thế của môn A, B -> A (A thay B), -> lấy B
@@ -1314,7 +1319,7 @@ public class Ultilities {
                 List<SubjectEntity> replacements = sub.getSubjectEntityList();
                 for (SubjectEntity reSubj : replacements) {
                     duplicate = checkSubjects.contains(reSubj);
-                    if (duplicate) {
+                    if (!duplicate) {
                         checkSubjects.add(reSubj);
                     }
                 }
@@ -1332,7 +1337,7 @@ public class Ultilities {
                 List<SubjectEntity> replacements = sub.getSubjectEntityList1();
                 for (SubjectEntity reSubj : replacements) {
                     duplicate = checkSubjects.contains(reSubj);
-                    if (duplicate) {
+                    if (!duplicate) {
                         checkSubjects.add(reSubj);
                     }
                 }

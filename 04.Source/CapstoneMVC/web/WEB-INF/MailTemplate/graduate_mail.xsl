@@ -138,6 +138,207 @@
                  style="font-family:'Source Sans Pro','Helvetica Neue',Helvetica,Arial,sans-serif;">
             <div class="box">
                 <div>
+                    <div>Chào em,
+                    </div>
+                    <br/>
+                    <div>Phòng Tổ chức và Quản lý đào tạo xin thông báo: em có tên trong Danh sách xét tốt nghiệp
+                        <span style="color:#1b75a9;font-weight: bold;">
+                            <xsl:value-of select="./graduateTime"/>
+                        </span>
+                        , cụ thể như sau:
+                    </div>
+                    <br/>
+                    <table style="width: 90%;border-collapse: collapse;border: 1px;">
+                        <tbody>
+                            <tr style="padding:4px 5px;text-align:center;border: 1px solid #ddd;">
+                                <td style="border: 1px solid #ddd;">MSSV
+                                </td>
+                                <td style="border: 1px solid #ddd;">
+                                    <xsl:value-of select="./student/rollNumber"/>
+                                </td>
+                            </tr>
+                            <tr style="padding:4px 5px;text-align:center;border: 1px solid #ddd;">
+                                <td style="border: 1px solid #ddd;">Họ và tên
+                                </td>
+                                <td style="border: 1px solid #ddd;">
+                                    <xsl:value-of select="./student/fullName"/>
+                                </td>
+                            </tr>
+                            <tr style="padding:4px 5px;text-align:center;border: 1px solid #ddd;">
+                                <td style="border: 1px solid #ddd;">Ngày tháng và năm sinh
+                                </td>
+                                <td style="border: 1px solid #ddd;">
+                                    <xsl:variable name="birthDate2" select="./student/dateOfBirth"/>
+                                    <xsl:value-of select="concat(
+                      substring($birthDate2, 9, 2),
+                      '/',
+                      substring($birthDate2, 6, 2),
+                      '/',
+                      substring($birthDate2, 1, 4)
+                      )"/>
+                                </td>
+                            </tr>
+                            <tr style="padding:4px 5px;text-align:center;border: 1px solid #ddd;">
+                                <td style="border: 1px solid #ddd;">Giới tính
+                                </td>
+                                <td style="border: 1px solid #ddd;">
+                                    <xsl:variable name="mGender" select="./student/gender"/>
+                                    <xsl:choose>
+                                        <xsl:when test="$mGender = 'true'">
+                                            Nam
+                                        </xsl:when>
+                                        <xsl:when test="$mGender = 'True'">
+                                            Nam
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            Nữ
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                            </tr>
+                            <tr style="padding:4px 5px;text-align:center;border: 1px solid #ddd;">
+                                <td style="border: 1px solid #ddd;">Quốc tịch
+                                </td>
+                                <td style="border: 1px solid #ddd;">Việt Nam
+                                </td>
+                            </tr>
+                            <tr style="padding:4px 5px;text-align:center;border: 1px solid #ddd;">
+                                <td style="border: 1px solid #ddd;">Ngành đào tạo
+                                </td>
+                                <td style="border: 1px solid #ddd;">
+                                    <xsl:value-of select="./student/programId/fullName"/>
+                                </td>
+                            </tr>
+                            <tr style="padding:4px 5px;text-align:center;border: 1px solid #ddd;">
+                                <td style="border: 1px solid #ddd;">Điểm trung bình
+                                </td>
+                                <td style="border: 1px solid #ddd;">
+                                    <xsl:value-of select="./average"/>
+                                </td>
+                            </tr>
+                            <tr style="padding:4px 5px;text-align:center;border: 1px solid #ddd;">
+                                <td style="border: 1px solid #ddd;">Xếp loại
+                                </td>
+                                <td style="border: 1px solid #ddd;">
+                                    <xsl:variable name="avgMark" select="./average"/>
+                                    <xsl:choose>
+                                        <xsl:when test="$avgMark >= 9">
+                                            Xuất sắc
+                                        </xsl:when>
+                                        <xsl:when test="$avgMark >= 8">
+                                            Giỏi
+                                        </xsl:when>
+                                        <xsl:when test="$avgMark >= 7">
+                                            Khá
+                                        </xsl:when>
+                                        <xsl:when test="$avgMark >= 6">
+                                            Trung bình khá
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            Trung bình
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <br/>
+                    <div>
+                        Các giấy tờ cần thiết khi xét Tốt nghiệp (bản sao/photo công chứng):
+                    </div>
+                    <div>
+                        <table style="width: 90%;border-collapse: collapse;border: 1px;">
+                            <thead>
+                                <tr style="padding:4px 5px;text-align:center">
+                                    <th style="padding-top: 12px;padding-bottom: 12px;
+                                    background-color: #4c86af;color: white;">
+                                        Bằng TN THPT
+                                    </th>
+                                    <th style="padding-top: 12px;padding-bottom: 12px;
+                                    background-color: #4c86af;color: white;" >
+                                        CMND
+                                    </th>
+                                    <th style="padding-top: 12px;padding-bottom: 12px;
+                                    background-color: #4c86af;color: white;">
+                                        Giấy khai sinh
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <tr >
+                                    <td  style="padding:6px 8px;text-align:center;border: 1px solid #ddd;">
+                                        <xsl:variable name="mHighschoolGraduate" select="./highschoolGraduate"/>
+                                        <xsl:choose>
+                                            <xsl:when test="$mHighschoolGraduate = 'true'">
+                                                &#x2713;
+                                            </xsl:when>
+                                            <xsl:when test="$mHighschoolGraduate = 'True'">
+                                                &#x2713;
+                                            </xsl:when>
+                                            <xsl:otherwise></xsl:otherwise>
+                                        </xsl:choose>
+                                    </td>
+                                    <td  style="padding:6px 8px;text-align:center;border: 1px solid #ddd;">
+                                        <xsl:variable name="mIdCard" select="./idCard"/>
+                                        <xsl:choose>
+                                            <xsl:when test="$mIdCard = 'true'">
+                                                &#x2713;
+                                            </xsl:when>
+                                            <xsl:when test="$mIdCard = 'True'">
+                                                &#x2713;
+                                            </xsl:when>
+                                            <xsl:otherwise></xsl:otherwise>
+                                        </xsl:choose>
+                                    </td>
+                                    <td  style="padding:6px 8px;text-align:center;border: 1px solid #ddd;">
+                                        <xsl:variable name="mBirthRecords" select="./birthRecords"/>
+                                        <xsl:choose>
+                                            <xsl:when test="$mBirthRecords = 'true'">
+                                                &#x2713;
+                                            </xsl:when>
+                                            <xsl:when test="$mBirthRecords = 'True'">
+                                                &#x2713;
+                                            </xsl:when>
+                                            <xsl:otherwise></xsl:otherwise>
+                                        </xsl:choose>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <br/>
+                    <div>
+                        Xác nhận của sinh viên về điểm và thông tin cá nhân:
+                    </div>
+                    <div>
+                        Sau khi kiểm tra thông tin cá nhân, điểm và tên đề tài sinh viên trả lời mail này với nội dung:
+                    </div>
+                    <div>
+                        <i style="color:red;">Em đã kiểm tra và xác nhận toàn bộ thông tin về bảng điểm quá trình và
+                            thông tin cá nhân là chính xác.
+                        </i>
+                    </div>
+                    <div style=" text-decoration: underline;">
+                        <b>Lưu ý:</b>
+                    </div>
+                    <div>
+                        Sinh viên cần hoàn tất mọi thủ tục trên trước
+                        <span style="color:#1b75a9;font-weight: bold;">
+                            <xsl:value-of select="./dueDate"/>
+                        </span>
+                        .
+                        <span style="color:red;">Nếu quá thời hạn trên, nhà trường sẽ chuyển em sang danh sách xét tốt
+                            nghiệp đợt sau.
+                        </span>
+                    </div>
+                    <br/>
+                    <div>
+                        Thân mến
+                    </div>
+                </div>
+
+                <div>
                     <div style="width:100%; text-align:center;">
                         <img src="http://fpt.edu.vn/Content/images/assets/Logo-FU-03.png" width="350px"/>
                     </div>
@@ -288,9 +489,11 @@
 
                 <div style="margin-top:30px">
                     <div style="width:100%;margin-bottom:20px">Tên đồ án:
+                        <xsl:value-of select="./vnThesisName"/>
                     </div>
                     <br/>
                     <div style="width:100%;margin-bottom:20px">Capstone Project:
+                        <xsl:value-of select="./engThesisName"/>
                     </div>
                 </div>
 

@@ -8,7 +8,7 @@ import java.util.List;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {"student", "markList","average", "highschoolGraduate", "idCard",
-        "birthRecords", "engThesisName", "vnThesisName"})
+        "birthRecords", "engThesisName", "vnThesisName", "dueDate", "graduateTime"})
 @XmlRootElement(name="studentInformation")
 public class StudentAndMark {
 
@@ -22,25 +22,25 @@ public class StudentAndMark {
     @XmlElement(required = true)
     Double average;
     //bằng tốt nghiệp phổ thông
-    @XmlElement(required = true)
+    @XmlElement(required = false)
     boolean highschoolGraduate;
     //chứng minh nhân dân
-    @XmlElement(required = true)
+    @XmlElement(required = false)
     boolean idCard;
     //giấy khai sinh
-    @XmlElement(required = true)
+    @XmlElement(required = false)
     boolean birthRecords;
     //tên đồ án = tiếng anh
-    @XmlElement(required = true)
+    @XmlElement(required = false)
     String engThesisName;
     //tên đồ án = tiếng việt
-    @XmlElement(required = true)
+    @XmlElement(required = false)
     String vnThesisName;
     //hạn chót nộp
-    @XmlElement(required = true)
+    @XmlElement(required = false)
     String dueDate;
     //đợt tốt nghiệp trong năm
-    @XmlElement(required = true)
+    @XmlElement(required = false)
     String graduateTime;
 
 
@@ -144,10 +144,11 @@ public class StudentAndMark {
         Double sumMarks = 0.0;
         double average = 0.0;
         for (MarkCreditTermModel item : markList) {
-            //ko tính những môn như lab, hoặc những môn pass mà ko có điểm
+            //ko tính những môn như lab, ojt, vovinam, hoặc những môn pass mà ko có điểm
             if (item.getMark().getAverageMark() != 0
-                    || item.getMark().getSubjectMarkComponentId().getSubjectId().getId().toLowerCase().contains("lab")
-                    || item.getMark().getSubjectMarkComponentId().getSubjectId().getId().toLowerCase().contains("vov")) {
+                    && !item.getMark().getSubjectMarkComponentId().getSubjectId().getId().toLowerCase().contains("lab")
+                    && !item.getMark().getSubjectMarkComponentId().getSubjectId().getId().toLowerCase().contains("vov")
+                    && !(item.getMark().getSubjectMarkComponentId().getSubjectId().getType() == Enums.SubjectType.OJT.getValue())) {
                 Double credit = item.getCredit() * 1.0;
                 sumCredits += credit;
                 sumMarks += item.getMark().getAverageMark() * credit;
