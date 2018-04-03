@@ -1216,9 +1216,9 @@ public class ScheduleList {
             query2.setMaxResults(1);
             List<ScheduleEntity> latestRecordByChangedDate = query2.getResultList();
 
-            Date latestDate = new Date();
+            Date latestDate = null;
 
-            if (latestRecordByChangedDate != null) {
+            if (latestRecordByChangedDate != null && latestRecordByChangedDate.size() > 0) {
                 latestDate = latestRecordByChangedDate.get(0).getChangedDate();
             }
 
@@ -1290,17 +1290,26 @@ public class ScheduleList {
                                 scheduleEntity = scheduleService.findScheduleByDateSlotAndLectureAndRoomAndCourseDontCareIsActive(daySlot, emp, room, course);
 
                                 if (scheduleEntity == null) {
-                                    scheduleEntity = new ScheduleEntity();
-                                    scheduleEntity.setCourseId(course);
-                                    scheduleEntity.setRoomId(room);
-                                    scheduleEntity.setDateId(daySlot);
-                                    scheduleEntity.setEmpId(emp);
-                                    scheduleEntity.setGroupName(changedSchedule.getClassName());
-                                    scheduleEntity.setParentScheduleId(null);
-                                    scheduleEntity.setActive(false);
-                                    scheduleEntity.setId(0);
-                                    scheduleEntity.setChangedDate(changedSchedule.getChangedScheduleEntityPK().getChangedDate());
-                                    scheduleEntity = scheduleService.createSchedule(scheduleEntity);
+                                    scheduleEntity = scheduleService.findScheduleByDateSlotAndLectureAndCourseDontCareIsActive(daySlot, emp, course);
+                                    if (scheduleEntity == null) {
+                                        scheduleEntity = new ScheduleEntity();
+                                        scheduleEntity.setCourseId(course);
+                                        scheduleEntity.setRoomId(room);
+                                        scheduleEntity.setDateId(daySlot);
+                                        scheduleEntity.setEmpId(emp);
+                                        scheduleEntity.setGroupName(changedSchedule.getClassName());
+                                        scheduleEntity.setParentScheduleId(null);
+                                        scheduleEntity.setActive(false);
+                                        scheduleEntity.setId(0);
+                                        scheduleEntity.setChangedDate(changedSchedule.getChangedScheduleEntityPK().getChangedDate());
+                                        scheduleEntity = scheduleService.createSchedule(scheduleEntity);
+                                    } else {
+                                        scheduleEntity.setActive(false);
+                                        scheduleEntity.setChangedDate(changedSchedule.getChangedScheduleEntityPK().getChangedDate());
+                                        scheduleEntity.setRoomId(room);
+                                        scheduleService.updateSchedule(scheduleEntity);
+                                    }
+
                                 }
 
 
@@ -1328,7 +1337,6 @@ public class ScheduleList {
                                 //dont change slot
                                 slot2 = slot;
                             }
-
 
                             DaySlotEntity daySlot2 = null;
                             //find changed DaySlot
@@ -1484,8 +1492,8 @@ public class ScheduleList {
                     Query queryForCourse = em2.createNativeQuery(queryStringForCourse, CoursesEntity.class);
                     List<CoursesEntity> courseList = queryForCourse.getResultList();
                     int courseId = courseList != null && courseList.size() > 0 ? courseList.get(0).getCourseID() : -1;
-                    if( courseList != null && courseList.size() > 0){
-                        totalSlotMap.put(aSchedule.getGroupName(), courseList.get(0).getNumberOfSlots()+"");
+                    if (courseList != null && courseList.size() > 0) {
+                        totalSlotMap.put(aSchedule.getGroupName(), courseList.get(0).getNumberOfSlots() + "");
                     }
 
                     if (courseId != -1) {
@@ -1499,13 +1507,14 @@ public class ScheduleList {
                         if (scheduleId != -1) {
                             //get schedule of course from FAP DB
                             String queryStringForAttendance = "SELECT 1 FROM Attendances s WHERE s.ScheduleID = " + scheduleId + " " +
-                                    " AND RecordTime >= '" + startDateStr + "' AND  RecordTime < '" + endDateStr + "'";
+                                    " AND RecordTime >= '" + startDateStr + "' AND  RecordTime < '" + endDateStr + "' AND s.Status = 1";
                             Query queryForAttendances = em2.createNativeQuery(queryStringForAttendance);
                             List fapAttendanceList = queryForAttendances.getResultList();
 
                             if (fapAttendanceList != null && fapAttendanceList.size() > 0) {
                                 int countAttendance = resultMap.get(aSchedule.getGroupName());
                                 ++countAttendance;
+                                System.out.println(scheduleId);
                                 resultMap.put(aSchedule.getGroupName(), countAttendance);
                             }
                         }
@@ -1519,7 +1528,7 @@ public class ScheduleList {
                 List<String> dataList = new ArrayList<String>();
 
                 dataList.add(key);
-                dataList.add(resultMap.get(key) + "/"+totalSlotMap.get(key));
+                dataList.add(resultMap.get(key) + "/" + totalSlotMap.get(key));
 
                 result.add(dataList);
             }
