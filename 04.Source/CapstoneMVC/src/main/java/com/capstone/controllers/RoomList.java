@@ -275,7 +275,7 @@ public class RoomList {
 
     @RequestMapping(value = "/freeRoom/get")
     @ResponseBody
-    public JsonObject RequestLecture(@RequestParam Map<String, String> params) {
+    public JsonObject RequestFreeRoom(@RequestParam Map<String, String> params) {
         JsonObject jsonObj = new JsonObject();
         List<List<String>> result = new ArrayList<>();
         List<ScheduleEntity> scheduleList = new ArrayList<>();

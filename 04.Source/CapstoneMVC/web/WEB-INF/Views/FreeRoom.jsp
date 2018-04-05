@@ -537,15 +537,29 @@
                     d.employeeId = $('#lecture2').val();
                 },
                 "dataSrc": function (json) {
-                    var roomListObjArr=[];
-                    for (i = 0; i < json.roomList.length ; i++) {
-                        roomListObjArr.push({
-                            "id": json.roomList[i],
-                            "text": json.roomList[i]
-                        })
-                    }
+                    // var roomListObjArr=[];
+                    // for (i = 0; i < json.roomList.length ; i++) {
+                    //     roomListObjArr.push({
+                    //         "id": json.roomList[i],
+                    //         "text": json.roomList[i]
+                    //     })
+                    // }
+                    // $("#room").select2({
+                    //     data: json.roomList,
+                    // });
+
+                    $('#room').empty();
+
                     $("#room").select2({
+                        placeholder: '- Chọn phòng -',
                         data: json.roomList,
+                    });
+
+                    $("#room").val("").trigger("change");
+
+                    $('#select2-room-container').removeAttr('title');
+                    $('select').on('change', function (evt) {
+                        $('#select2-room-container').removeAttr('title');
                     });
 
                     return json.aaData;

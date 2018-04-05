@@ -1,6 +1,7 @@
 package com.capstone.controllers;
 
 import com.capstone.entities.*;
+import com.capstone.entities.fapEntities.SchedulesEntity;
 import com.capstone.models.*;
 import com.capstone.services.*;
 import com.google.common.collect.Lists;
@@ -67,7 +68,7 @@ public class EmployeeList {
 
     @RequestMapping("/employeeList/{employeeId}")
     public ModelAndView EmployeeInfo(@PathVariable("employeeId") int employeeId, HttpServletRequest request) {
-        if (!Ultilities.checkUserAuthorize2(request,"/employeeList" )) {
+        if (!Ultilities.checkUserAuthorize2(request, "/employeeList")) {
             return Ultilities.returnDeniedPage();
         }
         //logging user action
@@ -550,6 +551,9 @@ public class EmployeeList {
     public JsonObject RequestLecture(@RequestParam Map<String, String> params) {
         JsonObject jsonObj = new JsonObject();
         List<List<String>> result = new ArrayList<>();
+//        List<List<String>> empResult = new ArrayList<>();
+        List<EmployeeEntity> removeEmployees = new ArrayList<>();
+//        List<EmployeeEntity> fromLecture = new ArrayList<>();
 
         try {
             String subjectCode = "";
@@ -573,15 +577,12 @@ public class EmployeeList {
                     DaySlotEntity aDaySlot = daySlotService.findDaySlotByDateAndSlot(startDate, slotEntities.get(0));
                     List<ScheduleEntity> schedules = scheduleService.findScheduleByDateSlot(aDaySlot);
                     if (schedules != null) {
-                        for (ScheduleEntity aSchedule : schedules) {
-                            scheduleList.add(aSchedule);
-                        }
+                        scheduleList.addAll(schedules);
                     }
                 }
 
                 //get all lecture in db
                 List<EmployeeEntity> employeeEntities = employeeService.findAllEmployees();
-                List<EmployeeEntity> removeEmployees = new ArrayList<>();
 
                 //if lecture have schedule in selected time then all that lecture to remove list
                 for (EmployeeEntity emp : employeeEntities) {
@@ -590,10 +591,7 @@ public class EmployeeList {
                             if (aSchedule.getEmpId().getFullName().equals(emp.getFullName())) {
                                 removeEmployees.add(emp);
                             }
-                        } else {
-                            System.out.println("");
                         }
-
                     }
                 }
 
@@ -635,15 +633,122 @@ public class EmployeeList {
 
                     result.add(dataList);
                 }
+
+//                for (EmployeeEntity emp : fromLecture) {
+//                    List<String> dataList = new ArrayList<String>();
+//
+//                    dataList.add(emp.getId() + "");
+//
+//                    if (emp.getEmailEDU() != null) {
+//                        String shortName = emp.getEmailEDU().substring(0, emp.getEmailEDU().indexOf("@"));
+//                        dataList.add(shortName + " - " + emp.getFullName());
+//                    } else {
+//                        dataList.add("");
+//                    }
+//
+//                    empresult.add(dataList);
+//
+//                }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         Gson gson = new Gson();
+//        JsonArray fromLectureJson = (JsonArray) gson.toJsonTree(empresult);
+//        jsonObj.add("fromLecture", fromLectureJson);
+
         JsonArray array = (JsonArray) gson.toJsonTree(result);
 
         jsonObj.add("aaData", array);
+        return jsonObj;
+    }
+
+
+    @RequestMapping(value = "/getLectureByDateSlot")
+    @ResponseBody
+    public JsonObject getLectureByDateSlot(@RequestParam Map<String, String> params) {
+        JsonObject jsonObj = new JsonObject();
+        List<List<String>> empResult = new ArrayList<>();
+        HashSet<EmployeeEntity> fromLecture = new HashSet<>();
+        Set<String> freeRoomList = new HashSet<>();
+        Set<String> removeRoomList = new HashSet<>();
+        try {
+            String subjectCode = "";
+            String slotName = "";
+            String startDate = params.get("startDate");
+
+            String slotWillTeach = params.get("slotWillTeach");
+            String dayWillTeach = params.get("dayWillTeach");
+            List<SlotEntity> slotWillTeachEntities = slotService.findSlotsByName(slotWillTeach);
+            DaySlotEntity aDaySlotWillTeach = daySlotService.findDaySlotByDateAndSlot(dayWillTeach, slotWillTeachEntities.get(0));
+            List<ScheduleEntity> schedulesInWillTeachDaySlot = scheduleService.findScheduleByDateSlot(aDaySlotWillTeach);
+            for (ScheduleEntity aSchedule : schedulesInWillTeachDaySlot) {
+                removeRoomList.add(aSchedule.getRoomId().getName());
+            }
+
+            List<ScheduleEntity> scheduleList = new ArrayList<>();
+
+            if (!params.get("slot").equals("") && !params.get("slot").equals("-1")) {
+                slotName = params.get("slot");
+            }
+
+            if (!params.get("subject").equals("") && !params.get("subject").equals("-1")) {
+                subjectCode = params.get("subject");
+            }
+
+            if (!slotName.equals("") && !subjectCode.equals("")) {
+                List<SlotEntity> slotEntities = slotService.findSlotsByName(slotName);
+                if (slotEntities != null && slotEntities.size() > 0) {
+                    //find all schedule in the selected time
+                    DaySlotEntity aDaySlot = daySlotService.findDaySlotByDateAndSlot(startDate, slotEntities.get(0));
+                    List<ScheduleEntity> schedules = scheduleService.findScheduleByDateSlot(aDaySlot);
+                    if (schedules != null) {
+                        scheduleList.addAll(schedules);
+                    }
+                }
+
+                //if lecture have schedule in selected time then all that lecture to remove list
+                for (ScheduleEntity aSchedule : scheduleList) {
+                    if (aSchedule.getEmpId() != null) {
+                        if (aSchedule.getCourseId().getSubjectCode().equals(subjectCode)) {
+                            fromLecture.add(aSchedule.getEmpId());
+                        }
+                    }
+                }
+
+
+                for (EmployeeEntity emp : fromLecture) {
+                    List<String> dataList = new ArrayList<String>();
+
+                    dataList.add(emp.getId() + "");
+
+                    if (emp.getEmailEDU() != null) {
+                        String shortName = emp.getEmailEDU().substring(0, emp.getEmailEDU().indexOf("@"));
+                        dataList.add(shortName + " - " + emp.getFullName());
+                    } else {
+                        dataList.add("");
+                    }
+                    empResult.add(dataList);
+                }
+
+                List<RoomEntity> allRooms = roomService.findAllRooms();
+                for (RoomEntity aRoom : allRooms) {
+                    freeRoomList.add(aRoom.getName());
+                }
+                //get rooms not in use by removing rooms in use in all room list
+                freeRoomList.removeAll(removeRoomList);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Gson gson = new Gson();
+        JsonArray fromLectureJson = (JsonArray) gson.toJsonTree(empResult);
+        jsonObj.add("fromLecture", fromLectureJson);
+
+        JsonArray roomList = (JsonArray) gson.toJsonTree(freeRoomList);
+        jsonObj.add("roomList", roomList);
         return jsonObj;
     }
 
@@ -653,9 +758,12 @@ public class EmployeeList {
     public Callable<JsonObject> SendEmail(@RequestParam String email,
                                           @RequestParam String lectureFrom,
                                           @RequestParam String lectureTo,
-                                          @RequestParam String date,
+                                          @RequestParam String dateWillTeach,
                                           @RequestParam String subjectCode,
-                                          @RequestParam String slot,
+                                          @RequestParam String slotWillTeach,
+                                          @RequestParam String originalDate,
+                                          @RequestParam String originalSlot,
+                                          @RequestParam String noChangeRoom,
                                           @RequestParam String room,
                                           @RequestParam String token,
                                           @RequestParam String username,
@@ -666,6 +774,21 @@ public class EmployeeList {
             JsonObject obj = new JsonObject();
 
             try {
+                EmployeeEntity emp = employeeService.findEmployeeById(Integer.parseInt(lectureFrom));
+                String roomName = "Thông báo sau";
+
+                try {
+                    if (noChangeRoom.equals("true")) {
+                        List<SlotEntity> slotEntities = slotService.findSlotsByName(originalSlot);
+                        DaySlotEntity aDaySlot = daySlotService.findDaySlotByDateAndSlot(originalDate, slotEntities.get(0));
+                        ScheduleEntity aSchedule = scheduleService.findScheduleByDateSlotAndLecture(aDaySlot, emp);
+                        roomName = aSchedule.getRoomId().getName();
+                    } else {
+                        roomName = room;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 OAuth2Authenticator.initialize();
                 SMTPTransport smtpTransport = OAuth2Authenticator.connectToSmtp("smtp.gmail.com", 587, username, token, true);
@@ -678,11 +801,14 @@ public class EmployeeList {
                         "<h3>Yêu cầu dạy thế</h3>" +
                         "<h4>Dear anh/chị " + lectureTo + ",</h4>" +
                         "<p>Anh/chị vừa nhận được yêu cầu dạy thế từ phòng đào tạo. Thông tin chi tiết như sau: </p>" +
-                        "<p>GV cần dạy thế: " + lectureFrom + "</p>" +
+                        "<p>GV cần dạy thế: " + emp.getFullName() + "</p>" +
                         "<p>Môn: " + subjectCode + "</p>" +
-                        "<p>Ngày: " + date + "</p>" +
-                        "<p>Slot: " + slot + "</p>" +
-                        "<p>Phòng: " + room + "</p>" +
+                        "<p>Ngày ban đầu: " + originalDate + "</p>" +
+                        "<p>Slot ban đầu: " + originalSlot + "</p>" +
+                        "<hr>" +
+                        "<p>Phòng sẽ dạy: " + roomName + "</p>" +
+                        "<p>Ngày sẽ dạy: " + dateWillTeach + "</p>" +
+                        "<p>Slot sẽ dạy: " + slotWillTeach + "</p>" +
                         "</div>" +
                         "</hr>" +
                         "<h4>Thông tin thêm:</h4>" +
