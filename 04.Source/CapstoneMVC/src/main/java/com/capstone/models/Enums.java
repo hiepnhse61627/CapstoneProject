@@ -148,5 +148,18 @@ public class Enums {
             return value;
         }
     }
+    public enum BackupPath{
+        PATH("D:\\School formation\\Capstone\\New folder");
+
+        private final String value;
+
+        BackupPath(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
 
 }

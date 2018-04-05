@@ -5,10 +5,7 @@ import com.capstone.entities.MarksEntity;
 import com.capstone.models.Enums;
 import com.capstone.models.Logger;
 import com.capstone.models.Ultilities;
-import com.capstone.services.IMarkComponentService;
-import com.capstone.services.IMarksService;
-import com.capstone.services.MarkComponentServiceImpl;
-import com.capstone.services.MarksServiceImpl;
+import com.capstone.services.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -69,9 +66,9 @@ public class MarkController {
 
             markList = markList.stream().filter(m ->
                     Ultilities.containsIgnoreCase(m.getSubjectMarkComponentId().getSubjectId().getId(), sSearch)
-                    || Ultilities.containsIgnoreCase(m.getSubjectMarkComponentId().getSubjectId().getName(), sSearch)
-                    || Ultilities.containsIgnoreCase(m.getSemesterId().getSemester(), sSearch)
-                    || Ultilities.containsIgnoreCase(m.getStatus(), sSearch))
+                            || Ultilities.containsIgnoreCase(m.getSubjectMarkComponentId().getSubjectId().getName(), sSearch)
+                            || Ultilities.containsIgnoreCase(m.getSemesterId().getSemester(), sSearch)
+                            || Ultilities.containsIgnoreCase(m.getStatus(), sSearch))
                     .collect(Collectors.toList());
 
             iTotalDisplayRecords = markList.size();
@@ -120,7 +117,6 @@ public class MarkController {
         }
 
 
-
         IMarksService markService = new MarksServiceImpl();
 
         int markId = Integer.parseInt(params.get("markId"));
@@ -164,16 +160,16 @@ public class MarkController {
         int markId = Integer.parseInt(params.get("markId"));
 
         try {
-           MarksEntity marksEntity = markService.getMarkById(markId);
-           if(marksEntity != null){
-               //logging User Action
-               Ultilities.logUserAction("Delete " + marksEntity.getStudentId().getRollNumber() +
-                       " - " + marksEntity.getSubjectMarkComponentId().getSubjectId().getId() + " mark");
+            MarksEntity marksEntity = markService.getMarkById(markId);
+            if (marksEntity != null) {
+                //logging User Action
+                Ultilities.logUserAction("Delete " + marksEntity.getStudentId().getRollNumber() +
+                        " - " + marksEntity.getSubjectMarkComponentId().getSubjectId().getId() + " mark");
 
-            markService.deleteMark(markId);
+                markService.deleteMark(markId);
 
-            jsonObj.addProperty("success", true);
-           }
+                jsonObj.addProperty("success", true);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             Logger.writeLog(e);
@@ -182,5 +178,48 @@ public class MarkController {
 
         return jsonObj;
     }
+
+    @RequestMapping("/mark/getDataFromFap")
+    @ResponseBody
+    public JsonObject getDataFromFapBySemester(@RequestParam Map<String, String> params, HttpServletRequest request,
+                                               @RequestParam("backup") boolean backup) {
+        JsonObject jsonObj = new JsonObject();
+
+        if (!Ultilities.checkUserAuthorize2(request, "/markPage")) {
+            jsonObj.addProperty("success", false);
+            jsonObj.addProperty("message", "Không đủ quyền hạn để thực hiện");
+            return jsonObj;
+        }
+
+        Ultilities2ServiceImpl ult2= new Ultilities2ServiceImpl();
+        EntityManager em;
+//        if (backup) {
+//            ult2.backupCapstoneDB();
+//        }
+
+        IMarksService markService = new MarksServiceImpl();
+
+        int markId = Integer.parseInt(params.get("markId"));
+
+        try {
+            MarksEntity marksEntity = markService.getMarkById(markId);
+            if (marksEntity != null) {
+                //logging User Action
+                Ultilities.logUserAction("Delete " + marksEntity.getStudentId().getRollNumber() +
+                        " - " + marksEntity.getSubjectMarkComponentId().getSubjectId().getId() + " mark");
+
+                markService.deleteMark(markId);
+
+                jsonObj.addProperty("success", true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.writeLog(e);
+            jsonObj.addProperty("success", false);
+        }
+
+        return jsonObj;
+    }
+
 
 }

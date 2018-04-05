@@ -921,7 +921,7 @@ public class Ultilities {
                 //check year for newPrerequisite
                 // if currentSemester < effectionSemester -> we can't check prerequesite
                 boolean able4newPrerequisite = true;
-                List<String> rows = null;
+                List<String> rows = new ArrayList<>();
                 if (oldPrerequisite != null && newPrerequisite == null) {
                     rows = Arrays.asList(oldPrerequisite.split("OR"));
                 } else if (oldPrerequisite == null && newPrerequisite != null) {

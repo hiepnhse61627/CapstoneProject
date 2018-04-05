@@ -33,10 +33,10 @@
 
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>
-            <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://10.82.3.47:1433;databaseName=CapstoneProject"/>
-            <property name="javax.persistence.jdbc.user" value="sa"/>
-            <property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
-            <property name="javax.persistence.jdbc.password" value="Kh@nhKT123456&amp;"/>
+            <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://10.82.3.47:1433;databaseName=CapstoneProject"/>-->
+            <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
+            <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
+            <!--<property name="javax.persistence.jdbc.password" value="Kh@nhKT123456&amp;"/>-->
             <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://localhost\MSSQLSERVER2017;database=CapstoneProject;"/>-->
             <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
             <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
@@ -46,10 +46,10 @@
             <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
             <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
             <!--<property name="javax.persistence.jdbc.password" value="danh123456"/>-->
-            <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;database=CapstoneProject;"/>-->
-            <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
-            <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
-            <!--<property name="javax.persistence.jdbc.password" value="."/>-->
+            <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;database=CapstoneProject;"/>
+            <property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+            <property name="javax.persistence.jdbc.user" value="sa"/>
+            <property name="javax.persistence.jdbc.password" value="."/>
         </properties>
     </persistence-unit>
 
@@ -84,11 +84,17 @@
         <class>com.capstone.entities.fapEntities.CoursesEntity</class>
         <class>com.capstone.entities.fapEntities.Subjects</class>
         <class>com.capstone.entities.fapEntities.SchedulesEntity</class>
+        <!--<properties>-->
+        <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://10.23.0.77;databaseName=AP_HCM"/>-->
+        <!--<property name="javax.persistence.jdbc.user" value="aphcm"/>-->
+        <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
+        <!--<property name="javax.persistence.jdbc.password" value="Kh@nhKT123456&amp;"/>-->
+    <!--</properties>-->
         <properties>
-            <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://10.23.0.77;databaseName=AP_HCM"/>
-            <property name="javax.persistence.jdbc.user" value="aphcm"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://116.193.67.20;databaseName=AP_HCM"/>
+            <property name="javax.persistence.jdbc.user" value="sa"/>
             <property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
-            <property name="javax.persistence.jdbc.password" value="998ecf8427@#$@"/>
+            <property name="javax.persistence.jdbc.password" value="Kh@nhKT123456&amp;"/>
         </properties>
     </persistence-unit>
 </persistence>

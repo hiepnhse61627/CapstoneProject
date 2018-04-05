@@ -717,7 +717,7 @@
             success: function (result) {
                 $('#progress').html("<div>" + result.status + "</div>");
                 if (result.running) {
-                    setTimeout("Run()", 50);
+                    setTimeout("Run()", 1000);
                 } else {
                     swal('', 'Download file thành công!', 'success');
                 }

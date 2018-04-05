@@ -4,6 +4,7 @@ import com.capstone.controllers.GraduateController;
 import com.capstone.controllers.StudentDetail;
 import com.capstone.entities.*;
 import com.capstone.enums.SubjectTypeEnum;
+import com.capstone.models.Global;
 import com.capstone.models.Suggestion;
 import com.capstone.models.Ultilities;
 import com.capstone.services.*;
@@ -45,7 +46,6 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
             InputStream is = classLoader.getResourceAsStream(EXCEL_TEMPL);
 
             XSSFWorkbook xssfWorkbook = new XSSFWorkbook(is);
-            is.close();
             // change to streaming working
             SXSSFWorkbook streamingWorkbook = new SXSSFWorkbook(xssfWorkbook);
             SXSSFSheet streamingSheet = streamingWorkbook.getSheetAt(0);
@@ -54,7 +54,7 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
             List<StudentEntity> students;
 
             int stu = Integer.parseInt(params.get("studentId"));
-            String semester = params.get("semesterId");
+            RealSemesterEntity semesterEntity = Global.getCurrentSemester();
             int total = 7;
             if (params.get("total") != null) {
                 total = Integer.parseInt(params.get("total"));
@@ -64,14 +64,14 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
             }
 
             if (stu < 0) {
-                students = studentService.findAllStudents();
+                students = studentService.findStudentsBySemesterId(semesterEntity.getId());
             } else {
                 students = new ArrayList<>();
                 StudentEntity student = studentService.findStudentById(stu);
                 students.add(student);
             }
 
-            writeDataToTable(streamingWorkbook, streamingSheet, students, semester, total);
+            writeDataToTable(streamingWorkbook, streamingSheet, students, semesterEntity.getSemester(), total);
 
             streamingWorkbook.write(os);
         } catch (Exception e) {
@@ -94,141 +94,150 @@ public class ExportStudentFailedAndNextSubjectImpl implements IExportObject {
             int rowIndex = 6;
             int count = 1;
             for (StudentEntity student : students) {
-                if (ExportStatusReport.StopExporting) {
-                    System.out.println("stopped exporting!");
-                    break;
+                try {
+                    if (count == 314) {
+                        System.out.println("bug");
+                    }
+
+
+                    if (ExportStatusReport.StopExporting) {
+                        System.out.println("stopped exporting!");
+                        break;
+                    }
+
+                    Row row = spreadsheet.createRow(rowIndex);
+                    Cell rollNumberCell = row.createCell(0);
+                    rollNumberCell.setCellStyle(cellStyle);
+                    rollNumberCell.setCellValue(student.getRollNumber());
+
+                    Cell studentNameCell = row.createCell(1);
+                    studentNameCell.setCellStyle(cellStyle);
+                    studentNameCell.setCellValue(student.getFullName());
+
+                    Cell studentEmail = row.createCell(2);
+                    studentEmail.setCellStyle(cellStyle);
+                    studentEmail.setCellValue(student.getEmail() == null ? "N/A" : student.getEmail());
+
+                    Cell tinchi = row.createCell(3);
+                    tinchi.setCellStyle(cellStyle);
+                    tinchi.setCellValue(student.getPassCredits());
+
+                    // failed subject
+                    List<List<String>> marks = processFailedSubject2(student, semester);
+                    if (marks != null && !marks.isEmpty()) {
+                        String failedSubject = "";
+                        for (int i = 0; i < marks.size(); i++) {
+                            failedSubject += marks.get(i).get(0);
+                            failedSubject += ",";
+                        }
+                        failedSubject = Character.toString(failedSubject.charAt(failedSubject.length() - 1)).equals(",") ? failedSubject.substring(0, failedSubject.length() - 1) : failedSubject;
+                        Cell failedSubjectCell = row.createCell(4);
+                        failedSubjectCell.setCellStyle(cellStyle);
+                        failedSubjectCell.setCellValue(failedSubject);
+                    } else {
+                        Cell failedSubjectCell = row.createCell(4);
+                        failedSubjectCell.setCellStyle(cellStyle);
+                        failedSubjectCell.setCellValue("N/A");
+                    }
+
+                    // next subject
+                    List<List<String>> nextSubjects = processNextSubject2(student, semester);
+                    if (nextSubjects != null && !nextSubjects.isEmpty()) {
+                        String next = "";
+                        for (List<String> subjects2 : nextSubjects) {
+                            String subjectId = subjects2.get(0);
+                            next += subjectId;
+                            next += ",";
+                        }
+
+                        if (next.equals("")) {
+                            next = "N/A";
+                        }
+
+                        Cell nextSubjectCell = row.createCell(5);
+                        nextSubjectCell.setCellStyle(cellStyle);
+                        nextSubjectCell.setCellValue(next);
+                    } else {
+                        Cell nextSubjectCell = row.createCell(5);
+                        nextSubjectCell.setCellStyle(cellStyle);
+                        nextSubjectCell.setCellValue("N/A");
+                    }
+
+                    // current subject
+                    List<List<String>> currentSubject = processCurrentSubject(student.getId(), semester);
+                    if (currentSubject != null && !currentSubject.isEmpty()) {
+                        String next = "";
+                        for (List<String> subjects2 : currentSubject) {
+                            String subjectId = subjects2.get(0);
+                            next += subjectId;
+                            next += ",";
+                        }
+
+                        if (next.equals("")) {
+                            next = "N/A";
+                        }
+
+                        Cell nextSubjectCell = row.createCell(6);
+                        nextSubjectCell.setCellStyle(cellStyle);
+                        nextSubjectCell.setCellValue(next);
+                    } else {
+                        Cell nextSubjectCell = row.createCell(6);
+                        nextSubjectCell.setCellStyle(cellStyle);
+                        nextSubjectCell.setCellValue("N/A");
+                    }
+
+                    // current subject
+                    List<List<String>> slowSubject = processNotStart2(student.getId(), semester);
+                    if (slowSubject != null && !slowSubject.isEmpty()) {
+                        String next = "";
+                        for (List<String> subjects2 : slowSubject) {
+                            String subjectId = subjects2.get(0);
+                            next += subjectId;
+                            next += ",";
+                        }
+
+                        if (next.equals("")) {
+                            next = "N/A";
+                        }
+
+                        Cell nextSubjectCell = row.createCell(7);
+                        nextSubjectCell.setCellStyle(cellStyle);
+                        nextSubjectCell.setCellValue(next);
+                    } else {
+                        Cell nextSubjectCell = row.createCell(7);
+                        nextSubjectCell.setCellStyle(cellStyle);
+                        nextSubjectCell.setCellValue("N/A");
+                    }
+
+                    // current subject
+                    List<List<String>> suggestSubjects = processSuggestion2(student.getId(), semester, total
+                            , marks, slowSubject, nextSubjects);
+                    if (suggestSubjects != null && !suggestSubjects.isEmpty()) {
+                        String next = "";
+                        for (List<String> subjects2 : suggestSubjects) {
+                            String subjectId = subjects2.get(0);
+                            next += subjectId;
+                            next += ",";
+                        }
+
+                        if (next.equals("")) {
+                            next = "N/A";
+                        }
+
+                        Cell nextSubjectCell = row.createCell(8);
+                        nextSubjectCell.setCellStyle(cellStyle);
+                        nextSubjectCell.setCellValue(next);
+                    } else {
+                        Cell nextSubjectCell = row.createCell(8);
+                        nextSubjectCell.setCellStyle(cellStyle);
+                        nextSubjectCell.setCellValue("N/A");
+                    }
+
+                    ExportStatusReport.StatusStudentDetailExport = "Exporting " + (count++) + " of " + students.size();
+                    rowIndex++;
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-
-                Row row = spreadsheet.createRow(rowIndex);
-                Cell rollNumberCell = row.createCell(0);
-                rollNumberCell.setCellStyle(cellStyle);
-                rollNumberCell.setCellValue(student.getRollNumber());
-
-                Cell studentNameCell = row.createCell(1);
-                studentNameCell.setCellStyle(cellStyle);
-                studentNameCell.setCellValue(student.getFullName());
-
-                Cell studentEmail = row.createCell(2);
-                studentEmail.setCellStyle(cellStyle);
-                studentEmail.setCellValue(student.getEmail() == null ? "N/A" : student.getEmail());
-
-                Cell tinchi = row.createCell(3);
-                tinchi.setCellStyle(cellStyle);
-                tinchi.setCellValue(student.getPassCredits());
-
-                // failed subject
-                List<List<String>> marks = processFailedSubject2(student, semester);
-                if (marks != null && !marks.isEmpty()) {
-                    String failedSubject = "";
-                    for (int i = 0; i < marks.size(); i++) {
-                        failedSubject += marks.get(i).get(0);
-                        failedSubject += ",";
-                    }
-                    failedSubject = Character.toString(failedSubject.charAt(failedSubject.length() - 1)).equals(",") ? failedSubject.substring(0, failedSubject.length() - 1) : failedSubject;
-                    Cell failedSubjectCell = row.createCell(4);
-                    failedSubjectCell.setCellStyle(cellStyle);
-                    failedSubjectCell.setCellValue(failedSubject);
-                } else {
-                    Cell failedSubjectCell = row.createCell(4);
-                    failedSubjectCell.setCellStyle(cellStyle);
-                    failedSubjectCell.setCellValue("N/A");
-                }
-
-                // next subject
-                List<List<String>> nextSubjects = processNextSubject2(student, semester);
-                if (nextSubjects != null && !nextSubjects.isEmpty()) {
-                    String next = "";
-                    for (List<String> subjects2 : nextSubjects) {
-                        String subjectId = subjects2.get(0);
-                        next += subjectId;
-                        next += ",";
-                    }
-
-                    if (next.equals("")) {
-                        next = "N/A";
-                    }
-
-                    Cell nextSubjectCell = row.createCell(5);
-                    nextSubjectCell.setCellStyle(cellStyle);
-                    nextSubjectCell.setCellValue(next);
-                } else {
-                    Cell nextSubjectCell = row.createCell(5);
-                    nextSubjectCell.setCellStyle(cellStyle);
-                    nextSubjectCell.setCellValue("N/A");
-                }
-
-                // current subject
-                List<List<String>> currentSubject = processCurrentSubject(student.getId(), semester);
-                if (currentSubject != null && !currentSubject.isEmpty()) {
-                    String next = "";
-                    for (List<String> subjects2 : currentSubject) {
-                        String subjectId = subjects2.get(0);
-                        next += subjectId;
-                        next += ",";
-                    }
-
-                    if (next.equals("")) {
-                        next = "N/A";
-                    }
-
-                    Cell nextSubjectCell = row.createCell(6);
-                    nextSubjectCell.setCellStyle(cellStyle);
-                    nextSubjectCell.setCellValue(next);
-                } else {
-                    Cell nextSubjectCell = row.createCell(6);
-                    nextSubjectCell.setCellStyle(cellStyle);
-                    nextSubjectCell.setCellValue("N/A");
-                }
-
-                // current subject
-                List<List<String>> slowSubject = processNotStart2(student.getId(), semester);
-                if (slowSubject != null && !slowSubject.isEmpty()) {
-                    String next = "";
-                    for (List<String> subjects2 : slowSubject) {
-                        String subjectId = subjects2.get(0);
-                        next += subjectId;
-                        next += ",";
-                    }
-
-                    if (next.equals("")) {
-                        next = "N/A";
-                    }
-
-                    Cell nextSubjectCell = row.createCell(7);
-                    nextSubjectCell.setCellStyle(cellStyle);
-                    nextSubjectCell.setCellValue(next);
-                } else {
-                    Cell nextSubjectCell = row.createCell(7);
-                    nextSubjectCell.setCellStyle(cellStyle);
-                    nextSubjectCell.setCellValue("N/A");
-                }
-
-                // current subject
-                List<List<String>> suggestSubjects = processSuggestion2(student.getId(), semester, total
-                        ,marks,slowSubject,nextSubjects);
-                if (suggestSubjects != null && !suggestSubjects.isEmpty()) {
-                    String next = "";
-                    for (List<String> subjects2 : suggestSubjects) {
-                        String subjectId = subjects2.get(0);
-                        next += subjectId;
-                        next += ",";
-                    }
-
-                    if (next.equals("")) {
-                        next = "N/A";
-                    }
-
-                    Cell nextSubjectCell = row.createCell(8);
-                    nextSubjectCell.setCellStyle(cellStyle);
-                    nextSubjectCell.setCellValue(next);
-                } else {
-                    Cell nextSubjectCell = row.createCell(8);
-                    nextSubjectCell.setCellStyle(cellStyle);
-                    nextSubjectCell.setCellValue("N/A");
-                }
-
-                ExportStatusReport.StatusStudentDetailExport = "Exporting " + (count++) + " of " + students.size();
-                rowIndex++;
             }
         }
     }
