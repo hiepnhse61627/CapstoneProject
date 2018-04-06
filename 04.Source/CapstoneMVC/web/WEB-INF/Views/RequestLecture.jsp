@@ -54,7 +54,7 @@
 
         <div class="b-body">
             <div class="form-group form-date-range">
-                <label for="scheduleDate">Ngày dạy:</label>
+                <label for="scheduleDate">Ngày sẽ dạy:</label>
                 <input id="scheduleDate" type="text" class="form-control"/>
                 <i class="fa fa-calendar"></i>
             </div>
@@ -69,7 +69,7 @@
             </div>
 
             <div class="form-group">
-                <label for="aTime">Slot:</label>
+                <label for="aTime">Slot sẽ dạy:</label>
                 <select id="aTime" class="select aTime-select">
                     <c:forEach var="aSlot" items="${slots}">
                         <option value="${aSlot.slotName}">${aSlot.slotName}</option>
@@ -110,29 +110,52 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Tiêu đề</h4>
+                <h4 class="modal-title">Gửi mail dạy thay</h4>
             </div>
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-12">
+                        <div class="form-group form-date-range">
+                            <label for="scheduleDate2">Ngày dạy ban đầu:</label>
+                            <input id="scheduleDate2" type="text" class="form-control"/>
+                            <i class="fa fa-calendar"></i>
+                        </div>
 
                         <div class="form-group">
-                            <label for="lectureFrom">Giảng viên yêu cầu đổi:</label>
-                            <select id="lectureFrom" class="select lecture-select">
-                                <c:forEach var="emp" items="${employees}">
-                                    <option value="${emp.fullName}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}
-                                        - ${emp.fullName}</option>
+                            <label for="aTime2">Slot ban đầu:</label>
+                            <select id="aTime2" class="select aTime-select">
+                                <c:forEach var="aSlot" items="${slots}">
+                                    <option value="${aSlot.slotName}">${aSlot.slotName}</option>
                                 </c:forEach>
                             </select>
                         </div>
 
-                        <div class="form-group" id="room-container">
-                            <label for="room">Phòng học:</label>
-                            <select id="room" class="select room-select">
-                                <c:forEach var="room" items="${rooms}">
-                                    <option value="${room.name}">${room.name}</option>
-                                </c:forEach>
+                        <div class="form-group">
+                            <label for="lectureFrom">Giảng viên yêu cầu đổi:</label>
+                            <select id="lectureFrom" class="select lecture-select">
+                                <%--<c:forEach var="emp" items="${employees}">--%>
+                                    <%--<option value="${emp.fullName}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}--%>
+                                        <%--- ${emp.fullName}</option>--%>
+                                <%--</c:forEach>--%>
                             </select>
+                        </div>
+
+                        <div class="form-group" id="room-container">
+                            <label for="room">Phòng học sẽ dạy:</label>
+                            <select id="room" class="select room-select">
+                                <%--<c:forEach var="room" items="${rooms}">--%>
+                                    <%--<option value="${room.name}">${room.name}</option>--%>
+                                <%--</c:forEach>--%>
+                            </select>
+                        </div>
+
+                        <h4>hoặc</h4>
+
+                        <div class="form-check" id="changeRoom-container">
+                            <input class="form-check-input" type="checkbox" value="" id="changeRoom">
+                            <label class="form-check-label" for="changeRoom">
+                                Giữ nguyên phòng dạy
+                            </label>
                         </div>
 
                         <div class="form-group">
@@ -164,7 +187,8 @@
 
 <script>
     var table = null;
-
+    var startDate2;
+    var endDate2;
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
 
@@ -255,18 +279,73 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/requestLecture/get", // url getData.php etc
-            "fnServerParams": function (aoData) {
-                aoData.push({
-                    "name": "startDate",
-                    "value": $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY')
-                }),
-                    aoData.push({
-                        "name": "endDate",
-                        "value": $('#scheduleDate').data('daterangepicker').endDate.format('DD/MM/YYYY')
-                    }),
-                    aoData.push({"name": "subject", "value": $('#subject2').val()}),
-                    aoData.push({"name": "slot", "value": $('#aTime').val()})
+            // "sAjaxSource": "/requestLecture/get", // url getData.php etc
+            // "fnServerParams": function (aoData) {
+            //     aoData.push({
+            //         "name": "startDate",
+            //         "value": $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY')
+            //     }),
+            //         aoData.push({
+            //             "name": "endDate",
+            //             "value": $('#scheduleDate').data('daterangepicker').endDate.format('DD/MM/YYYY')
+            //         }),
+            //         aoData.push({"name": "subject", "value": $('#subject2').val()}),
+            //         aoData.push({"name": "slot", "value": $('#aTime').val()})
+            // },
+            "ajax": {
+                "url": "/requestLecture/get",
+                "data": function (d) {
+                    d.startDate = $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY');
+                    d.endDate = $('#scheduleDate').data('daterangepicker').endDate.format('DD/MM/YYYY');
+                    d.subject = $('#subject2').val();
+                    d.slot = $('#aTime').val();
+                },
+                "dataSrc": function (json) {
+                    // Show daterangepicker when click on icon
+                    $('.form-date-range i').click(function () {
+                        $(this).parent().find('input').click();
+                    });
+
+                    startDate2 = endDate2 = $('#scheduleDate').data('daterangepicker').startDate;
+                    $('#scheduleDate2').daterangepicker({
+                        startDate: startDate2,
+                        endDate: startDate2,
+                        autoUpdateInput: true,
+                        singleDatePicker: true,
+                        locale: {
+                            applyLabel: "Chọn",
+                            cancelLabel: 'Xóa',
+                            format: 'DD/MM/YYYY'
+                        }
+                    });
+
+                    $('#scheduleDate2').on('apply.daterangepicker', function (ev, picker) {
+                        startDate2 = picker.startDate.format('DD/MM/YYYY');
+                        endDate2 = picker.endDate.format('DD/MM/YYYY');
+                        $(this).val(picker.startDate.format('DD/MM/YYYY'));
+                        getLectureByDateSlot();
+
+                    });
+
+                    $('#scheduleDate2').on('cancel.daterangepicker', function (ev, picker) {
+                        $(this).val('');
+                    });
+
+
+                    $('#aTime2').select2({
+                        placeholder: '- Chọn slot -'
+                    });
+
+                    $("#aTime2").val($('#aTime').val()).trigger('change');
+
+                    $('#aTime2').on("change", function(e) {
+                        getLectureByDateSlot();
+                    });
+
+                    getLectureByDateSlot();
+
+                    return json.aaData;
+                },
             },
             "oLanguage": {
                 "sSearchPlaceholder": "Nhập từ khóa",
@@ -304,10 +383,63 @@
             ],
             "bAutoWidth": false
         }).fnSetFilteringDelay(1000);
-
-
     });
 
+    function getLectureByDateSlot(){
+        $.ajax({
+            type: "POST",
+            url: "/getLectureByDateSlot",
+            data: {
+                startDate : $('#scheduleDate2').data('daterangepicker').startDate.format('DD/MM/YYYY'),
+                endDate : $('#scheduleDate2').data('daterangepicker').endDate.format('DD/MM/YYYY'),
+                subject : $('#subject2').val(),
+                slot : $('#aTime2').val(),
+                dayWillTeach: $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY'),
+                slotWillTeach: $('#aTime').val(),
+            },
+            success: function (json) {
+                // $('#lectureFrom').select2('data', null);
+                // $("#sel").val(null).trigger("change");
+                // $('#lectureFrom').html('').select2({data: [{id: null, text: null}]});
+                $('#lectureFrom').empty();
+
+                var fromLectureArr =[];
+                for (i = 0; i < json.fromLecture.length ; i++) {
+                    fromLectureArr.push({
+                        "id": json.fromLecture[i][0],
+                        "text": json.fromLecture[i][1]
+                    })
+                }
+
+                $("#lectureFrom").select2({
+                    placeholder: '- Chọn GV -',
+                    data: fromLectureArr,
+                });
+
+                $("#lectureFrom").val("").trigger("change");
+
+                $('#room').empty();
+                var roomListObjArr=[];
+
+                $("#room").select2({
+                    placeholder: '- Chọn phòng -',
+                    data: json.roomList,
+                });
+
+                $("#room").val("").trigger("change");
+
+                $('#select2-lectureFrom-container').removeAttr('title');
+                $('#select2-aTime2-container').removeAttr('title');
+                $('#select2-room-container').removeAttr('title');
+                $('select').on('change', function (evt) {
+                    $('#select2-lectureFrom-container').removeAttr('title');
+                    $('#select2-aTime2-container').removeAttr('title');
+                    $('#select2-room-container').removeAttr('title');
+                });
+
+            }
+        });
+    }
 
     function RefreshTable() {
         if (table != null) {
@@ -359,7 +491,6 @@
 
         $("#lectureFrom").val("").trigger("change");
         $("#room").val("").trigger("change");
-
 
         $("#lectureTo").val("");
 
@@ -450,14 +581,18 @@
                         "email": $("#email").val(),
                         "lectureFrom":  $("#lectureFrom").val(),
                         "lectureTo": $("#lectureTo").val(),
-                        "date": $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY'),
+                        "dateWillTeach": $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY'),
                         "subjectCode": $("#subject2").val(),
-                        "slot": $("#aTime").val(),
+                        "slotWillTeach": $("#aTime").val(),
+                        "originalDate" : $('#scheduleDate2').data('daterangepicker').startDate.format('DD/MM/YYYY'),
+                        "originalSlot" : $('#aTime2').val(),
+                        "noChangeRoom": $("#changeRoom").is(":checked"),
                         "room": $("#room").val(),
                         "token": token,
                         "username": username,
                         "name": name,
                         "editor": $('#editor').val()},
+
                     success: function (result) {
                         if (result.success) {
                             swal('', 'Đã gửi thành công', 'success');
@@ -474,7 +609,6 @@
 
 
     $("#btnSubmit").on("click", function () {
-
         Authenticate();
     });
 

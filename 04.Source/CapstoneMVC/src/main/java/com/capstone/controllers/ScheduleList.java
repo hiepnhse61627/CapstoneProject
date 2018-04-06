@@ -1514,7 +1514,6 @@ public class ScheduleList {
                             if (fapAttendanceList != null && fapAttendanceList.size() > 0) {
                                 int countAttendance = resultMap.get(aSchedule.getGroupName());
                                 ++countAttendance;
-                                System.out.println(scheduleId);
                                 resultMap.put(aSchedule.getGroupName(), countAttendance);
                             }
                         }
