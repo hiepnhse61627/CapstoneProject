@@ -6,6 +6,7 @@ import com.capstone.models.Logger;
 import com.capstone.services.CurriculumServiceImpl;
 import com.capstone.services.DocumentStudentServiceImpl;
 import com.capstone.services.ICurriculumService;
+import org.apache.poi.ss.formula.functions.T;
 
 import javax.persistence.*;
 import javax.persistence.criteria.*;
@@ -530,6 +531,11 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
             }
         }
         return true;
+    }
+
+    public void refresh(StudentEntity s) {
+        EntityManager em = getEntityManager();
+        em.refresh(s);
     }
 
 }

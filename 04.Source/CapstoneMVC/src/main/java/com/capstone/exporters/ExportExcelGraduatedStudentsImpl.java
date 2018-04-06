@@ -30,6 +30,8 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
     private IRealSemesterService semesterService = new RealSemesterServiceImpl();
     private ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
     IStudentService studentService = new StudentServiceImpl();
+    StudentStatusServiceImpl studentStatusService = new StudentStatusServiceImpl();
+    GraduationConditionServiceImpl graduationConditionService = new GraduationConditionServiceImpl();
 
     private String fileName = "Graduated-Students.xlsx";
 
@@ -239,10 +241,10 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
                         gradeCell.setCellValue("C");
                     } else if (averageMark >= 5) {
                         gradeCell.setCellValue("C-");
-                    }else if(averageMark == 0 && marksEntity.getStatus()
-                            .equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())){
+                    } else if (averageMark == 0 && marksEntity.getStatus()
+                            .equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())) {
                         gradeCell.setCellValue("Pass");
-                    }else {
+                    } else {
                         gradeCell.setCellValue("F");
                     }
 
@@ -412,34 +414,52 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
     }
 
     private List<StudentAndMark> processData2(Map<String, String> params) {
-        List<StudentAndMark> resultMap = new ArrayList<>();
-        StudentStatusServiceImpl studentStatusService = new StudentStatusServiceImpl();
-
         int programId = Integer.parseInt(params.get("programId"));
         int semesterId = Integer.parseInt(params.get("semesterId"));
 
-
+        List<StudentAndMark> resultMap = new ArrayList<>();
+        int previousSemesterId = Ultilities.GetSemesterIdBeforeThisId(semesterId);
         List<StudentEntity> studentEntityList;
         if (programId < 0) {
             studentEntityList = studentService.findAllStudents();
         } else {
-            studentEntityList = studentService.getStudentBySemesterIdAndProgram(semesterId, programId);
+            studentEntityList = studentService.getStudentBySemesterIdAndProgram(previousSemesterId, programId);
         }
 
 
+//
         List<StudentEntity> filteredStudents = new ArrayList<>();
         List<StudentStatusEntity> allStatus = studentStatusService.getStudentStatusBySemesterId(semesterId);
-        //lấy ra tất cả sinh viên tốt nghiệp, trạng thái sinh viên tốt nghiệp là G
-        for (StudentEntity student : studentEntityList) {
-            List<StudentStatusEntity> filterStatus = allStatus.stream().filter(q -> q.getStudentId().getId() == student.getId()
-                    && q.getStatus().equalsIgnoreCase(Enums.StudentStatus.HOCDI.getValue()))
+        List<GraduationConditionEntity> graduationConditions = graduationConditionService.findAllGraduationCondition();
+
+        studentEntityList = studentEntityList.stream().filter(s -> isCapstone(s, previousSemesterId)).collect(Collectors.toList());
+
+
+        //loại những học sinh đã tốt nghiệp ra, chỉ add những sinh viên chưa tốt nghiệp tại kì đang xét
+        for (StudentEntity studentEntity : studentEntityList) {
+            List<StudentStatusEntity> studentStatusEntities = new ArrayList<>(studentEntity.getStudentStatusEntityList());
+            //lấy ra status của sinh viên
+            List<StudentStatusEntity> tempStatus = studentStatusEntities.stream()
+                    .filter(q -> q.getSemesterId().getId() == previousSemesterId && q.getStatus().equalsIgnoreCase("G"))
                     .collect(Collectors.toList());
 
-            //nếu sinh viên
-            if (!filterStatus.isEmpty()) {
-                filteredStudents.add(student);
+            //nếu như học sinh này chưa tốt nghiệp ở kì chỉ định thì add vào mảng để mốt xét
+            if (tempStatus.isEmpty()) {
+                filteredStudents.add(studentEntity);
             }
+
         }
+
+
+        //lay danh sach status roi stream filter
+
+        //use 4 test
+//        List<StudentEntity> a = studentService.findAllStudents();
+//        List<StudentEntity> temp = a.stream().filter(q -> q.getRollNumber().equalsIgnoreCase("SE61822")
+//                || q.getRollNumber().equalsIgnoreCase("SE62094")
+//                || q.getRollNumber().equalsIgnoreCase("SE62137")
+//        ).collect(Collectors.toList());
+//        filteredStudents.addAll(temp);
 
         System.out.println(filteredStudents.size() + " students");
         int i = 1;
@@ -450,26 +470,44 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
             List<MarkCreditTermModel> finalMarks = new ArrayList<>();
             List<SubjectCurriculumEntity> subjectCurriculumList = new ArrayList<>();
 
+            String startCourse = "";
             for (DocumentStudentEntity docStudent : docs) {
                 CurriculumEntity curriculum = docStudent.getCurriculumId();
+                String curriculumName = curriculum.getName();
+                if (startCourse.isEmpty() && !curriculumName.toLowerCase().contains("pc")) {
+                    int firstToken = curriculumName.indexOf("_", 0);
+                    int secondToken = curriculumName.indexOf("_", firstToken + 1);
+
+                    if (secondToken > -1) {
+                        startCourse = curriculumName.substring(firstToken + 1, secondToken);
+                    } else {
+                        startCourse = curriculumName.substring(firstToken + 1, curriculumName.length());
+                    }
+                }
                 subjectCurriculumList.addAll(curriculum.getSubjectCurriculumEntityList());
-            }  //end of docStudents loop
+            }
+            // tính tín chỉ tích lũy của sv
+            int studentCredits = 0;
+            int ojtCredits = 0;
             for (SubjectCurriculumEntity subjectCurriculum : subjectCurriculumList) {
                 SubjectEntity subject = subjectCurriculum.getSubjectId();
+                if (subject.getType() == Enums.SubjectType.OJT.getValue()) {
+                    ojtCredits = subjectCurriculum.getSubjectCredits();
+                }
 
                 //mảng này chứa tất cả môn thay thế và môn chính
                 List<SubjectEntity> checkSubjects = Ultilities.findBackAndForwardReplacementSubject(subject);
-
-                List<MarksEntity> filteredMarks = allMarks.stream().filter(q -> checkSubjects.stream().anyMatch(c -> c.getId()
-                        .equalsIgnoreCase(q.getSubjectMarkComponentId().getSubjectId().getId()))
-                ).collect(Collectors.toList());
-
+                List<MarksEntity> filteredMarks = allMarks.stream().filter(q -> checkSubjects.stream()
+                        .anyMatch(c -> c.getId()
+                                .equalsIgnoreCase(q.getSubjectMarkComponentId().getSubjectId().getId())))
+                        .collect(Collectors.toList());
                 List<MarksEntity> sortedMarks = Ultilities.SortSemestersByMarks(filteredMarks);
 
                 //get latest mark
                 if (!sortedMarks.isEmpty()) {
                     MarksEntity latestMark = sortedMarks.get(sortedMarks.size() - 1);
                     RealSemesterEntity tmpSemester = latestMark.getSemesterId();
+
                     //check xem trong một kì có học môn đó 2 lần không (trả nợ ngay trong kì)
                     List<MarksEntity> reLearnInSameSemester = sortedMarks.stream()
                             .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
@@ -485,8 +523,9 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
                         finalMarks.add(new MarkCreditTermModel(passMark,
                                 subjectCurriculum.getSubjectCredits(),
                                 subjectCurriculum.getTermNumber() * 1.0));
+                        studentCredits += subjectCurriculum.getSubjectCredits();
                         failFlag = false;
-                    } else {
+                    } else if (passMark == null && subjectCurriculum.isRequired()) {
                         //loại ra khỏi danh sách có thể tốt nghiệp
                         failFlag = true;
                         break;
@@ -495,16 +534,76 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
 
             } //end of subjectCurriculum loop
 
+            //trừ tín chỉ ojt
+            studentCredits -= ojtCredits;
 
-            if (!failFlag) {
+            int specializedCredits = 0;
+            String tmpStartCourse = startCourse;
+            GraduationConditionEntity gc = graduationConditions.stream().filter(q -> q.getProgramId().getId() == student.getProgramId().getId()
+                    && q.getStartCourse().equalsIgnoreCase(tmpStartCourse)).findFirst().orElse(null);
+            if (gc != null) {
+                specializedCredits = gc.getGraduateCredits();
+            } else {
+                specializedCredits = student.getProgramId().getSpecializedCredits();
+            }
+
+            if (!failFlag && studentCredits >= specializedCredits) {
                 Collections.sort(finalMarks, new MarkCreditTermModelComparator());
                 resultMap.add(new StudentAndMark(finalMarks, student));
             }
             System.out.println(i + " - " + filteredStudents.size());
             i++;
         }
-
         return resultMap;
+    }
+
+    // finda all atudents match Capstone term
+    private boolean isCapstone(StudentEntity student, int previousSemesterId) {
+        int capstone = Enums.SpecialTerm.CAPSTONETERM.getValue();
+        List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+        for (DocumentStudentEntity doc : docs) {
+            if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
+                List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                for (SubjectCurriculumEntity s : list) {
+                    if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
+                        capstone = s.getTermNumber();
+                        break;
+                    }
+                }
+            }
+        }
+
+        //convert to double 4 comparison
+        double require = capstone * 1.0;
+        StudentStatusEntity studentStatus = null;
+        List<StudentStatusEntity> statusList = student.getStudentStatusEntityList();
+
+        //get student status ở kì được chọn
+        for (StudentStatusEntity status : statusList) {
+            if (status.getSemesterId().getId() == previousSemesterId) {
+                studentStatus = status;
+            }
+        }
+
+        double studentTerm;
+        // kiểm tra xem kì được chọn của học sinh có record hay không, tránh parse null
+        try {
+            if (studentStatus != null)
+                studentTerm = Double.parseDouble(studentStatus.getTerm());
+            else
+                studentTerm = -1;
+
+        } catch (Exception ex) {
+            studentTerm = -1;
+        }
+
+        //studentTerm + 1  == selectedSemester : chọn danh sách sinh viên đi trong hk Spring2018
+        // --> sinh viên đó sẽ được đi vào Spring2018 --> lấy trạng thái kì trước đó là Fall2017 để check
+        if (studentTerm + 1 >= require) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 

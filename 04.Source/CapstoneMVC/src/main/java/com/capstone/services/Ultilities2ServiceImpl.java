@@ -77,7 +77,7 @@ public class Ultilities2ServiceImpl implements IUltilities2Service {
            List<Object[]> objList = query.getResultList();
             for (Object[] item: objList) {
                 String rollNumber = (String)item[0];
-                Double avgMark = Double.parseDouble(item[1].toString());
+                Double avgMark = item[1] != null ? Double.parseDouble(item[1].toString()) : 0.0;
                 boolean isPassed = (boolean)item[2];
                 String subjCode = (String)item[3];
                 String semName = (String)item[4];
@@ -96,6 +96,9 @@ public class Ultilities2ServiceImpl implements IUltilities2Service {
         }
         return result;
     }
+
+
+
 
 
     public static <T> T map(Class<T> type, Object[] tuple){

@@ -162,4 +162,18 @@ public class Enums {
         }
     }
 
+    public enum SynchronizeFAP{
+        ERROR_lIST("importSynchronizeFAPMarkError");
+
+        private final String value;
+
+        SynchronizeFAP(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
 }

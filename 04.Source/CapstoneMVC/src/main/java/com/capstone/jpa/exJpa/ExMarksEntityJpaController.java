@@ -1101,7 +1101,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             em = getEntityManager();
 
             //SubjectType = 1 = ojt type
-            Query query = em.createQuery("SELECT DISTINCT a FROM MarksEntity a WHERE a.isActivated = true " +
+            Query query = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true " +
                     "AND a.studentId.id = :studentId AND (LOWER(a.status) LIKE '%studying%' " +
                     "OR LOWER(a.status) LIKE '%pass%') AND a.semesterId.id IN :semesterIdList", StudentEntity.class);
             query.setParameter("studentId", studentId);
@@ -1137,7 +1137,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             em = getEntityManager();
 
             //SubjectType = 1 = ojt type
-            Query query = em.createQuery("SELECT DISTINCT a FROM MarksEntity a WHERE a.isActivated = true " +
+            Query query = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true " +
                     "AND a.studentId.id = :studentId AND (LOWER(a.status) LIKE '%studying%' " +
                     "OR LOWER(a.status) LIKE '%pass%') AND a.semesterId.id IN :semesterIdList", StudentEntity.class);
             query.setParameter("studentId", studentId);
@@ -1173,7 +1173,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             em = getEntityManager();
 
             //SubjectType = 1 = ojt type
-            Query query = em.createQuery("SELECT DISTINCT a FROM MarksEntity a WHERE a.isActivated = true " +
+            Query query = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true " +
                     "AND a.studentId.id IN :studentIdList AND a.semesterId.id IN :semesterIdList", StudentEntity.class);
             query.setParameter("studentIdList", studentIds);
             query.setParameter("semesterIdList", allSemestersId);
@@ -1215,5 +1215,54 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         }
         return result;
     }
+
+    public void bulkDeleteMarks(List<MarksEntity> marks) {
+        EntityManager em = null;
+        int batchSize = 1000;
+        try {
+            em = getEntityManager();
+
+            em.getTransaction().begin();
+            for (int i = 0; i < marks.size(); i++) {
+                MarksEntity markEntity = marks.get(i);
+                em.remove(markEntity);
+                if (i > 0 && i % batchSize == 0) {
+                    em.flush();
+                    em.clear();
+                }
+            }
+            em.flush();
+            em.clear();
+            em.getTransaction().commit();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    public void deleteMarksBySemester(int semesterId) {
+        EntityManager em = null;
+        try {
+            em = getEntityManager();
+            em.getTransaction().begin();
+            Query query = em.createQuery("DELETE FROM MarksEntity m WHERE m.semesterId.id = :semesterId");
+            query.setParameter("semesterId", semesterId);
+            query.executeUpdate();
+            em.flush();
+            em.clear();
+            em.getTransaction().commit();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            em.getTransaction().rollback();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
 
 }

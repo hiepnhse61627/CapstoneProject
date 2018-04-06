@@ -23,7 +23,6 @@ import javax.persistence.Table;
 import javax.xml.bind.annotation.*;
 
 /**
- *
  * @author hiepnhse61627
  */
 @Entity
@@ -32,12 +31,11 @@ import javax.xml.bind.annotation.*;
 @XmlType(name = "program", propOrder = {"name", "fullName"})
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "ProgramEntity.findAll", query = "SELECT p FROM ProgramEntity p")})
+        @NamedQuery(name = "ProgramEntity.findAll", query = "SELECT p FROM ProgramEntity p")})
 public class ProgramEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
-    @Basic(optional = false)
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @XmlTransient
@@ -64,6 +62,9 @@ public class ProgramEntity implements Serializable {
     @Column(name = "SpecializedCredits")
     @XmlTransient
     private Integer specializedCredits;
+    @OneToMany(mappedBy = "programId")
+    @XmlTransient
+    private List<GraduationConditionEntity> graduationConditionEntityList;
     @OneToMany(mappedBy = "programId")
     @XmlTransient
     private List<OldRollNumberEntity> oldRollNumberEntityList;
@@ -150,6 +151,14 @@ public class ProgramEntity implements Serializable {
         this.specializedCredits = specializedCredits;
     }
 
+    public List<GraduationConditionEntity> getGraduationConditionEntityList() {
+        return graduationConditionEntityList;
+    }
+
+    public void setGraduationConditionEntityList(List<GraduationConditionEntity> graduationConditionEntityList) {
+        this.graduationConditionEntityList = graduationConditionEntityList;
+    }
+
     public List<OldRollNumberEntity> getOldRollNumberEntityList() {
         return oldRollNumberEntityList;
     }
@@ -198,5 +207,5 @@ public class ProgramEntity implements Serializable {
     public String toString() {
         return "com.capstone.entities.ProgramEntity[ id=" + id + " ]";
     }
-    
+
 }

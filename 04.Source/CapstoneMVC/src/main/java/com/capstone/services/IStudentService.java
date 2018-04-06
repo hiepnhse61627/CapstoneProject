@@ -5,6 +5,7 @@ import com.capstone.entities.StudentEntity;
 import com.capstone.models.StudentAndSubject;
 import com.capstone.models.StudentFailedSubject;
 import com.capstone.models.SubjectModel;
+import org.apache.poi.ss.formula.functions.T;
 
 import java.util.List;
 import java.util.Map;
@@ -38,4 +39,5 @@ public interface IStudentService {
     Map<String,StudentAndSubject> getSubjectsStudentsStudyInSemester(Integer selectedSemester);
     void myUpdateStudent(StudentEntity student);
     public boolean myBulkUpdateStudents(List<StudentEntity> studentList);
+    void refresh(StudentEntity studentEntity);
 }

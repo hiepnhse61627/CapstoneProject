@@ -52,4 +52,6 @@ public interface IMarksService {
     List<MarksEntity> getMarksBySelectedStudentsFromAndBeforeSelectedSemester(int semesterId, List<Integer> studentIds);
 
     long countMarksByStudentIdAndSubjectId(int studentId, String subjectId);
+    void bulkDeleteMarks(List<MarksEntity> marks);
+    void deleteMarksBySemester(int semesterId);
 }

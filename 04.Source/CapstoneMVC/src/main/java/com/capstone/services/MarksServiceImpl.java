@@ -220,4 +220,14 @@ public class MarksServiceImpl implements IMarksService {
     public long countMarksByStudentIdAndSubjectId(int studentId, String subjectId) {
         return marksEntityJpaController.countMarksByStudentIdAndSubjectId(studentId, subjectId);
     }
+
+    @Override
+    public void bulkDeleteMarks(List<MarksEntity> marks) {
+        marksEntityJpaController.bulkDeleteMarks(marks);
+    }
+
+    @Override
+    public void deleteMarksBySemester(int semesterId) {
+        marksEntityJpaController.deleteMarksBySemester(semesterId);
+    }
 }

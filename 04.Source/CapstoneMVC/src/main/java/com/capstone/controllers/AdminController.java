@@ -172,9 +172,6 @@ public class AdminController {
             data.addProperty("success", true);
             data.add("data", userData);
 
-            Ultilities2ServiceImpl ult2 = new Ultilities2ServiceImpl();
-            List<StudentAvgMarks> t =ult2.getFAPMarksBySemester("Fall2017");
-            System.out.println(t.size());
         } catch (Exception e) {
             e.printStackTrace();
         }

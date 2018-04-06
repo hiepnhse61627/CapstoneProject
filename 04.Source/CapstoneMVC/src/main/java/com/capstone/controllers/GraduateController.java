@@ -3,6 +3,7 @@ package com.capstone.controllers;
 import com.capstone.entities.*;
 import com.capstone.enums.SubjectTypeEnum;
 import com.capstone.exporters.ExportExcelGraduatedStudentsImpl;
+import com.capstone.exporters.ExportStatusReport;
 import com.capstone.models.*;
 import com.capstone.services.*;
 import com.google.common.collect.Lists;
@@ -67,6 +68,10 @@ public class GraduateController {
     IStudentService studentService = new StudentServiceImpl();
     ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
     StudentStatusServiceImpl studentStatusService = new StudentStatusServiceImpl();
+    GraduationConditionServiceImpl graduationConditionService = new GraduationConditionServiceImpl();
+    public static boolean IsRunning = true;
+    public static String RunningStatus = "";
+    public static boolean Stop = false;
 
     // home page
     @RequestMapping("/graduate")
@@ -244,10 +249,11 @@ public class GraduateController {
     public List<List<String>> processGraduate2(Map<String, String> params) {
         List<List<String>> data = new ArrayList<>();
 
+
         int programId = Integer.parseInt(params.get("programId"));
         int semesterId = Integer.parseInt(params.get("semesterId"));
         boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
-
+        MarksServiceImpl marksService = new MarksServiceImpl();
 
         int previousSemesterId = Ultilities.GetSemesterIdBeforeThisId(semesterId);
         List<StudentEntity> studentEntityList;
@@ -264,9 +270,6 @@ public class GraduateController {
         //loại những học sinh đã tốt nghiệp ra, chỉ add những sinh viên chưa tốt nghiệp tại kì đang xét
         List<StudentEntity> filteredList = new ArrayList<>();
         for (StudentEntity studentEntity : studentEntityList) {
-//            if (studentEntity.getRollNumber().equalsIgnoreCase("SE61726")) {
-//                System.out.println("bug");
-//            }
             List<StudentStatusEntity> studentStatusEntities = new ArrayList<>(studentEntity.getStudentStatusEntityList());
             //lấy ra status của sinh viên
             List<StudentStatusEntity> tempStatus = studentStatusEntities.stream()
@@ -280,18 +283,14 @@ public class GraduateController {
 
         }
 
-
-        MarksServiceImpl marksService = new MarksServiceImpl();
-
         //lấy tất cả điểm ở kỳ được ở trước kì được chọn để xét duyệt, kì được chọn là semesterId
         List<MarksEntity> allMarks = marksService.getMarkByConditions(previousSemesterId, null, -1);
+        List<GraduationConditionEntity> graduationConditions = graduationConditionService.findAllGraduationCondition();
 
         loopStudents:
         for (StudentEntity student : filteredList) {
-//            List<DocumentStudentEntity> documentStudentEntityList = student.getDocumentStudentEntityList();
-//            Map<SubjectEntity, Integer> subjectsCredits = processCreditsForSubject(documentStudentEntityList);
 
-//            if (student.getRollNumber().equalsIgnoreCase("SE61726")) {
+//            if (student.getRollNumber().equalsIgnoreCase("SE61679")) {
 //                System.out.println("bug");
 //            }
             // get mark list of student
@@ -304,19 +303,35 @@ public class GraduateController {
             //tất cả các môn trong khung chương trình
             List<SubjectCurriculumEntity> subjects = new ArrayList<>();
             //tín chỉ chuyên ngành
-            int specializedCredits = 0;
+
+            String startCourse = "";
+            int ojtCredit = 0;
             for (DocumentStudentEntity doc : docs) {
                 if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
                     CurriculumEntity curriculum = doc.getCurriculumId();
+                    String curriculumName = curriculum.getName();
                     //học sinh liên thông sẽ không được xét
                     if (curriculum.getProgramId().getName().contains("lt")) {
                         //add những sinh viên không được xét vào 1 mảng và tiếp tục vòng lặp xét sinh viên
                         uncheckable.add(student);
                         continue loopStudents;
                     }
-                    specializedCredits += curriculum.getSpecializedCredits();
+                    if (startCourse.isEmpty() && !curriculumName.toLowerCase().contains("pc")) {
+                        int firstToken = curriculumName.indexOf("_", 0);
+                        int secondToken = curriculumName.indexOf("_", firstToken + 1);
+
+                        if (secondToken > -1) {
+                            startCourse = curriculumName.substring(firstToken + 1, secondToken);
+                        } else {
+                            startCourse = curriculumName.substring(firstToken + 1, curriculumName.length());
+                        }
+                    }
                     List<SubjectCurriculumEntity> list = curriculum.getSubjectCurriculumEntityList();
                     for (SubjectCurriculumEntity s : list) {
+                        SubjectEntity subject = s.getSubjectId();
+                        if(subject.getType() == Enums.SubjectType.OJT.getValue()){
+                            ojtCredit = s.getSubjectCredits();
+                        }
                         if (!subjects.contains(s)) {
                             subjects.add(s);
                         }
@@ -327,20 +342,18 @@ public class GraduateController {
 
             // tính tín chỉ tích lũy của sv
             int studentCredits = 0;
+            //tín chỉ cần để xét tốt nghiệp
+            int specializedCredits = 0;
 
             //biến cờ check xem sinh viên có pass hết môn Chuyên ngành không
             boolean passedFlag = true;
             //subject notStart hoặc fail
             List<SubjectEntity> failSubjs = new ArrayList<>();
-            int specialRequiredSubjectCredit = 0;
 
             //duyệt tất cả những môn có trong khung chương trình
             subjectCurriculumLoop:
             for (SubjectCurriculumEntity subjectCurriculum : subjects) {
                 SubjectEntity subject = subjectCurriculum.getSubjectId();
-                if (subjectCurriculum.isRequired()) {
-                    specialRequiredSubjectCredit += subjectCurriculum.getSubjectCredits();
-                }
 
                 //mảng này chứa tất cả môn thay thế và môn chính
                 List<SubjectEntity> checkSubjects = Ultilities.findBackAndForwardReplacementSubject(subject);
@@ -363,34 +376,47 @@ public class GraduateController {
                         passedFlag = false;
                     }
                 }
+            }
 
+            String tmpStartCourse = startCourse;
+            GraduationConditionEntity gc = graduationConditions.stream().filter(q -> q.getProgramId().getId() == student.getProgramId().getId()
+                    && q.getStartCourse().equalsIgnoreCase(tmpStartCourse)).findFirst().orElse(null);
+            if (gc != null) {
+                specializedCredits = gc.getGraduateCredits();
+            } else {
+                specializedCredits = student.getProgramId().getSpecializedCredits();
+            }
+
+            List<StudentStatusEntity> statuses = new ArrayList(student.getStudentStatusEntityList());
+            String currentStatus = statuses.stream().filter(q -> q.getSemesterId().getId() == previousSemesterId).map(q -> q.getStatus())
+                    .findFirst().orElse(null);
+            if (currentStatus == null) {
+                currentStatus = "-";
             }
 
             //trừ tín chỉ Ojt
-            specializedCredits -= 10;
-            studentCredits -= 10;
-            specialRequiredSubjectCredit -=10;
+            studentCredits -= ojtCredit;
 
 
             if (isGraduate) {
-                if ((studentCredits >= specialRequiredSubjectCredit) && (passedFlag)) {
+                if ((studentCredits >= specializedCredits) && (passedFlag)) {
                     List<String> t = new ArrayList<>();
                     t.add(student.getRollNumber());
                     t.add(student.getFullName());
-                    t.add(String.valueOf(student.getTerm()));
+                    t.add(String.valueOf(currentStatus));
                     t.add(String.valueOf(studentCredits));
-                    t.add(String.valueOf(specialRequiredSubjectCredit));
+                    t.add(String.valueOf(specializedCredits));
                     t.add(String.valueOf(student.getId()));
                     data.add(t);
                 }
             } else {
-                if ((studentCredits < specialRequiredSubjectCredit) || (!passedFlag)) {
+                if ((studentCredits < specializedCredits) || (!passedFlag)) {
                     List<String> t = new ArrayList<>();
                     t.add(student.getRollNumber());
                     t.add(student.getFullName());
-                    t.add(String.valueOf(student.getTerm()));
+                    t.add(String.valueOf(currentStatus));
                     t.add(String.valueOf(studentCredits));
-                    t.add(String.valueOf(specialRequiredSubjectCredit));
+                    t.add(String.valueOf(specializedCredits));
                     t.add(String.valueOf(student.getId()));
                     data.add(t);
                 }
@@ -1378,6 +1404,14 @@ public class GraduateController {
                         currentTerm = -3;
                     } else if (rightTerm.contains("ENG2")) {
                         currentTerm = -4;
+                    } else if (rightTerm.contains("'")) {
+                        String[] splitList = rightTerm.split("'");
+                        try {
+                            Integer tempTerm = Integer.parseInt(splitList[0]);
+                            currentTerm = tempTerm;
+                        } catch (NumberFormatException ex) {
+                            System.out.printf(ex.getMessage());
+                        }
                     }
 
                     if (currentTerm == null) {
@@ -1560,28 +1594,42 @@ public class GraduateController {
 
 
     private List<StudentAndMark> processData2(Map<String, String> params, int semesterId, int programId) {
+        this.IsRunning = true;
+        this.Stop =false;
+        this.RunningStatus = "Đang lấy danh sách sinh viên để xét duyệt";
         List<StudentAndMark> resultMap = new ArrayList<>();
-
+        int previousSemesterId =  Ultilities.GetSemesterIdBeforeThisId(semesterId);
         List<StudentEntity> studentEntityList;
         if (programId < 0) {
             studentEntityList = studentService.findAllStudents();
         } else {
-            studentEntityList = studentService.getStudentBySemesterIdAndProgram(semesterId, programId);
+            studentEntityList = studentService.getStudentBySemesterIdAndProgram(previousSemesterId, programId);
         }
+
+
 //
         List<StudentEntity> filteredStudents = new ArrayList<>();
         List<StudentStatusEntity> allStatus = studentStatusService.getStudentStatusBySemesterId(semesterId);
+        List<GraduationConditionEntity> graduationConditions = graduationConditionService.findAllGraduationCondition();
 
-        for (StudentEntity student : studentEntityList) {
-            List<StudentStatusEntity> filterStatus = allStatus.stream().filter(q -> q.getStudentId().getId() == student.getId()
-                    && q.getStatus().equalsIgnoreCase(Enums.StudentStatus.HOCDI.getValue()))
+        studentEntityList = studentEntityList.stream().filter(s -> isCapstone(s, previousSemesterId)).collect(Collectors.toList());
+
+
+        //loại những học sinh đã tốt nghiệp ra, chỉ add những sinh viên chưa tốt nghiệp tại kì đang xét
+        for (StudentEntity studentEntity : studentEntityList) {
+            List<StudentStatusEntity> studentStatusEntities = new ArrayList<>(studentEntity.getStudentStatusEntityList());
+            //lấy ra status của sinh viên
+            List<StudentStatusEntity> tempStatus = studentStatusEntities.stream()
+                    .filter(q -> q.getSemesterId().getId() == previousSemesterId && q.getStatus().equalsIgnoreCase("G"))
                     .collect(Collectors.toList());
 
-            //nếu sinh viên
-            if (!filterStatus.isEmpty()) {
-                filteredStudents.add(student);
+            //nếu như học sinh này chưa tốt nghiệp ở kì chỉ định thì add vào mảng để mốt xét
+            if (tempStatus.isEmpty()) {
+                filteredStudents.add(studentEntity);
             }
+
         }
+
 
         //lay danh sach status roi stream filter
 
@@ -1602,13 +1650,30 @@ public class GraduateController {
             List<MarkCreditTermModel> finalMarks = new ArrayList<>();
             List<SubjectCurriculumEntity> subjectCurriculumList = new ArrayList<>();
 
+            String startCourse = "";
             for (DocumentStudentEntity docStudent : docs) {
                 CurriculumEntity curriculum = docStudent.getCurriculumId();
+                String curriculumName = curriculum.getName();
+                if (startCourse.isEmpty() && !curriculumName.toLowerCase().contains("pc")) {
+                    int firstToken = curriculumName.indexOf("_", 0);
+                    int secondToken = curriculumName.indexOf("_", firstToken + 1);
+
+                    if (secondToken > -1) {
+                        startCourse = curriculumName.substring(firstToken + 1, secondToken);
+                    } else {
+                        startCourse = curriculumName.substring(firstToken + 1, curriculumName.length());
+                    }
+                }
                 subjectCurriculumList.addAll(curriculum.getSubjectCurriculumEntityList());
             }
-
+            // tính tín chỉ tích lũy của sv
+            int studentCredits = 0;
+            int ojtCredits = 0;
             for (SubjectCurriculumEntity subjectCurriculum : subjectCurriculumList) {
                 SubjectEntity subject = subjectCurriculum.getSubjectId();
+                if(subject.getType() == Enums.SubjectType.OJT.getValue()){
+                    ojtCredits = subjectCurriculum.getSubjectCredits();
+                }
 
                 //mảng này chứa tất cả môn thay thế và môn chính
                 List<SubjectEntity> checkSubjects = Ultilities.findBackAndForwardReplacementSubject(subject);
@@ -1638,8 +1703,9 @@ public class GraduateController {
                         finalMarks.add(new MarkCreditTermModel(passMark,
                                 subjectCurriculum.getSubjectCredits(),
                                 subjectCurriculum.getTermNumber() * 1.0));
+                        studentCredits += subjectCurriculum.getSubjectCredits();
                         failFlag = false;
-                    } else {
+                    } else if (passMark == null && subjectCurriculum.isRequired()) {
                         //loại ra khỏi danh sách có thể tốt nghiệp
                         failFlag = true;
                         break;
@@ -1648,14 +1714,28 @@ public class GraduateController {
 
             } //end of subjectCurriculum loop
 
-            if (!failFlag) {
+            //trừ tín chỉ ojt
+            studentCredits -= ojtCredits;
+
+            int specializedCredits = 0;
+            String tmpStartCourse = startCourse;
+            GraduationConditionEntity gc = graduationConditions.stream().filter(q -> q.getProgramId().getId() == student.getProgramId().getId()
+                    && q.getStartCourse().equalsIgnoreCase(tmpStartCourse)).findFirst().orElse(null);
+            if (gc != null) {
+                specializedCredits = gc.getGraduateCredits();
+            } else {
+                specializedCredits = student.getProgramId().getSpecializedCredits();
+            }
+
+            if (!failFlag &&  studentCredits >= specializedCredits) {
                 Collections.sort(finalMarks, new MarkCreditTermModelComparator());
                 resultMap.add(new StudentAndMark(finalMarks, student));
             }
+            this.RunningStatus = i + " - " + filteredStudents.size();
             System.out.println(i + " - " + filteredStudents.size());
             i++;
         }
-
+        this.IsRunning = false;
         return resultMap;
     }
 

@@ -2,6 +2,7 @@ package com.capstone.controllers;
 
 import com.capstone.exporters.ExportConvert2StudentQuantityByClassAndSubject;
 import com.capstone.exporters.IExportObject;
+import com.capstone.jpa.GraduateDetailEntityJpaController;
 import com.capstone.models.*;
 import com.capstone.services.*;
 import com.google.common.collect.Lists;
@@ -267,9 +268,9 @@ public class UploadController {
             int dateColIndex = 10;
 
 
-
             int lastRow = spreadsheet.getLastRowNum();
             this.totalLine = lastRow - startRowNumber + 1;
+            GraduateDetailServiceImpl graduateDetailService = new GraduateDetailServiceImpl();
 
             RealSemesterEntity selectedSemester = realSemesterService.findSemesterById(semesterId);
 
@@ -282,32 +283,13 @@ public class UploadController {
                             rollNumberCell.getStringCellValue().trim().toUpperCase() : Integer.toString((int) rollNumberCell.getNumericCellValue()).trim().toUpperCase();
                     if (rollNumberCell != null) {
                         StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumber);
+                         int studentId = studentEntity.getId();
                         if (studentEntity != null) {
                             StudentStatusEntity studentStatusEntity = studentStatusService.getStudentStatusBySemesterIdAndStudentId(semesterId, studentEntity.getId());
-
                             if (studentStatusEntity != null) {
                                 // update status
-                                studentStatusEntity.setStatus("G");
-                                String gradeValue = row.getCell(gradeColIndex).getStringCellValue();
-                                String formValue = row.getCell(formColIndex).getStringCellValue();
-
-                                String diplomaValue = "";
-                                Cell diplomaCodeCell = row.getCell(diplomaCodeColIndex);
-                                if(diplomaCodeCell.getCellTypeEnum() == CellType.STRING){
-                                    diplomaValue = diplomaCodeCell.getStringCellValue();
-                                }else if(diplomaCodeCell.getCellTypeEnum() == CellType.NUMERIC){
-                                    diplomaValue = diplomaCodeCell.getNumericCellValue()+"";
-                                }
-
-                                String certificateValue = row.getCell(certificateCodeColIndex).getStringCellValue();
-                                String graduateNumberValue = row.getCell(graduateDecisionNumberColIndex).getStringCellValue();
-                                String dateValue = row.getCell(dateColIndex).getStringCellValue();
-
-                                SimpleDateFormat sdf = new SimpleDateFormat("");
-                                Date date = sdf.parse(dateValue);
-                                GraduateDetailEntity graduateDetailEntity = new GraduateDetailEntity();
-                                graduateDetailEntity.setCertificateCode(certificateValue);
-//                                graduateDetailEntity.setDate(date);
+                                studentStatusEntity.setStatus(Enums.StudentStatus.Graduated.getValue());
+                                studentStatusService.updateStudentStatus(studentStatusEntity);
                             } else {
                                 //tạo mới student status cho những sinh viên tốt nghiệp chưa có status
                                 //vd: sinh viên A đủ tín chỉ để cấp = tốt nghiệp sau khi passed đồ án vào cuối FALL2017
@@ -320,11 +302,53 @@ public class UploadController {
 
                                 studentStatusEntity = new StudentStatusEntity();
                                 studentStatusEntity.setStudentId(studentEntity);
-                                studentStatusEntity.setStatus("G");
+                                studentStatusEntity.setStatus(Enums.StudentStatus.Graduated.getValue());
                                 studentStatusEntity.setTerm(previousStatus.getTerm());
                                 studentStatusEntity.setSemesterId(selectedSemester);
+
+                                studentStatusService.createStudentStatus(studentStatusEntity);
                             }
-                            studentStatusService.updateStudentStatus(studentStatusEntity);
+
+                            String gradeValue = row.getCell(gradeColIndex).getStringCellValue();
+                            String formValue = row.getCell(formColIndex).getStringCellValue();
+
+                            String diplomaValue = "";
+                            Cell diplomaCodeCell = row.getCell(diplomaCodeColIndex);
+                            if (diplomaCodeCell.getCellTypeEnum() == CellType.STRING) {
+                                diplomaValue = diplomaCodeCell.getStringCellValue();
+                            } else if (diplomaCodeCell.getCellTypeEnum() == CellType.NUMERIC) {
+                                diplomaValue = diplomaCodeCell.getNumericCellValue() + "";
+                            }
+
+                            String certificateValue = row.getCell(certificateCodeColIndex).getStringCellValue();
+                            String graduateNumberValue = row.getCell(graduateDecisionNumberColIndex).getStringCellValue();
+                            String dateValue = row.getCell(dateColIndex).getStringCellValue();
+
+                            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                            Date date = sdf.parse(dateValue);
+                            GraduateDetailEntity graduateDetailEntity = graduateDetailService.findGraduateDetailEntity(studentId);
+                            if(graduateDetailEntity == null){
+                                graduateDetailEntity = new GraduateDetailEntity();
+                                graduateDetailEntity.setStudentId(studentId);
+                                graduateDetailEntity.setDiplomaCode(diplomaValue);
+                                graduateDetailEntity.setCertificateCode(certificateValue);
+                                graduateDetailEntity.setGraduateDecisionNumber(graduateNumberValue);
+                                graduateDetailEntity.setForm(formValue);
+                                graduateDetailEntity.setDate(sdf.format(date));
+                                graduateDetailEntity.setGraded(gradeValue);
+
+                                graduateDetailService.create(graduateDetailEntity);
+                            }else{
+                                graduateDetailEntity.setStudentId(studentId);
+                                graduateDetailEntity.setDiplomaCode(diplomaValue);
+                                graduateDetailEntity.setCertificateCode(certificateValue);
+                                graduateDetailEntity.setGraduateDecisionNumber(graduateNumberValue);
+                                graduateDetailEntity.setForm(formValue);
+                                graduateDetailEntity.setDate(sdf.format(date));
+                                graduateDetailEntity.setGraded(gradeValue);
+
+                                graduateDetailService.edit(graduateDetailEntity);
+                            }
                         }
                     }
                 }
@@ -341,7 +365,7 @@ public class UploadController {
         }
 
         jsonObject.addProperty("success", true);
-        jsonObject.addProperty("message", "Cập nhật trạng thái cho sinh viên thành công !");
+        jsonObject.addProperty("message", "Cập nhật trạng thái cho sinh viên tốt nghiệp thành công !");
         return jsonObject;
     }
 
@@ -722,6 +746,18 @@ public class UploadController {
                                         studentTerm = -3;
                                     } else if (term.contains("ENG2")) {
                                         studentTerm = -4;
+                                    }
+                                    //dành cho những sinh viên đi ojt lâu hơn 1 kì -> giả sử là 6', 7'
+                                    else if (term.contains("'")) {
+                                        String[] splitList = term.split("'");
+                                        try {
+                                            Integer tempTerm = Integer.parseInt(splitList[0]);
+                                            studentTerm = tempTerm;
+
+                                        } catch (NumberFormatException ex) {
+                                            System.out.printf(ex.getMessage());
+                                            cantImport.put(studentEntity, term + " term is not a number");
+                                        }
                                     }
                                     statusTerm = term;
 

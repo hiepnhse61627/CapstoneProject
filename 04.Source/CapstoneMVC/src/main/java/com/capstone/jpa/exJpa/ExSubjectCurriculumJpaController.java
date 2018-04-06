@@ -226,4 +226,28 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
 
         return subjectCurriculumEntityList;
     }
+
+    public List<SubjectCurriculumEntity> getSubjectCurriculumByStudentByTerm(int studentId, int term){
+        EntityManager em = getEntityManager();
+        List<SubjectCurriculumEntity> subjectCurriculumEntityList = null;
+        try {
+
+
+            Query query = em.createQuery("SELECT sc FROM SubjectCurriculumEntity sc WHERE sc.curriculumId.id IN " +
+                    "(SELECT ds.curriculumId.id FROM DocumentStudentEntity" +
+                    " ds WHERE ds.studentId.id = :studentId) AND sc.termNumber = :term");
+            query.setParameter("studentId", studentId);
+            query.setParameter("term", term);
+            subjectCurriculumEntityList = query.getResultList();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            if(em != null){
+                em.close();
+            }
+        }
+
+        return subjectCurriculumEntityList;
+    }
 }
