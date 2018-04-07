@@ -22,6 +22,7 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.persistence.*;
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Type;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -95,6 +96,16 @@ public class EmployeeList {
         EmployeeEntity emp = employeeService.findEmployeeById(employeeId);
 
         view.addObject("employee", emp);
+
+        List<EmpCompetenceEntity> empCompetenceEntities = employeeCompetenceService.findEmployeeCompetencesByEmployee(employeeId);
+        List<String> subjectCodes = new ArrayList<>();
+        for (EmpCompetenceEntity competenceEntity : empCompetenceEntities) {
+            subjectCodes.add(competenceEntity.getSubjectId().getId());
+        }
+        Gson gson = new Gson();
+        JsonArray array = (JsonArray) gson.toJsonTree(subjectCodes);
+        view.addObject("empCompetence", array);
+
 
         Set listCapacity = new HashSet();
         for (RoomEntity room : rooms) {
@@ -179,6 +190,39 @@ public class EmployeeList {
 
             if (code != null && !code.equals("")) {
                 emp.setCode(code);
+            }
+
+            Gson gson = new Gson();
+
+            Type type2 = new TypeToken<List<String>>() {
+            }.getType();
+            List<String> newEmpCompetence = gson.fromJson(params.get("empCompetence"), type2);
+            List<String> newEmpCompetenceRemoveList = new ArrayList<>();
+
+            List<EmpCompetenceEntity> empCompetenceEntities = employeeCompetenceService.findEmployeeCompetencesByEmployee(employeeId);
+
+            for (EmpCompetenceEntity competenceEntity : empCompetenceEntities) {
+
+                if (!newEmpCompetence.contains(competenceEntity.getSubjectId().getId())) {
+                    SubjectEntity aSubject = subjectService.findSubjectById(competenceEntity.getSubjectId().getId());
+                    employeeCompetenceService.removeEmployeeCompetence(emp, aSubject);
+                }
+
+                for (String subjectCode : newEmpCompetence) {
+                    if (competenceEntity.getSubjectId().getId().equals(subjectCode)) {
+                        newEmpCompetenceRemoveList.add(subjectCode);
+                    }
+                }
+            }
+
+            newEmpCompetence.removeAll(newEmpCompetenceRemoveList);
+
+            for (String subjectCode : newEmpCompetence) {
+                EmpCompetenceEntity aCompetence = new EmpCompetenceEntity();
+                aCompetence.setEmployeeId(emp);
+                SubjectEntity aSubject = subjectService.findSubjectById(subjectCode);
+                aCompetence.setSubjectId(aSubject);
+                employeeCompetenceService.createEmployeeCompetence(aCompetence);
             }
 
             employeeService.updateEmployee(emp);
@@ -279,7 +323,7 @@ public class EmployeeList {
                 lectureId = Integer.parseInt(params.get("lecture"));
             }
 
-
+            //get all schedules of lecturer even the non-active ones, cause that mean he not free on that time
             List<ScheduleEntity> scheduleList = scheduleService.findScheduleByLecture(lectureId);
             if (scheduleList != null) {
                 List<String> slotNameList = new ArrayList<>();

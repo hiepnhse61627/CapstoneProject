@@ -17,4 +17,5 @@ public interface IEmployeeCompetenceService {
     void saveEmployeeCompetence(EmpCompetenceEntity emp) throws Exception;
     EmpCompetenceEntity createEmployeeCompetence(EmpCompetenceEntity EmployeeCompetenceEntity);
     void updateEmployeeCompetence(EmpCompetenceEntity entity);
+    void removeEmployeeCompetence(EmployeeEntity employeeEntity, SubjectEntity subjectEntity);
 }

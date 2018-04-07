@@ -83,12 +83,42 @@ public class ExEmployeeCompetenceEntityJpaController extends EmpCompetenceEntity
         currentLine = 0;
     }
 
+    public void removeEmployeeCompetence(EmployeeEntity employeeEntity, SubjectEntity subjectEntity) {
+        EntityManager em = null;
+        try {
+            em = getEntityManager();
+            try {
+                em.getTransaction().begin();
+
+                // Create empCompetenceEntity
+                TypedQuery<EmpCompetenceEntity> queryEmployee = em.createQuery(
+                        "SELECT c FROM EmpCompetenceEntity c WHERE c.employeeId = :emp AND c.subjectId = :sub", EmpCompetenceEntity.class);
+                queryEmployee.setParameter("emp", employeeEntity);
+                queryEmployee.setParameter("sub", subjectEntity);
+
+                EmpCompetenceEntity empComp = queryEmployee.getSingleResult();
+                if (empComp != null) {
+                    em.remove(empComp);
+                }
+                em.getTransaction().commit();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+
     public List<EmpCompetenceEntity> findEmployeeCompetencesByEmployee(Integer empId) {
         EntityManager em = getEntityManager();
         List<EmpCompetenceEntity> result = null;
 
         try {
-            if(empId!=null){
+            if (empId != null) {
                 String queryStr = "SELECT s FROM EmpCompetenceEntity s" +
                         " WHERE s.employeeId.id = :empId";
                 TypedQuery<EmpCompetenceEntity> query = em.createQuery(queryStr, EmpCompetenceEntity.class);
