@@ -476,132 +476,126 @@ public class ScheduleList {
     @ResponseBody
     public JsonObject LoadScheduleListOfEmployee(@PathVariable("employeeId") int employeeId, @RequestParam Map<String, String> params) {
         JsonObject jsonObj = new JsonObject();
-
+        List<List<String>> result = new ArrayList<>();
         try {
-            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
-            EntityManager em = emf.createEntityManager();
 
-            String sSearch = params.get("sSearch");
-            int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
-            int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
-            int iTotalRecords = 0;
-            int iTotalDisplayRecords = 0;
+            String startDate = params.get("startDate");
+            String endDate = params.get("endDate");
 
-            String queryStr;
-            // Đếm số lượng lịch học
-            queryStr = "SELECT COUNT(s) FROM ScheduleEntity s WHERE (s.isActive IS NULL OR s.isActive = 'true') AND s.empId.id = " + employeeId;
-            TypedQuery<Integer> queryCounting = em.createQuery(queryStr, Integer.class);
-            iTotalRecords = ((Number) queryCounting.getSingleResult()).intValue();
+            if (!startDate.equals(endDate)) {
+                List<ScheduleEntity> scheduleList = scheduleService.findScheduleByLecture(employeeId);
 
-            // Đếm số lượng lịch học sau khi filter
-            if (!sSearch.isEmpty()) {
-                queryStr = "SELECT COUNT(*)\n" +
-                        "  FROM Schedule s\n" +
-                        "   INNER JOIN Course c ON s.CourseId=c.Id\n" +
-                        "    INNER JOIN  Day_Slot d ON s.DateId=d.Id " +
-                        "WHERE (s.isActive IS NULL OR s.isActive = 'true') AND " +
-                        "((s.CourseId = c.Id AND c.SubjectCode LIKE '%" + sSearch + "%') OR \n" +
-                        " (s.DateId = d.Id AND d.Date LIKE '%" + sSearch + "%') OR" +
-                        " (s.groupName LIKE '%" + sSearch + "%')) AND" +
-                        " (s.EmpId = " + employeeId + ")";
-                Query queryCounting2 = em.createNativeQuery(queryStr);
-                iTotalDisplayRecords = ((Number) queryCounting2.getSingleResult()).intValue();
-            } else {
-                iTotalDisplayRecords = iTotalRecords;
+
+                DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+                List<ScheduleEntity> removeList = new ArrayList<>();
+                for (ScheduleEntity aSchedule : scheduleList) {
+                    Date aDate = format.parse(aSchedule.getDateId().getDate());
+                    if (aDate.before(format.parse(startDate)) || aDate.after(format.parse(endDate))
+                            || aSchedule.getActive() == null || aSchedule.getActive() == false) {
+                        removeList.add(aSchedule);
+                    }
+                }
+                scheduleList.removeAll(removeList);
+
+
+                Collections.sort(scheduleList, new Comparator<ScheduleEntity>() {
+                    @Override
+                    public int compare(ScheduleEntity o1, ScheduleEntity o2) {
+                        try {
+                            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                            Date aDate = df.parse(o1.getDateId().getDate());
+                            Date aDate2 = df.parse(o2.getDateId().getDate());
+                            if (aDate.compareTo(aDate2) > 0) {
+                                return 1;
+                            }
+
+                            if (aDate.compareTo(aDate2) == 0) {
+                                String slot1 = o1.getDateId().getSlotId().getSlotName();
+                                String slot2 = o2.getDateId().getSlotId().getSlotName();
+
+                                if (slot1.compareTo(slot2) > 0) {
+                                    return 1;
+                                }
+                            }
+                            return -1;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        return 0;
+                    }
+                });
+
+
+                for (ScheduleEntity schedule : scheduleList) {
+                    List<String> dataList = new ArrayList<String>();
+
+                    dataList.add(schedule.getId() + "");
+                    dataList.add(schedule.getCourseId().getSubjectCode());
+
+                    if (schedule.getGroupName() != null) {
+                        dataList.add(schedule.getGroupName());
+                    } else {
+                        dataList.add("");
+                    }
+
+                    if (schedule.getDateId() != null) {
+                        dataList.add(schedule.getDateId().getDate());
+                        dataList.add(schedule.getDateId().getSlotId().getSlotName());
+                    } else {
+                        dataList.add("");
+                        dataList.add("");
+                    }
+
+                    if (schedule.getRoomId() != null) {
+                        dataList.add(schedule.getRoomId().getName());
+                    } else {
+                        dataList.add("");
+                    }
+
+                    if (schedule.getEmpId() != null) {
+                        dataList.add(schedule.getEmpId().getFullName());
+                    } else {
+                        dataList.add("");
+                    }
+
+                    if (schedule.getRoomId() != null) {
+                        dataList.add(schedule.getRoomId().getCapacity() + "");
+                    } else {
+                        dataList.add("");
+                    }
+
+
+                    Date date1 = getDate(schedule.getDateId().getDate());
+                    Date now = new Date();
+
+                    Calendar c1 = Calendar.getInstance();
+                    c1.setTime(date1);
+                    Calendar now1 = Calendar.getInstance();
+                    now1.setTime(now);
+                    now1.set(Calendar.HOUR_OF_DAY, 0);
+                    now1.set(Calendar.MINUTE, 0);
+                    now1.set(Calendar.SECOND, 0);
+                    now1.set(Calendar.MILLISECOND, 0);
+
+                    if (c1.after(now1) || c1.equals(now1)) {
+                        dataList.add("false");
+                    } else {
+                        dataList.add("true");
+                    }
+
+                    result.add(dataList);
+                }
+
+
             }
-
-            // Query danh sách lịch học
-            queryStr = "SELECT s FROM ScheduleEntity s" +
-                    (sSearch.isEmpty() ? " WHERE (s.isActive IS NULL OR s.isActive = 'true') AND s.empId.id=" + employeeId + "" :
-                            "   INNER JOIN CourseEntity c ON s.courseId.id=c.id" +
-                                    "    INNER JOIN  DaySlotEntity d ON s.dateId.id=d.id " +
-                                    "    INNER JOIN  EmployeeEntity e ON s.empId.id=e.id " +
-                                    "WHERE (s.isActive IS NULL OR s.isActive = 'true') AND " +
-                                    "((s.courseId.id = c.id AND c.subjectCode LIKE '%" + sSearch + "%') OR \n" +
-                                    " (s.dateId.id = d.id AND d.date LIKE '%" + sSearch + "%') OR" +
-                                    " (s.groupName LIKE '%" + sSearch + "%')) AND" +
-                                    " (s.empId.id = " + employeeId + ")");
-            TypedQuery<ScheduleEntity> query = em.createQuery(queryStr, ScheduleEntity.class);
-            query.setFirstResult(iDisplayStart);
-            query.setMaxResults(iDisplayLength);
-
-            List<ScheduleEntity> scheduleList = query.getResultList();
-
-            List<List<String>> result = new ArrayList<>();
-            for (ScheduleEntity schedule : scheduleList) {
-                List<String> dataList = new ArrayList<String>();
-
-                dataList.add(schedule.getId() + "");
-                dataList.add(schedule.getCourseId().getSubjectCode());
-
-                if (schedule.getGroupName() != null) {
-                    dataList.add(schedule.getGroupName());
-                } else {
-                    dataList.add("");
-                }
-
-                if (schedule.getDateId() != null) {
-                    dataList.add(schedule.getDateId().getDate());
-                    dataList.add(schedule.getDateId().getSlotId().getSlotName());
-                } else {
-                    dataList.add("");
-                    dataList.add("");
-                }
-
-                if (schedule.getRoomId() != null) {
-                    dataList.add(schedule.getRoomId().getName());
-                } else {
-                    dataList.add("");
-                }
-
-                if (schedule.getEmpId() != null) {
-                    dataList.add(schedule.getEmpId().getFullName());
-                } else {
-                    dataList.add("");
-                }
-
-                if (schedule.getRoomId() != null) {
-                    dataList.add(schedule.getRoomId().getCapacity() + "");
-                } else {
-                    dataList.add("");
-                }
-
-
-                Date date1 = getDate(schedule.getDateId().getDate());
-                Date now = new Date();
-
-                Calendar c1 = Calendar.getInstance();
-                c1.setTime(date1);
-                Calendar now1 = Calendar.getInstance();
-                now1.setTime(now);
-                now1.set(Calendar.HOUR_OF_DAY, 0);
-                now1.set(Calendar.MINUTE, 0);
-                now1.set(Calendar.SECOND, 0);
-                now1.set(Calendar.MILLISECOND, 0);
-
-                if (c1.after(now1) || c1.equals(now1)) {
-                    dataList.add("false");
-                } else {
-                    dataList.add("true");
-                }
-
-                result.add(dataList);
-            }
-
-            JsonArray aaData = (JsonArray) new Gson()
-                    .toJsonTree(result, new TypeToken<List<List<String>>>() {
-                    }.getType());
-
-            jsonObj.addProperty("iTotalRecords", iTotalRecords);
-            jsonObj.addProperty("iTotalDisplayRecords", iTotalDisplayRecords);
-            jsonObj.add("aaData", aaData);
-            jsonObj.addProperty("sEcho", params.get("sEcho"));
-
-
         } catch (Exception e) {
             e.printStackTrace();
         }
+        JsonArray aaData = (JsonArray) new Gson()
+                .toJsonTree(result, new TypeToken<List<List<String>>>() {
+                }.getType());
 
+        jsonObj.add("aaData", aaData);
         return jsonObj;
     }
 

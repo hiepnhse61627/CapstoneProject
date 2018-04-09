@@ -59,6 +59,13 @@ public class EmployeeCompetenceServiceImpl implements IEmployeeCompetenceService
     }
 
     @Override
+    public void removeEmployeeCompetence(EmployeeEntity employeeEntity, SubjectEntity subjectEntity ) {
+        EmployeeCompetenceEntityJpaController.removeEmployeeCompetence(employeeEntity, subjectEntity);
+        return;
+
+    }
+
+    @Override
     public int getCurrentLine() {
         return EmployeeCompetenceEntityJpaController.getCurrentLine();
     }
