@@ -354,6 +354,7 @@
             minimumInputLength: 2,
             ajax: {
                 url: '/getStudentList',
+                delay: 1000, //delay search
                 data: function (params) {
                     var queryParameters = {
                         searchValue: params.term
