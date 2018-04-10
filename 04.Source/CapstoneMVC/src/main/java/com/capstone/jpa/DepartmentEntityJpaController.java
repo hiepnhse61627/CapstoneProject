@@ -1,7 +1,6 @@
 package com.capstone.jpa;
 
 import com.capstone.entities.DepartmentEntity;
-import com.capstone.entities.SubjectDepartmentEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
 import com.capstone.jpa.exceptions.PreexistingEntityException;
@@ -28,9 +27,7 @@ public class DepartmentEntityJpaController implements Serializable {
     }
 
     public void create(DepartmentEntity departmentEntity) throws PreexistingEntityException, Exception {
-        if (departmentEntity.getSubjectDepartmentEntityList() == null) {
-            departmentEntity.setSubjectDepartmentEntityList(new ArrayList<SubjectDepartmentEntity>());
-        }
+
         if (departmentEntity.getSubjectEntityList() == null) {
             departmentEntity.setSubjectEntityList(new ArrayList<SubjectEntity>());
         }
@@ -38,12 +35,7 @@ public class DepartmentEntityJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            List<SubjectDepartmentEntity> attachedSubjectDepartmentEntityList = new ArrayList<SubjectDepartmentEntity>();
-            for (SubjectDepartmentEntity subjectDepartmentEntityListSubjectDepartmentEntityToAttach : departmentEntity.getSubjectDepartmentEntityList()) {
-                subjectDepartmentEntityListSubjectDepartmentEntityToAttach = em.getReference(subjectDepartmentEntityListSubjectDepartmentEntityToAttach.getClass(), subjectDepartmentEntityListSubjectDepartmentEntityToAttach.getId());
-                attachedSubjectDepartmentEntityList.add(subjectDepartmentEntityListSubjectDepartmentEntityToAttach);
-            }
-            departmentEntity.setSubjectDepartmentEntityList(attachedSubjectDepartmentEntityList);
+
             List<SubjectEntity> attachedSubjectEntityList = new ArrayList<SubjectEntity>();
             for (SubjectEntity subjectEntityListSubjectEntityToAttach : departmentEntity.getSubjectEntityList()) {
                 subjectEntityListSubjectEntityToAttach = em.getReference(subjectEntityListSubjectEntityToAttach.getClass(), subjectEntityListSubjectEntityToAttach.getId());
@@ -51,15 +43,7 @@ public class DepartmentEntityJpaController implements Serializable {
             }
             departmentEntity.setSubjectEntityList(attachedSubjectEntityList);
             em.persist(departmentEntity);
-            for (SubjectDepartmentEntity subjectDepartmentEntityListSubjectDepartmentEntity : departmentEntity.getSubjectDepartmentEntityList()) {
-                DepartmentEntity oldDeptIdOfSubjectDepartmentEntityListSubjectDepartmentEntity = subjectDepartmentEntityListSubjectDepartmentEntity.getDeptId();
-                subjectDepartmentEntityListSubjectDepartmentEntity.setDeptId(departmentEntity);
-                subjectDepartmentEntityListSubjectDepartmentEntity = em.merge(subjectDepartmentEntityListSubjectDepartmentEntity);
-                if (oldDeptIdOfSubjectDepartmentEntityListSubjectDepartmentEntity != null) {
-                    oldDeptIdOfSubjectDepartmentEntityListSubjectDepartmentEntity.getSubjectDepartmentEntityList().remove(subjectDepartmentEntityListSubjectDepartmentEntity);
-                    oldDeptIdOfSubjectDepartmentEntityListSubjectDepartmentEntity = em.merge(oldDeptIdOfSubjectDepartmentEntityListSubjectDepartmentEntity);
-                }
-            }
+
             for (SubjectEntity subjectEntityListSubjectEntity : departmentEntity.getSubjectEntityList()) {
                 DepartmentEntity oldDepartmentIdOfSubjectEntityListSubjectEntity = subjectEntityListSubjectEntity.getDepartmentId();
                 subjectEntityListSubjectEntity.setDepartmentId(departmentEntity);
@@ -88,17 +72,9 @@ public class DepartmentEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             DepartmentEntity persistentDepartmentEntity = em.find(DepartmentEntity.class, departmentEntity.getDeptId());
-            List<SubjectDepartmentEntity> subjectDepartmentEntityListOld = persistentDepartmentEntity.getSubjectDepartmentEntityList();
-            List<SubjectDepartmentEntity> subjectDepartmentEntityListNew = departmentEntity.getSubjectDepartmentEntityList();
-            List<SubjectEntity> subjectEntityListOld = persistentDepartmentEntity.getSubjectEntityList();
+           List<SubjectEntity> subjectEntityListOld = persistentDepartmentEntity.getSubjectEntityList();
             List<SubjectEntity> subjectEntityListNew = departmentEntity.getSubjectEntityList();
-            List<SubjectDepartmentEntity> attachedSubjectDepartmentEntityListNew = new ArrayList<SubjectDepartmentEntity>();
-            for (SubjectDepartmentEntity subjectDepartmentEntityListNewSubjectDepartmentEntityToAttach : subjectDepartmentEntityListNew) {
-                subjectDepartmentEntityListNewSubjectDepartmentEntityToAttach = em.getReference(subjectDepartmentEntityListNewSubjectDepartmentEntityToAttach.getClass(), subjectDepartmentEntityListNewSubjectDepartmentEntityToAttach.getId());
-                attachedSubjectDepartmentEntityListNew.add(subjectDepartmentEntityListNewSubjectDepartmentEntityToAttach);
-            }
-            subjectDepartmentEntityListNew = attachedSubjectDepartmentEntityListNew;
-            departmentEntity.setSubjectDepartmentEntityList(subjectDepartmentEntityListNew);
+
             List<SubjectEntity> attachedSubjectEntityListNew = new ArrayList<SubjectEntity>();
             for (SubjectEntity subjectEntityListNewSubjectEntityToAttach : subjectEntityListNew) {
                 subjectEntityListNewSubjectEntityToAttach = em.getReference(subjectEntityListNewSubjectEntityToAttach.getClass(), subjectEntityListNewSubjectEntityToAttach.getId());
@@ -107,23 +83,7 @@ public class DepartmentEntityJpaController implements Serializable {
             subjectEntityListNew = attachedSubjectEntityListNew;
             departmentEntity.setSubjectEntityList(subjectEntityListNew);
             departmentEntity = em.merge(departmentEntity);
-            for (SubjectDepartmentEntity subjectDepartmentEntityListOldSubjectDepartmentEntity : subjectDepartmentEntityListOld) {
-                if (!subjectDepartmentEntityListNew.contains(subjectDepartmentEntityListOldSubjectDepartmentEntity)) {
-                    subjectDepartmentEntityListOldSubjectDepartmentEntity.setDeptId(null);
-                    subjectDepartmentEntityListOldSubjectDepartmentEntity = em.merge(subjectDepartmentEntityListOldSubjectDepartmentEntity);
-                }
-            }
-            for (SubjectDepartmentEntity subjectDepartmentEntityListNewSubjectDepartmentEntity : subjectDepartmentEntityListNew) {
-                if (!subjectDepartmentEntityListOld.contains(subjectDepartmentEntityListNewSubjectDepartmentEntity)) {
-                    DepartmentEntity oldDeptIdOfSubjectDepartmentEntityListNewSubjectDepartmentEntity = subjectDepartmentEntityListNewSubjectDepartmentEntity.getDeptId();
-                    subjectDepartmentEntityListNewSubjectDepartmentEntity.setDeptId(departmentEntity);
-                    subjectDepartmentEntityListNewSubjectDepartmentEntity = em.merge(subjectDepartmentEntityListNewSubjectDepartmentEntity);
-                    if (oldDeptIdOfSubjectDepartmentEntityListNewSubjectDepartmentEntity != null && !oldDeptIdOfSubjectDepartmentEntityListNewSubjectDepartmentEntity.equals(departmentEntity)) {
-                        oldDeptIdOfSubjectDepartmentEntityListNewSubjectDepartmentEntity.getSubjectDepartmentEntityList().remove(subjectDepartmentEntityListNewSubjectDepartmentEntity);
-                        oldDeptIdOfSubjectDepartmentEntityListNewSubjectDepartmentEntity = em.merge(oldDeptIdOfSubjectDepartmentEntityListNewSubjectDepartmentEntity);
-                    }
-                }
-            }
+
             for (SubjectEntity subjectEntityListOldSubjectEntity : subjectEntityListOld) {
                 if (!subjectEntityListNew.contains(subjectEntityListOldSubjectEntity)) {
                     subjectEntityListOldSubjectEntity.setDepartmentId(null);
@@ -170,11 +130,7 @@ public class DepartmentEntityJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The departmentEntity with id " + id + " no longer exists.", enfe);
             }
-            List<SubjectDepartmentEntity> subjectDepartmentEntityList = departmentEntity.getSubjectDepartmentEntityList();
-            for (SubjectDepartmentEntity subjectDepartmentEntityListSubjectDepartmentEntity : subjectDepartmentEntityList) {
-                subjectDepartmentEntityListSubjectDepartmentEntity.setDeptId(null);
-                subjectDepartmentEntityListSubjectDepartmentEntity = em.merge(subjectDepartmentEntityListSubjectDepartmentEntity);
-            }
+
             List<SubjectEntity> subjectEntityList = departmentEntity.getSubjectEntityList();
             for (SubjectEntity subjectEntityListSubjectEntity : subjectEntityList) {
                 subjectEntityListSubjectEntity.setDepartmentId(null);

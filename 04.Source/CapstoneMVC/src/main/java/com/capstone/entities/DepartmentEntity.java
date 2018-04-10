@@ -25,8 +25,6 @@ public class DepartmentEntity implements Serializable {
     private String deptName;
     @Column(name = "DeptShortName")
     private String deptShortName;
-    @OneToMany(mappedBy = "deptId")
-    private List<SubjectDepartmentEntity> subjectDepartmentEntityList;
     @OneToMany(mappedBy = "departmentId")
     private List<SubjectEntity> subjectEntityList;
 
@@ -61,13 +59,6 @@ public class DepartmentEntity implements Serializable {
         this.deptShortName = deptShortName;
     }
 
-    public List<SubjectDepartmentEntity> getSubjectDepartmentEntityList() {
-        return subjectDepartmentEntityList;
-    }
-
-    public void setSubjectDepartmentEntityList(List<SubjectDepartmentEntity> subjectDepartmentEntityList) {
-        this.subjectDepartmentEntityList = subjectDepartmentEntityList;
-    }
 
     public List<SubjectEntity> getSubjectEntityList() {
         return subjectEntityList;

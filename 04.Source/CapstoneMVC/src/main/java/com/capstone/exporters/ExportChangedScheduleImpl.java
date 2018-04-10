@@ -65,7 +65,6 @@ public class ExportChangedScheduleImpl implements IExportObject {
 
             IEmployeeService employeeService = new EmployeeServiceImpl();
             IDepartmentService departmentService = new DepartmentServiceImpl();
-            ISubjectDepartmentService subjectDepartmentService = new SubjectDepartmentServiceImpl();
             ISubjectService subjectService = new SubjectServiceImpl();
 
             if (!params.get("lecture").equals("") && !params.get("lecture").equals("-1")) {
@@ -191,12 +190,24 @@ public class ExportChangedScheduleImpl implements IExportObject {
                 }
 
                 XSSFRow row = spreadsheet.createRow(--rowIndex);
+
+                CellStyle cellStyle2 = workbook.createCellStyle();
+                cellStyle2.setBorderBottom(BorderStyle.MEDIUM);
+                cellStyle2.setBorderLeft(BorderStyle.MEDIUM);
+                cellStyle2.setBorderRight(BorderStyle.MEDIUM);
+                cellStyle2.setBorderTop(BorderStyle.MEDIUM);
+                cellStyle2.setAlignment(HorizontalAlignment.CENTER);
+                cellStyle2.setVerticalAlignment(VerticalAlignment.CENTER);
+                Font font = workbook.createFont();
+                font.setBold(true);
+                cellStyle2.setFont(font);
+
                 cell = row.createCell(0);
-                cell.setCellStyle(cellStyle);
+                cell.setCellStyle(cellStyle2);
                 cell.setCellValue("Tổng cộng");
 
                 cell = row.createCell(1);
-                cell.setCellStyle(cellStyle);
+                cell.setCellStyle(cellStyle2);
                 cell.setCellValue(countTotal);
 
                 ExportStatusReport.StatusExportStudentDetailRunning = false;

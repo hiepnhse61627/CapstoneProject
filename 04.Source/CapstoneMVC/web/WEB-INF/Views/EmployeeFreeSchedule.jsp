@@ -831,7 +831,9 @@
                 if (result.running) {
                     setTimeout("Run()", 50);
                 } else {
-                    swal('', 'Download file thành công!', 'success');
+                    swal('', 'Download file thành công!', 'success').then(function() {
+                        location.reload();
+                    });
                 }
             }
         });

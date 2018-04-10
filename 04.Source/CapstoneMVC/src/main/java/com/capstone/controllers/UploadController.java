@@ -97,7 +97,6 @@ public class UploadController {
     IOldRollNumberService oldRollNumberService = new OldRollNumberServiceImpl();
     IStudentStatusService studentStatusService = new StudentStatusServiceImpl();
     IDepartmentService departmentService = new DepartmentServiceImpl();
-    ISubjectDepartmentService subjectDepartmentService = new SubjectDepartmentServiceImpl();
     IEmployeeCompetenceService employeeCompetenceService = new EmployeeCompetenceServiceImpl();
 
     /**

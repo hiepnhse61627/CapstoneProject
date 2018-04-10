@@ -55,8 +55,6 @@ public class SubjectEntity implements Serializable {
     private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
     @OneToMany(mappedBy = "subjectId")
     private List<SubjectMarkComponentEntity> subjectMarkComponentEntityList;
-    @OneToMany(mappedBy = "subjectId")
-    private List<SubjectDepartmentEntity> subjectDepartmentEntityList;
     @JoinColumn(name = "DepartmentId", referencedColumnName = "DeptId")
     @ManyToOne
     private DepartmentEntity departmentId;
@@ -164,13 +162,7 @@ public class SubjectEntity implements Serializable {
         this.subjectMarkComponentEntityList = subjectMarkComponentEntityList;
     }
 
-    public List<SubjectDepartmentEntity> getSubjectDepartmentEntityList() {
-        return subjectDepartmentEntityList;
-    }
 
-    public void setSubjectDepartmentEntityList(List<SubjectDepartmentEntity> subjectDepartmentEntityList) {
-        this.subjectDepartmentEntityList = subjectDepartmentEntityList;
-    }
 
     public DepartmentEntity getDepartmentId() {
         return departmentId;

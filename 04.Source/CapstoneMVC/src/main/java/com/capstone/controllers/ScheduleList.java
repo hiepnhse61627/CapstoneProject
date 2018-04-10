@@ -51,8 +51,6 @@ public class ScheduleList {
 
     ISubjectService subjectService = new SubjectServiceImpl();
 
-    ISubjectDepartmentService subjectDepartmentService = new SubjectDepartmentServiceImpl();
-
     IDepartmentService departmentService = new DepartmentServiceImpl();
 
     @Autowired
