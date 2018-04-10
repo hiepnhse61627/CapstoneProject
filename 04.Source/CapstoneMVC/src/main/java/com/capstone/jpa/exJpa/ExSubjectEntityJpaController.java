@@ -1,6 +1,8 @@
 package com.capstone.jpa.exJpa;
 
+import com.capstone.entities.DepartmentEntity;
 import com.capstone.entities.PrequisiteEntity;
+import com.capstone.entities.ScheduleEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.jpa.SubjectEntityJpaController;
 import com.capstone.models.Logger;
@@ -465,4 +467,24 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
         return true;
     }
 
+
+    public List<SubjectEntity> findSubjectByDepartment(DepartmentEntity dept) {
+        EntityManager em = getEntityManager();
+        try {
+            String sqlString = "SELECT c FROM SubjectEntity c " +
+                    "WHERE (c.departmentId = :dept)";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("dept", dept);
+
+            List<SubjectEntity> std = query.getResultList();
+
+            return std;
+        } catch (NoResultException nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
 }

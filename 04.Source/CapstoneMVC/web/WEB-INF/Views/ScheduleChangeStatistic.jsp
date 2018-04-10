@@ -222,7 +222,8 @@
                 aoData.push({"name": "startDate", "value":  $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY')}),
                     aoData.push({"name": "endDate", "value":  $('#scheduleDate').data('daterangepicker').endDate.format('DD/MM/YYYY')}),
                     aoData.push({"name": "department", "value": $('#department').val()}),
-                    aoData.push({"name": "lecture", "value": $('#lecture').val()})
+                    aoData.push({"name": "lecture", "value": $('#lecture').val()}),
+                    aoData.push({"name": "dateTextbox", "value": $('#scheduleDate').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "Môn học, Lớp, Ngày...",

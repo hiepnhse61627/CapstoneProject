@@ -1,5 +1,6 @@
 package com.capstone.services;
 
+import com.capstone.entities.DepartmentEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.jpa.exJpa.ExSubjectEntityJpaController;
 import com.capstone.models.ReplacementSubject;
@@ -52,6 +53,11 @@ public class SubjectServiceImpl implements ISubjectService {
     @Override
     public SubjectEntity findSubjectById(String id) {
         return controller.findSubjectEntity(id);
+    }
+
+    @Override
+    public List<SubjectEntity> findSubjectByDepartment(DepartmentEntity dept) {
+        return controller.findSubjectByDepartment(dept);
     }
 
     @Override

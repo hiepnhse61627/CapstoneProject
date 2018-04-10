@@ -349,22 +349,21 @@ public class ScheduleList {
 
             if (departmentId != null) {
                 DepartmentEntity aDepartment = departmentService.findDepartmentById(departmentId);
-                List<SubjectDepartmentEntity> aSubjectDepartmentList = subjectDepartmentService.findSubjectDepartmentsByDepartment(aDepartment);
+//                List<SubjectDepartmentEntity> aSubjectDepartmentList = subjectDepartmentService.findSubjectDepartmentsByDepartment(aDepartment);
+                List<SubjectEntity> subjectList = subjectService.findSubjectByDepartment(aDepartment);
                 List<ScheduleEntity> tmpList = new ArrayList<>();
                 for (ScheduleEntity aSchedule : scheduleList) {
-                    for (SubjectDepartmentEntity aSubjectDepartment : aSubjectDepartmentList) {
-                        if (aSubjectDepartment.getSubjectId().getId().equals(aSchedule.getCourseId().getSubjectCode())) {
+                    for (SubjectEntity aSubject : subjectList) {
+                        if (aSubject.getId().equals(aSchedule.getCourseId().getSubjectCode())) {
                             tmpList.add(aSchedule);
                             continue;
                         }
                     }
                 }
-
                 scheduleList = new ArrayList<>(tmpList);
-
             }
 
-//            if (!startDate.equals(endDate)) {
+            if (!params.get("dateTextbox").equals("")) {
                 DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
                 List<ScheduleEntity> removeList = new ArrayList<>();
                 for (ScheduleEntity aSchedule : scheduleList) {
@@ -374,8 +373,7 @@ public class ScheduleList {
                     }
                 }
                 scheduleList.removeAll(removeList);
-//            }
-
+            }
 
             Collections.sort(scheduleList, new Comparator<ScheduleEntity>() {
                 @Override

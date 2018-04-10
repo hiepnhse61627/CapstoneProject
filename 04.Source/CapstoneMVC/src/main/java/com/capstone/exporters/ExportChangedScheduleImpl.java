@@ -106,16 +106,16 @@ public class ExportChangedScheduleImpl implements IExportObject {
                 for (List<String> changedSchedule : changedScheduleList) {
                     String subjectCode = changedSchedule.get(1);
                     SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
-                    List<SubjectDepartmentEntity> subDeptEntity = subjectDepartmentService.findSubjectDepartmentsBySubject(subjectEntity);
+//                    List<SubjectDepartmentEntity> subDeptEntity = subjectDepartmentService.findSubjectDepartmentsBySubject(subjectEntity);
 
-                    if (subDeptEntity != null && subDeptEntity.size() > 0) {
-                        List<List<String>> listOfChanges = departmentTotal.get(subDeptEntity.get(0).getDeptId().getDeptName());
+                    if (subjectEntity.getDepartmentId() != null) {
+                        List<List<String>> listOfChanges = departmentTotal.get(subjectEntity.getDepartmentId().getDeptName());
                         if (listOfChanges == null) {
-                            listOfChanges =  new ArrayList<>();
+                            listOfChanges = new ArrayList<>();
                         }
                         List<String> data = changedSchedule.subList(1, changedSchedule.size());
                         listOfChanges.add(data);
-                        departmentTotal.put(subDeptEntity.get(0).getDeptId().getDeptName(), listOfChanges);
+                        departmentTotal.put(subjectEntity.getDepartmentId().getDeptName(), listOfChanges);
 
                     }
                 }

@@ -2,9 +2,12 @@ package com.capstone.controllers;
 
 import com.capstone.entities.RoomEntity;
 import com.capstone.entities.SubjectDepartmentEntity;
+import com.capstone.entities.SubjectEntity;
 import com.capstone.models.Ultilities;
 import com.capstone.services.ISubjectDepartmentService;
+import com.capstone.services.ISubjectService;
 import com.capstone.services.SubjectDepartmentServiceImpl;
+import com.capstone.services.SubjectServiceImpl;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -29,6 +32,7 @@ import java.util.Map;
 public class SubjectDepartmentList {
 
     ISubjectDepartmentService subjectDepartmentService = new SubjectDepartmentServiceImpl();
+    ISubjectService subjectService = new SubjectServiceImpl();
 
     @RequestMapping("/subjectDepartmentList")
     public ModelAndView SubjectDepartmentListAll(HttpServletRequest request) {
@@ -49,13 +53,13 @@ public class SubjectDepartmentList {
         JsonObject jsonObj = new JsonObject();
 
         try {
-            List<SubjectDepartmentEntity> subjectDepartmentEntityList = subjectDepartmentService.findAllSubjectDepartments();
+            List<SubjectEntity> subjectDepartmentEntityList = subjectService.getAllSubjects();
 
             List<List<String>> result = new ArrayList<>();
-            for (SubjectDepartmentEntity subjectDepartment : subjectDepartmentEntityList) {
+            for (SubjectEntity subjectDepartment : subjectDepartmentEntityList) {
                 List<String> dataList = new ArrayList<String>();
-                dataList.add(subjectDepartment.getSubjectId().getId());
-                dataList.add(subjectDepartment.getDeptId().getDeptName());
+                dataList.add(subjectDepartment.getId());
+                dataList.add(subjectDepartment.getDepartmentId().getDeptName());
                 result.add(dataList);
             }
 

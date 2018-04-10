@@ -26,6 +26,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -2283,32 +2286,31 @@ public class UploadController {
                     }
                 }
 
-                if (subjectCode.equals("MAD101")) {
-                    System.out.println("test");
-                }
-
                 if (subjectCode != null && !subjectCode.equals("")) {
                     List<DepartmentEntity> departmentList = departmentService.findDepartmentsByName(name);
                     if (departmentList.size() != 0) {
                         SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
                         DepartmentEntity departmentEntity = departmentList.get(0);
                         if (subjectEntity != null) {
-                            if (subjectDepartmentService.findSubjectDepartmentsBySubjectAndDepartment(subjectEntity, departmentEntity).size() == 0) {
-                                SubjectDepartmentEntity subjectDepartmentEntity = new SubjectDepartmentEntity();
-                                subjectDepartmentEntity.setSubjectId(subjectEntity);
-                                subjectDepartmentEntity.setDeptId(departmentEntity);
-                                subjectDepartmentService.createSubjectDepartment(subjectDepartmentEntity);
+                            if(subjectEntity.getDepartmentId()== null){
+                                subjectEntity.setDepartmentId(departmentEntity);
+                                EntityManagerFactory emf2 = Persistence.createEntityManagerFactory("CapstonePersistence");
+                                EntityManager em = emf2.createEntityManager();
+                                try {
+                                    em.getTransaction().begin();
+                                    em.merge(subjectEntity);
+                                    em.getTransaction().commit();
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
                             }
-                        } else {
-                            System.out.println(subjectCode);
                         }
-
-                    } else {
-                        System.out.println(name);
                     }
                 }
+
                 this.currentLine++;
             }
+
             jsonObject.addProperty("success", true);
             jsonObject.addProperty("message", "Import bộ môn thành công !");
         } catch (Exception ex) {
