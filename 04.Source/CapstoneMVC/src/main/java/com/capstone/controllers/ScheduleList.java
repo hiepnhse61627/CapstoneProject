@@ -364,7 +364,7 @@ public class ScheduleList {
 
             }
 
-            if (!startDate.equals(endDate)) {
+//            if (!startDate.equals(endDate)) {
                 DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
                 List<ScheduleEntity> removeList = new ArrayList<>();
                 for (ScheduleEntity aSchedule : scheduleList) {
@@ -374,7 +374,7 @@ public class ScheduleList {
                     }
                 }
                 scheduleList.removeAll(removeList);
-            }
+//            }
 
 
             Collections.sort(scheduleList, new Comparator<ScheduleEntity>() {
@@ -482,7 +482,7 @@ public class ScheduleList {
             String startDate = params.get("startDate");
             String endDate = params.get("endDate");
 
-            if (!startDate.equals(endDate)) {
+//            if (!startDate.equals(endDate)) {
                 List<ScheduleEntity> scheduleList = scheduleService.findScheduleByLecture(employeeId);
 
 
@@ -585,9 +585,7 @@ public class ScheduleList {
 
                     result.add(dataList);
                 }
-
-
-            }
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }

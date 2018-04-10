@@ -111,26 +111,17 @@ public class ExportChangedScheduleImpl implements IExportObject {
                     if (subDeptEntity != null && subDeptEntity.size() > 0) {
                         List<List<String>> listOfChanges = departmentTotal.get(subDeptEntity.get(0).getDeptId().getDeptName());
                         if (listOfChanges == null) {
-                            departmentTotal.put(subDeptEntity.get(0).getDeptId().getDeptName(), new ArrayList<>());
-                        } else {
-                            List<String> data = changedSchedule.subList(1, changedSchedule.size());
-                            listOfChanges.add(data);
-                            departmentTotal.put(subDeptEntity.get(0).getDeptId().getDeptName(), listOfChanges);
+                            listOfChanges =  new ArrayList<>();
                         }
+                        List<String> data = changedSchedule.subList(1, changedSchedule.size());
+                        listOfChanges.add(data);
+                        departmentTotal.put(subDeptEntity.get(0).getDeptId().getDeptName(), listOfChanges);
+
                     }
-
-//                    List<String> data = changedSchedule.subList(1, changedSchedule.size());
-//
-//                    for (int i = 0; i < 2; ++i) {
-//                        cell = row.createCell(i);
-//                        cell.setCellStyle(cellStyle);
-//                        cell.setCellValue(data.get(i));
-//                    }
-
-
                 }
 
                 int rowIndex = 15;
+                int countTotal = 0;
 //                int departmentSheetIndex = 1;
                 Cell cell;
                 for (String key : departmentTotal.keySet()) {
@@ -143,6 +134,7 @@ public class ExportChangedScheduleImpl implements IExportObject {
                     cell.setCellStyle(cellStyle);
                     cell.setCellValue(departmentTotal.get(key).size());
 
+                    countTotal += departmentTotal.get(key).size();
                     ++rowIndex;
 
                     XSSFSheet aSheet = workbook.createSheet(key);
@@ -198,6 +190,14 @@ public class ExportChangedScheduleImpl implements IExportObject {
                     aSheet.autoSizeColumn(6);
                 }
 
+                XSSFRow row = spreadsheet.createRow(--rowIndex);
+                cell = row.createCell(0);
+                cell.setCellStyle(cellStyle);
+                cell.setCellValue("Tổng cộng");
+
+                cell = row.createCell(1);
+                cell.setCellStyle(cellStyle);
+                cell.setCellValue(countTotal);
 
                 ExportStatusReport.StatusExportStudentDetailRunning = false;
                 System.out.println(departmentTotal.size());

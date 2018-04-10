@@ -224,7 +224,7 @@
 
     $(document).ready(function () {
         $('#subject2').select2({
-            placeholder: '- Chọn bộ môn -'
+            placeholder: '- Chọn môn học -'
         });
 
         $('#room').select2({

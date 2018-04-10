@@ -335,94 +335,94 @@ public class EmployeeList {
                 }
 
                 //get all schedule in date range
-                if (!startDate.equals(endDate)) {
-                    List<ScheduleEntity> removeList = new ArrayList<>();
-                    for (ScheduleEntity aSchedule : scheduleList) {
-                        Date aDate = getDate(aSchedule.getDateId().getDate());
-                        if (aDate.before(getDate(startDate)) || aDate.after(getDate(endDate))) {
-                            removeList.add(aSchedule);
-                        }
+//                if (!startDate.equals(endDate)) {
+                List<ScheduleEntity> removeList = new ArrayList<>();
+                for (ScheduleEntity aSchedule : scheduleList) {
+                    Date aDate = getDate(aSchedule.getDateId().getDate());
+                    if (aDate.before(getDate(startDate)) || aDate.after(getDate(endDate))) {
+                        removeList.add(aSchedule);
                     }
-                    scheduleList.removeAll(removeList);
+                }
+                scheduleList.removeAll(removeList);
 
-                    List<String> allDates = new ArrayList();
-                    Date date1 = getDate(startDate);
-                    Date date2 = getDate(endDate);
+                List<String> allDates = new ArrayList();
+                Date date1 = getDate(startDate);
+                Date date2 = getDate(endDate);
 
-                    Calendar c1 = Calendar.getInstance();
-                    c1.setTime(date1);
-                    Calendar c2 = Calendar.getInstance();
-                    c2.setTime(date2);
-                    while (!c2.before(c1)) {
-                        allDates.add(formatDate(c1.getTime()));
-                        c1.add(Calendar.DATE, 1);
+                Calendar c1 = Calendar.getInstance();
+                c1.setTime(date1);
+                Calendar c2 = Calendar.getInstance();
+                c2.setTime(date2);
+                while (!c2.before(c1)) {
+                    allDates.add(formatDate(c1.getTime()));
+                    c1.add(Calendar.DATE, 1);
+                }
+
+                for (ScheduleEntity aSchedule : scheduleList) {
+                    allDates.remove(aSchedule.getDateId().getDate());
+                }
+
+                for (String aDate : allDates) {
+                    List<String> tmpSlotList = new ArrayList<>();
+                    tmpSlotList.add("Trống slot cả ngày");
+                    freeDaySlot.put(getDate(aDate), tmpSlotList);
+
+                }
+
+                //get all remaining free slot of a employee schedule in a date
+                for (ScheduleEntity aSchedule : scheduleList) {
+                    List<String> slotOfDayList = freeDaySlot.get(getDate(aSchedule.getDateId().getDate()));
+                    if (slotOfDayList == null) {
+                        slotOfDayList = new ArrayList<>(slotNameList);
                     }
-
-                    for (ScheduleEntity aSchedule : scheduleList) {
-                        allDates.remove(aSchedule.getDateId().getDate());
-                    }
-
-                    for (String aDate : allDates) {
-                        List<String> tmpSlotList = new ArrayList<>();
-                        tmpSlotList.add("Trống slot cả ngày");
-                        freeDaySlot.put(getDate(aDate), tmpSlotList);
-
-                    }
-
-                    //get all remaining free slot of a employee schedule in a date
-                    for (ScheduleEntity aSchedule : scheduleList) {
-                        List<String> slotOfDayList = freeDaySlot.get(getDate(aSchedule.getDateId().getDate()));
-                        if (slotOfDayList == null) {
-                            slotOfDayList = new ArrayList<>(slotNameList);
-                        }
-                        slotOfDayList.remove(aSchedule.getDateId().getSlotId().getSlotName());
-                        freeDaySlot.put(getDate(aSchedule.getDateId().getDate()), slotOfDayList);
-                    }
+                    slotOfDayList.remove(aSchedule.getDateId().getSlotId().getSlotName());
+                    freeDaySlot.put(getDate(aSchedule.getDateId().getDate()), slotOfDayList);
+                }
 
 
-                    for (Date key : freeDaySlot.keySet()) {
-                        Calendar cal = Calendar.getInstance();
-                        cal.setTime(key);
-                        if (cal.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
-                            String totalSlot = "";
-                            for (String aSlot : freeDaySlot.get(key)) {
-                                totalSlot += aSlot + ", ";
-                            }
-
-                            List<String> dataList = new ArrayList<String>();
-
-                            switch (cal.get(Calendar.DAY_OF_WEEK)) {
-                                case Calendar.SUNDAY:
-                                    dataList.add("Chủ nhật");
-                                    break;
-                                case Calendar.MONDAY:
-                                    dataList.add("Thứ 2");
-                                    break;
-                                case Calendar.TUESDAY:
-                                    dataList.add("Thứ 3");
-                                    break;
-                                case Calendar.WEDNESDAY:
-                                    dataList.add("Thứ 4");
-                                    break;
-                                case Calendar.THURSDAY:
-                                    dataList.add("Thứ 5");
-                                    break;
-                                case Calendar.FRIDAY:
-                                    dataList.add("Thứ 6");
-                                    break;
-                                case Calendar.SATURDAY:
-                                    dataList.add("Thứ 7");
-                                    break;
-                                default:
-                                    dataList.add("");
-                                    break;
-                            }
-                            dataList.add(formatDate(key));
-                            dataList.add(totalSlot.substring(0, totalSlot.lastIndexOf(", ")));
-                            result.add(dataList);
+                for (Date key : freeDaySlot.keySet()) {
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime(key);
+                    if (cal.get(Calendar.DAY_OF_WEEK) != Calendar.SUNDAY) {
+                        String totalSlot = "";
+                        for (String aSlot : freeDaySlot.get(key)) {
+                            totalSlot += aSlot + ", ";
                         }
 
+                        List<String> dataList = new ArrayList<String>();
+
+                        switch (cal.get(Calendar.DAY_OF_WEEK)) {
+                            case Calendar.SUNDAY:
+                                dataList.add("Chủ nhật");
+                                break;
+                            case Calendar.MONDAY:
+                                dataList.add("Thứ 2");
+                                break;
+                            case Calendar.TUESDAY:
+                                dataList.add("Thứ 3");
+                                break;
+                            case Calendar.WEDNESDAY:
+                                dataList.add("Thứ 4");
+                                break;
+                            case Calendar.THURSDAY:
+                                dataList.add("Thứ 5");
+                                break;
+                            case Calendar.FRIDAY:
+                                dataList.add("Thứ 6");
+                                break;
+                            case Calendar.SATURDAY:
+                                dataList.add("Thứ 7");
+                                break;
+                            default:
+                                dataList.add("");
+                                break;
+                        }
+                        dataList.add(formatDate(key));
+                        dataList.add(totalSlot.substring(0, totalSlot.lastIndexOf(", ")));
+                        result.add(dataList);
                     }
+
+//                    }
                 }
             }
         } catch (Exception e) {
