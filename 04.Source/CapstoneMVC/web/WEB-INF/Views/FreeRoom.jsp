@@ -461,7 +461,7 @@
         });
 
         $('#subject2').select2({
-            placeholder: '- Chọn bộ môn -'
+            placeholder: '- Chọn môn học -'
         });
 
         // $('#groupName2').select2({

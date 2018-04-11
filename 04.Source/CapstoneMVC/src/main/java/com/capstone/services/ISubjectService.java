@@ -1,5 +1,6 @@
 package com.capstone.services;
 
+import com.capstone.entities.DepartmentEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.models.ReplacementSubject;
 import com.capstone.models.SubjectModel;
@@ -16,6 +17,7 @@ public interface ISubjectService {
     List<List<SubjectEntity>> getAllPrequisiteSubjects(String subId);
     List<List<SubjectEntity>> getAlllPrequisite();
     SubjectEntity findSubjectById(String id);
+    List<SubjectEntity> findSubjectByDepartment(DepartmentEntity dept);
     int getCurrentLine();
     int getTotalLine();
     int countStudentCredits(int studentId);

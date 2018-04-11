@@ -127,6 +127,7 @@
     <input name="department"/>
     <input name="startDate"/>
     <input name="endDate"/>
+    <input name="dateTextbox"/>
 </form>
 
 <script>
@@ -222,7 +223,8 @@
                 aoData.push({"name": "startDate", "value":  $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY')}),
                     aoData.push({"name": "endDate", "value":  $('#scheduleDate').data('daterangepicker').endDate.format('DD/MM/YYYY')}),
                     aoData.push({"name": "department", "value": $('#department').val()}),
-                    aoData.push({"name": "lecture", "value": $('#lecture').val()})
+                    aoData.push({"name": "lecture", "value": $('#lecture').val()}),
+                    aoData.push({"name": "dateTextbox", "value": $('#scheduleDate').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "Môn học, Lớp, Ngày...",
@@ -320,6 +322,9 @@
         $("input[name='department']").val($('#department').val());
         $("input[name='startDate']").val($('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY'));
         $("input[name='endDate']").val($('#scheduleDate').data('daterangepicker').endDate.format('DD/MM/YYYY'));
+        $("input[name='dateTextbox']").val($('#scheduleDate').val());
+
+
         $("#export-excel").submit();
         Call();
     }
@@ -349,7 +354,9 @@
                 if (result.running) {
                     setTimeout("Run()", 50);
                 } else {
-                    swal('', 'Download file thành công!', 'success');
+                    swal('', 'Download file thành công!', 'success').then(function() {
+                        location.reload();
+                    });
                 }
             }
         });

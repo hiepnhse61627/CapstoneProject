@@ -65,7 +65,6 @@ public class ExportChangedScheduleImpl implements IExportObject {
 
             IEmployeeService employeeService = new EmployeeServiceImpl();
             IDepartmentService departmentService = new DepartmentServiceImpl();
-            ISubjectDepartmentService subjectDepartmentService = new SubjectDepartmentServiceImpl();
             ISubjectService subjectService = new SubjectServiceImpl();
 
             if (!params.get("lecture").equals("") && !params.get("lecture").equals("-1")) {
@@ -106,31 +105,22 @@ public class ExportChangedScheduleImpl implements IExportObject {
                 for (List<String> changedSchedule : changedScheduleList) {
                     String subjectCode = changedSchedule.get(1);
                     SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
-                    List<SubjectDepartmentEntity> subDeptEntity = subjectDepartmentService.findSubjectDepartmentsBySubject(subjectEntity);
+//                    List<SubjectDepartmentEntity> subDeptEntity = subjectDepartmentService.findSubjectDepartmentsBySubject(subjectEntity);
 
-                    if (subDeptEntity != null && subDeptEntity.size() > 0) {
-                        List<List<String>> listOfChanges = departmentTotal.get(subDeptEntity.get(0).getDeptId().getDeptName());
+                    if (subjectEntity.getDepartmentId() != null) {
+                        List<List<String>> listOfChanges = departmentTotal.get(subjectEntity.getDepartmentId().getDeptName());
                         if (listOfChanges == null) {
-                            departmentTotal.put(subDeptEntity.get(0).getDeptId().getDeptName(), new ArrayList<>());
-                        } else {
-                            List<String> data = changedSchedule.subList(1, changedSchedule.size());
-                            listOfChanges.add(data);
-                            departmentTotal.put(subDeptEntity.get(0).getDeptId().getDeptName(), listOfChanges);
+                            listOfChanges = new ArrayList<>();
                         }
+                        List<String> data = changedSchedule.subList(1, changedSchedule.size());
+                        listOfChanges.add(data);
+                        departmentTotal.put(subjectEntity.getDepartmentId().getDeptName(), listOfChanges);
+
                     }
-
-//                    List<String> data = changedSchedule.subList(1, changedSchedule.size());
-//
-//                    for (int i = 0; i < 2; ++i) {
-//                        cell = row.createCell(i);
-//                        cell.setCellStyle(cellStyle);
-//                        cell.setCellValue(data.get(i));
-//                    }
-
-
                 }
 
                 int rowIndex = 15;
+                int countTotal = 0;
 //                int departmentSheetIndex = 1;
                 Cell cell;
                 for (String key : departmentTotal.keySet()) {
@@ -143,6 +133,7 @@ public class ExportChangedScheduleImpl implements IExportObject {
                     cell.setCellStyle(cellStyle);
                     cell.setCellValue(departmentTotal.get(key).size());
 
+                    countTotal += departmentTotal.get(key).size();
                     ++rowIndex;
 
                     XSSFSheet aSheet = workbook.createSheet(key);
@@ -198,6 +189,26 @@ public class ExportChangedScheduleImpl implements IExportObject {
                     aSheet.autoSizeColumn(6);
                 }
 
+                XSSFRow row = spreadsheet.createRow(--rowIndex);
+
+                CellStyle cellStyle2 = workbook.createCellStyle();
+                cellStyle2.setBorderBottom(BorderStyle.MEDIUM);
+                cellStyle2.setBorderLeft(BorderStyle.MEDIUM);
+                cellStyle2.setBorderRight(BorderStyle.MEDIUM);
+                cellStyle2.setBorderTop(BorderStyle.MEDIUM);
+                cellStyle2.setAlignment(HorizontalAlignment.CENTER);
+                cellStyle2.setVerticalAlignment(VerticalAlignment.CENTER);
+                Font font = workbook.createFont();
+                font.setBold(true);
+                cellStyle2.setFont(font);
+
+                cell = row.createCell(0);
+                cell.setCellStyle(cellStyle2);
+                cell.setCellValue("Tổng cộng");
+
+                cell = row.createCell(1);
+                cell.setCellStyle(cellStyle2);
+                cell.setCellValue(countTotal);
 
                 ExportStatusReport.StatusExportStudentDetailRunning = false;
                 System.out.println(departmentTotal.size());

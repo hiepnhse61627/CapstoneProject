@@ -63,9 +63,18 @@
                 </select>
             </div>
 
+            <%--<div class="form-group">--%>
+                <%--<label for="class">Lớp:</label>--%>
+                <%--<input id="class" type="text" class="form-control"/>--%>
+            <%--</div>--%>
+
             <div class="form-group">
-                <label for="class">Lớp:</label>
-                <input id="class" type="text" class="form-control"/>
+                <label for="groupName2">Lớp:</label>
+                <%--<input id="groupName2" placeholder="- Tên lớp -" class="form-control"/>--%>
+
+                <select id="groupName2" class="select groupName2-select">
+                    <%--<option value="-1">Tất cả</option>--%>
+                </select>
             </div>
 
             <div class="form-group">
@@ -130,15 +139,57 @@
 
     $(document).ready(function () {
         $('#subject2').select2({
-            placeholder: '- Chọn bộ môn -'
+            placeholder: '- Chọn môn học -'
         });
 
         $('select').on('change', function (evt) {
             $('#select2-subject2-container').removeAttr('title');
         });
 
-        $("#subject2").val('').trigger('change');
 
+
+        $('#groupName2').select2({
+            placeholder: '- Chọn lớp -'
+        });
+
+        $('#subject2').on('change', function (evt) {
+            $.ajax({
+                type: "POST",
+                url: "/getGroupNameBySubject",
+                data: {
+                    subjectCode: $('#subject2').val(),
+                },
+
+                success: function (json) {
+                    var groupNameArr = new Array();
+                    groupNameArr.push({
+                        "id": '-1',
+                        "text": "Tất cả"
+                    });
+                    // groupNameArr.push(json.groupNameList);
+
+                    for (i = 0; i < json.groupNameList.length ; i++) {
+                        groupNameArr.push({
+                            "id": json.groupNameList[i],
+                            "text": json.groupNameList[i]
+                        })
+                    }
+
+                    $('#groupName2').empty();
+                    $("#groupName2").select2({
+                        placeholder: '- Chọn lớp -',
+                        data: groupNameArr,
+                    });
+                    $('#select2-groupName2-container').removeAttr('title');
+                    $('select').on('change', function (evt) {
+                        $('#select2-groupName2-container').removeAttr('title');
+                    });
+
+                }
+            });
+        });
+
+        $("#subject2").val('').trigger('change');
 
         table = $('#table').dataTable({
             "bServerSide": false,
@@ -151,7 +202,7 @@
             "sAjaxSource": "/countAttendanceOfClass", // url getData.php etc
             "fnServerParams": function (aoData) {
                     aoData.push({"name": "subject", "value": $('#subject2').val()}),
-                    aoData.push({"name": "groupName", "value": $('#class').val()})
+                    aoData.push({"name": "groupName", "value": $('#groupName2').val()})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "Nhập từ khóa",
@@ -194,7 +245,7 @@
     function resetFilter() {
 
         $("#subject2").val('').trigger('change');
-        $("#class").val('');
+        $("#groupName2").val('');
         $('#removeFilterBtn').attr('disabled', 'disabled');
     }
 
