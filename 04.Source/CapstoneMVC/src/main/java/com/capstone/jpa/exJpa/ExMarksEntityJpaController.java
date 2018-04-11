@@ -1243,13 +1243,30 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         }
     }
 
-    public void deleteMarksBySemester(int semesterId) {
+    public void deleteMarksBySemesterAndSubjectCodes(int semesterId, List<String> subjectCodes) {
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            Query query = em.createQuery("DELETE FROM MarksEntity m WHERE m.semesterId.id = :semesterId");
-            query.setParameter("semesterId", semesterId);
+            String queryStr = "SELECT m.Id" +
+                    "  FROM [Marks] m" +
+                    "  inner join Subject_MarkComponent smc on m.SubjectMarkComponentId = smc.Id" +
+                    "  inner join [Subject] s on smc.SubjectId = s.Id" +
+                    "  WHERE m.SemesterId = ?1 ";
+
+            if (!subjectCodes.isEmpty()) {
+                String list = "";
+                list += "'" + subjectCodes.get(0) + "'";
+                for (int i = 1; i < subjectCodes.size(); i++) {
+                    list += ", " + "'" + subjectCodes.get(i) + "'";
+                }
+                queryStr += " AND  s.Id IN (" + list + ")";
+            }
+            String deleteQuery = "DELETE FROM [Marks] WHERE Id IN (" + queryStr + ")";
+
+            Query query = em.createNativeQuery(deleteQuery);
+            query.setParameter(1, semesterId);
+
             query.executeUpdate();
             em.flush();
             em.clear();

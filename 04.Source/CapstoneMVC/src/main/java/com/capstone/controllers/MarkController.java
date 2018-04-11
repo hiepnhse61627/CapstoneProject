@@ -237,13 +237,30 @@ public class MarkController {
         List<StudentAvgMarks> fapMarks = ult2.getFAPMarksBySemester(semesterName);
         List<SubjectEntity> allSubjects = subjectService.getAllSubjects();
         String markComponentName = Enums.MarkComponent.AVERAGE.getValue();
+        List<String> subjectCodes = ult2.getFAPSubjectCodesHaveMarks(semesterName);
+
 
         List<MarksEntity> marksEntities = new ArrayList<MarksEntity>();
 
 
+        if (fapMarks == null) {
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", "Đã xảy ra lỗi khi lấy dữ liệu từ FAP!");
+            return jsonObject;
+        }else if (fapMarks.isEmpty()) {
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", "Điểm của " + semesterName + " bên FAP chưa có điểm");
+            return jsonObject;
+        }else if(subjectCodes == null){
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", "Đã xảy ra lỗi khi lấy dữ liệu từ FAP");
+            return jsonObject;
+        }
+
+
         try {
-            marksService.deleteMarksBySemester(semesterId);
-        List<StudentEntity> students = studentService.findStudentsBySemesterId(semesterId);
+            marksService.deleteMarksBySemesterAndSubjectCodes(semesterId, subjectCodes);
+            List<StudentEntity> students = studentService.findStudentsBySemesterId(semesterId);
             //group by student rollnumber
             for (StudentAvgMarks item : fapMarks) {
                 if (tempMap.containsKey(item.getRollNumber())) {
@@ -277,9 +294,7 @@ public class MarkController {
                     semestersToPreCurrentSelected.add(r.getId());
             }
 
-
             int i = 1;
-
 
             dataLoop:
             for (StudentEntity studentEntity : map.keySet()) {
@@ -363,39 +378,14 @@ public class MarkController {
                                     q.isPassed() == true ? Enums.MarkStatus.PASSED.getValue() : Enums.MarkStatus.FAIL.getValue()))
                             .collect(Collectors.toList());
 
-
-                    //chứa những môn chậm tiến độ
-                    List<MarkModelExcel> notStartMarks = subjCodeList.stream()
-                            .filter(q -> !studentFAPMarks.stream().anyMatch(c -> c.getSubjectCode().equalsIgnoreCase(q)))
-                            .map(q -> new MarkModelExcel(-1.0, semesterName, q, Enums.MarkStatus.NOT_START.getValue()))
-                            .collect(Collectors.toList());
-
-                    //xóa những môn notStart mà sinh viên đã học rồi(sử dụng trong trường hợp sinh viên đã học trước môn của kì tới)
-                    List<MarkModelExcel> removedMarks = new ArrayList<>(notStartMarks);
-//                    List<MarksEntity> hasLearned = marksService.getMarkByConditions(semesterId, null,studentId);
                     List<MarksEntity> hasLearned = new ArrayList<>(studentEntity.getMarksEntityList());
                     List<MarksEntity> hasLearnedThisSemester = hasLearned.stream()
                             .filter(q -> q.getSemesterId().getId() == semesterId)
                             .collect(Collectors.toList());
-                    List<String> hasLearnedToPreSemester = hasLearned.stream()
-                            .filter(q -> semestersToPreCurrentSelected.contains(q.getSemesterId().getId()))
-                            .map(q -> q.getSubjectMarkComponentId().getSubjectId().getId())
-                            .collect(Collectors.toList());
-                    if (studentEntity.getRollNumber().equalsIgnoreCase("SE61525")) {
-                        System.out.println("bug");
-                    }
-                    for (int j = 0; j < removedMarks.size(); j++) {
-                        boolean alreadyLearned = false;
-                        MarkModelExcel mark = removedMarks.get(j);
-                        for (String subId : hasLearnedToPreSemester) {
-                            if (subId.equalsIgnoreCase(mark.getSubjectId())) {
-                                alreadyLearned = true;
-                                break;
-                            }
-                        }
-                        if (alreadyLearned)
-                            notStartMarks.remove(mark);
-                    }
+
+
+                    List<MarkModelExcel> notStartMarks = getNotStartMarks(studentEntity, semestersToPreCurrentSelected,
+                            semesterName, semesterId, studentFAPMarks, subjCodeList);
 
 ////                    xóa điểm kì được chọn của sinh viên
 //                    for (MarksEntity item : hasLearnedThisSemester) {
@@ -501,6 +491,47 @@ public class MarkController {
         }
 
         return jsonObject;
+    }
+
+    public List<MarkModelExcel> getNotStartMarks(StudentEntity studentEntity, List<Integer> semestersToPreCurrentSelected,
+                                                    String semesterName, int semesterId ,List<StudentAvgMarks> studentFAPMarks,
+                                                    List<String> subjCodeList){
+        List<MarksEntity> hasLearned = new ArrayList<>(studentEntity.getMarksEntityList());
+        List<MarksEntity> hasLearnedThisSemester = hasLearned.stream()
+                .filter(q -> q.getSemesterId().getId() == semesterId)
+                .collect(Collectors.toList());
+
+        //chứa những môn chậm tiến độ
+        List<MarkModelExcel> notStartMarks = subjCodeList.stream()
+                .filter(q -> !studentFAPMarks.stream().anyMatch(c -> c.getSubjectCode().equalsIgnoreCase(q))
+                        && !hasLearnedThisSemester.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(q)))
+                .map(q -> new MarkModelExcel(-1.0, semesterName, q, Enums.MarkStatus.NOT_START.getValue()))
+                .collect(Collectors.toList());
+
+        //xóa những môn notStart mà sinh viên đã học rồi(sử dụng trong trường hợp sinh viên đã học trước môn của kì tới)
+        List<MarkModelExcel> removedMarks = new ArrayList<>(notStartMarks);
+//                    List<MarksEntity> hasLearned = marksService.getMarkByConditions(semesterId, null,studentId);
+
+        List<String> hasLearnedToPreSemester = hasLearned.stream()
+                .filter(q -> semestersToPreCurrentSelected.contains(q.getSemesterId().getId()))
+                .map(q -> q.getSubjectMarkComponentId().getSubjectId().getId())
+                .collect(Collectors.toList());
+        if (studentEntity.getRollNumber().equalsIgnoreCase("SE61525")) {
+            System.out.println("bug");
+        }
+        for (int j = 0; j < removedMarks.size(); j++) {
+            boolean alreadyLearned = false;
+            MarkModelExcel mark = removedMarks.get(j);
+            for (String subId : hasLearnedToPreSemester) {
+                if (subId.equalsIgnoreCase(mark.getSubjectId())) {
+                    alreadyLearned = true;
+                    break;
+                }
+            }
+            if (alreadyLearned)
+                notStartMarks.remove(mark);
+        }
+        return notStartMarks;
     }
 
     //danh sách lỗi khi import điểm studying và notStart cho sinh viên đang học

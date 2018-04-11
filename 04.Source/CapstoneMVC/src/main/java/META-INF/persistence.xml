@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
     <persistence-unit name="CapstonePersistence">
         <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
         <class>com.capstone.entities.DocTypeEntity</class>
@@ -47,7 +49,8 @@
             <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
             <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
             <!--<property name="javax.persistence.jdbc.password" value="danh123456"/>-->
-            <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;database=CapstoneProject;"/>
+            <property name="javax.persistence.jdbc.url"
+                      value="jdbc:sqlserver://localhost:1433;database=CapstoneProject;"/>
             <property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
             <property name="javax.persistence.jdbc.user" value="sa"/>
             <property name="javax.persistence.jdbc.password" value="."/>
@@ -55,25 +58,25 @@
     </persistence-unit>
 
     <!--<persistence-unit name="FapDB" transaction-type="RESOURCE_LOCAL">-->
-        <!--<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>-->
-        <!--<class>com.capstone.entities.ChangedScheduleEntity</class>-->
-        <!--<properties>-->
-            <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://116.193.67.20:1433;databaseName=AP_HCM"/>-->
-            <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
-            <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
-            <!--<property name="javax.persistence.jdbc.password" value="Kh@nhKT123456&amp;"/>-->
-        <!--</properties>-->
+    <!--<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>-->
+    <!--<class>com.capstone.entities.ChangedScheduleEntity</class>-->
+    <!--<properties>-->
+    <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://116.193.67.20:1433;databaseName=AP_HCM"/>-->
+    <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
+    <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
+    <!--<property name="javax.persistence.jdbc.password" value="Kh@nhKT123456&amp;"/>-->
+    <!--</properties>-->
     <!--</persistence-unit>-->
 
     <!--<persistence-unit name="FapDB" transaction-type="RESOURCE_LOCAL">-->
-        <!--<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>-->
-        <!--<class>com.capstone.entities.ChangedScheduleEntity</class>-->
-        <!--<properties>-->
-            <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;database=AP_HCM"/>-->
-            <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
-            <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
-            <!--<property name="javax.persistence.jdbc.password" value="hoanglong"/>-->
-        <!--</properties>-->
+    <!--<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>-->
+    <!--<class>com.capstone.entities.ChangedScheduleEntity</class>-->
+    <!--<properties>-->
+    <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://localhost:1433;database=AP_HCM"/>-->
+    <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
+    <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
+    <!--<property name="javax.persistence.jdbc.password" value="hoanglong"/>-->
+    <!--</properties>-->
     <!--</persistence-unit>-->
 
     <persistence-unit name="FapDB" transaction-type="RESOURCE_LOCAL">
@@ -85,17 +88,17 @@
         <class>com.capstone.entities.fapEntities.CoursesEntity</class>
         <class>com.capstone.entities.fapEntities.Subjects</class>
         <class>com.capstone.entities.fapEntities.SchedulesEntity</class>
-        <!--<properties>-->
-        <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://10.23.0.77;databaseName=AP_HCM"/>-->
-        <!--<property name="javax.persistence.jdbc.user" value="aphcm"/>-->
-        <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
-        <!--<property name="javax.persistence.jdbc.password" value="Kh@nhKT123456&amp;"/>-->
-    <!--</properties>-->
         <properties>
-            <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://116.193.67.20;databaseName=AP_HCM"/>
-            <property name="javax.persistence.jdbc.user" value="sa"/>
+            <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://10.23.0.77;databaseName=AP_HCM"/>
+            <property name="javax.persistence.jdbc.user" value="aphcm"/>
             <property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
             <property name="javax.persistence.jdbc.password" value="Kh@nhKT123456&amp;"/>
         </properties>
+        <!--<properties>-->
+        <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://116.193.67.20;databaseName=AP_HCM"/>-->
+        <!--<property name="javax.persistence.jdbc.user" value="sa"/>-->
+        <!--<property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>-->
+        <!--<property name="javax.persistence.jdbc.password" value="Kh@nhKT123456&amp;"/>-->
+        <!--</properties>-->
     </persistence-unit>
 </persistence>

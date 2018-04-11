@@ -227,7 +227,7 @@ public class MarksServiceImpl implements IMarksService {
     }
 
     @Override
-    public void deleteMarksBySemester(int semesterId) {
-        marksEntityJpaController.deleteMarksBySemester(semesterId);
+    public void deleteMarksBySemesterAndSubjectCodes(int semesterId, List<String> subjectCodes) {
+        marksEntityJpaController.deleteMarksBySemesterAndSubjectCodes(semesterId, subjectCodes);
     }
 }

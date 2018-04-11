@@ -211,9 +211,10 @@ public class SubjectController {
             SubjectModel subjectModel = new SubjectModel();
             subjectModel.setSubjectID(entity.getId());
             subjectModel.setSubjectName(entity.getName());
-            if (entity.getPrequisiteEntity().getEffectionSemester() != null
-                    && !entity.getPrequisiteEntity().getEffectionSemester().isEmpty()) {
-                subjectModel.setEffectionSemester(entity.getPrequisiteEntity().getEffectionSemester());
+            String effectionSemester = entity.getPrequisiteEntity().getEffectionSemester();
+            if (effectionSemester != null
+                    && !effectionSemester.isEmpty()) {
+                subjectModel.setEffectionSemester(effectionSemester);
                 subjectModel.setPrerequisiteSubject(entity.getPrequisiteEntity().getNewPrequisiteSubs());
                 subjectModel.setFailMark(entity.getPrequisiteEntity().getNewFailMark());
             } else {
@@ -398,7 +399,7 @@ public class SubjectController {
     @RequestMapping(value = "/subject/create")
     @ResponseBody
     public JsonObject CreateNewSubject(@RequestParam("sNewSubjectId") String subjectId, @RequestParam("sNewSubjectName") String subjectName,
-                                       @RequestParam("sNewCredits") String credits, @RequestParam("sNewReplacement") String replacement,
+                                       @RequestParam("sNewReplacement") String replacement,
                                        @RequestParam("sNewPrerequisite") String prerequisite, @RequestParam("sNewEffectionSemester") String newEffectionSemester,
                                        @RequestParam("sNewFailMark") String newFailMark) {
         JsonObject jsonObj = new JsonObject();
@@ -410,12 +411,47 @@ public class SubjectController {
             SubjectModel model = new SubjectModel();
             model.setSubjectID(subjectId);
             model.setSubjectName(subjectName);
-            model.setCredits(Integer.parseInt(credits));
             model.setPrerequisiteSubject(prerequisite);
             model.setReplacementSubject(replacement);
             model.setEffectionSemester(newEffectionSemester);
             model.setFailMark(Integer.parseInt(newFailMark));
             SubjectModel result = subjectService.createSubject(model);
+            if (!result.isResult()) {
+                jsonObj.addProperty("success", false);
+                jsonObj.addProperty("message", result.getErrorMessage());
+            } else {
+                jsonObj.addProperty("success", true);
+            }
+
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            jsonObj.addProperty("false", false);
+            jsonObj.addProperty("message", e.getMessage());
+        }
+
+        return jsonObj;
+    }
+
+    @RequestMapping(value = "/subject/edit")
+    @ResponseBody
+    public JsonObject EditNewSubject(@RequestParam("sNewSubjectId") String subjectId, @RequestParam("sNewSubjectName") String subjectName,
+                                       @RequestParam("sNewReplacement") String replacement,
+                                       @RequestParam("sNewPrerequisite") String prerequisite, @RequestParam("sNewEffectionSemester") String newEffectionSemester,
+                                       @RequestParam("sNewFailMark") String newFailMark) {
+        JsonObject jsonObj = new JsonObject();
+        Ultilities.logUserAction("Create new subject - " + subjectId);
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            SubjectModel model = new SubjectModel();
+            model.setSubjectID(subjectId);
+            model.setSubjectName(subjectName);
+            model.setPrerequisiteSubject(prerequisite);
+            model.setReplacementSubject(replacement);
+            model.setEffectionSemester(newEffectionSemester);
+            model.setFailMark(Integer.parseInt(newFailMark));
+            SubjectModel result = subjectService.updateSubject(model);
             if (!result.isResult()) {
                 jsonObj.addProperty("success", false);
                 jsonObj.addProperty("message", result.getErrorMessage());

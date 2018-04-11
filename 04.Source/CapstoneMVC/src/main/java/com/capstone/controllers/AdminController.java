@@ -233,8 +233,7 @@ public class AdminController {
             ICredentialsService credentialsService = new CredentialsServiceImpl();
             ICredentialsRolesService credentialsRolesService = new CredentialsRolesServiceImpl();
             //validate data
-            if (cred.getUsername().trim().isEmpty() || cred.getPassword().trim().isEmpty()
-                    || cred.getEmail().trim().isEmpty()) {
+            if (cred.getUsername().trim().isEmpty() || cred.getEmail().trim().isEmpty()) {
                 data.addProperty("success", false);
                 data.addProperty("message", "Data thiếu");
                 return data;
@@ -254,11 +253,13 @@ public class AdminController {
                 c.setFullname(cred.getFullname());
                 c.setPicture(cred.getPicture());
 
+                 //set new password if had
                 if (cred.getPassword() != null && !cred.getPassword().isEmpty()) {
                     PasswordEncoder encoder = new BCryptPasswordEncoder();
                     String encodedPass = encoder.encode(cred.getPassword());
                     c.setPassword(encodedPass);
                 }
+
                 credentialsService.SaveCredential(c, false);
 
                 List<CredentialsRolesEntity> roleList = credentialsRolesService.getCredentialsRolesByCredentialsId(cred.getId());
@@ -324,7 +325,8 @@ public class AdminController {
         try {
             ICredentialsService credentialsService = new CredentialsServiceImpl();
             ICredentialsRolesService credentialsRolesService = new CredentialsRolesServiceImpl();
-            if (cred.getUsername().trim().isEmpty() || cred.getEmail().trim().isEmpty()) {
+            if (cred.getUsername().trim().isEmpty() || cred.getEmail().trim().isEmpty()
+                    || cred.getPassword().isEmpty()) {
                 data.addProperty("success", false);
                 data.addProperty("message", "Data không được rỗng");
                 return data;

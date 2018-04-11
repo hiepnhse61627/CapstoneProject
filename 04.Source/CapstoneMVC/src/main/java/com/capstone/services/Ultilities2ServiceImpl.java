@@ -68,7 +68,8 @@ public class Ultilities2ServiceImpl implements IUltilities2Service {
             em = getFAPEntityManager();
             Query query = em.createNativeQuery("SELECT sm.RollNumber, sm.AverageMark, sm.IsPassed, c.SubjectCode, c.SemesterName" +
                             " FROM FUMM.StudentMarks sm " +
-                            "INNER JOIN FUMM.Courses c on sm.CourseID = c.CourseID WHERE c.SemesterName Like ?1");
+                            "INNER JOIN FUMM.Courses c on sm.CourseID = c.CourseID WHERE c.SemesterName Like ?1 " +
+                            "AND sm.IsPassed IS NOT  NULL ");
 
             query.setParameter(1, "%" + semesterName + "%");
 
@@ -85,10 +86,9 @@ public class Ultilities2ServiceImpl implements IUltilities2Service {
             }
 
         } catch (Exception e) {
-            em.getTransaction().rollback();
             Logger.writeLog(e);
             e.printStackTrace();
-            return new ArrayList<>();
+            return null;
         } finally {
             if (em != null) {
                 em.close();
@@ -97,6 +97,38 @@ public class Ultilities2ServiceImpl implements IUltilities2Service {
         return result;
     }
 
+
+    public List<String> getFAPSubjectCodesHaveMarks(String semesterName) {
+        EntityManager em = null;
+        List<String> result = new ArrayList<>();
+        try {
+            em = getFAPEntityManager();
+            Query query = em.createNativeQuery("SELECT DISTINCT(c.SubjectCode)" +
+                    " FROM FUMM.StudentMarks sm " +
+                    "INNER JOIN FUMM.Courses c on sm.CourseID = c.CourseID WHERE c.SemesterName Like ?1" +
+                    " AND sm.IsPassed IS NOT NULL");
+
+            query.setParameter(1, "%" + semesterName + "%");
+
+//           result = getResultList(query, StudentAvgMarks.class);
+
+            List<Object> objList = query.getResultList();
+            for (Object item: objList) {
+                String subjectCode = (String)item;
+                result.add(subjectCode);
+            }
+
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        return result;
+    }
 
 
 

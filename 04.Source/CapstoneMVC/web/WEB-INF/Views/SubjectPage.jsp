@@ -88,17 +88,13 @@
                             <input id="prerequisiteSubs" type="text" class="form-control"/>
                         </div>
                         <div class="form-group">
-                            <label for="credits">Tín chỉ:</label>
-                            <input id="credits" type="text" maxlength="2" class="form-control"/>
-                        </div>
-                        <div class="form-group">
                             <label for="replacementSubject">Môn thay thế:</label>
                             <input id="replacementSubject" type="text" class="form-control"/>
                         </div>
                         <div class="form-group">
                             <label for="effectionSemester">Học kì bắt đầu áp dụng tiên quyết:</label>
                             <select id="effectionSemester" class="select form-control">
-                                <option value="0"></option>
+                                <option value="0">Not Selected</option>
                                 <c:forEach var="effectionSemester" items="${effectionSemester}">
                                     <option value="${effectionSemester.semester}">${effectionSemester.semester}</option>
                                 </c:forEach>
@@ -145,10 +141,6 @@
                             <input id="prerequisiteNewSubs" type="text" class="form-control"/>
                         </div>
                         <div class="form-group">
-                            <label for="newCredits">Tín chỉ:</label>
-                            <input id="newCredits" type="text" maxlength="2" class="form-control"/>
-                        </div>
-                        <div class="form-group">
                             <label for="replacementNewSubject">Môn thay thế:</label>
                             <input id="replacementNewSubject" type="text" class="form-control"/>
                         </div>
@@ -156,7 +148,7 @@
                             <label for="effectionNewSemester">Học kì bắt đầu áp dụng tiên quyết:</label>
                             <div id="selector" style="">
                                 <select id="effectionNewSemester" class="select form-control">
-                                    <option value="0"></option>
+                                    <option value="0">Not selected</option>
                                     <c:forEach var="effectionNewSemester" items="${effectionSemester}">
                                         <option value="${effectionNewSemester.semester}">${effectionNewSemester.semester}</option>
                                     </c:forEach>
@@ -307,7 +299,6 @@
                 data: {
                     "sNewSubjectId": $('#subjectNewId').val(),
                     "sNewSubjectName": $('#subjectNewName').val(),
-                    "sNewCredits": $('#newCredits').val(),
                     "sNewReplacement": $('#replacementNewSubject').val(),
                     "sNewPrerequisite": $('#prerequisiteNewSubs').val(),
                     "sNewEffectionSemester": $('#effectionNewSemester').val(),
@@ -349,7 +340,6 @@
                 data: {
                     "sSubjectId": $('#subjectId').val(),
                     "sSubjectName": $('#subjectName').val(),
-                    "sCredits": $('#credits').val(),
                     "sReplacement": $('#replacementSubject').val(),
                     "sPrerequisite": $('#prerequisiteSubs').val(),
                     "sEffectionSemester": $('#effectionSemester').val(),
