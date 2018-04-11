@@ -86,14 +86,11 @@
 
             <div class="form-group">
                 <label for="groupName2">Lớp:</label>
-                <input id="groupName2" placeholder="- Tên lớp -" class="form-control"/>
+                <%--<input id="groupName2" placeholder="- Tên lớp -" class="form-control"/>--%>
 
-                <%--<select id="groupName2" class="select groupName2-select">--%>
+                <select id="groupName2" class="select groupName2-select">
                     <%--<option value="-1">Tất cả</option>--%>
-                    <%--<c:forEach var="groupName" items="${groupNames}">--%>
-                        <%--<option value="${groupName}">${groupName2}</option>--%>
-                    <%--</c:forEach>--%>
-                <%--</select>--%>
+                </select>
             </div>
 
 
@@ -393,6 +390,10 @@
             placeholder: '- Chọn giảng viên -'
         });
 
+        $('#groupName2').select2({
+            placeholder: '- Chọn lớp -'
+        });
+
         $('select').on('change', function (evt) {
             $('.select2-selection__choice').removeAttr('title');
             $('#select2-dayOfWeek-container').removeAttr('title');
@@ -426,7 +427,6 @@
                     '                            </div>\n' +
                     '                            <div class="col-md-2"><button type="button" class="btn btn-danger remove_field">Xóa</button></div>\n' +
                     '                 </div>'); //add input box
-
                 resetSelect2(x);
             }
         });
@@ -472,6 +472,44 @@
         $('#lecture2').select2({
             placeholder: '- Chọn giảng viên -'
         });
+
+        $('#lecture2').on('change', function (evt) {
+            $.ajax({
+                type: "POST",
+                url: "/getGroupNameByLecture",
+                data: {
+                    lectureEmailEDU: $('#lecture2').val(),
+                },
+
+                success: function (json) {
+                    var groupNameArr = new Array();
+                    groupNameArr.push({
+                        "id": '-1',
+                        "text": "Tất cả"
+                    });
+                    // groupNameArr.push(json.groupNameList);
+
+                    for (i = 0; i < json.groupNameList.length ; i++) {
+                        groupNameArr.push({
+                            "id": json.groupNameList[i],
+                            "text": json.groupNameList[i]
+                        })
+                    }
+
+                    $('#groupName2').empty();
+                    $("#groupName2").select2({
+                        placeholder: '- Chọn lớp -',
+                        data: groupNameArr,
+                    });
+                    $('#select2-groupName2-container').removeAttr('title');
+                    $('select').on('change', function (evt) {
+                        $('#select2-groupName2-container').removeAttr('title');
+                    });
+
+                }
+            });
+        });
+
 
         $('#subject2').select2({
             placeholder: '- Chọn môn học -'
@@ -877,7 +915,7 @@
         $('#scheduleDate2').val('');
         $("#subject2").val('').trigger('change');
         $("#aTime").val('').trigger('change');
-        $("#groupName2").val('');
+        $("#groupName2").val('').trigger('change');
 
         $('#removeFilterBtn').attr('disabled', 'disabled');
 

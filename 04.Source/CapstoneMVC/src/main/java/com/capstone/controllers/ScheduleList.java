@@ -172,7 +172,7 @@ public class ScheduleList {
                 subjectCode = params.get("subject");
             }
 
-            if (!params.get("groupName").equals("")) {
+            if (!params.get("groupName").equals("") && !params.get("groupName").equals("-1")) {
                 groupName = params.get("groupName");
             }
 
@@ -479,108 +479,108 @@ public class ScheduleList {
             String endDate = params.get("endDate");
 
 //            if (!startDate.equals(endDate)) {
-                List<ScheduleEntity> scheduleList = scheduleService.findScheduleByLecture(employeeId);
+            List<ScheduleEntity> scheduleList = scheduleService.findScheduleByLecture(employeeId);
 
 
-                DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-                List<ScheduleEntity> removeList = new ArrayList<>();
-                for (ScheduleEntity aSchedule : scheduleList) {
-                    Date aDate = format.parse(aSchedule.getDateId().getDate());
-                    if (aDate.before(format.parse(startDate)) || aDate.after(format.parse(endDate))
-                            || aSchedule.getActive() == null || aSchedule.getActive() == false) {
-                        removeList.add(aSchedule);
-                    }
+            DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+            List<ScheduleEntity> removeList = new ArrayList<>();
+            for (ScheduleEntity aSchedule : scheduleList) {
+                Date aDate = format.parse(aSchedule.getDateId().getDate());
+                if (aDate.before(format.parse(startDate)) || aDate.after(format.parse(endDate))
+                        || aSchedule.getActive() == null || aSchedule.getActive() == false) {
+                    removeList.add(aSchedule);
                 }
-                scheduleList.removeAll(removeList);
+            }
+            scheduleList.removeAll(removeList);
 
 
-                Collections.sort(scheduleList, new Comparator<ScheduleEntity>() {
-                    @Override
-                    public int compare(ScheduleEntity o1, ScheduleEntity o2) {
-                        try {
-                            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-                            Date aDate = df.parse(o1.getDateId().getDate());
-                            Date aDate2 = df.parse(o2.getDateId().getDate());
-                            if (aDate.compareTo(aDate2) > 0) {
+            Collections.sort(scheduleList, new Comparator<ScheduleEntity>() {
+                @Override
+                public int compare(ScheduleEntity o1, ScheduleEntity o2) {
+                    try {
+                        DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                        Date aDate = df.parse(o1.getDateId().getDate());
+                        Date aDate2 = df.parse(o2.getDateId().getDate());
+                        if (aDate.compareTo(aDate2) > 0) {
+                            return 1;
+                        }
+
+                        if (aDate.compareTo(aDate2) == 0) {
+                            String slot1 = o1.getDateId().getSlotId().getSlotName();
+                            String slot2 = o2.getDateId().getSlotId().getSlotName();
+
+                            if (slot1.compareTo(slot2) > 0) {
                                 return 1;
                             }
-
-                            if (aDate.compareTo(aDate2) == 0) {
-                                String slot1 = o1.getDateId().getSlotId().getSlotName();
-                                String slot2 = o2.getDateId().getSlotId().getSlotName();
-
-                                if (slot1.compareTo(slot2) > 0) {
-                                    return 1;
-                                }
-                            }
-                            return -1;
-                        } catch (Exception e) {
-                            e.printStackTrace();
                         }
-                        return 0;
+                        return -1;
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                });
-
-
-                for (ScheduleEntity schedule : scheduleList) {
-                    List<String> dataList = new ArrayList<String>();
-
-                    dataList.add(schedule.getId() + "");
-                    dataList.add(schedule.getCourseId().getSubjectCode());
-
-                    if (schedule.getGroupName() != null) {
-                        dataList.add(schedule.getGroupName());
-                    } else {
-                        dataList.add("");
-                    }
-
-                    if (schedule.getDateId() != null) {
-                        dataList.add(schedule.getDateId().getDate());
-                        dataList.add(schedule.getDateId().getSlotId().getSlotName());
-                    } else {
-                        dataList.add("");
-                        dataList.add("");
-                    }
-
-                    if (schedule.getRoomId() != null) {
-                        dataList.add(schedule.getRoomId().getName());
-                    } else {
-                        dataList.add("");
-                    }
-
-                    if (schedule.getEmpId() != null) {
-                        dataList.add(schedule.getEmpId().getFullName());
-                    } else {
-                        dataList.add("");
-                    }
-
-                    if (schedule.getRoomId() != null) {
-                        dataList.add(schedule.getRoomId().getCapacity() + "");
-                    } else {
-                        dataList.add("");
-                    }
-
-
-                    Date date1 = getDate(schedule.getDateId().getDate());
-                    Date now = new Date();
-
-                    Calendar c1 = Calendar.getInstance();
-                    c1.setTime(date1);
-                    Calendar now1 = Calendar.getInstance();
-                    now1.setTime(now);
-                    now1.set(Calendar.HOUR_OF_DAY, 0);
-                    now1.set(Calendar.MINUTE, 0);
-                    now1.set(Calendar.SECOND, 0);
-                    now1.set(Calendar.MILLISECOND, 0);
-
-                    if (c1.after(now1) || c1.equals(now1)) {
-                        dataList.add("false");
-                    } else {
-                        dataList.add("true");
-                    }
-
-                    result.add(dataList);
+                    return 0;
                 }
+            });
+
+
+            for (ScheduleEntity schedule : scheduleList) {
+                List<String> dataList = new ArrayList<String>();
+
+                dataList.add(schedule.getId() + "");
+                dataList.add(schedule.getCourseId().getSubjectCode());
+
+                if (schedule.getGroupName() != null) {
+                    dataList.add(schedule.getGroupName());
+                } else {
+                    dataList.add("");
+                }
+
+                if (schedule.getDateId() != null) {
+                    dataList.add(schedule.getDateId().getDate());
+                    dataList.add(schedule.getDateId().getSlotId().getSlotName());
+                } else {
+                    dataList.add("");
+                    dataList.add("");
+                }
+
+                if (schedule.getRoomId() != null) {
+                    dataList.add(schedule.getRoomId().getName());
+                } else {
+                    dataList.add("");
+                }
+
+                if (schedule.getEmpId() != null) {
+                    dataList.add(schedule.getEmpId().getFullName());
+                } else {
+                    dataList.add("");
+                }
+
+                if (schedule.getRoomId() != null) {
+                    dataList.add(schedule.getRoomId().getCapacity() + "");
+                } else {
+                    dataList.add("");
+                }
+
+
+                Date date1 = getDate(schedule.getDateId().getDate());
+                Date now = new Date();
+
+                Calendar c1 = Calendar.getInstance();
+                c1.setTime(date1);
+                Calendar now1 = Calendar.getInstance();
+                now1.setTime(now);
+                now1.set(Calendar.HOUR_OF_DAY, 0);
+                now1.set(Calendar.MINUTE, 0);
+                now1.set(Calendar.SECOND, 0);
+                now1.set(Calendar.MILLISECOND, 0);
+
+                if (c1.after(now1) || c1.equals(now1)) {
+                    dataList.add("false");
+                } else {
+                    dataList.add("true");
+                }
+
+                result.add(dataList);
+            }
 //            }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1440,7 +1440,7 @@ public class ScheduleList {
             }
 
             String groupName = "";
-            if (!params.get("groupName").equals("")) {
+            if (!params.get("groupName").equals("") && !params.get("groupName").equals("-1")) {
                 groupName = params.get("groupName");
             }
 
@@ -1535,6 +1535,63 @@ public class ScheduleList {
     }
 
 
+    @RequestMapping(value = "/getGroupNameByLecture")
+    @ResponseBody
+    public JsonObject getGroupNameByLecture(@RequestParam Map<String, String> params) {
+        JsonObject jsonObj = new JsonObject();
+        Set<String> groupNameSet = new HashSet<>();
+        try {
+            String empEmailEDU = params.get("lectureEmailEDU");
+
+            if (empEmailEDU != null && !empEmailEDU.equals("")) {
+                EmployeeEntity emp = employeeService.findEmployeeByEmail(empEmailEDU);
+                List<ScheduleEntity> scheduleEntityList = scheduleService.findScheduleByLecture(emp.getId());
+
+                for (ScheduleEntity aSchedule : scheduleEntityList) {
+                    groupNameSet.add(aSchedule.getGroupName());
+                }
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Gson gson = new Gson();
+        JsonArray array = (JsonArray) gson.toJsonTree(groupNameSet);
+
+        jsonObj.add("groupNameList", array);
+        return jsonObj;
+    }
+
+
+    @RequestMapping(value = "/getGroupNameBySubject")
+    @ResponseBody
+    public JsonObject getGroupNameBySubject(@RequestParam Map<String, String> params) {
+        JsonObject jsonObj = new JsonObject();
+        Set<String> groupNameSet = new HashSet<>();
+        try {
+            String subjectCode = params.get("subjectCode");
+
+            if (subjectCode != null && !subjectCode.equals("")) {
+                List<ScheduleEntity> scheduleEntityList = scheduleService.findScheduleBySubjectCodeAndGroupNameBeforeNowTime(subjectCode,"");
+
+                for (ScheduleEntity aSchedule : scheduleEntityList) {
+                    groupNameSet.add(aSchedule.getGroupName());
+                }
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Gson gson = new Gson();
+        JsonArray array = (JsonArray) gson.toJsonTree(groupNameSet);
+
+        jsonObj.add("groupNameList", array);
+        return jsonObj;
+    }
 }
 
 
