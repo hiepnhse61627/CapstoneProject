@@ -354,6 +354,7 @@
             minimumInputLength: 2,
             ajax: {
                 url: '/getStudentList',
+                delay: 1000, //delay search
                 data: function (params) {
                     var queryParameters = {
                         searchValue: params.term
@@ -717,7 +718,7 @@
             success: function (result) {
                 $('#progress').html("<div>" + result.status + "</div>");
                 if (result.running) {
-                    setTimeout("Run()", 50);
+                    setTimeout("Run()", 1000);
                 } else {
                     swal('', 'Download file thành công!', 'success');
                 }

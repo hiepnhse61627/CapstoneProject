@@ -7,7 +7,7 @@
 <section class="content">
     <div class="box">
         <div class="b-header">
-            <h1>Cập nhật trạng thái cho sinh viên</h1>
+            <h1>Cập nhật trạng thái tốt nghiệp cho sinh viên</h1>
             <hr>
         </div>
         <div class="b-body">
@@ -16,6 +16,10 @@
                     <div class="title">
                         <label>Chọn file:</label>
                     </div>
+                    <div class="">
+                        Bấm vào <a class="link" href="/Resources/FileTemplates/Quyetdinh_totNghiep.xlsx">Template</a> để tải
+                        về bản mẫu
+                    </div><br/>
                     <div class="my-content">
                         <div class="col-md-12">
                             <label for="updateFile" hidden></label>

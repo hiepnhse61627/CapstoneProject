@@ -14,6 +14,7 @@ import org.apache.poi.ss.formula.functions.Replace;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,8 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.persistence.*;
 import javax.security.auth.Subject;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,7 +46,13 @@ public class SubjectController {
     ServletContext context;
 
     @RequestMapping("/subject")
-    public ModelAndView Index() {
+    public ModelAndView Index(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to /subject");
+
         ModelAndView view = new ModelAndView("UploadSubject");
         view.addObject("title", "Nhập môn học");
         File dir = new File(context.getRealPath("/") + "UploadedFiles/UploadedSubjectTemplate/");
@@ -63,6 +72,7 @@ public class SubjectController {
     @ResponseBody
     public JsonObject UploadExistFile(@RequestParam("file") String fileName) {
         JsonObject result;
+        Ultilities.logUserAction("Upload exist subjects file");
         try {
             File file = new File(context.getRealPath("/") + "UploadedFiles/" + folder + "/" + fileName);
             result = this.ReadFile(null, file, false);
@@ -76,6 +86,7 @@ public class SubjectController {
     @RequestMapping(value = "/subject/upload", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject Upload(@RequestParam("file") MultipartFile file) {
+        Ultilities.logUserAction("Upload subjects file");
         JsonObject result = this.ReadFile(file, null, true);
         if (result.get("success").getAsBoolean()) {
             ReadAndSaveFileToServer read = new ReadAndSaveFileToServer();
@@ -85,7 +96,13 @@ public class SubjectController {
     }
 
     @RequestMapping("/subjectList")
-    public ModelAndView StudentListAll() {
+    public ModelAndView StudentListAll(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to /subjectList");
+
         ModelAndView view = new ModelAndView("SubjectPage");
         view.addObject("title", "Danh sách môn học");
 
@@ -97,7 +114,13 @@ public class SubjectController {
     }
 
     @RequestMapping("/studentCurriculumDetail")
-    public ModelAndView subjectCurriculumDetail() {
+    public ModelAndView subjectCurriculumDetail(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to /studentCurriculumDetail");
+
         ModelAndView view = new ModelAndView("StudentCurriculumDetail");
         view.addObject("title", "Danh sách sinh viên chuyển ngành");
         IStudentService studentService = new StudentServiceImpl();
@@ -188,9 +211,10 @@ public class SubjectController {
             SubjectModel subjectModel = new SubjectModel();
             subjectModel.setSubjectID(entity.getId());
             subjectModel.setSubjectName(entity.getName());
-            if (entity.getPrequisiteEntity().getEffectionSemester() != null
-                    && !entity.getPrequisiteEntity().getEffectionSemester().isEmpty()) {
-                subjectModel.setEffectionSemester(entity.getPrequisiteEntity().getEffectionSemester());
+            String effectionSemester = entity.getPrequisiteEntity().getEffectionSemester();
+            if (effectionSemester != null
+                    && !effectionSemester.isEmpty()) {
+                subjectModel.setEffectionSemester(effectionSemester);
                 subjectModel.setPrerequisiteSubject(entity.getPrequisiteEntity().getNewPrequisiteSubs());
                 subjectModel.setFailMark(entity.getPrequisiteEntity().getNewFailMark());
             } else {
@@ -375,11 +399,11 @@ public class SubjectController {
     @RequestMapping(value = "/subject/create")
     @ResponseBody
     public JsonObject CreateNewSubject(@RequestParam("sNewSubjectId") String subjectId, @RequestParam("sNewSubjectName") String subjectName,
-                                       @RequestParam("sNewCredits") String credits, @RequestParam("sNewReplacement") String replacement,
+                                       @RequestParam("sNewReplacement") String replacement,
                                        @RequestParam("sNewPrerequisite") String prerequisite, @RequestParam("sNewEffectionSemester") String newEffectionSemester,
                                        @RequestParam("sNewFailMark") String newFailMark) {
         JsonObject jsonObj = new JsonObject();
-
+        Ultilities.logUserAction("Create new subject - " + subjectId);
         try {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em = emf.createEntityManager();
@@ -387,12 +411,47 @@ public class SubjectController {
             SubjectModel model = new SubjectModel();
             model.setSubjectID(subjectId);
             model.setSubjectName(subjectName);
-            model.setCredits(Integer.parseInt(credits));
             model.setPrerequisiteSubject(prerequisite);
             model.setReplacementSubject(replacement);
             model.setEffectionSemester(newEffectionSemester);
             model.setFailMark(Integer.parseInt(newFailMark));
             SubjectModel result = subjectService.createSubject(model);
+            if (!result.isResult()) {
+                jsonObj.addProperty("success", false);
+                jsonObj.addProperty("message", result.getErrorMessage());
+            } else {
+                jsonObj.addProperty("success", true);
+            }
+
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            jsonObj.addProperty("false", false);
+            jsonObj.addProperty("message", e.getMessage());
+        }
+
+        return jsonObj;
+    }
+
+    @RequestMapping(value = "/subject/edit")
+    @ResponseBody
+    public JsonObject EditNewSubject(@RequestParam("sNewSubjectId") String subjectId, @RequestParam("sNewSubjectName") String subjectName,
+                                       @RequestParam("sNewReplacement") String replacement,
+                                       @RequestParam("sNewPrerequisite") String prerequisite, @RequestParam("sNewEffectionSemester") String newEffectionSemester,
+                                       @RequestParam("sNewFailMark") String newFailMark) {
+        JsonObject jsonObj = new JsonObject();
+        Ultilities.logUserAction("Create new subject - " + subjectId);
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            SubjectModel model = new SubjectModel();
+            model.setSubjectID(subjectId);
+            model.setSubjectName(subjectName);
+            model.setPrerequisiteSubject(prerequisite);
+            model.setReplacementSubject(replacement);
+            model.setEffectionSemester(newEffectionSemester);
+            model.setFailMark(Integer.parseInt(newFailMark));
+            SubjectModel result = subjectService.updateSubject(model);
             if (!result.isResult()) {
                 jsonObj.addProperty("success", false);
                 jsonObj.addProperty("message", result.getErrorMessage());
@@ -418,4 +477,92 @@ public class SubjectController {
         return obj;
     }
 
+    @RequestMapping(value = "/uploadSubjectsVNName", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject goUploadThesisName(@RequestParam("file") MultipartFile file,
+                                         HttpServletRequest request, HttpServletResponse response) {
+        JsonObject jsonObject = new JsonObject();
+        Ultilities.logUserAction("Upload subject name");
+        try {
+            InputStream is = file.getInputStream();
+
+            XSSFWorkbook workbook = new XSSFWorkbook(is);
+            XSSFSheet spreadsheet = workbook.getSheetAt(0);
+
+            XSSFRow row;
+
+            int lastRow = spreadsheet.getLastRowNum();
+
+
+            int excelDataIndex = 1;
+
+            int subjectCodeIndex = 0;
+            int vietnameseNameColIndex = 2;
+            int totalLine = lastRow - excelDataIndex + 1;
+
+
+
+            int currentLine = 1;
+
+            SubjectServiceImpl subjectService = new SubjectServiceImpl();
+            List<SubjectEntity> allSubject = subjectService.getAllSubjects();
+            List<SubjectEntity> importList = new ArrayList<>();
+            if (subjectCodeIndex != -1 && vietnameseNameColIndex != -1) {
+
+
+                //get student and check if student exists
+                row = spreadsheet.getRow(excelDataIndex);
+
+                 currentLine = 1;
+
+                //get mark component name for later use
+                HashMap<String, List<String>> thesisName = new HashMap<>();
+                for (int rowIndex = excelDataIndex; rowIndex <= lastRow; rowIndex++) {
+                    row = spreadsheet.getRow(rowIndex);
+
+
+                    Cell subjectCodeCell = row.getCell(subjectCodeIndex);
+                    Cell vietnameseNameCell = row.getCell(vietnameseNameColIndex);
+
+                    //check if cell is empty or null to end the loop
+                    if (subjectCodeCell == null || subjectCodeCell.getCellTypeEnum() == CellType.BLANK
+                            || vietnameseNameCell == null || vietnameseNameCell.getCellTypeEnum() == CellType.BLANK
+                            ) {
+//                        break;
+                    } else {
+
+                        String subjectCodeValue = subjectCodeCell.getStringCellValue().trim().toUpperCase();
+                        String vietnameseNameValue = vietnameseNameCell.getStringCellValue().trim();
+
+                        if(!vietnameseNameValue.isEmpty()){
+                            SubjectEntity subject =  allSubject.stream().filter(q -> q.getId().equalsIgnoreCase(subjectCodeValue))
+                                    .findFirst().orElse(null);
+
+                            if(subject != null){
+                                subject.setVnName(vietnameseNameValue);
+                                importList.add(subject);
+                            }
+                        }
+
+                    }
+                    System.out.println("upload" + currentLine);
+                    currentLine++;
+                }
+                subjectService.bulkUpdateSubjects(importList);
+
+                jsonObject.addProperty("success", true);
+                jsonObject.addProperty("message", "Upload tên đề subject thành công !");
+            } else {
+                jsonObject.addProperty("success", false);
+                jsonObject.addProperty("message", "File không đúng định dạng !");
+            }
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            Logger.writeLog(ex);
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", ex.getMessage());
+        }
+
+        return jsonObject;
+    }
 }

@@ -2,6 +2,14 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <link rel="stylesheet" href="/Resources/plugins/dist/css/upload-page.css">
 
+<script src="/Resources/plugins/export-DataTable/dataTables.buttons.min.js"></script>
+<script src="/Resources/plugins/export-DataTable/buttons.flash.min.js"></script>
+<script src="/Resources/plugins/export-DataTable/jszip.min.js"></script>
+<script src="/Resources/plugins/export-DataTable/pdfmake.min.js"></script>
+<script src="/Resources/plugins/export-DataTable/vfs_fonts.js"></script>
+<script src="/Resources/plugins/export-DataTable/buttons.html5.min.js"></script>
+<script src="/Resources/plugins/export-DataTable/buttons.print.min.js"></script>
+
 <form id="export-excel" action="/exportExcel" hidden>
     <input name="objectType"/>
     <input name="curId"/>
@@ -14,11 +22,11 @@
                 <div class="col-md-8 title">
                     <h1>Các khung chương trình</h1>
                 </div>
-                    <div class="col-md-4" style="text-align: right">
-                        <input class="btn btn-warning" type="button" value="Nhập dữ liệu" onclick="ShowImportModal()"/>
-                        <a class="btn btn-primary" onclick="ExportExcel()">Xuất tất cả</a>
-                        <a class="btn btn-success" href="/createcurriculum">Tạo mới</a>
-                    </div>
+                <div class="col-md-4" style="text-align: right">
+                    <input class="btn btn-warning" type="button" value="Nhập dữ liệu" onclick="ShowImportModal()"/>
+                    <a class="btn btn-primary" onclick="ExportExcel()">Xuất tất cả</a>
+                    <a class="btn btn-success" href="/createcurriculum">Tạo mới</a>
+                </div>
             </div>
             <hr>
         </div>
@@ -80,18 +88,46 @@
                         <div class="my-content">
                             <div class="col-md-12">
                                 <label for="file" hidden></label>
-                                <input type="file" accept=".xlsx, .xls" id="file" name="file" />
+                                <input type="file" accept=".xlsx, .xls" id="file" name="file"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        <div class="my-content">
+                            <div class="col-md-12">
+                                <label for="ojtTerm" >Chọn kỳ đi Ojt</label><br/>
+                                <input title="" type="number" id="ojtTerm" min="5" max="9">
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    Bấm vào <a class="link" href="/Resources/FileTemplates/AllCurriculum-Template.xlsx">Template</a> để tải
+                    Bấm vào <a class="link" href="/Resources/FileTemplates/AllCurriculum-Template.xlsx">Template</a> để
+                    tải
                     về bản mẫu
                 </div>
                 <div class="form-group">
                     <button type="button" onclick="Upload()" class="btn btn-success">Import</button>
+                </div>
+                <br/>
+                <div class="form-group">
+                    <div class="row">
+                        <h4 style="color: #e90d7d">Danh sách curriculum lỗi khi import</h4>
+                        <div class="col-md-12">
+                            <table id="errorTable">
+                                <thead>
+                                <tr>
+                                    <th>Tên khung chương trình</th>
+                                    <th>Lỗi</th>
+                                </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -106,6 +142,7 @@
     var tbl;
 
     $(document).ready(function () {
+        CreateEmptyDataTable('#errorTable');
         LoadCurriculum();
         $("#choose tbody tr").click(function () {
             $('.selectedRow').removeClass('selectedRow');
@@ -134,6 +171,7 @@
             }).then(function () {
                 var form = new FormData();
                 form.append('file', $('#selected td').html());
+                form.append('ojtTerm', $('#ojtTerm').val());
 
                 swal({
                     title: 'Đang xử lý',
@@ -227,6 +265,7 @@
     function Upload() {
         var form = new FormData();
         form.append('file', $('#file')[0].files[0]);
+        form.append('ojtTerm', $('#ojtTerm').val());
 
         swal({
             title: 'Đang xử lý',
@@ -247,10 +286,11 @@
                             swal({
                                 title: 'Thành công',
                                 text: "Đã import curriculum!",
-                                type: 'success'
-                            }).then(function () {
-                                RefreshTable();
-                            });
+                                type: 'success',
+                                timer: 3000
+                            })
+                            RefreshTable();
+                            RefreshErrorTable();
                         } else {
                             swal('Đã xảy ra lỗi!', result.message, 'error');
                         }
@@ -361,6 +401,60 @@
         if (tbl != null) {
             tbl._fnPageChange(0);
             tbl._fnAjaxUpdate();
+        }
+    }
+
+    function CreateErrorTable() {
+        errorTable = $('#errorTable').dataTable({
+            "bServerSide": false,
+            "bFilter": true,
+            "bRetrieve": true,
+            "sScrollX": "100%",
+            "bScrollCollapse": true,
+            "bProcessing": true,
+            "bSort": false,
+            "sAjaxSource": "/getFailedImportNewCurriculums",
+            "fnServerParams": function (aoData) {
+
+            },
+            "oLanguage": {
+                "sSearchPlaceholder": "Tìm kiếm theo MSSV, Tên",
+                "sSearch": "Tìm kiếm:",
+                "sZeroRecords": "Không có dữ liệu phù hợp",
+                "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
+                "sEmptyTable": "Không có dữ liệu",
+                "sInfoFiltered": " - lọc ra từ _MAX_ dòng",
+                "sLengthMenu": "Hiển thị _MENU_ dòng",
+                "sProcessing": "Đang xử lý...",
+                "oPaginate": {
+                    "sNext": "<i class='fa fa-chevron-right'></i>",
+                    "sPrevious": "<i class='fa fa-chevron-left'></i>"
+                }
+
+            },
+            "aoColumnDefs": [
+                {
+                    "aTargets": [0, 1],
+                    "bSortable": false,
+                    "sClass": "text-center",
+                },
+            ],
+            "bAutoWidth": false,
+            dom: 'Bfrtip',
+            buttons: [
+                'copy', 'excel', 'pdf', 'print'
+            ],
+        });
+    }
+
+    function RefreshErrorTable() {
+        if (errorTable != null) {
+            errorTable._fnPageChange(0);
+            errorTable._fnAjaxUpdate();
+        } else {
+            //destroy empty table
+            $('#errorTable').dataTable().fnDestroy();
+            CreateErrorTable();
         }
     }
 

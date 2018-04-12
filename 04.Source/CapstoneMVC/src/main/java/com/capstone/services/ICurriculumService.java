@@ -15,4 +15,5 @@ public interface ICurriculumService {
     CurriculumEntity getCurriculumByNameAndProgramId(String name, int programId);
     CurriculumEntity createCurriculum(CurriculumEntity entity);
     void updateCurriculum(CurriculumEntity entity);
+    CurriculumEntity getCurriculumLikeName(String name);
 }

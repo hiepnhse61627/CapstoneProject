@@ -24,7 +24,7 @@
                     <div class="my-content">
                         <div class="col-md-12">
                             <label for="file" hidden></label>
-                            <input type="file" accept=".xlsx, .xls" id="file" name="file" />
+                            <input type="file" accept=".xlsx, .xls" id="file" name="file"/>
                         </div>
                     </div>
                 </div>
@@ -43,6 +43,7 @@
             </div>
             <div class="form-group">
                 <button type="button" onclick="Add()" class="btn btn-success">Import</button>
+                <button type="button" onclick="DeacttiveAll()" class="btn btn-danger">Xóa tất cả TKB</button>
             </div>
         </div>
     </div>
@@ -58,7 +59,7 @@
 
         swal({
             title: 'Đang xử lý',
-            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div><div id='progress2' class='form-group'></div>",
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!</div><div id='progress' class='form-group'></div><div id='progress2' class='form-group'></div>",
             type: 'info',
             onOpen: function () {
                 swal.showLoading();
@@ -85,7 +86,7 @@
                     }
                 });
                 waitForExcelFinish();
-                waitForTaskFinish(isRunning);
+                // waitForTaskFinish(isRunning);
             },
             allowOutsideClick: false
         });
@@ -113,11 +114,56 @@
             processData: false,
             contentType: false,
             success: function (result) {
-                if (result.isExcelRunning) {
-                    $('#progress').html("<h4>Duyệt file xecel</h4><div>(" + result.excelCurrent + "/" + result.excelTotal + ")</div>");
+                    $('#progress').html("<h4>Đang thêm dữ liệu</h4><div>(" + result.excelCurrent + "/" + result.excelTotal + ")</div>");
                     setTimeout("waitForExcelFinish()", 500);
-                }
             }
+        });
+    }
+
+    function DeacttiveAll() {
+        swal({
+            title: 'Xóa toàn bộ TKB cũ?',
+            text: "Bạn có chắc muốn xóa tất cả TKB cũ?",
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Xóa tất cả'
+        }).then(function () {
+                swal(
+                    'Deleted!',
+                    'Your file has been deleted.',
+                    'success'
+                )
+
+            swal({
+                title: 'Đang xử lý',
+                html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!</div>",
+                type: 'info',
+                onOpen: function () {
+                    swal.showLoading();
+                    $.ajax({
+                        type: "POST",
+                        url: "/deacttiveAllSchedule",
+                        processData: false,
+                        contentType: false,
+                        success: function (result) {
+                            if (result.success) {
+                                swal({
+                                    title: 'Thành công',
+                                    text: "Đã xóa "+ result.countUpdated + " dữ liệu",
+                                    type: 'success'
+                                }).then(function () {
+                                    location.reload();
+                                });
+                            } else {
+                                swal('Đã xảy ra lỗi!', result.message, 'error');
+                            }
+                        }
+                    });
+                },
+                allowOutsideClick: false
+            });
         });
     }
 </script>

@@ -144,6 +144,12 @@ public class ExportStudentOnlyNextImpl implements IExportObject {
         return detail.processNext(student.getId(), semester, true, false);
     }
 
+    //temporary fix
+    private List<List<String>> processNextSubject2(StudentEntity student, String semester) {
+        StudentDetail detail = new StudentDetail();
+        return detail.processNext2(student.getId(), semester);
+    }
+
     public List<List<String>> processCurrentSubject(int stuId, String semester) {
         StudentDetail detail = new StudentDetail();
         return detail.processCurrent(stuId, semester);

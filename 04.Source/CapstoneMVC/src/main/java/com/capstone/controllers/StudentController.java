@@ -24,6 +24,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -45,9 +46,15 @@ public class StudentController {
     }
 
     @RequestMapping("/display")
-    public ModelAndView Display() {
+    public ModelAndView Display(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("DisplayStudentPassFail");
-        view.addObject("title", "Danh sách sinh viên học lại");
+        view.addObject("title", "Danh sách sinh viên học lại đến kỳ");
 
         IRealSemesterService service = new RealSemesterServiceImpl();
         view.addObject("semesters", Ultilities.SortSemesters(service.getAllSemester()));
@@ -321,7 +328,13 @@ public class StudentController {
 
     // ------------------ Role_Student ----------------------
     @RequestMapping("/studentMarkHistory")
-    public ModelAndView StudentMarkHistory() {
+    public ModelAndView StudentMarkHistory(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("StudentMarkHistory");
         view.addObject("title", "Lịch sử môn học");
 
@@ -380,12 +393,13 @@ public class StudentController {
 
 
     @RequestMapping("/studentsFailedCreditsPage")
-    public ModelAndView goStudentsFailedCreditsPage() {
-//        if (!MySecurity.hasPermission("studentsFailedCreditsPage")) {
-//            ModelAndView errPage = new ModelAndView("PermissionError");
-//            errPage.addObject("title", "Lỗi");
-//            return errPage;
-//        }
+    public ModelAndView goStudentsFailedCreditsPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("studentsFailedCredits");
         mav.addObject("title", "Danh sách sinh viên nợ tín chỉ");
 
@@ -393,7 +407,13 @@ public class StudentController {
     }
 
     @RequestMapping("/studentFailCreditsPage")
-    public ModelAndView goStudentFailCreditPage() {
+    public ModelAndView goStudentFailCreditPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("StudentFailCredit");
         mav.addObject("title", "Danh sách sinh viên đang nợ tín chỉ 2");
         return mav;
@@ -472,7 +492,12 @@ public class StudentController {
     }
 
     @RequestMapping("/subjectsTryingToPassPage")
-    public ModelAndView goSubjectsTryingToPassPage() {
+    public ModelAndView goSubjectsTryingToPassPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
         ModelAndView mav = new ModelAndView("SubjectsTryingToPass");
         mav.addObject("title", "Danh sách môn sinh viên cố gắng vượt qua");
         IRealSemesterService service = new RealSemesterServiceImpl();
@@ -515,7 +540,12 @@ public class StudentController {
     }
 
     @RequestMapping("/subjectsSlotsTryingToPassPage")
-    public ModelAndView goSubjectsSlotsTryingToPassPage() {
+    public ModelAndView goSubjectsSlotsTryingToPassPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
         ModelAndView mav = new ModelAndView("SubjectsSlotsTryingToPass");
         mav.addObject("title", "Danh sách lượt môn sinh viên cố gắng vượt qua");
         IRealSemesterService service = new RealSemesterServiceImpl();
@@ -558,7 +588,13 @@ public class StudentController {
     }
 
     @RequestMapping("/subjectsStudentRelearnSameSemesterPage")
-    public ModelAndView goSubjectsStudentRelearnSameSemester() {
+    public ModelAndView goSubjectsStudentRelearnSameSemester(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView mav = new ModelAndView("SubjectsStudentsRelearnSameSemester");
         mav.addObject("title", "Danh sách môn học lại trong kì");
         IRealSemesterService service = new RealSemesterServiceImpl();
@@ -600,7 +636,13 @@ public class StudentController {
     }
 
     @RequestMapping("/studentsStudyResults")
-    public ModelAndView studentsStudyInformation() {
+    public ModelAndView studentsStudyInformation(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("StudentsStudyInformations");
         view.addObject("title", "Thông tin kết quả học tập theo kì");
 
@@ -616,7 +658,13 @@ public class StudentController {
 
     //Sinh viên không được xếp lớp
     @RequestMapping("/studentsNotBeingArrangePage")
-    public ModelAndView studentsNotBeingArrangeClass() {
+    public ModelAndView studentsNotBeingArrangeClass(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to  " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("StudentsAreNotBeingArrangedClass");
         view.addObject("title", "Danh sách sinh viên không được xếp lớp");
 
@@ -691,7 +739,13 @@ public class StudentController {
     }
 
     @RequestMapping("/studentsBySemesterAndProgramPage")
-    public ModelAndView StudentsBySemesterPage() {
+    public ModelAndView StudentsBySemesterPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("StudentBySemester");
         view.addObject("title", "Danh sách thông tin sinh viên theo kỳ và ngành");
 
@@ -760,8 +814,112 @@ public class StudentController {
         return jsonObject;
     }
 
+    @RequestMapping("/notStartStudents")
+    public ModelAndView getNotStartStudents(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
+        ModelAndView view = new ModelAndView("StudentsNotStartPage");
+        view.addObject("title", "Danh sách sinh viên và môn chậm tiến độ");
+
+        ProgramServiceImpl programService = new ProgramServiceImpl();
+        RealSemesterServiceImpl semesterService = new RealSemesterServiceImpl();
+        List<ProgramEntity> programList = programService.getAllPrograms();
+        List<RealSemesterEntity> semesterList = semesterService.getAllSemester();
+        semesterList = Ultilities.SortSemesters(semesterList);
+        semesterList = Lists.reverse(semesterList);
+
+        view.addObject("programList", programList);
+        view.addObject("semesterList", semesterList);
 
 
+        return view;
+    }
 
+
+    @RequestMapping("/notStartStudentsData")
+    @ResponseBody
+    public JsonObject getNotStartStudentsData(@RequestParam Map<String, String> params) {
+            JsonObject jsonObject = new JsonObject();
+        try {
+
+            Integer semesterId = Integer.parseInt(params.get("semesterId"));
+            Integer programId = Integer.parseInt(params.get("programId"));
+
+            StudentStatusServiceImpl statusService = new StudentStatusServiceImpl();
+            StudentServiceImpl studentService = new StudentServiceImpl();
+            List<StudentEntity> studentList = studentService
+                    .getStudentBySemesterIdAndProgram(semesterId, programId);
+
+            List<List<String>> results = new ArrayList<>();
+            List<Integer> studentIds = studentList.stream().map(q -> q.getId()).collect(Collectors.toList());
+            List<MarksEntity> allMarks;
+            MarksServiceImpl marksService = new MarksServiceImpl();
+            if (!studentList.isEmpty()) {
+                allMarks = marksService.getMarksBySelectedStudentsFromAndBeforeSelectedSemester(semesterId, studentIds);
+
+                int i = 0;
+                for (StudentEntity student : studentList) {
+                    // List: SubjectId
+                    if (student.getRollNumber().equalsIgnoreCase("SE62094")) {
+                        System.out.println("here");
+                    }
+                    List<String> notStartSubjects = Ultilities.getStudentProcessNotStart(student.getId(), semesterId, allMarks);
+                    if (!notStartSubjects.isEmpty()) {
+                        List<String> studentInfo = new ArrayList<>();
+                        //MSSV
+                        studentInfo.add(student.getRollNumber());
+                        //Tên
+                        studentInfo.add(student.getFullName());
+                        //Ngành
+                        studentInfo.add(student.getProgramId().getName());
+                        //Môn chậm tiến độ
+                        String strNotStart = printList(notStartSubjects);
+                        studentInfo.add(strNotStart);
+
+                        results.add(studentInfo);
+                    }
+                    System.out.println("Done " + i++);
+                }
+            }
+
+            List<List<String>> displayList = new ArrayList<>();
+
+            //comment saving for serverSide DataTable
+            if (!results.isEmpty()) {
+//            displayList = results.stream().skip(Integer.parseInt(params.get("iDisplayStart"))).limit(Integer.parseInt(params.get("iDisplayLength"))).collect(Collectors.toList());
+                displayList = results;
+            }
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(displayList);
+
+            jsonObject.addProperty("iTotalRecords", displayList.size());
+            jsonObject.addProperty("iTotalDisplayRecords", displayList.size());
+            jsonObject.add("aaData", aaData);
+            jsonObject.addProperty("sEcho", params.get("sEcho"));
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return jsonObject;
+    }
+
+    public String printList(List<String> list) {
+        String result = "";
+        if (list.size() >= 1) {
+            result += list.get(0);
+        }
+
+        if (list.size() > 1) {
+            for (int i = 1; i < list.size(); i++) {
+                result += ", " + list.get(i);
+            }
+        }
+        return result;
+    }
 
 }

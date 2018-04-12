@@ -2,10 +2,22 @@ package com.capstone.models;
 
 import com.capstone.entities.MarksEntity;
 
+import javax.xml.bind.annotation.*;
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "markDetail", propOrder = {"mark", "credit","term"})
+@XmlRootElement()
 public class MarkCreditTermModel {
+
+    @XmlElement(required = true)
     private MarksEntity mark;
+    @XmlElement(required = true)
     private int credit;
+    @XmlElement(required = true)
     private Double term;
+
+    public MarkCreditTermModel() {
+    }
 
     public MarkCreditTermModel(MarksEntity mark, int credit, Double term) {
         this.mark = mark;

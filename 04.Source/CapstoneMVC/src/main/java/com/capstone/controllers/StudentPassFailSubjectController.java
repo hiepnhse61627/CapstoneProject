@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,7 +23,13 @@ import java.util.stream.Collectors;
 public class StudentPassFailSubjectController {
 
     @RequestMapping("/passfail")
-    public ModelAndView Index() {
+    public ModelAndView Index(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("StudentPassFailSubject");
         view.addObject("title", "DSSV đậu rớt");
         IRealSemesterService realSemesterService = new RealSemesterServiceImpl();

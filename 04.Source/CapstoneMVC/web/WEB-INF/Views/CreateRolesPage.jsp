@@ -6,50 +6,107 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<div>
-    <div>
-        <button role="button"><i class="fa fa-plus"></i>Roles</button>
-    </div>
-    <div id="createRolesModal" class="modal fade" role="dialog">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4>
-                        Tạo chức vụ mới
-                    </h4>
-                </div>
-                <div class="modal-body">
-                    <form action="/admin/createNewRole" method="post">
-                        <input type="text" name="newRole">
-                        <button type="submit">Tạo</button>
-                    </form>
-                </div>
-                <%--<div class="modal-footer">--%>
-                <%----%>
-                <%--</div>--%>
-            </div>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<section class="content">
+    <div class="box">
+        <div class="b-header">
+            <h1>Quản lý chức vụ</h1>
+            <hr>
         </div>
-    </div>
-    <div class="form-group">
-        <div class="row">
-            <div class="col-md-12">
-                <table id="table">
-                    <thead>
-                    <tr>
-                        <th>No.</th>
-                        <th>Tên chức vụ</th>
-                        <th>Hành động</th>
 
-                    </tr>
-                    </thead>
-                </table>
+        <div class="b-body">
+
+            <div class="form-group">
+                <button type="button" onclick="" class="btn btn-success" data-toggle="modal" data-target="#createRoles">
+                    <i class="fa fa-plus"></i> Tạo chức vụ
+                </button>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-md-12">
+                        <table id="table">
+                            <thead>
+                            <tr>
+                                <th>No.</th>
+                                <th>Chức vụ</th>
+                                <th>Edit</th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
+    </div>
+</section>
+<div id="createRoles" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Tạo chức vụ mới</h4>
+            </div>
+            <div class="modal-body">
+                <div class="title">
+                    <label>Nhập chức vụ mới:</label>
+                </div>
+                <div class="my-content">
+                    <div class="form-group">
+                        <div class="col-md-6">
+                            <input type="text" id="newRole" class="form-control"/>
+                        </div>
+                        <br/>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="CreateRole()" class="btn btn-info">Tạo</button>
+            </div>
+        </div>
+
     </div>
 </div>
-<script type="javascript">
-    $(document).ready(function () {
 
+<div id="roleEditor" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Sửa chức vụ</h4>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="e-roleId" class="form-control"/>
+                <div class="title">
+                    <label>Tên chức vụ:</label>
+                </div>
+                <div class="my-content">
+                    <div class="form-group">
+                        <div class="col-md-6">
+                            <input type="text" id="e-roleName" class="form-control"/>
+                        </div>
+                        <br/>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="UpdateRole()" class="btn btn-info btn-md">Cập nhật</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    var table = null;
+
+    $(document).ready(function () {
+        CreateRolesTable();
+    });
+
+    function CreateRolesTable() {
         table = $('#table').dataTable({
             "bServerSide": false,
             "bFilter": true,
@@ -58,7 +115,7 @@
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/passfail/get", // url getData.php etc
+            "sAjaxSource": "/admin/currentRolesData", // url getData.php etc
             "oLanguage": {
                 "sSearchPlaceholder": "Tìm theo MSSV, Môn học, Học Kỳ, Status",
                 "sSearch": "Tìm kiếm:",
@@ -76,18 +133,124 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 2, 3, 4],
+                    "aTargets": [0, 1, 2],
                     "sClass": "text-center",
                     "bSortable": false
                 },
                 {
-                    "aTargets": [1],
+                    "aTargets": [2],
+                    //Id, function Group, func name, group name, link
                     "mRender": function (data, type, row) {
-                        return "<a onclick='GetAllStudentMarks(" + row[5] + ")'>" + data + "</a>";
+                        var result = "<a class='btn btn-success tbl-btn' onclick='editRole(" + row[2] + "," + JSON.stringify(row[1]) + ")'>" +
+                            "<i class='glyphicon glyphicon-pencil'></i></a>";
+                        return result;
                     }
                 }
+
             ],
             "bAutoWidth": false
-        }).fnSetFilteringDelay(1000);
-    });
+        });
+    }
+
+    function RefreshTable() {
+        if (table != null) {
+            table._fnPageChange(0);
+            table._fnAjaxUpdate();
+        } else {
+            //destroy empty table
+            $('#table').dataTable().fnDestroy();
+            CreateRolesTable();
+        }
+    }
+
+
+    function CreateRole() {
+        var form = new FormData();
+        if ($.trim($('#newRole').val()).length == 0) {
+            swal('Cảnh báo!', "Chức vụ không được để trống", 'info');
+            return;
+        }
+        form.append('newRole', $.trim($('#newRole').val()));
+
+        swal({
+            title: 'Đang xử lý',
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                $.ajax({
+                    type: "POST",
+                    url: "/admin/createNewRole",
+                    processData: false,
+                    contentType: false,
+                    data: form,
+                    success: function (result) {
+                        if (result.success) {
+                            swal({
+                                title: 'Thành công',
+                                text: result.message,
+                                type: 'success',
+                                timer: 3000
+                            });
+                            RefreshTable();
+                        } else {
+                            swal('Đã xảy ra lỗi!', result.message, 'error');
+                        }
+                    }
+                });
+            },
+            allowOutsideClick: false
+        });
+    }
+
+    $('#createRoles').on('hidden.bs.modal', function () {
+        // do something…
+        $('#newRole').val("");
+    })
+
+    function editRole(roleId, currentRoleName) {
+        $('#e-roleId').val(roleId);
+        $('#e-roleName').val(currentRoleName);
+        $('#roleEditor').modal('show');
+    }
+
+    function UpdateRole() {
+        var form = new FormData();
+        if ($.trim($('#e-roleName').val()).length == 0) {
+            swal('Cảnh báo!', "Chức vụ không được để trống", 'info');
+            return;
+        }
+        form.append('roleName', $.trim($('#e-roleName').val()));
+        form.append('roleId', $.trim($('#e-roleId').val()));
+
+        swal({
+            title: 'Đang xử lý',
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                $.ajax({
+                    type: "POST",
+                    url: "/admin/updateExistRole",
+                    processData: false,
+                    contentType: false,
+                    data: form,
+                    success: function (result) {
+                        if (result.success) {
+                            swal({
+                                title: 'Thành công',
+                                text: result.message,
+                                type: 'success',
+                                timer: 3000
+                            });
+                            RefreshTable();
+                        } else {
+                            swal('Đã xảy ra lỗi!', result.message, 'error');
+                        }
+                    }
+                });
+            },
+            allowOutsideClick: false
+        });
+    }
 </script>

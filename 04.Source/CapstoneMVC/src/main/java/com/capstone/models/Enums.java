@@ -66,7 +66,11 @@ public class Enums {
     public enum StudentStatus {
         Graduated("G"),
         HOCDI("HD"),
-        HOCLAI("HL");
+        HOCLAI("HL"),
+        BAOLUU("BL"), //bảo lưu
+        CHO("CO"), //chờ
+        THOIHOC("TH"), //thôi học
+        TRANSFER("TF"); // từ cơ sở khác chuyển tới
 
 
         private final String value;
@@ -79,4 +83,97 @@ public class Enums {
             return this.value;
         }
     }
+
+    public enum SubjectType {
+        NORMAL(0),
+        OJT(1),
+        CAPSTONE(2);
+
+        private final int value;
+
+        private SubjectType(final int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+
+    public enum SpecialTerm {
+        CAPSTONETERM(9),
+        OJTTERM(6),
+        OJTTERM2(7);
+
+        private final int value;
+
+        SpecialTerm(int value) {
+            this.value = value;
+        }
+
+        public int getValue() {
+            return value;
+        }
+    }
+
+    public enum GoogleAuthentication {
+        CLIENTID("1024234376610-fa3r5s7db2g82ccqecolm6rbfskbv3ci.apps.googleusercontent.com"),
+        CLIENTSECRET("Ub8YG4mCEA6mciFTauDkMsLg");
+
+        private final String value;
+
+        GoogleAuthentication(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
+    public enum GraduateVariable {
+        PROGRAM_ID("graduateProgramId"),
+        SEMESTER_ID("graduateSemesterId"),
+        GRADUATE_LIST("graduateListExport"),
+        ThesisName_List("ThesisNamesList"),
+        Required_Documents("graduateRequiredDocuments");
+
+        private final String value;
+
+        GraduateVariable(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+    public enum BackupPath{
+        PATH("D:\\School formation\\Capstone\\New folder");
+
+        private final String value;
+
+        BackupPath(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
+    public enum SynchronizeFAP{
+        ERROR_lIST("importSynchronizeFAPMarkError");
+
+        private final String value;
+
+        SynchronizeFAP(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+    }
+
 }

@@ -1,5 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 
 <style>
@@ -64,10 +65,10 @@
     <div class="box">
         <div class="b-header">
             <div class="row">
-                <div class="col-md-6 title">
+                <div class="col-md-9 title">
                     <h1>Thông tin giảng viên</h1>
                 </div>
-                <div class="col-md-6 text-right">
+                <div class="col-md-3 text-right">
                     <a href="/employeeList" class="btn btn-danger btn-with-icon text-right">
                         <i class="fa fa-arrow-left"></i>
                         <div class="m-l-3">QUAY LẠI</div>
@@ -219,11 +220,18 @@
 
                         </div>
                         <div class="row m-0">
-                            <%--<button style="display: none" id="change" type="button" class="btn btn-primary" onclick="return EditEmployee($('#code').val(),$('#employeName').val()--%>
-                                    <%--,$('#position').val(),$('#contract').val(),$('#emailEDU').val(),$('#emailFE').val(),--%>
-                                    <%--$('#emailPersonal').val(),$('#gender').val(),$('#dateOfBirth').val(), $('#phone').val(),$('#address').val())">--%>
-                                <%--Thay đổi thông tin--%>
-                            <%--</button>--%>
+                            <div class="my-input-group p-l-30 text-left" style="width: 93%;">
+                                <div class="left-content" style="width: 85px">
+                                    <label class="p-t-8">Môn phụ trách:</label>
+                                </div>
+                                <div class="right-content">
+                                    <select id="empCompetence" class="select slot-select" multiple="multiple" disabled>
+                                        <c:forEach var="aSubject" items="${subjects}">
+                                            <option value="${aSubject.id}">${aSubject.id}</option>
+                                        </c:forEach>
+                                    </select>
+                                </div>
+                            </div>
 
                         </div>
                     </div>
@@ -240,10 +248,29 @@
                     </div>
 
                     <div class="my-content">
-                        <%--<div hidden class="no-data col-md-12">--%>
-                        <%--Không có dữ liệu--%>
-                        <%--</div>--%>
                         <div class="b-body">
+                            <div class="row" style="display: flex; position: relative;">
+                                <div class="col-md-6">
+                                    <div class="form-group form-date-range">
+                                        <label for="scheduleDate2">Ngày bắt đầu - kết thúc:</label>
+                                        <input id="scheduleDate2" type="text" class="form-control"/>
+                                        <i class="fa fa-calendar"></i>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group" style="bottom: 0; position: absolute;">
+                                        <button type="button" class="btn btn-success" onclick="RefreshTable()"
+                                                id="searchBtn">Tìm kiếm
+                                        </button>
+                                        <button type="button" class="btn btn-primary" onclick="resetFilter()"
+                                                id="removeFilterBtn">Xóa bộ lọc
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
                             <div class="row">
                                 <div class="col-md-12">
                                     <table id="tbl-schedule">
@@ -256,6 +283,7 @@
                                         <th>Phòng</th>
                                         <th>Giảng viên</th>
                                         <th>Capacity</th>
+                                        <th>IsPast</th>
                                         <th>Chi tiết</th>
                                         </thead>
                                         <tbody></tbody>
@@ -275,7 +303,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Tiêu đề</h4>
+                <h4 class="modal-title">Lịch dạy cá nhân</h4>
             </div>
             <div class="modal-body">
                 <div class="row">
@@ -360,17 +388,8 @@
                         <div class="form-check" id="changeRoom-container">
                             <input class="form-check-input" type="checkbox" value="" id="changeRoom">
                             <label class="form-check-label" for="changeRoom">
-                                Yêu cầu chuyển phòng
+                                Tự tìm phòng trống
                             </label>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="lecture">Giáo viên:</label>
-                            <select id="lecture" class="select lecture-select">
-                                <c:forEach var="emp" items="${employees}">
-                                    <option value="${emp.fullName}">${emp.fullName}</option>
-                                </c:forEach>
-                            </select>
                         </div>
 
                         <div class="form-check" id="all-container">
@@ -384,7 +403,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Đóng</button>
                 <button id="btnSubmit" type="button" class="btn btn-primary">Tạo</button>
             </div>
         </div>
@@ -402,6 +421,9 @@
     var startDate;
     var endDate;
 
+    var startDate2;
+    var endDate2;
+
     var oldPosition;
     var oldContract;
     var oldEmailFE;
@@ -411,6 +433,7 @@
     var oldAddress;
     var oldName;
     var oldCode;
+    var oldCompetence = new Array();
 
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
@@ -505,6 +528,18 @@
         oldAddress = '${employee.address}';
         oldName = '${employee.fullName}';
         oldCode = '${employee.code}';
+        oldCompetence = JSON.parse('${empCompetence}');
+
+        $('#empCompetence').select2({
+            placeholder: '- Chọn môn -'
+        });
+
+        $('#empCompetence').val(oldCompetence).trigger('change');
+
+        $("li[class*='select2-selection__choice']").each(function (i, el) {
+            $(el).removeAttr('title');
+        });
+
 
         $('#subject').select2({
             placeholder: '- Chọn môn -'
@@ -527,10 +562,10 @@
         });
 
         $('#room').select2();
-        $("#room").attr("disabled", true);
+        // $("#room").attr("disabled", true);
 
         $('#lecture').select2({
-            placeholder: '- Chọn giáo viên -'
+            placeholder: '- Chọn giảng viên -'
         });
 
         $('select').on('change', function (evt) {
@@ -588,8 +623,11 @@
         $('#scheduleDate').daterangepicker({
             startDate: moment(),
             endDate: moment(),
+            minDate: moment(),
 //            drops: "up",
             locale: {
+                applyLabel: "Chọn",
+                cancelLabel: 'Xóa',
                 format: 'DD/MM/YYYY'
             }
         }, function (start, end) {
@@ -600,23 +638,51 @@
 
     });
 
-    function ExportExcel() {
-        $("input[name='objectType']").val(7);
-        $("#export-excel").submit();
-    }
 
     function LoadScheduleList() {
+        startDate2 = endDate2 = moment().format('DD/MM/YYYY');
+        $('#scheduleDate2').daterangepicker({
+            autoUpdateInput: false,
+            locale: {
+                applyLabel: "Chọn",
+                cancelLabel: 'Xóa',
+                format: 'DD/MM/YYYY'
+            }
+        });
+
+        $('#scheduleDate2').on('apply.daterangepicker', function (ev, picker) {
+            startDate = picker.startDate.format('DD/MM/YYYY');
+            endDate = picker.endDate.format('DD/MM/YYYY');
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+        });
+
+        $('#scheduleDate2').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+
+
         tblSchedule = $('#tbl-schedule').dataTable({
-            "bServerSide": true,
+            "bServerSide": false,
             "bFilter": true,
             "bRetrieve": true,
             "sScrollX": "100%",
             "bScrollCollapse": true,
             "bProcessing": true,
             "bSort": false,
-            "sAjaxSource": "/loadScheduleList/${employee.id}",
+            "sAjaxSource": "/loadScheduleList/${employee.id}", // url getData.php etc
+            "fnServerParams": function (aoData) {
+                aoData.push({
+                    "name": "startDate",
+                    "value": $('#scheduleDate2').data('daterangepicker').startDate.format('DD/MM/YYYY')
+                }),
+                    aoData.push({
+                        "name": "endDate",
+                        "value": $('#scheduleDate2').data('daterangepicker').endDate.format('DD/MM/YYYY')
+                    })
+            },
+            <%--"sAjaxSource": "/loadScheduleList/${employee.id}",--%>
             "oLanguage": {
-                "sSearchPlaceholder": "Tên lớp, Ngày, Mã môn",
+                "sSearchPlaceholder": "Nhập từ khóa",
                 "sSearch": "Tìm kiếm:",
                 "sZeroRecords": "Không có dữ liệu phù hợp",
                 "sInfo": "Hiển thị từ _START_ đến _END_ trên tổng số _TOTAL_ dòng",
@@ -631,7 +697,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4, 5, 6, 7, 8],
+                    "aTargets": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
                     "bSortable": false,
                     "sClass": "text-center",
                 },
@@ -645,10 +711,20 @@
                 },
                 {
                     "aTargets": [8],
+                    "bVisible": false,
+                },
+                {
+                    "aTargets": [9],
                     "mRender": function (data, type, row) {
-                        return "<a class='btn btn-success tbl-btn' onclick='EditSchedule(" + row[0] + ",\""
-                            + row[1] + "\",\"" + row[2] + "\",\"" + row[3] + "\",\"" + row[4] + "\",\"" + row[5] + "\",\"" + row[6] + "\",\"" + row[7] + "\")'>" +
-                            "<i class='glyphicon glyphicon-pencil'></i></a>";
+                        var isPast = row[8];
+                        if (isPast === "true") {
+                            return "<div></div>";
+                        } else {
+                            return "<a class='btn btn-success tbl-btn' onclick='EditSchedule(" + row[0] + ",\""
+                                + row[1] + "\",\"" + row[2] + "\",\"" + row[3] + "\",\"" + row[4] + "\",\"" + row[5] + "\",\"" + row[6] + "\",\"" + row[7] + "\")'>" +
+                                "<i class='glyphicon glyphicon-pencil'></i></a>";
+                        }
+
                     }
                 },
 
@@ -704,7 +780,7 @@
                             slots: JSON.stringify(slots),
                             room: $("#room").val(),
                             capacity: $("#capacity").val(),
-                            lecture: $("#lecture").val(),
+                            lecture: $("#employeeName").val(),
                             changeRoom: $("#changeRoom").is(":checked"),
                             all: $("#all").is(":checked"),
                         },
@@ -765,6 +841,7 @@
         $("#slot").attr("multiple", "multiple");
         resetSelect2(0);
         $(".add_field_button").show();
+        $("#capacity-container").show();
 
         $("#scheduleModal").modal('toggle');
     }
@@ -776,8 +853,11 @@
         $('#scheduleDate').daterangepicker({
             startDate: moment(),
             endDate: moment(),
+            minDate: moment(),
             singleDatePicker: true,
             locale: {
+                applyLabel: "Chọn",
+                cancelLabel: 'Xóa',
                 format: 'DD/MM/YYYY'
             }
         }, function (start, end) {
@@ -814,6 +894,7 @@
 
         $("#room").val(room).trigger("change");
         $("#capacity").val(capacity).trigger("change");
+        $("#capacity-container").hide();
 
         $("#lecture").val(lecture).trigger("change");
 
@@ -850,7 +931,7 @@
                 alert("Số lượng không được bỏ trống");
                 isError = true;
             } else if ($("#lecture").val() === "" || $("#lecture").val() === null) {
-                alert("Giáo viên không được bỏ trống");
+                alert("Giảng viên không được bỏ trống");
                 isError = true;
             }
         } else if (type !== "create") {
@@ -864,7 +945,7 @@
                 alert("Số lượng không được bỏ trống");
                 isError = true;
             } else if ($("#lecture").val() === "" || $("#lecture").val() === null) {
-                alert("Giáo viên không được bỏ trống");
+                alert("Giảng viên không được bỏ trống");
                 isError = true;
             }
         }
@@ -890,8 +971,11 @@
         $('#scheduleDate').daterangepicker({
             startDate: moment(),
             endDate: moment(),
+            minDate: moment(),
 //            drops: "up",
             locale: {
+                applyLabel: "Chọn",
+                cancelLabel: 'Xóa',
                 format: 'DD/MM/YYYY'
             }
         }, function (start, end) {
@@ -906,18 +990,20 @@
         x = 0;
     }
 
-    function RefreshTable() {
-        if (tblSchedule != null) {
-            // tblSchedule._fnPageChange(0);
-            tblSchedule._fnAjaxUpdate();
-        }
-    }
+    // function RefreshTable() {
+    //     if (tblSchedule != null) {
+    //         // tblSchedule._fnPageChange(0);
+    //         tblSchedule._fnAjaxUpdate();
+    //     }
+    // }
 
     function ToDate(str) {
         var data = str.split("/");
         return new Date(data[2], data[1] - 1, data[0]);
     }
+
     function EditEmployee() {
+        console.log($('#empCompetence').val());
         swal({
             title: 'Xác nhận cập nhật giảng viên?',
             type: 'warning',
@@ -939,29 +1025,32 @@
                     "address": $('#address').val(),
                     "contract": $('#contract').val(),
                     "code": $('#code').val(),
-                },
-                success: function (result) {
-                    if (result.success) {
-                        swal({
-                            title: 'Thành công',
-                            text: "Đã cập nhật giảng viên!",
-                            type: 'success'
-                        }).then(function () {
-                            oldPosition = $('#position').val();
-                            oldContract =  $('#contract').val();
-                            oldEmailFE = $('#emailFE').val();
-                            oldEmailEDU = $('#emailEDU').val();
-                            oldEmailPersonal = $('#emailPersonal').val();
-                            oldPhone = $('#phone').val();
-                            oldAddress = $('#address').val();
-                            oldCode =  $('#code').val();
-                            onCancel();
-                        });
-                    } else {
-                        swal('', result.message, 'error');
-                    }
+                    "empCompetence": JSON.stringify($('#empCompetence').val())
+        },
+            success: function (result) {
+                if (result.success) {
+                    swal({
+                        title: 'Thành công',
+                        text: "Đã cập nhật giảng viên!",
+                        type: 'success'
+                    }).then(function () {
+                        oldPosition = $('#position').val();
+                        oldContract = $('#contract').val();
+                        oldEmailFE = $('#emailFE').val();
+                        oldEmailEDU = $('#emailEDU').val();
+                        oldEmailPersonal = $('#emailPersonal').val();
+                        oldPhone = $('#phone').val();
+                        oldAddress = $('#address').val();
+                        oldCode = $('#code').val();
+                        oldCompetence = $('#empCompetence').val();
+                        onCancel();
+                    });
+                } else {
+                    swal('', result.message, 'error');
                 }
-            });
+            }
+        })
+            ;
         });
     }
 
@@ -977,6 +1066,7 @@
         $('#address').prop("disabled", false);
         $('#contract').prop("disabled", false);
         // $('#code').prop("disabled", false);
+        $('#empCompetence').prop("disabled", false);
 
     }
 
@@ -992,6 +1082,7 @@
         $('#address').prop("disabled", true);
         $('#contract').prop("disabled", true);
         $('#code').prop("disabled", true);
+        $('#empCompetence').prop("disabled", true);
 
         $('#position').val(oldPosition);
         $('#emailPersonal').val(oldEmailPersonal);
@@ -1001,6 +1092,33 @@
         $('#address').val(oldAddress);
         $('#contract').val(oldContract);
         $('#code').val(oldCode);
+
+        // var selectedValues = new Array();
+        // selectedValues[0] = "ITE302";
+        // selectedValues[1] = "SWP490";
+        console.log(oldCompetence);
+
+        $('#empCompetence').val(oldCompetence).trigger('change');
+    }
+
+    function RefreshTable() {
+        if (tblSchedule != null) {
+            tblSchedule._fnPageChange(0);
+            tblSchedule._fnAjaxUpdate();
+        }
+        $('#removeFilterBtn').removeAttr('disabled');
+
+    }
+
+    function resetFilter() {
+        $("#lecture").val('').trigger('change');
+        $('#scheduleDate').data('daterangepicker').setStartDate(moment());
+        $('#scheduleDate').data('daterangepicker').setEndDate(moment());
+        $('#scheduleDate').val('');
+        $("#department").val('').trigger('change');
+
+        $('#removeFilterBtn').attr('disabled', 'disabled');
+
     }
 
 </script>

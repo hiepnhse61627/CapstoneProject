@@ -16,6 +16,10 @@
                     <div class="title">
                         <label>Chọn file:</label>
                     </div>
+                    <div class="">
+                        Bấm vào <a class="link" href="/Resources/FileTemplates/FPT-FINAL-MARKS-Template.xlsx">Template</a> để tải
+                        về bản mẫu
+                    </div><br/>
                     <div class="my-content">
                         <div class="col-md-12">
                             <label for="updateFile" hidden></label>
@@ -37,7 +41,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <button type="button" onclick="Update()" class="btn btn-success">Update</button>
+                <button type="button" onclick="Update()" title="Thực hiện cập nhật điểm thành Pass hoặc Fail cho sinh viên đang học" class="btn btn-success">Update</button>
             </div>
 
             <div class="form-group">

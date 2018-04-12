@@ -2,9 +2,7 @@ package com.capstone.exporters;
 
 import com.capstone.entities.*;
 import com.capstone.enums.SubjectTypeEnum;
-import com.capstone.models.Enums;
-import com.capstone.models.MarkCreditTermModel;
-import com.capstone.models.Ultilities;
+import com.capstone.models.*;
 import com.capstone.services.*;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.CellStyle;
@@ -32,6 +30,8 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
     private IRealSemesterService semesterService = new RealSemesterServiceImpl();
     private ISubjectCurriculumService subjectCurriculumService = new SubjectCurriculumServiceImpl();
     IStudentService studentService = new StudentServiceImpl();
+    StudentStatusServiceImpl studentStatusService = new StudentStatusServiceImpl();
+    GraduationConditionServiceImpl graduationConditionService = new GraduationConditionServiceImpl();
 
     private String fileName = "Graduated-Students.xlsx";
 
@@ -50,172 +50,228 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
         ClassLoader classLoader = getClass().getClassLoader();
         InputStream is = classLoader.getResourceAsStream(EXCEL_TEMPLATE);
 
-        HashMap<String, List<String>> thesisNames = (HashMap<String, List<String>>) request.getSession().getAttribute("ThesisNamesList");
+        HashMap<String, List<String>> thesisNames = (HashMap<String, List<String>>)
+                request.getSession().getAttribute(Enums.GraduateVariable.ThesisName_List.getValue());
+
+        ExportStatusReport.StatusStudentDetailExport = "Đang xử lý";
+        ExportStatusReport.StatusExportStudentDetailRunning = true;
+        ExportStatusReport.StopExporting = false;
 
         XSSFWorkbook workbook = new XSSFWorkbook(is);
         // close input stream
 //        is.close();
         XSSFSheet spreadsheet = workbook.getSheetAt(0);
 
-        writeDataToTable(workbook, spreadsheet, params, thesisNames);
+        writeDataToTable(workbook, spreadsheet, params, thesisNames, request);
 
         workbook.write(os);
     }
 
-    private void writeDataToTable(XSSFWorkbook workbook, XSSFSheet sheet, Map<String, String> params, HashMap<String, List<String>> thesisNames) throws Exception {
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-        // style
-        CellStyle cellStyle = workbook.createCellStyle();
-        cellStyle.setBorderBottom(BorderStyle.THIN);
-        cellStyle.setBorderLeft(BorderStyle.THIN);
-        cellStyle.setBorderRight(BorderStyle.THIN);
-        cellStyle.setBorderTop(BorderStyle.THIN);
-        cellStyle.setAlignment(HorizontalAlignment.LEFT);
-        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+    private void writeDataToTable(XSSFWorkbook workbook, XSSFSheet sheet, Map<String, String> params, HashMap<String, List<String>> thesisNames, HttpServletRequest request) throws Exception {
+
+        try {
+
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            // style
+            CellStyle cellStyle = workbook.createCellStyle();
+            cellStyle.setBorderBottom(BorderStyle.THIN);
+            cellStyle.setBorderLeft(BorderStyle.THIN);
+            cellStyle.setBorderRight(BorderStyle.THIN);
+            cellStyle.setBorderTop(BorderStyle.THIN);
+            cellStyle.setAlignment(HorizontalAlignment.LEFT);
+            cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
 
 //        Map<StudentEntity, List<MarkCreditTermModel>> dataMap = processData2(params);
-        List<StudentAndMark> dataMap = processData2(params);
+            ExportStatusReport.StatusStudentDetailExport = "Đang tìm danh sách sinh viên tốt nghiệp";
 
-        int myIndex = 1;
-        for (StudentAndMark entry : dataMap) {
-            StudentEntity student = entry.getStudent();
-            sheet = workbook.cloneSheet(0, student.getRollNumber());
-            XSSFRow row = sheet.getRow(11);
-            row.getCell(2).setCellValue(student.getFullName());
-            row.getCell(6).setCellValue(student.getRollNumber());
-            row = sheet.getRow(13);
-            row.getCell(2).setCellValue(sdf.format(student.getDateOfBirth()));
+            List<StudentAndMark> dataMap = (List<StudentAndMark>)
+                    request.getSession().getAttribute(Enums.GraduateVariable.GRADUATE_LIST.getValue());
+            int requestProgramId = Integer.parseInt(params.get("programId"));
+            int requestSemesterId = Integer.parseInt(params.get("semesterId"));
+            Integer currentProgramId = (Integer) request.getSession()
+                    .getAttribute(Enums.GraduateVariable.PROGRAM_ID.getValue());
+            Integer currentSemesterId = (Integer) request.getSession()
+                    .getAttribute(Enums.GraduateVariable.SEMESTER_ID.getValue());
 
-            //ngành , chuyên ngành
-            row = sheet.getRow(15);
-            row.getCell(2).setCellValue(student.getProgramId().getFullName());
+            if (dataMap == null || currentProgramId == null || currentSemesterId == null
+                    || currentProgramId != requestProgramId
+                    || currentSemesterId != requestSemesterId) {
+                dataMap = processData2(params);
+
+                //set lên session nếu chưa có
+                request.getSession()
+                        .setAttribute(Enums.GraduateVariable.PROGRAM_ID.getValue(), requestProgramId);
+                request.getSession()
+                        .setAttribute(Enums.GraduateVariable.SEMESTER_ID.getValue(), requestSemesterId);
+                request.getSession()
+                        .setAttribute(Enums.GraduateVariable.GRADUATE_LIST.getValue(), dataMap);
+            }
+
+
+            request.getSession().setAttribute(Enums.GraduateVariable.GRADUATE_LIST.getValue(), dataMap);
+
+
+            ExportStatusReport.StatusStudentDetailExport = "Đang khởi tạo file";
+            int myIndex = 1;
+            for (StudentAndMark entry : dataMap) {
+                StudentEntity student = entry.getStudent();
+                sheet = workbook.cloneSheet(0, student.getRollNumber());
+                XSSFRow row = sheet.getRow(11);
+                row.getCell(2).setCellValue(student.getFullName());
+                row.getCell(6).setCellValue(student.getRollNumber());
+                row = sheet.getRow(13);
+                row.getCell(2).setCellValue(sdf.format(student.getDateOfBirth()));
+
+                //ngành , chuyên ngành
+                row = sheet.getRow(15);
+                row.getCell(2).setCellValue(student.getProgramId().getFullName());
 //            DocumentStudentEntity documentStudentEntity = Ultilities.getStudentLatestDocument(entry.getKey());
 //            row.getCell(7).setCellValue(documentStudentEntity.getCurriculumId().getName());
-            row.getCell(7).setCellValue(student.getProgramId().getFullName());
+                row.getCell(7).setCellValue(student.getProgramId().getFullName());
 
-            //in tên đề tài
-            if (thesisNames != null) {
-                //mảng gồm 2 item [0]: tên tiếng việt, [1]: tên tiếng anh
-                List<String> names = thesisNames.get(student.getRollNumber());
-                //tên đồ án = tiếng việt
-                row = sheet.getRow(22);
-                row.getCell(1).setCellValue(names.get(0));
-                //tên đồ án = tiếng anh
-                row = sheet.getRow(24);
-                row.getCell(2).setCellValue(names.get(1));
-            }
+                //in tên đề tài
+                if (thesisNames != null) {
+                    //thesisName<MSSV, List<Tên đồ án tiếng việt, tên đồ án tiếng anh>>
+                    List<String> names = thesisNames.get(student.getRollNumber());
+                    //tên đồ án = tiếng việt
+                    row = sheet.getRow(22);
+                    row.getCell(1).setCellValue(names.get(0));
+                    //tên đồ án = tiếng anh
+                    row = sheet.getRow(24);
+                    row.getCell(2).setCellValue(names.get(1));
+                }
 
-            //điểm trung bình
-            row = sheet.getRow(26);
-            double average= entry.getAverage();
-            row.getCell(8).setCellValue(average);
 
-            //loại tốt nghiệp
-            String rankingVn = "";
-            String rankingEng ="";
-            if(average>=9){
-                rankingVn = "Xuất sắc";
-                rankingEng ="Excellent";
-            }else if(average >= 8){
-                rankingVn = "Giỏi";
-                rankingEng ="Very good";
-            }else if(average >= 7){
-                rankingVn = "Khá";
-                rankingEng ="Good";
-            }else if(average >= 6){
-                rankingVn = "Trung bình khá";
-                rankingEng ="Fairly Good";
-            }else if(average >=5){
-                rankingVn = "Trung bình";
-                rankingEng ="Ordinary";
-            }
-            row = sheet.getRow(30);
-            row.getCell(7).setCellValue(rankingVn);
-            row = sheet.getRow(31);
-            row.getCell(7).setCellValue(rankingEng);
+                //điểm trung bình
+                row = sheet.getRow(26);
+                double average = entry.getAverage();
+                row.getCell(8).setCellValue(average);
 
-            int ordinalNumber = 1;
-            int rowIndex = 20;
-            List<MarkCreditTermModel> marksList = entry.getMarkList();
-            int markSize = marksList.size();
-            Collections.reverse(marksList);
-            for (MarkCreditTermModel item : marksList) {
+                //loại tốt nghiệp
+                String rankingVn = "";
+                String rankingEng = "";
+                if (average >= 9) {
+                    rankingVn = "Xuất sắc";
+                    rankingEng = "Excellent";
+                } else if (average >= 8) {
+                    rankingVn = "Giỏi";
+                    rankingEng = "Very good";
+                } else if (average >= 7) {
+                    rankingVn = "Khá";
+                    rankingEng = "Good";
+                } else if (average >= 6) {
+                    rankingVn = "Trung bình khá";
+                    rankingEng = "Fairly Good";
+                } else if (average >= 5) {
+                    rankingVn = "Trung bình";
+                    rankingEng = "Ordinary";
+                }
+                row = sheet.getRow(30);
+                row.getCell(7).setCellValue(rankingVn);
+                row = sheet.getRow(31);
+                row.getCell(7).setCellValue(rankingEng);
 
-                MarksEntity marksEntity = item.getMark();
+                int ordinalNumber = 1;
+                int rowIndex = 20;
+                List<MarkCreditTermModel> marksList = entry.getMarkList();
+                int markSize = marksList.size();
+                Collections.reverse(marksList);
+                for (MarkCreditTermModel item : marksList) {
 
-                row = sheet.createRow(rowIndex);
-                // ordinal number
-                XSSFCell ordinalNumberCell = row.createCell(0);
-                ordinalNumberCell.setCellStyle(cellStyle);
-                ordinalNumberCell.setCellValue("" + (markSize - ordinalNumber + 1));
+                    MarksEntity marksEntity = item.getMark();
 
-                // Subject code
-                SubjectEntity subjectEntity = subjectService.findSubjectById(marksEntity.getSubjectMarkComponentId().getSubjectId().getId());
-                XSSFCell subjectCodeCell = row.createCell(1);
-                subjectCodeCell.setCellValue(subjectEntity.getId());
-                CellRangeAddress range1 = new CellRangeAddress(rowIndex, rowIndex, 1, 2);
-                sheet.addMergedRegion(range1);
-                RegionUtil.setBorderBottom(BorderStyle.THIN, range1, sheet);
-                RegionUtil.setBorderLeft(BorderStyle.THIN, range1, sheet);
-                RegionUtil.setBorderRight(BorderStyle.THIN, range1, sheet);
-                RegionUtil.setBorderTop(BorderStyle.THIN, range1, sheet);
-                // subject name
-                XSSFCell subjectNameCell = row.createCell(3);
-                subjectNameCell.setCellValue(subjectEntity.getName());
-                CellRangeAddress range2 = new CellRangeAddress(rowIndex, rowIndex, 3, 5);
-                sheet.addMergedRegion(range2);
-                RegionUtil.setBorderBottom(BorderStyle.THIN, range2, sheet);
-                RegionUtil.setBorderLeft(BorderStyle.THIN, range2, sheet);
-                RegionUtil.setBorderRight(BorderStyle.THIN, range2, sheet);
-                RegionUtil.setBorderTop(BorderStyle.THIN, range2, sheet);
-                // credit
-                XSSFCell creditCell = row.createCell(6);
-                creditCell.setCellStyle(cellStyle);
+                    row = sheet.createRow(rowIndex);
+                    // ordinal number
+                    XSSFCell ordinalNumberCell = row.createCell(0);
+                    ordinalNumberCell.setCellStyle(cellStyle);
+                    ordinalNumberCell.setCellValue("" + (markSize - ordinalNumber + 1));
+
+                    // Subject code
+                    SubjectEntity subjectEntity = subjectService.findSubjectById(marksEntity.getSubjectMarkComponentId().getSubjectId().getId());
+                    XSSFCell subjectCodeCell = row.createCell(1);
+                    subjectCodeCell.setCellValue(subjectEntity.getName());
+                    CellRangeAddress range1 = new CellRangeAddress(rowIndex, rowIndex, 1, 2);
+                    sheet.addMergedRegion(range1);
+                    RegionUtil.setBorderBottom(BorderStyle.THIN, range1, sheet);
+                    RegionUtil.setBorderLeft(BorderStyle.THIN, range1, sheet);
+                    RegionUtil.setBorderRight(BorderStyle.THIN, range1, sheet);
+                    RegionUtil.setBorderTop(BorderStyle.THIN, range1, sheet);
+                    // subject name
+                    XSSFCell subjectNameCell = row.createCell(3);
+                    subjectNameCell.setCellValue(subjectEntity.getVnName());
+                    CellRangeAddress range2 = new CellRangeAddress(rowIndex, rowIndex, 3, 5);
+                    sheet.addMergedRegion(range2);
+                    RegionUtil.setBorderBottom(BorderStyle.THIN, range2, sheet);
+                    RegionUtil.setBorderLeft(BorderStyle.THIN, range2, sheet);
+                    RegionUtil.setBorderRight(BorderStyle.THIN, range2, sheet);
+                    RegionUtil.setBorderTop(BorderStyle.THIN, range2, sheet);
+                    // credit
+                    XSSFCell creditCell = row.createCell(6);
+                    creditCell.setCellStyle(cellStyle);
 //                Map<SubjectEntity, Integer> subjectsCredits = processCreditsForSubject(entry.getKey().getDocumentStudentEntityList());
 //                creditCell.setCellValue(subjectsCredits.get(marksEntity.getSubjectMarkComponentId().getSubjectId()) + "");
-                creditCell.setCellValue(item.getCredit() + "");
+                    creditCell.setCellValue(item.getCredit());
 
-                // mark
-                XSSFCell markCell = row.createCell(7);
-                markCell.setCellStyle(cellStyle);
-                markCell.setCellValue(marksEntity.getAverageMark() + "");
-                // grade
-                XSSFCell gradeCell = row.createCell(8);
-                gradeCell.setCellStyle(cellStyle);
-                Double averageMark = marksEntity.getAverageMark();
-                if (averageMark >= 9) {
-                    gradeCell.setCellValue("A+");
-                } else if (averageMark >= 8.5) {
-                    gradeCell.setCellValue("A");
-                } else if (averageMark >= 8) {
-                    gradeCell.setCellValue("A-");
-                } else if (averageMark >= 7.5) {
-                    gradeCell.setCellValue("B+");
-                } else if (averageMark >= 7) {
-                    gradeCell.setCellValue("B");
-                } else if (averageMark >= 6.5) {
-                    gradeCell.setCellValue("B-");
-                } else if (averageMark >= 6) {
-                    gradeCell.setCellValue("C+");
-                } else if (averageMark >= 5.5) {
-                    gradeCell.setCellValue("C");
-                } else if (averageMark >= 5) {
-                    gradeCell.setCellValue("C-");
-                } else {
-                    gradeCell.setCellValue("F");
+                    // mark
+                    XSSFCell markCell = row.createCell(7);
+                    markCell.setCellStyle(cellStyle);
+                    //làm tròn 2 chữ số
+                    double round2Decimal = Math.round(marksEntity.getAverageMark() * 100.0) / 100.0;
+                    markCell.setCellValue(round2Decimal == 0 ? "Pass" : round2Decimal + "");
+                    // grade
+                    XSSFCell gradeCell = row.createCell(8);
+                    gradeCell.setCellStyle(cellStyle);
+                    Double averageMark = marksEntity.getAverageMark();
+                    if (averageMark >= 9) {
+                        gradeCell.setCellValue("A+");
+                    } else if (averageMark >= 8.5) {
+                        gradeCell.setCellValue("A");
+                    } else if (averageMark >= 8) {
+                        gradeCell.setCellValue("A-");
+                    } else if (averageMark >= 7.5) {
+                        gradeCell.setCellValue("B+");
+                    } else if (averageMark >= 7) {
+                        gradeCell.setCellValue("B");
+                    } else if (averageMark >= 6.5) {
+                        gradeCell.setCellValue("B-");
+                    } else if (averageMark >= 6) {
+                        gradeCell.setCellValue("C+");
+                    } else if (averageMark >= 5.5) {
+                        gradeCell.setCellValue("C");
+                    } else if (averageMark >= 5) {
+                        gradeCell.setCellValue("C-");
+                    } else if (averageMark == 0 && marksEntity.getStatus()
+                            .equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())) {
+                        gradeCell.setCellValue("Pass");
+                    } else {
+                        gradeCell.setCellValue("F");
+                    }
+
+                    if (ordinalNumber < markSize) {
+                        sheet.shiftRows(rowIndex, sheet.getLastRowNum(), 1);
+                    }
+                    ordinalNumber++;
                 }
 
-                if (ordinalNumber < markSize) {
-                    sheet.shiftRows(rowIndex, sheet.getLastRowNum(), 1);
-                }
-                ordinalNumber++;
-            }
+                //vị trí dòng ngay trên 2 tên đề tài
+                int thesisRow = rowIndex + ordinalNumber;
+                //set lại row height cho tên đồ án, vì sau khi shift column (npoi sẽ auto size lại cell, row = default height)
+                sheet.getRow(thesisRow).setHeightInPoints(49);
+                sheet.getRow(thesisRow + 2).setHeightInPoints(49);
 //            sheet.shiftRows(21, sheet.getLastRowNum(), -1);
-            System.out.println("Done " + myIndex + " - " + dataMap.size());
-            myIndex++;
+                System.out.println("Done " + myIndex + " - " + dataMap.size());
+                myIndex++;
+            }
+            //remove first template
+            if (!dataMap.isEmpty())
+                workbook.removeSheetAt(0);
+            ExportStatusReport.StatusStudentDetailExport = "Hoàn tất tạo file";
+            ExportStatusReport.StatusExportStudentDetailRunning = false;
+            ExportStatusReport.StopExporting = false;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        workbook.removeSheetAt(0);
     }
 
     private Map<StudentEntity, List<MarksEntity>> processData(Map<String, String> params) {
@@ -358,69 +414,100 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
     }
 
     private List<StudentAndMark> processData2(Map<String, String> params) {
-        List<StudentAndMark> resultMap = new ArrayList<>();
-
         int programId = Integer.parseInt(params.get("programId"));
         int semesterId = Integer.parseInt(params.get("semesterId"));
 
-
+        List<StudentAndMark> resultMap = new ArrayList<>();
+        int previousSemesterId = Ultilities.GetSemesterIdBeforeThisId(semesterId);
         List<StudentEntity> studentEntityList;
         if (programId < 0) {
             studentEntityList = studentService.findAllStudents();
         } else {
-            studentEntityList = studentService.getStudentBySemesterIdAndProgram(semesterId, programId);
+            studentEntityList = studentService.getStudentBySemesterIdAndProgram(previousSemesterId, programId);
         }
 
+
+//
         List<StudentEntity> filteredStudents = new ArrayList<>();
-        //lấy ra tất cả sinh viên tốt nghiệp, trạng thái sinh viên tốt nghiệp là G
-        for (StudentEntity student : studentEntityList) {
-            List<StudentStatusEntity> statusList = student.getStudentStatusEntityList();
+        List<StudentStatusEntity> allStatus = studentStatusService.getStudentStatusBySemesterId(semesterId);
+        List<GraduationConditionEntity> graduationConditions = graduationConditionService.findAllGraduationCondition();
 
-            for (StudentStatusEntity status : statusList) {
-                //xét duyệt trạng thái kì được chọn của sinh viên
-                if (status.getSemesterId().getId() == semesterId
-                        && status.getStatus().equalsIgnoreCase(Enums.StudentStatus.Graduated.getValue())) {
-                    filteredStudents.add(student);
-                }
+        studentEntityList = studentEntityList.stream().filter(s -> isCapstone(s, previousSemesterId)).collect(Collectors.toList());
+
+
+        //loại những học sinh đã tốt nghiệp ra, chỉ add những sinh viên chưa tốt nghiệp tại kì đang xét
+        for (StudentEntity studentEntity : studentEntityList) {
+            List<StudentStatusEntity> studentStatusEntities = new ArrayList<>(studentEntity.getStudentStatusEntityList());
+            //lấy ra status của sinh viên
+            List<StudentStatusEntity> tempStatus = studentStatusEntities.stream()
+                    .filter(q -> q.getSemesterId().getId() == previousSemesterId && q.getStatus().equalsIgnoreCase("G"))
+                    .collect(Collectors.toList());
+
+            //nếu như học sinh này chưa tốt nghiệp ở kì chỉ định thì add vào mảng để mốt xét
+            if (tempStatus.isEmpty()) {
+                filteredStudents.add(studentEntity);
             }
+
         }
+
+
+        //lay danh sach status roi stream filter
+
+        //use 4 test
+//        List<StudentEntity> a = studentService.findAllStudents();
+//        List<StudentEntity> temp = a.stream().filter(q -> q.getRollNumber().equalsIgnoreCase("SE61822")
+//                || q.getRollNumber().equalsIgnoreCase("SE62094")
+//                || q.getRollNumber().equalsIgnoreCase("SE62137")
+//        ).collect(Collectors.toList());
+//        filteredStudents.addAll(temp);
 
         System.out.println(filteredStudents.size() + " students");
         int i = 1;
         for (StudentEntity student : filteredStudents) {
-
+            boolean failFlag = false;
             List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
             List<MarksEntity> allMarks = new ArrayList<>(student.getMarksEntityList());
             List<MarkCreditTermModel> finalMarks = new ArrayList<>();
             List<SubjectCurriculumEntity> subjectCurriculumList = new ArrayList<>();
 
+            String startCourse = "";
             for (DocumentStudentEntity docStudent : docs) {
                 CurriculumEntity curriculum = docStudent.getCurriculumId();
+                String curriculumName = curriculum.getName();
+                if (startCourse.isEmpty() && !curriculumName.toLowerCase().contains("pc")) {
+                    int firstToken = curriculumName.indexOf("_", 0);
+                    int secondToken = curriculumName.indexOf("_", firstToken + 1);
+
+                    if (secondToken > -1) {
+                        startCourse = curriculumName.substring(firstToken + 1, secondToken);
+                    } else {
+                        startCourse = curriculumName.substring(firstToken + 1, curriculumName.length());
+                    }
+                }
                 subjectCurriculumList.addAll(curriculum.getSubjectCurriculumEntityList());
-            }  //end of docStudents loop
+            }
+            // tính tín chỉ tích lũy của sv
+            int studentCredits = 0;
+            int ojtCredits = 0;
             for (SubjectCurriculumEntity subjectCurriculum : subjectCurriculumList) {
                 SubjectEntity subject = subjectCurriculum.getSubjectId();
+                if (subject.getType() == Enums.SubjectType.OJT.getValue()) {
+                    ojtCredits = subjectCurriculum.getSubjectCredits();
+                }
 
-                //lấy ra môn bị thay thế của môn A, A thay thế B, -> lấy B
-                List<SubjectEntity> isReplacedSubject = subject.getSubjectEntityList1();
-                //lấy ra môn bị thay thế của môn A, C thay thế A, -> lấy C
-                List<SubjectEntity> replacedSubject = subject.getSubjectEntityList1();
                 //mảng này chứa tất cả môn thay thế và môn chính
-                List<SubjectEntity> checkSubjects = new ArrayList<>();
-                checkSubjects.add(subject);
-                checkSubjects.addAll(isReplacedSubject);
-                checkSubjects.addAll(replacedSubject);
-
-                List<MarksEntity> filteredMarks = allMarks.stream().filter(q -> checkSubjects.stream().anyMatch(c -> c.getId()
-                        .equalsIgnoreCase(q.getSubjectMarkComponentId().getSubjectId().getId()))
-                ).collect(Collectors.toList());
-
+                List<SubjectEntity> checkSubjects = Ultilities.findBackAndForwardReplacementSubject(subject);
+                List<MarksEntity> filteredMarks = allMarks.stream().filter(q -> checkSubjects.stream()
+                        .anyMatch(c -> c.getId()
+                                .equalsIgnoreCase(q.getSubjectMarkComponentId().getSubjectId().getId())))
+                        .collect(Collectors.toList());
                 List<MarksEntity> sortedMarks = Ultilities.SortSemestersByMarks(filteredMarks);
 
                 //get latest mark
                 if (!sortedMarks.isEmpty()) {
                     MarksEntity latestMark = sortedMarks.get(sortedMarks.size() - 1);
                     RealSemesterEntity tmpSemester = latestMark.getSemesterId();
+
                     //check xem trong một kì có học môn đó 2 lần không (trả nợ ngay trong kì)
                     List<MarksEntity> reLearnInSameSemester = sortedMarks.stream()
                             .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
@@ -436,86 +523,88 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
                         finalMarks.add(new MarkCreditTermModel(passMark,
                                 subjectCurriculum.getSubjectCredits(),
                                 subjectCurriculum.getTermNumber() * 1.0));
-                    } else {
-                        // do something
+                        studentCredits += subjectCurriculum.getSubjectCredits();
+                        failFlag = false;
+                    } else if (passMark == null && subjectCurriculum.isRequired()) {
+                        //loại ra khỏi danh sách có thể tốt nghiệp
+                        failFlag = true;
+                        break;
                     }
                 }
 
             } //end of subjectCurriculum loop
 
+            //trừ tín chỉ ojt
+            studentCredits -= ojtCredits;
 
-            Collections.sort(finalMarks, new MarkCreditTermModelComparator());
-//            resultMap.put(student, finalMarks);
-            resultMap.add(new StudentAndMark(finalMarks, student));
+            int specializedCredits = 0;
+            String tmpStartCourse = startCourse;
+            GraduationConditionEntity gc = graduationConditions.stream().filter(q -> q.getProgramId().getId() == student.getProgramId().getId()
+                    && q.getStartCourse().equalsIgnoreCase(tmpStartCourse)).findFirst().orElse(null);
+            if (gc != null) {
+                specializedCredits = gc.getGraduateCredits();
+            } else {
+                specializedCredits = student.getProgramId().getSpecializedCredits();
+            }
+
+            if (!failFlag && studentCredits >= specializedCredits) {
+                Collections.sort(finalMarks, new MarkCreditTermModelComparator());
+                resultMap.add(new StudentAndMark(finalMarks, student));
+            }
             System.out.println(i + " - " + filteredStudents.size());
             i++;
         }
-
         return resultMap;
     }
 
-
-    public class MarkCreditTermModelComparator implements Comparator<MarkCreditTermModel> {
-        @Override
-        public int compare(MarkCreditTermModel o1, MarkCreditTermModel o2) {
-            return o1.getTerm().compareTo(o2.getTerm());
-        }
-    }
-
-    public class StudentAndMark {
-        List<MarkCreditTermModel> markList;
-        StudentEntity student;
-
-        public Double getAverage() {
-            return average;
-        }
-
-        public void setAverage(Double average) {
-            this.average = average;
-        }
-
-        Double average;
-
-        public StudentAndMark(List<MarkCreditTermModel> markList, StudentEntity student) {
-            this.markList = markList;
-            this.student = student;
-            this.average = caculateAverage(markList);
-        }
-
-        public List<MarkCreditTermModel> getMarkList() {
-            return markList;
-        }
-
-        public void setMarkList(List<MarkCreditTermModel> markList) {
-            this.markList = markList;
-        }
-
-        public StudentEntity getStudent() {
-            return student;
-        }
-
-        public void setStudent(StudentEntity student) {
-            this.student = student;
-        }
-
-        public Double caculateAverage(List<MarkCreditTermModel> markList) {
-            Double sumCredits = 0.0;
-            Double sumMarks = 0.0;
-            double average = 0.0;
-            for (MarkCreditTermModel item : markList) {
-                //ko tính những môn như lab, hoặc những môn pass mà ko có điểm
-                if (item.getMark().getAverageMark() != 0
-                        || item.getMark().getSubjectMarkComponentId().getSubjectId().getId().contains("LAB")) {
-                    Double credit = item.getCredit()*1.0;
-                    sumCredits += credit;
-                    sumMarks += item.getMark().getAverageMark() * credit;
+    // finda all atudents match Capstone term
+    private boolean isCapstone(StudentEntity student, int previousSemesterId) {
+        int capstone = Enums.SpecialTerm.CAPSTONETERM.getValue();
+        List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+        for (DocumentStudentEntity doc : docs) {
+            if (doc.getCurriculumId() != null && !doc.getCurriculumId().getProgramId().getName().toLowerCase().contains("pc")) {
+                List<SubjectCurriculumEntity> list = doc.getCurriculumId().getSubjectCurriculumEntityList();
+                for (SubjectCurriculumEntity s : list) {
+                    if (s.getSubjectId().getType() == SubjectTypeEnum.Capstone.getId()) {
+                        capstone = s.getTermNumber();
+                        break;
+                    }
                 }
             }
-            //điểm trung bình tính = tổng số (điểm*tín chỉ) / tổng tín chỉ, làm tròn 2 chữ số thập phân
-            average = Math.round((sumMarks / sumCredits) * 100.0) / 100.0;
+        }
 
-            return average;
+        //convert to double 4 comparison
+        double require = capstone * 1.0;
+        StudentStatusEntity studentStatus = null;
+        List<StudentStatusEntity> statusList = student.getStudentStatusEntityList();
+
+        //get student status ở kì được chọn
+        for (StudentStatusEntity status : statusList) {
+            if (status.getSemesterId().getId() == previousSemesterId) {
+                studentStatus = status;
+            }
+        }
+
+        double studentTerm;
+        // kiểm tra xem kì được chọn của học sinh có record hay không, tránh parse null
+        try {
+            if (studentStatus != null)
+                studentTerm = Double.parseDouble(studentStatus.getTerm());
+            else
+                studentTerm = -1;
+
+        } catch (Exception ex) {
+            studentTerm = -1;
+        }
+
+        //studentTerm + 1  == selectedSemester : chọn danh sách sinh viên đi trong hk Spring2018
+        // --> sinh viên đó sẽ được đi vào Spring2018 --> lấy trạng thái kì trước đó là Fall2017 để check
+        if (studentTerm + 1 >= require) {
+            return true;
+        } else {
+            return false;
         }
     }
+
 
 }

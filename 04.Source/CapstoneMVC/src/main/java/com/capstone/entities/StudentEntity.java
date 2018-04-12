@@ -9,16 +9,20 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.*;
+import javax.xml.bind.annotation.*;
 
 /**
- *
  * @author hiepnhse61627
  */
 @Entity
 @Table(name = "Student", catalog = "CapstoneProject", schema = "dbo", uniqueConstraints = {
-    @UniqueConstraint(columnNames = {"RollNumber"})})
+        @UniqueConstraint(columnNames = {"RollNumber"})})
+
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "student", propOrder = {"rollNumber", "fullName", "dateOfBirth", "gender", "programId"})
+@XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "StudentEntity.findAll", query = "SELECT s FROM StudentEntity s")})
+        @NamedQuery(name = "StudentEntity.findAll", query = "SELECT s FROM StudentEntity s")})
 public class StudentEntity implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -26,43 +30,61 @@ public class StudentEntity implements Serializable {
     @Basic(optional = false)
     @Column(name = "Id", nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @XmlTransient
     private Integer id;
     @Basic(optional = false)
     @Column(name = "RollNumber", nullable = false, length = 50)
+    @XmlElement(required = true)
     private String rollNumber;
     @Column(name = "FullName", length = 150)
+    @XmlElement(required = true)
     private String fullName;
     @Column(name = "Email", length = 255)
+    @XmlTransient
     private String email;
     @Column(name = "DateOfBirth")
     @Temporal(TemporalType.TIMESTAMP)
+    @XmlElement(required = true)
     private Date dateOfBirth;
     @Column(name = "Gender")
+    @XmlElement(required = true)
     private Boolean gender;
     @Column(name = "Term")
+    @XmlTransient
     private Integer term;
     @Column(name = "Shift", length = 5)
+    @XmlTransient
     private String shift;
     @Column(name = "PayRollClass", length = 50)
+    @XmlTransient
     private String payRollClass;
     @Column(name = "PassFailCredits")
+    @XmlTransient
     private Integer passFailCredits;
     @Column(name = "PassCredits")
+    @XmlTransient
     private Integer passCredits;
     @Column(name = "PassFailAverageMark", precision = 53)
+    @XmlTransient
     private Double passFailAverageMark;
     @OneToMany(mappedBy = "studentId")
+    @XmlTransient
     private List<DocumentStudentEntity> documentStudentEntityList;
     @OneToMany(mappedBy = "studentId")
+    @XmlTransient
     private List<OldRollNumberEntity> oldRollNumberEntityList;
     @OneToMany(mappedBy = "studentId")
+    @XmlTransient
     private List<MarksEntity> marksEntityList;
     @JoinColumn(name = "ProgramId", referencedColumnName = "Id")
     @ManyToOne
+    @XmlElement(required = true)
     private ProgramEntity programId;
     @OneToMany(mappedBy = "studentId")
+    @XmlTransient
     private List<StudentStatusEntity> studentStatusEntityList;
     @OneToMany(mappedBy = "studentId")
+    @XmlTransient
     private List<CourseStudentEntity> courseStudentEntityList;
 
     public StudentEntity() {
@@ -245,5 +267,5 @@ public class StudentEntity implements Serializable {
     public String toString() {
         return "com.capstone.entities.StudentEntity[ id=" + id + " ]";
     }
-    
+
 }

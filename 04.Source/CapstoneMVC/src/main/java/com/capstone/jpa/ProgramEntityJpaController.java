@@ -10,20 +10,22 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import com.capstone.entities.OldRollNumberEntity;
+import com.capstone.entities.GraduationConditionEntity;
 import java.util.ArrayList;
 import java.util.List;
+import com.capstone.entities.OldRollNumberEntity;
 import com.capstone.entities.StudentEntity;
 import com.capstone.entities.CurriculumEntity;
 import com.capstone.entities.ProgramEntity;
-import com.capstone.jpa.exceptions.IllegalOrphanException;
-import com.capstone.jpa.exceptions.NonexistentEntityException;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import com.capstone.jpa.exceptions.IllegalOrphanException;
+import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
 
 /**
  *
- * @author hiepnhse61627
+ * @author StormNs
  */
 public class ProgramEntityJpaController implements Serializable {
 
@@ -36,7 +38,10 @@ public class ProgramEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(ProgramEntity programEntity) {
+    public void create(ProgramEntity programEntity) throws PreexistingEntityException, Exception {
+        if (programEntity.getGraduationConditionEntityList() == null) {
+            programEntity.setGraduationConditionEntityList(new ArrayList<GraduationConditionEntity>());
+        }
         if (programEntity.getOldRollNumberEntityList() == null) {
             programEntity.setOldRollNumberEntityList(new ArrayList<OldRollNumberEntity>());
         }
@@ -50,6 +55,12 @@ public class ProgramEntityJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            List<GraduationConditionEntity> attachedGraduationConditionEntityList = new ArrayList<GraduationConditionEntity>();
+            for (GraduationConditionEntity graduationConditionEntityListGraduationConditionEntityToAttach : programEntity.getGraduationConditionEntityList()) {
+                graduationConditionEntityListGraduationConditionEntityToAttach = em.getReference(graduationConditionEntityListGraduationConditionEntityToAttach.getClass(), graduationConditionEntityListGraduationConditionEntityToAttach.getId());
+                attachedGraduationConditionEntityList.add(graduationConditionEntityListGraduationConditionEntityToAttach);
+            }
+            programEntity.setGraduationConditionEntityList(attachedGraduationConditionEntityList);
             List<OldRollNumberEntity> attachedOldRollNumberEntityList = new ArrayList<OldRollNumberEntity>();
             for (OldRollNumberEntity oldRollNumberEntityListOldRollNumberEntityToAttach : programEntity.getOldRollNumberEntityList()) {
                 oldRollNumberEntityListOldRollNumberEntityToAttach = em.getReference(oldRollNumberEntityListOldRollNumberEntityToAttach.getClass(), oldRollNumberEntityListOldRollNumberEntityToAttach.getId());
@@ -69,6 +80,15 @@ public class ProgramEntityJpaController implements Serializable {
             }
             programEntity.setCurriculumEntityList(attachedCurriculumEntityList);
             em.persist(programEntity);
+            for (GraduationConditionEntity graduationConditionEntityListGraduationConditionEntity : programEntity.getGraduationConditionEntityList()) {
+                ProgramEntity oldProgramIdOfGraduationConditionEntityListGraduationConditionEntity = graduationConditionEntityListGraduationConditionEntity.getProgramId();
+                graduationConditionEntityListGraduationConditionEntity.setProgramId(programEntity);
+                graduationConditionEntityListGraduationConditionEntity = em.merge(graduationConditionEntityListGraduationConditionEntity);
+                if (oldProgramIdOfGraduationConditionEntityListGraduationConditionEntity != null) {
+                    oldProgramIdOfGraduationConditionEntityListGraduationConditionEntity.getGraduationConditionEntityList().remove(graduationConditionEntityListGraduationConditionEntity);
+                    oldProgramIdOfGraduationConditionEntityListGraduationConditionEntity = em.merge(oldProgramIdOfGraduationConditionEntityListGraduationConditionEntity);
+                }
+            }
             for (OldRollNumberEntity oldRollNumberEntityListOldRollNumberEntity : programEntity.getOldRollNumberEntityList()) {
                 ProgramEntity oldProgramIdOfOldRollNumberEntityListOldRollNumberEntity = oldRollNumberEntityListOldRollNumberEntity.getProgramId();
                 oldRollNumberEntityListOldRollNumberEntity.setProgramId(programEntity);
@@ -97,6 +117,11 @@ public class ProgramEntityJpaController implements Serializable {
                 }
             }
             em.getTransaction().commit();
+        } catch (Exception ex) {
+            if (findProgramEntity(programEntity.getId()) != null) {
+                throw new PreexistingEntityException("ProgramEntity " + programEntity + " already exists.", ex);
+            }
+            throw ex;
         } finally {
             if (em != null) {
                 em.close();
@@ -110,6 +135,8 @@ public class ProgramEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             ProgramEntity persistentProgramEntity = em.find(ProgramEntity.class, programEntity.getId());
+            List<GraduationConditionEntity> graduationConditionEntityListOld = persistentProgramEntity.getGraduationConditionEntityList();
+            List<GraduationConditionEntity> graduationConditionEntityListNew = programEntity.getGraduationConditionEntityList();
             List<OldRollNumberEntity> oldRollNumberEntityListOld = persistentProgramEntity.getOldRollNumberEntityList();
             List<OldRollNumberEntity> oldRollNumberEntityListNew = programEntity.getOldRollNumberEntityList();
             List<StudentEntity> studentEntityListOld = persistentProgramEntity.getStudentEntityList();
@@ -128,6 +155,13 @@ public class ProgramEntityJpaController implements Serializable {
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
+            List<GraduationConditionEntity> attachedGraduationConditionEntityListNew = new ArrayList<GraduationConditionEntity>();
+            for (GraduationConditionEntity graduationConditionEntityListNewGraduationConditionEntityToAttach : graduationConditionEntityListNew) {
+                graduationConditionEntityListNewGraduationConditionEntityToAttach = em.getReference(graduationConditionEntityListNewGraduationConditionEntityToAttach.getClass(), graduationConditionEntityListNewGraduationConditionEntityToAttach.getId());
+                attachedGraduationConditionEntityListNew.add(graduationConditionEntityListNewGraduationConditionEntityToAttach);
+            }
+            graduationConditionEntityListNew = attachedGraduationConditionEntityListNew;
+            programEntity.setGraduationConditionEntityList(graduationConditionEntityListNew);
             List<OldRollNumberEntity> attachedOldRollNumberEntityListNew = new ArrayList<OldRollNumberEntity>();
             for (OldRollNumberEntity oldRollNumberEntityListNewOldRollNumberEntityToAttach : oldRollNumberEntityListNew) {
                 oldRollNumberEntityListNewOldRollNumberEntityToAttach = em.getReference(oldRollNumberEntityListNewOldRollNumberEntityToAttach.getClass(), oldRollNumberEntityListNewOldRollNumberEntityToAttach.getId());
@@ -150,6 +184,23 @@ public class ProgramEntityJpaController implements Serializable {
             curriculumEntityListNew = attachedCurriculumEntityListNew;
             programEntity.setCurriculumEntityList(curriculumEntityListNew);
             programEntity = em.merge(programEntity);
+            for (GraduationConditionEntity graduationConditionEntityListOldGraduationConditionEntity : graduationConditionEntityListOld) {
+                if (!graduationConditionEntityListNew.contains(graduationConditionEntityListOldGraduationConditionEntity)) {
+                    graduationConditionEntityListOldGraduationConditionEntity.setProgramId(null);
+                    graduationConditionEntityListOldGraduationConditionEntity = em.merge(graduationConditionEntityListOldGraduationConditionEntity);
+                }
+            }
+            for (GraduationConditionEntity graduationConditionEntityListNewGraduationConditionEntity : graduationConditionEntityListNew) {
+                if (!graduationConditionEntityListOld.contains(graduationConditionEntityListNewGraduationConditionEntity)) {
+                    ProgramEntity oldProgramIdOfGraduationConditionEntityListNewGraduationConditionEntity = graduationConditionEntityListNewGraduationConditionEntity.getProgramId();
+                    graduationConditionEntityListNewGraduationConditionEntity.setProgramId(programEntity);
+                    graduationConditionEntityListNewGraduationConditionEntity = em.merge(graduationConditionEntityListNewGraduationConditionEntity);
+                    if (oldProgramIdOfGraduationConditionEntityListNewGraduationConditionEntity != null && !oldProgramIdOfGraduationConditionEntityListNewGraduationConditionEntity.equals(programEntity)) {
+                        oldProgramIdOfGraduationConditionEntityListNewGraduationConditionEntity.getGraduationConditionEntityList().remove(graduationConditionEntityListNewGraduationConditionEntity);
+                        oldProgramIdOfGraduationConditionEntityListNewGraduationConditionEntity = em.merge(oldProgramIdOfGraduationConditionEntityListNewGraduationConditionEntity);
+                    }
+                }
+            }
             for (OldRollNumberEntity oldRollNumberEntityListOldOldRollNumberEntity : oldRollNumberEntityListOld) {
                 if (!oldRollNumberEntityListNew.contains(oldRollNumberEntityListOldOldRollNumberEntity)) {
                     oldRollNumberEntityListOldOldRollNumberEntity.setProgramId(null);
@@ -235,6 +286,11 @@ public class ProgramEntityJpaController implements Serializable {
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
+            List<GraduationConditionEntity> graduationConditionEntityList = programEntity.getGraduationConditionEntityList();
+            for (GraduationConditionEntity graduationConditionEntityListGraduationConditionEntity : graduationConditionEntityList) {
+                graduationConditionEntityListGraduationConditionEntity.setProgramId(null);
+                graduationConditionEntityListGraduationConditionEntity = em.merge(graduationConditionEntityListGraduationConditionEntity);
+            }
             List<OldRollNumberEntity> oldRollNumberEntityList = programEntity.getOldRollNumberEntityList();
             for (OldRollNumberEntity oldRollNumberEntityListOldRollNumberEntity : oldRollNumberEntityList) {
                 oldRollNumberEntityListOldRollNumberEntity.setProgramId(null);
@@ -299,5 +355,5 @@ public class ProgramEntityJpaController implements Serializable {
             em.close();
         }
     }
-    
+
 }

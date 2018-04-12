@@ -6,6 +6,7 @@
 package com.capstone.entities;
 
 import java.io.Serializable;
+import java.util.Date;
 import javax.persistence.*;
 
 /**
@@ -42,6 +43,10 @@ public class ScheduleEntity implements Serializable {
     private boolean isActive;
     @Column(name = "parentScheduleId")
     private Integer parentScheduleId;
+    @Basic(optional = false)
+    @Column(name = "ChangedDate")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date changedDate;
 
     public ScheduleEntity() {
     }
@@ -112,6 +117,22 @@ public class ScheduleEntity implements Serializable {
 
     public void setParentScheduleId(Integer parentScheduleId) {
         this.parentScheduleId = parentScheduleId;
+    }
+
+    public Date getChangedDate() {
+        return changedDate;
+    }
+
+    public void setChangedDate(Date changedDate) {
+        this.changedDate = changedDate;
+    }
+
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
     }
 
     @Override

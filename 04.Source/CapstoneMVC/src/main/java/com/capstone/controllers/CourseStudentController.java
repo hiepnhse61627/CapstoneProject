@@ -90,7 +90,11 @@ public class CourseStudentController {
                 model.setSlot(schedule.getDateId().getSlotId().getSlotName());
                 model.setStartTime(schedule.getDateId().getSlotId().getStartTime());
                 model.setEndTime(schedule.getDateId().getSlotId().getEndTime());
-                model.setLecture(schedule.getEmpId().getFullName());
+                if(schedule.getEmpId() != null){
+                    model.setLecture(schedule.getEmpId().getFullName());
+                }else{
+                    model.setLecture(null);
+                }
                 scheduleModelList.add(model);
             }
 

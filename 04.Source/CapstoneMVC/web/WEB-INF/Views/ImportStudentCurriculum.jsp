@@ -16,6 +16,11 @@
                     <div class="title">
                         <label>Chọn file:</label>
                     </div>
+                    <div class="">
+                        Template ko giống, sửa pls
+                        Bấm vào <a class="link" href="/Resources/FileTemplates/FPT-FINAL-MARKS-Template.xlsx">Template</a> để tải
+                        về bản mẫu
+                    </div><br/>
                     <div class="my-content">
                         <div class="col-md-12">
                             <label for="file" hidden></label>

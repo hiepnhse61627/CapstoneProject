@@ -15,4 +15,5 @@ public interface ICredentialsService {
     void CreateCredentiall(CredentialsEntity entity);
     void SaveCredential(CredentialsEntity entity, boolean persist);
     List<CredentialsEntity> getAllCredentials();
+    boolean deleteCredential(int credentialId);
 }

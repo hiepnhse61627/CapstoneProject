@@ -78,13 +78,13 @@ public class ExportController {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
             ExportStatusReport.StatusExportStudentDetailRunning = false;
             ExportStatusReport.StatusStudentDetailExport = "";
             ExportStatusReport.StopExporting = false;
 
             return null;
         };
+
 
         return callable;
     }
@@ -94,7 +94,9 @@ public class ExportController {
     public void exportFileWithoutCallable(@RequestParam Map<String, String> params, HttpServletRequest request, HttpServletResponse response) {
 
         exportObject = createExportImplementation(Integer.parseInt(params.get("objectType")));
-
+        ExportStatusReport.StatusExportStudentDetailRunning = true;
+        ExportStatusReport.StatusStudentDetailExport = "";
+        ExportStatusReport.StopExporting = false;
         // get output stream of the response
         OutputStream os;
         try {
@@ -152,7 +154,10 @@ public class ExportController {
                 "com.capstone.exporters.ExportExcelStudentsStudyResultBySemester", //20 = export students study Results
                 "com.capstone.exporters.ExportExcelStudentsStudyInfo", //21 = export students study info
                 "com.capstone.exporters.ExportConvert2StudentQuantityByClassAndSubject", //22
-				"com.capstone.exporters.ExportBestStudentImpl" // 23 = Best student in subjects in semester
+				"com.capstone.exporters.ExportBestStudentImpl", // 23 = Best student in subjects in semester
+                "com.capstone.exporters.ExportChangedScheduleImpl", // 24 = Changed schedule
+                "com.capstone.exporters.ExportFreeScheduleImpl" // 25 = Free schedule
+
         };
 
         try {

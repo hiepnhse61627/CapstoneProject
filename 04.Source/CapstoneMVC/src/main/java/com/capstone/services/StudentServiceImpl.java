@@ -7,6 +7,7 @@ import com.capstone.jpa.exJpa.ExSubjectCurriculumJpaController;
 import com.capstone.jpa.exJpa.ExSubjectEntityJpaController;
 import com.capstone.jpa.exJpa.ExSubjectMarkComponentJpaController;
 import com.capstone.models.*;
+import org.apache.poi.ss.formula.functions.T;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -775,6 +776,16 @@ public class StudentServiceImpl implements IStudentService {
     @Override
     public void myUpdateStudent(StudentEntity student) {
         studentEntityJpaController.myUpdateStudent(student);
+    }
+
+    @Override
+    public boolean myBulkUpdateStudents(List<StudentEntity> studentList) {
+        return studentEntityJpaController.myBulkUpdateStudents(studentList);
+    }
+
+    @Override
+    public void refresh(StudentEntity s) {
+        studentEntityJpaController.refresh(s);
     }
 
 

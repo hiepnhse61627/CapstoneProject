@@ -1101,7 +1101,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             em = getEntityManager();
 
             //SubjectType = 1 = ojt type
-            Query query = em.createQuery("SELECT DISTINCT a FROM MarksEntity a WHERE a.isActivated = true " +
+            Query query = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true " +
                     "AND a.studentId.id = :studentId AND (LOWER(a.status) LIKE '%studying%' " +
                     "OR LOWER(a.status) LIKE '%pass%') AND a.semesterId.id IN :semesterIdList", StudentEntity.class);
             query.setParameter("studentId", studentId);
@@ -1117,4 +1117,169 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         }
         return result;
     }
+
+    public List<MarksEntity> getStudentMarkFromAndBeforeSelectedSemesterFromMarks(int semesterId, int studentId) {
+        EntityManager em = null;
+        List<MarksEntity> result = new ArrayList<>();
+        try {
+            if (realSemesters == null) {
+                realSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester());
+            }
+
+            //get all previous semester of selected semester (exclude selected semester)
+            List<Integer> allSemestersId = new ArrayList<>();
+            for (RealSemesterEntity r : realSemesters) {
+                allSemestersId.add(r.getId());
+                if (r.getId() == semesterId)
+                    break;
+            }
+
+            em = getEntityManager();
+
+            //SubjectType = 1 = ojt type
+            Query query = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true " +
+                    "AND a.studentId.id = :studentId AND (LOWER(a.status) LIKE '%studying%' " +
+                    "OR LOWER(a.status) LIKE '%pass%') AND a.semesterId.id IN :semesterIdList", StudentEntity.class);
+            query.setParameter("studentId", studentId);
+            query.setParameter("semesterIdList", allSemestersId);
+            result = query.getResultList();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        return result;
+    }
+
+    public List<MarksEntity> getMarksBySelectedStudentsFromAndBeforeSelectedSemester(int semesterId, List<Integer> studentIds) {
+        EntityManager em = null;
+        List<MarksEntity> result = new ArrayList<>();
+        try {
+            if (realSemesters == null) {
+                realSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester());
+            }
+
+            //get all previous semester of selected semester (exclude selected semester)
+            List<Integer> allSemestersId = new ArrayList<>();
+            for (RealSemesterEntity r : realSemesters) {
+                allSemestersId.add(r.getId());
+                if (r.getId() == semesterId)
+                    break;
+            }
+
+            em = getEntityManager();
+
+            //SubjectType = 1 = ojt type
+            Query query = em.createQuery("SELECT a FROM MarksEntity a WHERE a.isActivated = true " +
+                    "AND a.studentId.id IN :studentIdList AND a.semesterId.id IN :semesterIdList", StudentEntity.class);
+            query.setParameter("studentIdList", studentIds);
+            query.setParameter("semesterIdList", allSemestersId);
+            result = query.getResultList();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        return result;
+    }
+
+    public long countMarksByStudentIdAndSubjectId(int studentId, String subjectId) {
+        EntityManager em = null;
+        long result = 0;
+        try {
+            if (realSemesters == null) {
+                realSemesters = Ultilities.SortSemesters(new RealSemesterServiceImpl().getAllSemester());
+            }
+
+            em = getEntityManager();
+
+            //SubjectType = 1 = ojt type
+            Query query = em.createQuery("SELECT COUNT(a.id) FROM MarksEntity a WHERE a.isActivated = true " +
+                    "AND a.studentId.id = :studentId AND a.subjectMarkComponentId.subjectId.id = :subjectId");
+            query.setParameter("studentId", studentId);
+            query.setParameter("subjectId", subjectId);
+            result = (long) query.getSingleResult();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        return result;
+    }
+
+    public void bulkDeleteMarks(List<MarksEntity> marks) {
+        EntityManager em = null;
+        int batchSize = 1000;
+        try {
+            em = getEntityManager();
+
+            em.getTransaction().begin();
+            for (int i = 0; i < marks.size(); i++) {
+                MarksEntity markEntity = marks.get(i);
+                em.remove(markEntity);
+                if (i > 0 && i % batchSize == 0) {
+                    em.flush();
+                    em.clear();
+                }
+            }
+            em.flush();
+            em.clear();
+            em.getTransaction().commit();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+    public void deleteMarksBySemesterAndSubjectCodes(int semesterId, List<String> subjectCodes) {
+        EntityManager em = null;
+        try {
+            em = getEntityManager();
+            em.getTransaction().begin();
+            String queryStr = "SELECT m.Id" +
+                    "  FROM [Marks] m" +
+                    "  inner join Subject_MarkComponent smc on m.SubjectMarkComponentId = smc.Id" +
+                    "  inner join [Subject] s on smc.SubjectId = s.Id" +
+                    "  WHERE m.SemesterId = ?1 ";
+
+            if (!subjectCodes.isEmpty()) {
+                String list = "";
+                list += "'" + subjectCodes.get(0) + "'";
+                for (int i = 1; i < subjectCodes.size(); i++) {
+                    list += ", " + "'" + subjectCodes.get(i) + "'";
+                }
+                queryStr += " AND  s.Id IN (" + list + ")";
+            }
+            String deleteQuery = "DELETE FROM [Marks] WHERE Id IN (" + queryStr + ")";
+
+            Query query = em.createNativeQuery(deleteQuery);
+            query.setParameter(1, semesterId);
+
+            query.executeUpdate();
+            em.flush();
+            em.clear();
+            em.getTransaction().commit();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            em.getTransaction().rollback();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
+
 }

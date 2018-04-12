@@ -1,6 +1,7 @@
 package com.capstone.controllers;
 
 import com.capstone.models.ColumnModel;
+import com.capstone.models.Ultilities;
 import com.capstone.services.BaseServiceImpl;
 import com.capstone.services.IBaseService;
 import com.google.gson.Gson;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -22,12 +24,19 @@ public class SqlQueryController {
     IBaseService baseService = new BaseServiceImpl();
 
     @RequestMapping("/goSQLQueryPage")
-    public ModelAndView goSqlQueryPage() {
+    public ModelAndView goSqlQueryPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("sqlQueryPage");
         view.addObject("title", "Truy vấn dữ liệu");
 
         return view;
     }
+
 
     @RequestMapping(value = "/get-table-properties", method = RequestMethod.POST)
     @ResponseBody

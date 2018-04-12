@@ -1,5 +1,6 @@
 package com.capstone.services;
 
+import com.capstone.entities.DepartmentEntity;
 import com.capstone.entities.SubjectEntity;
 import com.capstone.jpa.exJpa.ExSubjectEntityJpaController;
 import com.capstone.models.ReplacementSubject;
@@ -55,6 +56,11 @@ public class SubjectServiceImpl implements ISubjectService {
     }
 
     @Override
+    public List<SubjectEntity> findSubjectByDepartment(DepartmentEntity dept) {
+        return controller.findSubjectByDepartment(dept);
+    }
+
+    @Override
     public int getCurrentLine() {
         return controller.getCurrentLine();
     }
@@ -77,5 +83,10 @@ public class SubjectServiceImpl implements ISubjectService {
     @Override
     public List<SubjectEntity> getSubjectsByMarkStatus(String[] statuses) {
         return controller.getSubjectsByMarkStatus(statuses);
+    }
+
+    @Override
+    public boolean bulkUpdateSubjects(List<SubjectEntity> subjectList) {
+        return controller.bulkUpdateSubjects(subjectList);
     }
 }

@@ -1,0 +1,663 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<studentInformation>
+    <student>
+        <rollNumber>SE61822</rollNumber>
+        <fullName>Phạm Hồng Sơn</fullName>
+        <dateOfBirth>1996-11-12T00:00:00+07:00</dateOfBirth>
+        <programId>
+            <name>SE</name>
+            <fullName>Kỹ thuật phần mềm</fullName>
+        </programId>
+    </student>
+    <markDetail>
+        <mark>
+            <averageMark>8.6</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>PRO001</id>
+                    <name>Programming with Alice</name>
+                    <vnName>Lập trình với Alice</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>1</credit>
+        <term>0.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>6.6</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>CSI101</id>
+                    <name>Connecting to Computer Science</name>
+                    <vnName>Nhập môn tính toán</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>1.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>6.5</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>ENI201</id>
+                    <name>Pre-intermediate Business English</name>
+                    <vnName>Tiếng Anh doanh nghiệp 2</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>1.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.2</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>MAE101</id>
+                    <name>Mathematics for Engineering</name>
+                    <vnName>Toán cao cấp cho ngành kỹ thuật</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>1.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>6.9</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>MAD111</id>
+                    <name>Discrete mathematics 1</name>
+                    <vnName>Toán rời rạc 1</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>1.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>6.8</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>PRF192</id>
+                    <name>Programming Fundamentals</name>
+                    <vnName>Cơ sở lập trình C</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>1.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>6.4</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>DBI202</id>
+                    <name>Introduction to Databases</name>
+                    <vnName>Nhập môn Cơ sở Dữ liệu (Các hệ cơ sở dữ liệu)</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>2.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>0.0</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>LAB101</id>
+                    <name>C Lab</name>
+                    <vnName>Thực hành cơ bản</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>2.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.2</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>MAE101</id>
+                    <name>Mathematics for Engineering</name>
+                    <vnName>Toán cao cấp cho ngành kỹ thuật</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>2.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.4</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>PRO192</id>
+                    <name>Object-Oriented Paradigm (C++)</name>
+                    <vnName>Lập trình hướng đối tượng</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>2.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.5</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>PRO201</id>
+                    <name>Front-end Web Development</name>
+                    <vnName>Lập trình web động</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>2.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.9</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>CSD201</id>
+                    <name>Data Structures and Algorithms</name>
+                    <vnName>Cấu trúc dữ liệu và giải thuật</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>3.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>8.3</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>JPD111</id>
+                    <name>Japanese Elementary 1</name>
+                    <vnName>Tiếng Nhật cơ sở 1</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>3.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>10.0</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>LAB211</id>
+                    <name>OOP with Java Lab</name>
+                    <vnName>Thực hành OOP với java</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>3.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.3</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>OSG202</id>
+                    <name>Operating Systems</name>
+                    <vnName>Hệ điều hành</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>3.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.3</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>PRJ311</id>
+                    <name>Desktop Java Applications</name>
+                    <vnName>Phát triển ứng dụng Java desktop</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>3.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.9</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>HCI201</id>
+                    <name>Human-Computer Interaction</name>
+                    <vnName>Tương tác người máy</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>4.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>8.6</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>JPD121</id>
+                    <name>Japanese Elementary 2</name>
+                    <vnName>Tiếng Nhật cơ sở 2</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>4.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>0.0</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>LAB221</id>
+                    <name>Desktop Java Lab</name>
+                    <vnName>Thực hành Destop Java</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>4.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>5.7</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>PRJ321</id>
+                    <name>Advanced Java</name>
+                    <vnName>Phát triển ứng dụng Java web</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>4.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.2</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>SWE102</id>
+                    <name>Introduction to Software Engineering</name>
+                    <vnName>Nhập môn Kỹ thuật phần mềm</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>4.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>8.1</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>JPD131</id>
+                    <name>Japanese Elementary 3</name>
+                    <vnName>Tiếng Nhật cơ sở 3</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>5.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>0.0</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>LAB231</id>
+                    <name>Web Java Lab</name>
+                    <vnName>Thực hành web Java</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>5.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>8.0</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>NWC202</id>
+                    <name>Computer Networking</name>
+                    <vnName>Mạng máy tính</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>5.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>8.0</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>PRN292</id>
+                    <name>.NET and C#</name>
+                    <vnName>C# &amp; Dot Net</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>5.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>8.2</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>SSG101</id>
+                    <name>Working in Group</name>
+                    <vnName>Kỹ năng làm việc nhóm</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>5.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>8.0</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>SWR301</id>
+                    <name>Software Requirements</name>
+                    <vnName>Yêu cầu phần mềm</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>5.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>9.0</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>OJS201</id>
+                    <name>On the job training 1</name>
+                    <vnName>Đào tạo trong công việc thực tế KTPM</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>10</credit>
+        <term>6.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>8.9</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>SYB301</id>
+                    <name>Start Your Business</name>
+                    <vnName>Khởi Sự Doanh Nghiệp</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>0</credit>
+        <term>6.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>6.6</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>ACC101</id>
+                    <name>Principles of Accounting</name>
+                    <vnName>Nguyên lý kế toán</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>7.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.7</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>PRM391</id>
+                    <name>Mobile Programming</name>
+                    <vnName>Lập trình di động</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>7.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.9</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>SSC102</id>
+                    <name>Business Communication</name>
+                    <vnName>Giao tiếp thương mại</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>7.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.0</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>SWD391</id>
+                    <name>Software Architecture and Design</name>
+                    <vnName>Kiến trúc và thiết kế phần mềm</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>7.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.1</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>SWQ391</id>
+                    <name>Software Quality Assurance &amp; Testing</name>
+                    <vnName>Đảm bảo chất lượng &amp; kiểm thử PM</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>7.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.5</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>DBW301</id>
+                    <name>Advanced Database</name>
+                    <vnName>Kho dữ liệu</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>8.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>6.8</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>MLN101</id>
+                    <name>Principles of Marxism - Leninism</name>
+                    <vnName>Những nguyên lý cơ bản của Chủ nghĩa Mác-Lênin</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>5</credit>
+        <term>8.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>6.4</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>MAS291</id>
+                    <name>Statistics and Probability</name>
+                    <vnName>Xác suất thống kê</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>8.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.2</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>PRX301</id>
+                    <name>Web Development (XML)</name>
+                    <vnName>XML nâng cao</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>8.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.0</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>SWM301</id>
+                    <name>Software project management</name>
+                    <vnName>Quản trị dự án phần mềm</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>8.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>6.6</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>HCM201</id>
+                    <name>Ho Chi Minh Ideology</name>
+                    <vnName>Tư tưởng Hồ Chí Minh</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>2</credit>
+        <term>9.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.4</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>ISC301</id>
+                    <name>e-Commerce</name>
+                    <vnName>Thương mại điện tử</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>9.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>7.4</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>ITE302</id>
+                    <name>Ethics in Information Technology</name>
+                    <vnName>Đạo đức nghề nghiệp</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>9.0</term>
+    </markDetail>
+    <markDetail>
+        <mark>
+            <averageMark>6.1</averageMark>
+            <status>Passed</status>
+            <subjectMarkComponentId>
+                <subjectId>
+                    <id>VNR201</id>
+                    <name>Revolutionary line of CPV</name>
+                    <vnName>Đường lối cách mạng của Đảng cộng sản Việt Nam</vnName>
+                </subjectId>
+            </subjectMarkComponentId>
+        </mark>
+        <credit>3</credit>
+        <term>9.0</term>
+    </markDetail>
+    <average>6.98</average>
+    <highschoolGraduate>true</highschoolGraduate>
+    <idCard>false</idCard>
+    <birthRecords>true</birthRecords>
+    <engThesisName>haha</engThesisName>
+    <vnThesisName>hehe</vnThesisName>
+</studentInformation>

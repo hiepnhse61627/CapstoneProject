@@ -100,6 +100,30 @@ public class ExRoomEntityJpaController extends RoomEntityJpaController {
         return result;
     }
 
+
+    public RoomEntity findRoomsByExactName(String searchValue) {
+        EntityManager em = getEntityManager();
+        RoomEntity result = null;
+
+        try {
+            String queryStr = "SELECT s FROM RoomEntity s" +
+                    " WHERE s.name LIKE :name";
+            TypedQuery<RoomEntity> query = em.createQuery(queryStr, RoomEntity.class);
+            query.setParameter("name", "" + searchValue + "");
+
+            result = query.getSingleResult();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+
+        return result;
+    }
+
     public List<RoomEntity> findRoomsByCapacity(int searchValue) {
         EntityManager em = getEntityManager();
         List<RoomEntity> result = null;

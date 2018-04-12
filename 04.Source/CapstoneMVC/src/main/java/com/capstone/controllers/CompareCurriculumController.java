@@ -18,6 +18,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
+import javax.servlet.http.HttpServletRequest;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -28,7 +29,13 @@ public class CompareCurriculumController {
 
     //home page
     @RequestMapping("/curriculumcompare")
-    public ModelAndView Index() {
+    public ModelAndView Index(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
         ModelAndView view = new ModelAndView("CompareCurriculum");
         view.addObject("title", "So sánh khung");
         ICurriculumService curriculumService = new CurriculumServiceImpl();

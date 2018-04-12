@@ -133,7 +133,7 @@
     var OAUTHURL = 'https://accounts.google.com/o/oauth2/auth?';
     var VALIDURL = 'https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=';
     var SCOPE = 'https://mail.google.com/ https://www.googleapis.com/auth/userinfo.email';
-    var CLIENTID = '415843400023-daksefsdrol9o9b5b79o9mhk8cskc9k4.apps.googleusercontent.com';
+    var CLIENTID = '1024234376610-fa3r5s7db2g82ccqecolm6rbfskbv3ci.apps.googleusercontent.com';
     var url = window.location.hostname;
     if (url.indexOf("localhost") == -1 && url.indexOf("xip.io") == -1) {
         url += ".xip.io";
@@ -148,7 +148,6 @@
 
         var pollTimer = window.setInterval(function () {
             try {
-                console.log(win.document.URL);
                 if (win.document.URL.indexOf(REDIRECT) != -1) {
                     window.clearInterval(pollTimer);
                     var url = win.document.URL;
@@ -157,7 +156,6 @@
                     var expiresIn = gup(url, 'expires_in');
                     win.close();
 //                    Send(acToken);
-                    console.log(acToken + ", " + tokenType + ", " + expiresIn);
                     validateToken(acToken);
                 }
             } catch (e) {
@@ -171,7 +169,6 @@
             url: VALIDURL + token,
             data: null,
             success: function (responseText) {
-                console.log(responseText);
                 getUserInfo(token);
             },
             dataType: "jsonp"
@@ -184,7 +181,6 @@
             data: null,
             success: function (resp) {
                 var user = resp;
-                console.log(user);
                 Send(token, user.email, user.name);
             },
             dataType: "jsonp"
@@ -206,6 +202,8 @@
         CreateEmptyDataTable("#table");
         $('#table').wrap("<div class='table-scroll'></div>");
         CKEDITOR.config.extraPlugins = 'justify';
+        CKEDITOR.config.title = false;
+
         $('#table').DataTable();
         $('#editor').ckeditor();
     });

@@ -51,11 +51,11 @@ public class RolesAuthorityEntityJpaController implements Serializable {
             }
             em.persist(rolesAuthorityEntity);
             if (menuId != null) {
-                menuId.getRolesAuthorityEntityCollection().add(rolesAuthorityEntity);
+                menuId.getRolesAuthorityEntityList().add(rolesAuthorityEntity);
                 menuId = em.merge(menuId);
             }
             if (rolesId != null) {
-                rolesId.getRolesAuthorityEntityCollection().add(rolesAuthorityEntity);
+                rolesId.getRolesAuthorityEntityList().add(rolesAuthorityEntity);
                 rolesId = em.merge(rolesId);
             }
             em.getTransaction().commit();
@@ -91,19 +91,19 @@ public class RolesAuthorityEntityJpaController implements Serializable {
             }
             rolesAuthorityEntity = em.merge(rolesAuthorityEntity);
             if (menuIdOld != null && !menuIdOld.equals(menuIdNew)) {
-                menuIdOld.getRolesAuthorityEntityCollection().remove(rolesAuthorityEntity);
+                menuIdOld.getRolesAuthorityEntityList().remove(rolesAuthorityEntity);
                 menuIdOld = em.merge(menuIdOld);
             }
             if (menuIdNew != null && !menuIdNew.equals(menuIdOld)) {
-                menuIdNew.getRolesAuthorityEntityCollection().add(rolesAuthorityEntity);
+                menuIdNew.getRolesAuthorityEntityList().add(rolesAuthorityEntity);
                 menuIdNew = em.merge(menuIdNew);
             }
             if (rolesIdOld != null && !rolesIdOld.equals(rolesIdNew)) {
-                rolesIdOld.getRolesAuthorityEntityCollection().remove(rolesAuthorityEntity);
+                rolesIdOld.getRolesAuthorityEntityList().remove(rolesAuthorityEntity);
                 rolesIdOld = em.merge(rolesIdOld);
             }
             if (rolesIdNew != null && !rolesIdNew.equals(rolesIdOld)) {
-                rolesIdNew.getRolesAuthorityEntityCollection().add(rolesAuthorityEntity);
+                rolesIdNew.getRolesAuthorityEntityList().add(rolesAuthorityEntity);
                 rolesIdNew = em.merge(rolesIdNew);
             }
             em.getTransaction().commit();
@@ -137,12 +137,12 @@ public class RolesAuthorityEntityJpaController implements Serializable {
             }
             DynamicMenuEntity menuId = rolesAuthorityEntity.getMenuId();
             if (menuId != null) {
-                menuId.getRolesAuthorityEntityCollection().remove(rolesAuthorityEntity);
+                menuId.getRolesAuthorityEntityList().remove(rolesAuthorityEntity);
                 menuId = em.merge(menuId);
             }
             RolesEntity rolesId = rolesAuthorityEntity.getRolesId();
             if (rolesId != null) {
-                rolesId.getRolesAuthorityEntityCollection().remove(rolesAuthorityEntity);
+                rolesId.getRolesAuthorityEntityList().remove(rolesAuthorityEntity);
                 rolesId = em.merge(rolesId);
             }
             em.remove(rolesAuthorityEntity);

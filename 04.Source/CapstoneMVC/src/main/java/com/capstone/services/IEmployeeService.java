@@ -12,6 +12,7 @@ public interface IEmployeeService {
     EmployeeEntity findEmployeeById(int id);
     EmployeeEntity findEmployeeByCode(String code);
     EmployeeEntity findEmployeeByShortName(String name);
+    EmployeeEntity findEmployeeByEmail(String mail);
     List<EmployeeEntity> findEmployeesByFullName(String searchValue);
     List<EmployeeEntity> findAllEmployees();
     void saveEmployee(EmployeeEntity emp) throws Exception;

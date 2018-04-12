@@ -20,14 +20,13 @@ public class DepartmentEntity implements Serializable {
     @Id
     @Basic(optional = false)
     @Column(name = "DeptId")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer deptId;
     @Column(name = "DeptName")
     private String deptName;
     @Column(name = "DeptShortName")
     private String deptShortName;
-    @OneToMany(mappedBy = "deptId")
-    private List<SubjectDepartmentEntity> subjectDepartmentEntityList;
+    @OneToMany(mappedBy = "departmentId")
+    private List<SubjectEntity> subjectEntityList;
 
     public DepartmentEntity() {
     }
@@ -60,12 +59,13 @@ public class DepartmentEntity implements Serializable {
         this.deptShortName = deptShortName;
     }
 
-    public List<SubjectDepartmentEntity> getSubjectDepartmentEntityList() {
-        return subjectDepartmentEntityList;
+
+    public List<SubjectEntity> getSubjectEntityList() {
+        return subjectEntityList;
     }
 
-    public void setSubjectDepartmentEntityList(List<SubjectDepartmentEntity> subjectDepartmentEntityList) {
-        this.subjectDepartmentEntityList = subjectDepartmentEntityList;
+    public void setSubjectEntityList(List<SubjectEntity> subjectEntityList) {
+        this.subjectEntityList = subjectEntityList;
     }
 
     @Override
@@ -90,7 +90,7 @@ public class DepartmentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "javaapplication102.DepartmentEntity[ deptId=" + deptId + " ]";
+        return "javaapplication108.DepartmentEntity[ deptId=" + deptId + " ]";
     }
 
 }

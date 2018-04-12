@@ -23,6 +23,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
+import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -32,7 +33,13 @@ import java.util.stream.Collectors;
 public class PercentFailController {
 
     @RequestMapping("/index")
-    public ModelAndView Index() {
+    public ModelAndView Index(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to /percent/index");
+
         ModelAndView view = new ModelAndView("ByClassPercent");
         view.addObject("title", "Tỉ lệ môn đạt");
 
