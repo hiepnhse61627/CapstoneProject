@@ -162,12 +162,18 @@ public class ExportStudentArrangementBySlotImpl implements IExportObject {
             spreadsheet.setColumnWidth(31, 4200);
 
             List<String> slotList = new ArrayList<>();
+//            slotList.add("S21");
+//            slotList.add("S22");
+//            slotList.add("S23");
+//            slotList.add("S31");
+//            slotList.add("S32");
+//            slotList.add("S33");
+            slotList.add("S11");
+            slotList.add("S12");
+            slotList.add("S13");
             slotList.add("S21");
             slotList.add("S22");
             slotList.add("S23");
-            slotList.add("S31");
-            slotList.add("S32");
-            slotList.add("S33");
 
             int ordinalNumber = 1;
             int currentRow = 3;
@@ -202,6 +208,10 @@ public class ExportStudentArrangementBySlotImpl implements IExportObject {
                 String slotName = "";
                 if (pos != -1) {
                     slotName = currentClass.substring(pos + 1);
+
+                    if(slotName.length() > 3) {
+                        slotName = slotName.substring(0, 3);
+                    }
                 }
 
                 if (previousSubject.isEmpty() || currentSubject.equals(previousSubject)) {
