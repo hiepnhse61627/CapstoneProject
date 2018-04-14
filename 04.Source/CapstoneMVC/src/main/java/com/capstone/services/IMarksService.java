@@ -53,5 +53,5 @@ public interface IMarksService {
 
     long countMarksByStudentIdAndSubjectId(int studentId, String subjectId);
     void bulkDeleteMarks(List<MarksEntity> marks);
-    void deleteMarksBySemesterAndSubjectCodes(int semesterId, List<String> subjectCodes);
+    void deleteMarksBySemesterAndSubjectCodesAndStudentId(int semesterId, List<String> subjectCodes, int studentId);
 }

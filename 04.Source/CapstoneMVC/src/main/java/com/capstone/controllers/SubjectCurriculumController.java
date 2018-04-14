@@ -53,7 +53,7 @@ public class SubjectCurriculumController {
             return Ultilities.returnDeniedPage();
         }
         //logging user action
-        Ultilities.logUserAction("go to /subcurriculum");
+        Ultilities.logUserAction("go to " + request.getRequestURI());
 
         ModelAndView view = new ModelAndView("SubjectCurriculum");
         view.addObject("title", "Các khung chương trình");
@@ -67,7 +67,7 @@ public class SubjectCurriculumController {
     @RequestMapping("/createcurriculum")
     public ModelAndView Create(HttpServletRequest request) {
         //logging user action
-        Ultilities.logUserAction("go to /createcurriculum");
+        Ultilities.logUserAction("go to " + request.getRequestURI());
 
         ModelAndView view = new ModelAndView("CreateSubjectCurriculum");
         ISubjectService subjectService = new SubjectServiceImpl();
@@ -389,7 +389,7 @@ public class SubjectCurriculumController {
             model.setSubjectID(subjectId);
             model.setSubjectName(subjectName);
             model.setCredits(Integer.parseInt(credits));
-            model.setPrerequisiteSubject(prerequisite.trim().isEmpty() ? null: prerequisite);
+            model.setPrerequisiteSubject(prerequisite.trim().isEmpty() ? null : prerequisite);
             model.setReplacementSubject(replacement);
             model.setEffectionSemester(effectionSemester);
             if (failMark.isEmpty()) {
@@ -699,13 +699,16 @@ public class SubjectCurriculumController {
             ICurriculumService curriculumService = new CurriculumServiceImpl();
             IProgramService programService = new ProgramServiceImpl();
 
-            List<CurriculumEntity> allCurriculums = curriculumService.getAllCurriculums();
+//            List<CurriculumEntity> allCurriculums = curriculumService.getAllCurriculums();
             List<SubjectEntity> allSubjects = subjectService.getAllSubjects();
 
             int countStop = 0;
             //Map<CurriculumName, SubjectCurriculumEntity>
-            Map<String, List<SubjectCurriculumEntity>> map = new LinkedHashMap<>();
-            List<CurriculumEntity> importedCurriculum = new ArrayList<>();
+//            Map<String, List<SubjectCurriculumEntity>> map = new LinkedHashMap<>();
+//            List<CurriculumEntity> importedCurriculum = new ArrayList<>();
+            Map<CurriculumEntity, List<SubjectCurriculumEntity>> mapData = new HashMap<>();
+            //Map<curriculumName, Map<term, ordinalNumber>>
+            Map<String, Map<Integer, Integer>> ordinalTrack = new HashMap<>();
 
             //list chứa những curriculum không import được, do curriculum đã tồn tại,
             // hoặc subject trong curriculum không tồn tại
@@ -714,10 +717,11 @@ public class SubjectCurriculumController {
 
             rowIndex = 0;
             int ordinalNumberCount = 1;
+
             dataLoop:
             for (rowIndex = rowIndex + 1; rowIndex <= spreadsheet.getLastRowNum(); rowIndex++) {
 
-                System.out.println(rowIndex + 1 + " - " + spreadsheet.getLastRowNum());
+                System.out.println(rowIndex + " - " + spreadsheet.getLastRowNum());
 
                 row = spreadsheet.getRow(rowIndex);
                 Cell curriculumNameCell = row.getCell(curriculumIndex);
@@ -728,7 +732,9 @@ public class SubjectCurriculumController {
 //                Cell ordinalNumberCell = row.getCell(ordinalIndex);
 
                 if (row != null) {
-
+                    if (rowIndex == 179) {
+                        System.out.println("bug");
+                    }
 
                     if (countStop > 2) {
                         break dataLoop;
@@ -747,9 +753,16 @@ public class SubjectCurriculumController {
 //                            && ordinalNumberCell != null && ordinalNumberCell.getCellTypeEnum() != CellType.BLANK
                             ) {
 
-                        String curriculumName = curriculumNameCell.getStringCellValue().trim();
-                        String subjectCode = subjectCodeCell.getStringCellValue().trim();
-                        String programName = programNameCell.getStringCellValue().trim();
+                        String curriculumName = curriculumNameCell.getStringCellValue().trim().toUpperCase();
+                        String subjectCode = subjectCodeCell.getStringCellValue().trim().toUpperCase();
+                        String programName = programNameCell.getStringCellValue().trim().toUpperCase();
+
+                        if (subjectCode.contains("VOV") || subjectCode.contains("ENT104")
+                                || subjectCode.contains("ENT203") || subjectCode.contains("ENT303")
+                                || subjectCode.contains("ENT403") || subjectCode.contains("ENT503")) {
+                            continue dataLoop;
+                        }
+
 
                         //term của subject
                         double termNo;
@@ -786,90 +799,168 @@ public class SubjectCurriculumController {
                             obj.addProperty("message", nfe.getMessage());
                             return obj;
                         }
+
+                        //môn bắt buộc
+                        boolean isRequired = true;
+                        if (subjectCode.equalsIgnoreCase("PRC391")
+                                || subjectCode.equalsIgnoreCase("PRM391")
+                                || subjectCode.equalsIgnoreCase("SYB301")) {
+                            isRequired = false;
+                        } else {
+                            isRequired = true;
+                        }
+
+                        if (termNo > 0 && termNo < 6) {
+                            if (curriculumName.contains("IA")) {
+                                //turn IA_10A to IA_10_1
+                            }
+                            if (curriculumName.contains("COB") || curriculumName.contains("COF")) {
+                                if (termNo > 0 && termNo < 4) {
+                                    //turn COB, COF, FB to FB_10A
+
+                                }
+                            }
+                            if (curriculumName.contains("MKT") || curriculumName.contains("FIN")) {
+                                if (termNo > 0 && termNo < 4) {
+                                    //turn MKT, FIN to BA_10A_OJT
+
+                                }
+                            }
+                        } else if (termNo == 6) {
+                            if (curriculumName.contains("IA")) {
+                                //turn IA_10A to IA_10_OJT
+
+                            } else if (curriculumName.contains("IS") || curriculumName.contains("IS")) {
+                                //turn to IS, JS, ES to SE_10A_OJT
+
+                            } else if (curriculumName.contains("MKT") || curriculumName.contains("FIN")) {
+                                //turn MKT, FIN to BA_10A_OJT
+
+                            } else if (curriculumName.contains("COB") || curriculumName.contains("COF")) {
+                                //turn COB, COF to FB_10B_OJT
+
+                            }
+                        } else if (termNo > 6) {
+                            if (curriculumName.contains("IA")) {
+                                //turn IA_10A to IA_10_2
+                            }
+                        }
+
+
 //                        Double ordinalNumber = ordinalNumberCell.getNumericCellValue();
 
-                        boolean checkExist = allCurriculums.stream().anyMatch(q -> q.getName().equalsIgnoreCase(curriculumName));
+                        CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumName);
                         ProgramEntity programEntity = programService.getProgramByName(programName);
 
-                        CurriculumEntity curriculumEntity = importedCurriculum.stream()
-                                .filter(q -> q.getName().equalsIgnoreCase(curriculumName)).findFirst().orElse(null);
 
                         SubjectEntity subjectEntity = allSubjects.stream()
                                 .filter(q -> q.getId().equalsIgnoreCase(subjectCode)).findFirst().orElse(null);
                         //những curriculum lỗi sẽ không được import
                         if (!errorList.containsKey(curriculumName)) {
                             //nếu có curriculum tồn tại rồi thì bỏ qua
-                            if (!checkExist && subjectEntity != null) {
-                                //kiểm tra xem map đã tồn tại curriculum mới chưa
-                                if (map.containsKey(curriculumName)) {
-                                    // create Subject Curriculumn
-                                    SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
-                                    subjectCurriculumEntity.setCurriculumId(curriculumEntity);
-                                    subjectCurriculumEntity.setSubjectId(subjectEntity);
-                                    //ordinal Number sẽ tuân theo thứ tự trong excel data
-                                    subjectCurriculumEntity.setOrdinalNumber(ordinalNumberCount);
-                                    subjectCurriculumEntity.setTermNumber((int) termNo);
-                                    subjectCurriculumEntity.setSubjectCredits((int) subjectCredits);
-                                    subjectCurriculumEntity.setRequired(true);
+                            if (curriculumEntity != null && subjectEntity != null) {
+                                //kiểm tra xem mapData đã tồn tại curriculum chưa
+                                if (mapData.containsKey(curriculumEntity)) {
 
-                                    //tính tín chỉ của curriculum
-                                    int currentCredit = curriculumEntity.getSpecializedCredits();
-                                    currentCredit += termNo;
-                                    curriculumEntity.setSpecializedCredits(currentCredit);
+                                    List<SubjectCurriculumEntity> subjcurrList =
+                                            new ArrayList<>(curriculumEntity.getSubjectCurriculumEntityList());
 
-                                    //add subjectCurriculum into map
-                                    map.get(curriculumName).add(subjectCurriculumEntity);
-                                    if (ordinalNumberCount % 5 == 0) {
-                                        ordinalNumberCount = 1;
+                                    boolean exist = subjcurrList.stream()
+                                            .anyMatch(q -> q.getSubjectId().getId().equalsIgnoreCase(subjectCode));
+                                    if (exist) {
+                                        continue dataLoop;
                                     } else {
-                                        ordinalNumberCount++;
+                                        // create Subject Curriculumn
+                                        Integer ordinal = -1;
+                                        List<SubjectCurriculumEntity> subjectCurriculumList = mapData.get(curriculumEntity);
+                                        Map<Integer, Integer> termOrdinal = ordinalTrack.get(curriculumName);
+
+                                        ordinal = termOrdinal.get((int) termNo);
+                                        if (ordinal == null) {
+                                            ordinal = 1;
+
+                                        } else {
+                                            ++ordinal;
+                                        }
+
+
+                                        SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
+                                        subjectCurriculumEntity.setCurriculumId(curriculumEntity);
+                                        subjectCurriculumEntity.setSubjectId(subjectEntity);
+                                        subjectCurriculumEntity.setOrdinalNumber(ordinal);
+                                        subjectCurriculumEntity.setTermNumber((int) termNo);
+                                        subjectCurriculumEntity.setSubjectCredits((int) subjectCredits);
+                                        subjectCurriculumEntity.setRequired(isRequired);
+
+                                        subjectCurriculumList.add(subjectCurriculumEntity);
+                                        mapData.put(curriculumEntity, subjectCurriculumList);
+                                        //add latest ordinal by term
+                                        termOrdinal.put((int) termNo, ordinal);
+                                        //add ordinal tracking
+                                        ordinalTrack.put(curriculumName, termOrdinal);
                                     }
                                 } else {
-                                    //tạo mới curriculum và bỏ vào 2 mảng map và importedCurriculum để tracking
-                                    curriculumEntity = new CurriculumEntity();
-                                    curriculumEntity.setProgramId(programEntity);
-                                    curriculumEntity.setName(curriculumName);
-                                    curriculumEntity.setSpecializedCredits((int) subjectCredits);
 
-                                    //bỏ curriculum vào mảng importedCurriculum
-                                    importedCurriculum.add(curriculumEntity);
+                                    List<SubjectCurriculumEntity> subjcurrList =
+                                            new ArrayList<>(curriculumEntity.getSubjectCurriculumEntityList());
 
-                                    // create Subject Curriculumn
-                                    List<SubjectCurriculumEntity> subjectCurriculumList = new ArrayList<>();
-                                    SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
-                                    subjectCurriculumEntity.setCurriculumId(curriculumEntity);
-                                    subjectCurriculumEntity.setSubjectId(subjectEntity);
+                                    boolean exist = subjcurrList.stream()
+                                            .anyMatch(q -> q.getSubjectId().getId().equalsIgnoreCase(subjectCode));
+                                    if (exist) {
+                                        continue dataLoop;
+                                    } else {
+                                        // create Subject Curriculumn
+                                        Integer ordinal = 1;
+                                        List<SubjectCurriculumEntity> subjectCurriculumList = new ArrayList<>();
+                                        SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
+                                        subjectCurriculumEntity.setCurriculumId(curriculumEntity);
+                                        subjectCurriculumEntity.setSubjectId(subjectEntity);
+                                        subjectCurriculumEntity.setOrdinalNumber(ordinal);
+                                        subjectCurriculumEntity.setTermNumber((int) termNo);
+                                        subjectCurriculumEntity.setSubjectCredits((int) subjectCredits);
+                                        subjectCurriculumEntity.setRequired(isRequired);
 
-                                    //ordinal Number sẽ tuân theo thứ tự trong excel data, nếu vừa được add trong map thì count sẽ = 1
-                                    ordinalNumberCount = 1;
-                                    subjectCurriculumEntity.setOrdinalNumber(ordinalNumberCount);
-
-                                    subjectCurriculumEntity.setTermNumber((int) termNo);
-                                    subjectCurriculumEntity.setSubjectCredits((int) subjectCredits);
-                                    subjectCurriculumEntity.setRequired(true);
-
-                                    subjectCurriculumList.add(subjectCurriculumEntity);
-                                    map.put(curriculumName, subjectCurriculumList);
-                                    ordinalNumberCount++;
+                                        subjectCurriculumList.add(subjectCurriculumEntity);
+                                        mapData.put(curriculumEntity, subjectCurriculumList);
+                                        HashMap<Integer, Integer> termOrdinal = new HashMap<>();
+                                        //add latest ordinal by term
+                                        termOrdinal.put((int) termNo, ordinal);
+                                        //add ordinal tracking
+                                        ordinalTrack.put(curriculumName, termOrdinal);
+                                    }
                                 }
                             } else {
-                                //add curriculum lỗi vào mảng chứa lỗi
-                                if (checkExist) {
-                                    errorList.put(curriculumName, "curriculum already exist!");
-                                } else if (subjectEntity == null) {
+
+                                if (subjectEntity == null) {
                                     errorList.put(curriculumName, subjectCode + " not exist!");
+                                    continue dataLoop;
                                 }
-                                //xóa curriculum hiện tại khỏi 2 mảng tracking
-                                map.remove(curriculumName);
-                                importedCurriculum.removeIf(item -> {
-                                    //nếu curriculum có tên giống thì xóa
-                                    if (item.getName().equalsIgnoreCase(curriculumName)) {
-                                        return false;
-                                    } else {
-                                        return true;
-                                    }
-                                });
-                                continue dataLoop;
+
+                                curriculumEntity = new CurriculumEntity();
+                                curriculumEntity.setProgramId(programEntity);
+                                curriculumEntity.setName(curriculumName);
+                                curriculumEntity.setSpecializedCredits(0);
+                                curriculumService.createCurriculum(curriculumEntity);
+
+
+                                // create Subject Curriculumn
+                                Integer ordinal = 1;
+                                List<SubjectCurriculumEntity> subjectCurriculumList = new ArrayList<>();
+                                SubjectCurriculumEntity subjectCurriculumEntity = new SubjectCurriculumEntity();
+                                subjectCurriculumEntity.setCurriculumId(curriculumEntity);
+                                subjectCurriculumEntity.setSubjectId(subjectEntity);
+                                subjectCurriculumEntity.setOrdinalNumber(ordinal);
+                                subjectCurriculumEntity.setTermNumber((int) termNo);
+                                subjectCurriculumEntity.setSubjectCredits((int) subjectCredits);
+                                subjectCurriculumEntity.setRequired(isRequired);
+
+                                subjectCurriculumList.add(subjectCurriculumEntity);
+                                mapData.put(curriculumEntity, subjectCurriculumList);
+                                HashMap<Integer, Integer> termOrdinal = new HashMap<>();
+                                //add latest ordinal by term
+                                termOrdinal.put((int) termNo, ordinal);
+                                //add ordinal tracking
+                                ordinalTrack.put(curriculumName, termOrdinal);
                             }
                         }
                     } else {
@@ -881,23 +972,48 @@ public class SubjectCurriculumController {
 //            for (Map.Entry<String, List<SubjectCurriculumEntity>> entry : map.entrySet()) {
 //                entry.getValue().forEach(c -> subjectCurriculumService.createCurriculum(c));
 //            }
-            int i = 1;
-            for (CurriculumEntity curriculum : importedCurriculum) {
-                List<SubjectCurriculumEntity> tempList = map.get(curriculum.getName());
-
-                //chỉ những curriculum không chứa môn capstone hoặc ojt mới có OjtTerm (để mốt xét duyệt cho dễ)
-                boolean checkOjtTerm = tempList.stream().anyMatch(q -> q.getSubjectId().getType() == Enums.SubjectType.OJT.getValue()
-                        || q.getSubjectId().getType() == Enums.SubjectType.CAPSTONE.getValue());
-
-                if (!checkOjtTerm) {
-                    curriculum.setOjtTerm(ojtTerm);
+//            int i = 1;
+//            for (CurriculumEntity curriculum : importedCurriculum) {
+//                subjectCurriculumService.createCurriculumList();
+//                List<SubjectCurriculumEntity> tempList = map.get(curriculum.getName());
+//
+//                //chỉ những curriculum không chứa môn capstone hoặc ojt mới có OjtTerm (để mốt xét duyệt cho dễ)
+//                boolean checkOjtTerm = tempList.stream().anyMatch(q -> q.getSubjectId().getType() == Enums.SubjectType.OJT.getValue()
+//                        || q.getSubjectId().getType() == Enums.SubjectType.CAPSTONE.getValue());
+//
+//                if (!checkOjtTerm) {
+//                    curriculum.setOjtTerm(ojtTerm);
+//                }
+//                curriculum.setSubjectCurriculumEntityList(tempList);
+////                curriculumService.createCurriculum(curriculum);
+//                System.out.println("Done - " + i++);
+//            }
+            List<SubjectCurriculumEntity> importSC = new ArrayList<>();
+            for (CurriculumEntity item : mapData.keySet()) {
+                List<SubjectCurriculumEntity> list = mapData.get(item);
+                int totalCredits = item.getSpecializedCredits();
+                boolean putOjtTerm = true;
+                for (SubjectCurriculumEntity scItem : list) {
+                    int type = scItem.getSubjectId().getType();
+                    totalCredits += scItem.getSubjectCredits();
+                    importSC.add(scItem);
+                    if (type != 0) {
+                        putOjtTerm = false;
+                    }
                 }
-                curriculum.setSubjectCurriculumEntityList(tempList);
-//                curriculumService.createCurriculum(curriculum);
-                System.out.println("Done - " + i++);
+                if (putOjtTerm) {
+                    item.setOjtTerm(ojtTerm);
+                }
+                if(item.getName().equalsIgnoreCase("BA_13B")){
+                    System.out.println("bug");
+                }
+                item = curriculumService.getCurriculumByName(item.getName());
+                item.setSpecializedCredits(totalCredits);
+                curriculumService.updateCurriculum(item);
             }
+            //bulk insert
+            subjectCurriculumService.createCurriculumList(importSC);
             request.getSession().setAttribute("importCurriculumError", errorList);
-
             obj.addProperty("success", true);
         } catch (Exception e) {
             Logger.writeLog(e);
@@ -908,6 +1024,7 @@ public class SubjectCurriculumController {
 
         return obj;
     }
+
 
     @RequestMapping("/getFailedImportNewCurriculums")
     @ResponseBody

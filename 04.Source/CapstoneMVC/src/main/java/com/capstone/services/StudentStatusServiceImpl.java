@@ -44,4 +44,9 @@ public class StudentStatusServiceImpl implements IStudentStatusService {
     public List<StudentStatusEntity> getStudentStatusBySemesterId(Integer semesterId) {
         return studentStatusEntityJpaController.getStudentStatusBySemesterId(semesterId);
     }
+
+    @Override
+    public List<StudentStatusEntity> getStudentStatusesByStudentId(int studentId) {
+        return studentStatusEntityJpaController.getStudentStatusesByStudentId(studentId);
+    }
 }

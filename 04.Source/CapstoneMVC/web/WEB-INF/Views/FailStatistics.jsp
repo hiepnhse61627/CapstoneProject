@@ -62,6 +62,10 @@
 <script>
     var table = null;
 
+    $(document).ready(function(){
+        CreateEmptyDataTable('#table');
+    });
+
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
 
@@ -99,11 +103,20 @@
         if (table != null) {
             table._fnPageChange(0);
             table._fnAjaxUpdate();
+        }else {
+            //destroy empty table
+            $('#table').dataTable().fnDestroy();
+            CreateMainTable();
         }
     }
 
 //    $(document).ready(function () {
 //        $('.select').select2();
+
+    function CreateMainTable() {
+        if (table != null) {
+            table.fnDestroy();
+        }
 
         table = $('#table').dataTable({
             "bServerSide": true,
@@ -145,7 +158,7 @@
             "bAutoWidth": false,
         }).fnSetFilteringDelay(1000);
 //    });
-
+    }
     function ExportExcel() {
         $("input[name='objectType']").val(10);
         $("input[name='semesterId']").val($('#semester').val());

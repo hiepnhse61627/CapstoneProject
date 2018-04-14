@@ -10,4 +10,5 @@ public interface IStudentStatusService {
     StudentStatusEntity getStudentStatusBySemesterIdAndStudentId(Integer semesterId, Integer studentId);
     void updateStudentStatus(StudentStatusEntity entity);
     public List<StudentStatusEntity> getStudentStatusBySemesterId(Integer semesterId);
+    List<StudentStatusEntity> getStudentStatusesByStudentId(int studentId);
 }

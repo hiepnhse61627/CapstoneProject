@@ -163,7 +163,9 @@ public class Enums {
     }
 
     public enum SynchronizeFAP{
-        ERROR_lIST("importSynchronizeFAPMarkError");
+        ERROR_lIST("importSynchronizeFAPMarkError"),
+        SINGLE_STUDENT_ERROR_lIST("importSynchronizeFAPMarkError");
+
 
         private final String value;
 

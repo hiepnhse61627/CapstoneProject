@@ -1243,7 +1243,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
         }
     }
 
-    public void deleteMarksBySemesterAndSubjectCodes(int semesterId, List<String> subjectCodes) {
+    public void deleteMarksBySemesterAndSubjectCodesAndStudentId(int semesterId, List<String> subjectCodes, int studentId) {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -1253,6 +1253,10 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
                     "  inner join Subject_MarkComponent smc on m.SubjectMarkComponentId = smc.Id" +
                     "  inner join [Subject] s on smc.SubjectId = s.Id" +
                     "  WHERE m.SemesterId = ?1 ";
+
+            if(studentId != -1){
+                queryStr += " AND m.StudentId = ?2";
+            }
 
             if (!subjectCodes.isEmpty()) {
                 String list = "";
@@ -1266,6 +1270,9 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
 
             Query query = em.createNativeQuery(deleteQuery);
             query.setParameter(1, semesterId);
+            if(studentId != -1){
+                query.setParameter(2, studentId);
+            }
 
             query.executeUpdate();
             em.flush();
@@ -1280,6 +1287,7 @@ public class ExMarksEntityJpaController extends MarksEntityJpaController {
             }
         }
     }
+
 
 
 }

@@ -11,8 +11,8 @@ public class GraduateDetailServiceImpl implements IGraduateDetailService {
     ExGraduateDetailEntityJpaController controller = new ExGraduateDetailEntityJpaController(emf);
 
     @Override
-    public GraduateDetailEntity findGraduateDetailEntity(Integer id) {
-        return controller.findGraduateDetailEntity(id);
+    public GraduateDetailEntity findGraduateDetailEntity(Integer studentId) {
+        return controller.findGraduateDetailEntity(studentId);
     }
 
     @Override

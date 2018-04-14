@@ -97,6 +97,42 @@ public class Ultilities2ServiceImpl implements IUltilities2Service {
         return result;
     }
 
+    public List<StudentAvgMarks> getFAPMarksByStudentRollNumber(String studentRollNumber) {
+        EntityManager em = null;
+        List<StudentAvgMarks> result = new ArrayList<>();
+        try {
+            em = getFAPEntityManager();
+            Query query = em.createNativeQuery("SELECT sm.RollNumber, sm.AverageMark, sm.IsPassed, c.SubjectCode, c.SemesterName" +
+                    " FROM FUMM.StudentMarks sm " +
+                    "INNER JOIN FUMM.Courses c on sm.CourseID = c.CourseID WHERE sm.RollNumber LIKE ?1 " +
+                    "AND sm.IsPassed IS NOT  NULL ");
+
+            query.setParameter(1, "%" + studentRollNumber + "%");
+
+//           result = getResultList(query, StudentAvgMarks.class);
+
+            List<Object[]> objList = query.getResultList();
+            for (Object[] item: objList) {
+                String rollNumber = (String)item[0];
+                Double avgMark = item[1] != null ? Double.parseDouble(item[1].toString()) : 0.0;
+                boolean isPassed = (boolean)item[2];
+                String subjCode = (String)item[3];
+                String semName = ((String)item[4]).toUpperCase();
+                result.add(new StudentAvgMarks(rollNumber, avgMark, isPassed, subjCode, semName));
+            }
+
+        } catch (Exception e) {
+            Logger.writeLog(e);
+            e.printStackTrace();
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+        return result;
+    }
+
 
     public List<String> getFAPSubjectCodesHaveMarks(String semesterName) {
         EntityManager em = null;
