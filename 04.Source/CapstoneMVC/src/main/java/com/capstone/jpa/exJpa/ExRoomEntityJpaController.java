@@ -85,7 +85,7 @@ public class ExRoomEntityJpaController extends RoomEntityJpaController {
 
         try {
             String queryStr = "SELECT s FROM RoomEntity s" +
-                    " WHERE s.name LIKE :name";
+                    " WHERE s.name LIKE :name AND (s.isAvailable = 'true')";
             TypedQuery<RoomEntity> query = em.createQuery(queryStr, RoomEntity.class);
             query.setParameter("name", "%" + searchValue + "%");
 
@@ -107,7 +107,7 @@ public class ExRoomEntityJpaController extends RoomEntityJpaController {
 
         try {
             String queryStr = "SELECT s FROM RoomEntity s" +
-                    " WHERE s.name LIKE :name";
+                    " WHERE s.name LIKE :name AND (s.isAvailable = 'true')";
             TypedQuery<RoomEntity> query = em.createQuery(queryStr, RoomEntity.class);
             query.setParameter("name", "" + searchValue + "");
 
@@ -130,7 +130,7 @@ public class ExRoomEntityJpaController extends RoomEntityJpaController {
 
         try {
             String queryStr = "SELECT s FROM RoomEntity s" +
-                    " WHERE s.capacity >= :capacity";
+                    " WHERE s.capacity >= :capacity AND (s.isAvailable = 'true')";
             TypedQuery<RoomEntity> query = em.createQuery(queryStr, RoomEntity.class);
             query.setParameter("capacity", searchValue);
 

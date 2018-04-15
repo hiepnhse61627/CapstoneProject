@@ -44,11 +44,23 @@
 <section class="content">
     <div class="box">
         <div class="b-header">
+            <%--<div class="row">--%>
+            <%--<div class="col-md-6 title">--%>
+            <%--<h1>Lịch sử phòng</h1>--%>
+            <%--</div>--%>
+            <%--</div>--%>
             <div class="row">
                 <div class="col-md-6 title">
                     <h1>Lịch sử phòng</h1>
                 </div>
+                <div class="col-md-3 text-right">
+                    <button type="button" class="btn btn-primary btn-with-icon" onclick="SyncChangedSchedule()">
+                        <i class="glyphicon glyphicon-retweet"></i>
+                        <div>Đồng bộ lịch thay đổi</div>
+                    </button>
+                </div>
             </div>
+
             <hr>
         </div>
 
@@ -71,7 +83,8 @@
 
             <div class="form-group">
                 <button type="button" class="btn btn-success" onclick="RefreshTable()" id="searchBtn">Tìm kiếm</button>
-                <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa bộ lọc</button>
+                <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa bộ lọc
+                </button>
             </div>
 
             <div class="form-group">
@@ -151,7 +164,7 @@
             $(this).parent().find('input').click();
         });
 
-        startDate = endDate ="";
+        startDate = endDate = "";
 
         $('#scheduleDate').daterangepicker({
             autoUpdateInput: false,
@@ -184,8 +197,14 @@
             "bSort": false,
             "sAjaxSource": "/roomHistory/get", // url getData.php etc
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "startDate", "value":  $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY')}),
-                    aoData.push({"name": "endDate", "value":  $('#scheduleDate').data('daterangepicker').endDate.format('DD/MM/YYYY')}),
+                aoData.push({
+                    "name": "startDate",
+                    "value": $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY')
+                }),
+                    aoData.push({
+                        "name": "endDate",
+                        "value": $('#scheduleDate').data('daterangepicker').endDate.format('DD/MM/YYYY')
+                    }),
                     aoData.push({"name": "room", "value": $('#room').val()})
             },
             "oLanguage": {
@@ -205,7 +224,7 @@
             },
             "aoColumnDefs": [
                 {
-                    "aTargets": [0, 1, 2, 3, 4, 5,6],
+                    "aTargets": [0, 1, 2, 3, 4, 5, 6],
                     "sClass": "text-center",
                     "bSortable": false
                 },
@@ -228,16 +247,47 @@
 
     }
 
-    function resetFilter(){
+    function resetFilter() {
         $("#lecture").val('').trigger('change');
         $('#scheduleDate').data('daterangepicker').setStartDate(moment());
         $('#scheduleDate').data('daterangepicker').setEndDate(moment());
         $('#scheduleDate').val('');
         $("#room").val('').trigger('change');
 
-        $('#removeFilterBtn').attr('disabled','disabled');
+        $('#removeFilterBtn').attr('disabled', 'disabled');
 
     }
 
+    function SyncChangedSchedule(){
 
+        swal({
+            title: 'Đang xử lý',
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                $.ajax({
+                    type: "POST",
+                    url: "/syncFAPChangedSchedule",
+                    // url: "/countAttendanceOfClass",
+                    processData: false,
+                    contentType: false,
+                    success: function (result) {
+                        if (result.success) {
+                            swal({
+                                title: 'Thành công',
+                                text: "Đã đồng bộ lịch thay đổi!",
+                                type: 'success'
+                            }).then(function () {
+                                location.reload();
+                            });
+                        } else {
+                            swal('Đã xảy ra lỗi!', result.message, 'error');
+                        }
+                    }
+                });
+            },
+            allowOutsideClick: false
+        });
+    }
 </script>

@@ -53,11 +53,51 @@
 <section class="content">
     <div class="box">
         <div class="b-header">
+            <%--<div class="row">--%>
+            <%--<div class="col-md-9 title">--%>
+            <%--<h1>Danh sách lịch học</h1>--%>
+            <%--</div>--%>
+            <%--<div class="col-md-3 text-right">--%>
+            <%--<button type="button" class="btn btn-success btn-with-icon" onclick="CreateSchedule()">--%>
+            <%--<i class="glyphicon glyphicon-plus"></i>--%>
+            <%--<div>Thêm lịch học</div>--%>
+            <%--</button>--%>
+            <%--</div>--%>
+            <%--</div>--%>
+
+            <%--<div class="row">--%>
+            <%--<div class="col-md-6 title">--%>
+            <%--<h1>Quản lý lịch dạy</h1>--%>
+            <%--</div>--%>
+            <%--<div class="col-md-3 text-right" style="text-align: left;">--%>
+            <%--<button type="button" class="btn btn-primary btn-with-icon" onclick="SyncChangedSchedule()">--%>
+            <%--<i class="glyphicon glyphicon-retweet"></i>--%>
+            <%--<div>Đồng bộ lịch thay đổi</div>--%>
+            <%--</button>--%>
+            <%--</div>--%>
+            <%--<div class="col-md-3 text-right">--%>
+            <%--<button type="button" class="btn btn-success btn-with-icon" onclick="CreateSchedule()">--%>
+            <%--<i class="glyphicon glyphicon-plus"></i>--%>
+            <%--<div>Thêm lịch học</div>--%>
+            <%--</button>--%>
+            <%--</div>--%>
+            <%--</div>--%>
+
             <div class="row">
-                <div class="col-md-9 title">
-                    <h1>Danh sách lịch học</h1>
+                <div class="col-md-6 title">
+                    <h1>Quản lý lịch dạy</h1>
                 </div>
-                <div class="col-md-3 text-right">
+
+                <div class="col-md-1">
+
+                </div>
+                <div class="col-md-3" style="text-align: right;">
+                    <button type="button" class="btn btn-primary btn-with-icon" onclick="SyncChangedSchedule()">
+                        <i class="glyphicon glyphicon-retweet"></i>
+                        <div>Đồng bộ lịch thay đổi</div>
+                    </button>
+                </div>
+                <div class="col-md-2 text-right">
                     <button type="button" class="btn btn-success btn-with-icon" onclick="CreateSchedule()">
                         <i class="glyphicon glyphicon-plus"></i>
                         <div>Thêm lịch học</div>
@@ -68,8 +108,15 @@
         </div>
 
         <div class="b-body">
-            <div class="form-group form-date-range" style="display: none">
-                <label for="scheduleDate2">Ngày dạy:</label>
+            <%--<div class="form-group form-date-range" style="display: none">--%>
+            <%--<label for="scheduleDate2">Ngày dạy:</label>--%>
+            <%--<input id="scheduleDate2" type="text" class="form-control"/>--%>
+            <%--<i class="fa fa-calendar"></i>--%>
+            <%--</div>--%>
+
+
+            <div class="form-group form-date-range">
+                <label for="scheduleDate2">Ngày bắt đầu - kết thúc:</label>
                 <input id="scheduleDate2" type="text" class="form-control"/>
                 <i class="fa fa-calendar"></i>
             </div>
@@ -79,7 +126,8 @@
                 <select id="lecture2" class="select lecture2-select">
                     <option value="-1">Tất cả</option>
                     <c:forEach var="emp" items="${employees}">
-                        <option value="${emp.emailEDU}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
+                        <option value="${emp.emailEDU}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}
+                            - ${emp.fullName}</option>
                     </c:forEach>
                 </select>
             </div>
@@ -247,7 +295,8 @@
                             <label for="lecture">Giảng viên:</label>
                             <select id="lecture" class="select lecture-select">
                                 <c:forEach var="emp" items="${employees}">
-                                    <option value="${emp.fullName}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
+                                    <option value="${emp.fullName}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}
+                                        - ${emp.fullName}</option>
                                 </c:forEach>
                             </select>
                         </div>
@@ -489,7 +538,7 @@
                     });
                     // groupNameArr.push(json.groupNameList);
 
-                    for (i = 0; i < json.groupNameList.length ; i++) {
+                    for (i = 0; i < json.groupNameList.length; i++) {
                         groupNameArr.push({
                             "id": json.groupNameList[i],
                             "text": json.groupNameList[i]
@@ -543,10 +592,30 @@
             $(this).parent().find('input').click();
         });
 
+        // startDate2 = endDate2 = "";
+        // $('#scheduleDate2').daterangepicker({
+        //     autoUpdateInput: false,
+        //     singleDatePicker: false,
+        //     locale: {
+        //         applyLabel: "Chọn",
+        //         cancelLabel: 'Xóa',
+        //         format: 'DD/MM/YYYY'
+        //     }
+        // });
+        //
+        // $('#scheduleDate2').on('apply.daterangepicker', function (ev, picker) {
+        //     startDate2 = picker.startDate.format('DD/MM/YYYY');
+        //     endDate2 = picker.endDate.format('DD/MM/YYYY');
+        //     $(this).val(picker.startDate.format('DD/MM/YYYY'));
+        // });
+        //
+        // $('#scheduleDate2').on('cancel.daterangepicker', function (ev, picker) {
+        //     $(this).val('');
+        // });
+
         startDate2 = endDate2 = "";
         $('#scheduleDate2').daterangepicker({
             autoUpdateInput: false,
-            singleDatePicker: true,
             locale: {
                 applyLabel: "Chọn",
                 cancelLabel: 'Xóa',
@@ -557,7 +626,7 @@
         $('#scheduleDate2').on('apply.daterangepicker', function (ev, picker) {
             startDate2 = picker.startDate.format('DD/MM/YYYY');
             endDate2 = picker.endDate.format('DD/MM/YYYY');
-            $(this).val(picker.startDate.format('DD/MM/YYYY'));
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
         });
 
         $('#scheduleDate2').on('cancel.daterangepicker', function (ev, picker) {
@@ -577,7 +646,9 @@
                 aoData.push({"name": "subject", "value": $('#subject2').val()}),
                     aoData.push({"name": "lecture", "value": $('#lecture2').val()}),
                     aoData.push({"name": "slot", "value": $('#aTime').val()}),
-                    aoData.push({"name": "groupName", "value": $('#groupName2').val()})
+                    aoData.push({"name": "groupName", "value": $('#groupName2').val()}),
+                    aoData.push({"name": "startDate", "value": startDate2}),
+                    aoData.push({"name": "endDate", "value": endDate2})
 
             },
             "oLanguage": {
@@ -926,5 +997,36 @@
         return new Date(data[2], data[1] - 1, data[0]);
     }
 
+    function SyncChangedSchedule() {
 
+        swal({
+            title: 'Đang xử lý',
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                $.ajax({
+                    type: "POST",
+                    url: "/syncFAPChangedSchedule",
+                    // url: "/countAttendanceOfClass",
+                    processData: false,
+                    contentType: false,
+                    success: function (result) {
+                        if (result.success) {
+                            swal({
+                                title: 'Thành công',
+                                text: "Đã đồng bộ lịch thay đổi!",
+                                type: 'success'
+                            }).then(function () {
+                                location.reload();
+                            });
+                        } else {
+                            swal('Đã xảy ra lỗi!', result.message, 'error');
+                        }
+                    }
+                });
+            },
+            allowOutsideClick: false
+        });
+    }
 </script>
