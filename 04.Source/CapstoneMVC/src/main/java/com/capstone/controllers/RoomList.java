@@ -98,8 +98,11 @@ public class RoomList {
             for (RoomEntity room : roomList) {
                 List<String> dataList = new ArrayList<String>();
 
+                dataList.add(room.getId() + "");
                 dataList.add(room.getName());
                 dataList.add(room.getCapacity() + "");
+                dataList.add(room.getNote());
+                dataList.add(room.getIsAvailable() + "");
 
                 result.add(dataList);
             }
@@ -302,7 +305,7 @@ public class RoomList {
             if (!employeeId.equals("")) {
                 List<ScheduleEntity> newScheduleList = new ArrayList<>();
                 for (ScheduleEntity schedule : scheduleList) {
-                    if(schedule.getEmpId().getId() == Integer.parseInt(employeeId)){
+                    if (schedule.getEmpId().getId() == Integer.parseInt(employeeId)) {
                         newScheduleList.add(schedule);
                     }
                 }
@@ -374,7 +377,7 @@ public class RoomList {
 
 
             List<RoomEntity> allRooms = roomService.findAllRooms();
-            for(RoomEntity aRoom : allRooms){
+            for (RoomEntity aRoom : allRooms) {
                 freeRoomList.add(aRoom.getName());
             }
             //get rooms not in use by removing rooms in use in all room list
@@ -389,6 +392,130 @@ public class RoomList {
         JsonArray roomList = (JsonArray) gson.toJsonTree(freeRoomList);
         jsonObj.add("roomList", roomList);
         jsonObj.add("aaData", array);
+        return jsonObj;
+    }
+
+
+    @RequestMapping(value = "/roomList/create")
+    @ResponseBody
+    public JsonObject CreateRoomList(@RequestParam Map<String, String> params) {
+        JsonObject jsonObj = new JsonObject();
+
+        try {
+
+            String name = "";
+            if (!params.get("name").equals("")) {
+                name = params.get("name");
+            }
+
+            String capacity = "0";
+            if (!params.get("capacity").equals("")) {
+                capacity = params.get("capacity");
+            }
+
+            String note = "";
+            if (!params.get("note").equals("")) {
+                note = params.get("note");
+            }
+
+            boolean isAvailable = true;
+            if (!params.get("isAvailable").equals("")) {
+                if (params.get("isAvailable").equals("true")) {
+                    isAvailable = true;
+                } else {
+                    isAvailable = false;
+                }
+            }
+
+            List<RoomEntity> roomEntity = roomService.findRoomsByName(name);
+
+            if (roomEntity != null && roomEntity.size() == 0) {
+                RoomEntity aRoom = new RoomEntity();
+                aRoom.setCapacity(Integer.parseInt(capacity));
+                aRoom.setNote(note);
+                aRoom.setName(name);
+                aRoom.setIsAvailable(isAvailable);
+
+                roomService.createRoom(aRoom);
+                jsonObj.addProperty("success", true);
+            } else {
+                jsonObj.addProperty("fail", true);
+                jsonObj.addProperty("message", "Tên phòng đã tồn tại");
+
+            }
+        } catch (Exception e) {
+            jsonObj.addProperty("fail", true);
+            jsonObj.addProperty("message", e.getMessage());
+            e.printStackTrace();
+        }
+
+        return jsonObj;
+    }
+
+    @RequestMapping(value = "/roomList/edit")
+    @ResponseBody
+    public JsonObject EditRoomList(@RequestParam Map<String, String> params) {
+        JsonObject jsonObj = new JsonObject();
+
+        try {
+            String roomId = "";
+            if (!params.get("roomId").equals("")) {
+                roomId = params.get("roomId");
+            }
+
+            String name = "";
+            if (!params.get("name").equals("")) {
+                name = params.get("name");
+            }
+
+            String capacity = "0";
+            if (!params.get("capacity").equals("")) {
+                capacity = params.get("capacity");
+            }
+
+            String note = "";
+            if (!params.get("note").equals("")) {
+                note = params.get("note");
+            }
+
+            boolean isAvailable = true;
+            if (!params.get("isAvailable").equals("")) {
+                if (params.get("isAvailable").equals("true")) {
+                    isAvailable = true;
+                } else {
+                    isAvailable = false;
+                }
+            }
+
+            RoomEntity roomEntity = roomService.findRoomById(Integer.parseInt(roomId));
+
+            if (roomEntity != null) {
+                roomEntity.setCapacity(Integer.parseInt(capacity));
+                roomEntity.setNote(note);
+                roomEntity.setName(name);
+                roomEntity.setIsAvailable(isAvailable);
+
+                EntityManagerFactory emf2 = Persistence.createEntityManagerFactory("CapstonePersistence");
+                EntityManager em = emf2.createEntityManager();
+                try {
+                    em.getTransaction().begin();
+                    em.merge(roomEntity);
+                    em.getTransaction().commit();
+                    jsonObj.addProperty("success", true);
+                } catch (Exception e) {
+                    jsonObj.addProperty("fail", true);
+                    jsonObj.addProperty("message", e.getMessage());
+                    e.printStackTrace();
+                }
+            } else {
+                jsonObj.addProperty("fail", true);
+            }
+        } catch (Exception e) {
+            jsonObj.addProperty("fail", true);
+            jsonObj.addProperty("message", e.getMessage());
+            e.printStackTrace();
+        }
+
         return jsonObj;
     }
 

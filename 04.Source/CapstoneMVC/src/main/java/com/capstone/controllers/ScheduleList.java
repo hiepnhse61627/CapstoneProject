@@ -143,6 +143,7 @@ public class ScheduleList {
     @ResponseBody
     public JsonObject LoadScheduleListAll(@RequestParam Map<String, String> params) {
         JsonObject jsonObj = new JsonObject();
+        List<List<String>> result = new ArrayList<>();
 
         try {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
@@ -158,7 +159,17 @@ public class ScheduleList {
             String subjectCode = "";
             String slot = "";
             String groupName = "";
-//            Integer lectureId = null;
+            String startDate = params.get("startDate");
+            String endDate = params.get("endDate");
+
+            if (!startDate.equals("")) {
+                DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+                Date tmpStart = DateUtil.getDate(startDate);
+                startDate = format.format(tmpStart);
+
+                Date tmpEnd = DateUtil.getDate(endDate);
+                endDate = format.format(tmpEnd);
+            }
 
             if (!params.get("lecture").equals("") && !params.get("lecture").equals("-1")) {
                 lecture = params.get("lecture");
@@ -176,131 +187,137 @@ public class ScheduleList {
                 groupName = params.get("groupName");
             }
 
-            String queryStr;
-            // Đếm số lượng lịch học
-            queryStr = "SELECT COUNT(s) FROM ScheduleEntity s WHERE s.isActive IS NULL OR s.isActive = 'true'";
-            TypedQuery<Integer> queryCounting = em.createQuery(queryStr, Integer.class);
-            iTotalRecords = ((Number) queryCounting.getSingleResult()).intValue();
+            if (!(lecture.equals("") && subjectCode.equals("") && slot.equals("") && groupName.equals("") && startDate.equals(""))) {
+                String queryStr;
+                // Đếm số lượng lịch học
+                queryStr = "SELECT COUNT(s) FROM ScheduleEntity s WHERE s.isActive IS NULL OR s.isActive = 'true'";
+                TypedQuery<Integer> queryCounting = em.createQuery(queryStr, Integer.class);
+                iTotalRecords = ((Number) queryCounting.getSingleResult()).intValue();
 
-            // Đếm số lượng lịch học sau khi filter
-            if (!sSearch.isEmpty() || !lecture.equals("") || !subjectCode.equals("") || !slot.equals("") || !groupName.equals("")) {
-                queryStr = "SELECT COUNT(*)\n" +
-                        "  FROM Schedule s\n" +
-                        "   INNER JOIN Course c ON s.CourseId=c.Id\n" +
-                        "    INNER JOIN  Day_Slot d ON s.DateId=d.Id " +
-                        "    INNER JOIN Slot sl ON d.SlotId=sl.Id " +
-                        "    INNER JOIN  Employee e ON s.EmpId=e.Id " +
-                        "WHERE (s.isActive IS NULL OR s.isActive = 'true') AND " +
-                        "(" +
-                        "(s.CourseId = c.Id AND c.SubjectCode LIKE '%" + subjectCode + "%') AND \n" +
-                        " (s.DateId = d.Id AND d.Date LIKE '%" + sSearch + "%') AND " +
-                        "(d.SlotId=sl.Id AND sl.SlotName LIKE '%" + slot + "%') AND " +
-                        " (s.EmpId = e.Id AND e.EmailEDU LIKE '%" + lecture + "%') AND" +
-                        " (s.groupName LIKE '%" + groupName + "%'))";
-                Query queryCounting2 = em.createNativeQuery(queryStr);
-                iTotalDisplayRecords = ((Number) queryCounting2.getSingleResult()).intValue();
-            } else {
-                iTotalDisplayRecords = iTotalRecords;
-            }
-
-            // Query danh sách lịch học
-            queryStr = "SELECT *" +
-                    "  FROM Schedule s\n" +
-                    (sSearch.isEmpty() && lecture.equals("") && subjectCode.equals("") && slot.equals("") && groupName.equals("") ?
-                            " INNER JOIN  Day_Slot d ON s.DateId=d.Id " +
-                                    "WHERE s.isActive IS NULL OR s.isActive = 'true' " +
-                                    "ORDER BY \n" +
-                                    "  CONVERT(nvarchar(50), CONVERT(SMALLDATETIME, d.Date, 105), 23)" :
+                // Đếm số lượng lịch học sau khi filter
+                if (!sSearch.isEmpty() || !lecture.equals("") || !subjectCode.equals("") || !slot.equals("") || !groupName.equals("") || !startDate.equals("")) {
+                    queryStr = "SELECT COUNT(*)\n" +
+                            "  FROM Schedule s\n" +
                             "   INNER JOIN Course c ON s.CourseId=c.Id\n" +
-                                    "    INNER JOIN  Day_Slot d ON s.DateId=d.Id " +
-                                    "    INNER JOIN Slot sl ON d.SlotId=sl.Id " +
-                                    "    INNER JOIN  Employee e ON s.EmpId=e.Id " +
-                                    "WHERE (s.isActive IS NULL OR s.isActive = 'true') AND " +
-                                    "(" +
-                                    " (s.CourseId = c.Id AND c.SubjectCode LIKE '%" + subjectCode + "%') AND \n" +
-                                    " (s.DateId = d.Id AND d.Date LIKE '%" + sSearch + "%') AND " +
-                                    " (d.SlotId=sl.Id AND sl.SlotName LIKE '%" + slot + "%') AND " +
-                                    " (s.EmpId = e.Id AND e.EmailEDU LIKE '%" + lecture + "%') AND" +
-                                    " (s.groupName LIKE '%" + groupName + "%')" +
-                                    ")\n" +
-                                    " ORDER BY \n" +
-                                    "  CONVERT(nvarchar(50), CONVERT(SMALLDATETIME, d.Date, 105), 23)");
-            Query query = em.createNativeQuery(queryStr, ScheduleEntity.class);
-            query.setFirstResult(iDisplayStart);
-            query.setMaxResults(iDisplayLength);
-
-            List<ScheduleEntity> scheduleList = query.getResultList();
-
-
-            List<List<String>> result = new ArrayList<>();
-            for (ScheduleEntity schedule : scheduleList) {
-                List<String> dataList = new ArrayList<String>();
-
-                dataList.add(schedule.getId() + "");
-                dataList.add(schedule.getCourseId().getSubjectCode());
-
-                if (schedule.getGroupName() != null) {
-                    dataList.add(schedule.getGroupName());
+                            "    INNER JOIN  Day_Slot d ON s.DateId=d.Id " +
+                            "    INNER JOIN Slot sl ON d.SlotId=sl.Id " +
+                            "    INNER JOIN  Employee e ON s.EmpId=e.Id " +
+                            "WHERE (s.isActive IS NULL OR s.isActive = 'true') AND " +
+                            "(" +
+                            "(s.CourseId = c.Id AND c.SubjectCode LIKE '%" + subjectCode + "%') AND \n" +
+                            " (s.DateId = d.Id AND d.Date LIKE '%" + sSearch + "%') AND " +
+                            "(d.SlotId=sl.Id AND sl.SlotName LIKE '%" + slot + "%') AND " +
+                            " (s.EmpId = e.Id AND e.EmailEDU LIKE '%" + lecture + "%') AND" +
+                            " (s.groupName LIKE '%" + groupName + "%') " +
+                            " AND CONVERT(nvarchar(50), CONVERT(SMALLDATETIME, d.Date, 105), 23) >= '" + startDate + "' AND " +
+                            " CONVERT(nvarchar(50), CONVERT(SMALLDATETIME, d.Date, 105), 23) <= '" + endDate + "')";
+                    Query queryCounting2 = em.createNativeQuery(queryStr);
+                    iTotalDisplayRecords = ((Number) queryCounting2.getSingleResult()).intValue();
                 } else {
-                    dataList.add("");
+                    iTotalDisplayRecords = iTotalRecords;
                 }
 
-                if (schedule.getDateId() != null) {
-                    dataList.add(schedule.getDateId().getDate());
-                    dataList.add(schedule.getDateId().getSlotId().getSlotName());
-                } else {
-                    dataList.add("");
-                    dataList.add("");
+                // Query danh sách lịch học
+                queryStr = "SELECT *" +
+                        "  FROM Schedule s\n" +
+                        (sSearch.isEmpty() && lecture.equals("") && subjectCode.equals("") && slot.equals("") && groupName.equals("") && startDate.equals("") ?
+                                " INNER JOIN  Day_Slot d ON s.DateId=d.Id " +
+                                        "WHERE s.isActive IS NULL OR s.isActive = 'true' " +
+                                        "ORDER BY \n" +
+                                        "  CONVERT(nvarchar(50), CONVERT(SMALLDATETIME, d.Date, 105), 23)" :
+                                "   INNER JOIN Course c ON s.CourseId=c.Id\n" +
+                                        "    INNER JOIN  Day_Slot d ON s.DateId=d.Id " +
+                                        "    INNER JOIN Slot sl ON d.SlotId=sl.Id " +
+                                        "    INNER JOIN  Employee e ON s.EmpId=e.Id " +
+                                        "WHERE (s.isActive IS NULL OR s.isActive = 'true') AND " +
+                                        "(" +
+                                        " (s.CourseId = c.Id AND c.SubjectCode LIKE '%" + subjectCode + "%') AND \n" +
+                                        " (s.DateId = d.Id AND d.Date LIKE '%" + sSearch + "%') AND " +
+                                        " (d.SlotId=sl.Id AND sl.SlotName LIKE '%" + slot + "%') AND " +
+                                        " (s.EmpId = e.Id AND e.EmailEDU LIKE '%" + lecture + "%') AND" +
+                                        " (s.groupName LIKE '%" + groupName + "%')" +
+                                        " AND CONVERT(nvarchar(50), CONVERT(SMALLDATETIME, d.Date, 105), 23) >= '" + startDate + "' AND " +
+                                        " CONVERT(nvarchar(50), CONVERT(SMALLDATETIME, d.Date, 105), 23) <= '" + endDate + "'" +
+                                        ")\n" +
+                                        " ORDER BY \n" +
+                                        "  CONVERT(nvarchar(50), CONVERT(SMALLDATETIME, d.Date, 105), 23)");
+                Query query = em.createNativeQuery(queryStr, ScheduleEntity.class);
+                query.setFirstResult(iDisplayStart);
+                query.setMaxResults(iDisplayLength);
+
+                List<ScheduleEntity> scheduleList = query.getResultList();
+
+
+                for (ScheduleEntity schedule : scheduleList) {
+                    List<String> dataList = new ArrayList<String>();
+
+                    dataList.add(schedule.getId() + "");
+                    dataList.add(schedule.getCourseId().getSubjectCode());
+
+                    if (schedule.getGroupName() != null) {
+                        dataList.add(schedule.getGroupName());
+                    } else {
+                        dataList.add("");
+                    }
+
+                    if (schedule.getDateId() != null) {
+                        dataList.add(schedule.getDateId().getDate());
+                        dataList.add(schedule.getDateId().getSlotId().getSlotName());
+                    } else {
+                        dataList.add("");
+                        dataList.add("");
+                    }
+
+                    if (schedule.getRoomId() != null) {
+                        dataList.add(schedule.getRoomId().getName());
+                    } else {
+                        dataList.add("");
+                    }
+
+                    if (schedule.getEmpId() != null) {
+                        dataList.add(schedule.getEmpId().getFullName());
+                    } else {
+                        dataList.add("");
+                    }
+
+                    if (schedule.getRoomId() != null) {
+                        dataList.add(schedule.getRoomId().getCapacity() + "");
+                    } else {
+                        dataList.add("");
+                    }
+
+                    Date date1 = getDate(schedule.getDateId().getDate());
+                    Date now = new Date();
+
+                    Calendar c1 = Calendar.getInstance();
+                    c1.setTime(date1);
+                    Calendar now1 = Calendar.getInstance();
+                    now1.setTime(now);
+                    now1.set(Calendar.HOUR_OF_DAY, 0);
+                    now1.set(Calendar.MINUTE, 0);
+                    now1.set(Calendar.SECOND, 0);
+                    now1.set(Calendar.MILLISECOND, 0);
+
+                    if (c1.after(now1) || c1.equals(now1)) {
+                        dataList.add("false");
+                    } else {
+                        dataList.add("true");
+                    }
+
+                    result.add(dataList);
                 }
 
-                if (schedule.getRoomId() != null) {
-                    dataList.add(schedule.getRoomId().getName());
-                } else {
-                    dataList.add("");
-                }
 
-                if (schedule.getEmpId() != null) {
-                    dataList.add(schedule.getEmpId().getFullName());
-                } else {
-                    dataList.add("");
-                }
-
-                if (schedule.getRoomId() != null) {
-                    dataList.add(schedule.getRoomId().getCapacity() + "");
-                } else {
-                    dataList.add("");
-                }
-
-                Date date1 = getDate(schedule.getDateId().getDate());
-                Date now = new Date();
-
-                Calendar c1 = Calendar.getInstance();
-                c1.setTime(date1);
-                Calendar now1 = Calendar.getInstance();
-                now1.setTime(now);
-                now1.set(Calendar.HOUR_OF_DAY, 0);
-                now1.set(Calendar.MINUTE, 0);
-                now1.set(Calendar.SECOND, 0);
-                now1.set(Calendar.MILLISECOND, 0);
-
-                if (c1.after(now1) || c1.equals(now1)) {
-                    dataList.add("false");
-                } else {
-                    dataList.add("true");
-                }
-
-                result.add(dataList);
             }
-
+            jsonObj.addProperty("iTotalRecords", iTotalRecords);
+            jsonObj.addProperty("iTotalDisplayRecords", iTotalDisplayRecords);
+            jsonObj.addProperty("sEcho", params.get("sEcho"));
             JsonArray aaData = (JsonArray) new Gson()
                     .toJsonTree(result, new TypeToken<List<List<String>>>() {
                     }.getType());
 
-            jsonObj.addProperty("iTotalRecords", iTotalRecords);
-            jsonObj.addProperty("iTotalDisplayRecords", iTotalDisplayRecords);
-            jsonObj.add("aaData", aaData);
-            jsonObj.addProperty("sEcho", params.get("sEcho"));
 
+            jsonObj.add("aaData", aaData);
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -335,131 +352,134 @@ public class ScheduleList {
             String startDate = params.get("startDate");
             String endDate = params.get("endDate");
 
-            if (!params.get("lecture").equals("") && !params.get("lecture").equals("-1")) {
-                lectureId = Integer.parseInt(params.get("lecture"));
-            }
+            if (!startDate.equals("")) {
+                if (!params.get("lecture").equals("") && !params.get("lecture").equals("-1")) {
+                    lectureId = Integer.parseInt(params.get("lecture"));
+                }
 
-            if (!params.get("department").equals("") && !params.get("department").equals("-1")) {
-                departmentId = Integer.parseInt(params.get("department"));
-            }
+                if (!params.get("department").equals("") && !params.get("department").equals("-1")) {
+                    departmentId = Integer.parseInt(params.get("department"));
+                }
 
-            List<ScheduleEntity> scheduleList = scheduleService.findScheduleByLectureHaveParentSchedule(lectureId);
+                List<ScheduleEntity> scheduleList = scheduleService.findScheduleByLectureHaveParentSchedule(lectureId);
 
-            if (departmentId != null) {
-                DepartmentEntity aDepartment = departmentService.findDepartmentById(departmentId);
+                if (departmentId != null) {
+                    DepartmentEntity aDepartment = departmentService.findDepartmentById(departmentId);
 //                List<SubjectDepartmentEntity> aSubjectDepartmentList = subjectDepartmentService.findSubjectDepartmentsByDepartment(aDepartment);
-                List<SubjectEntity> subjectList = subjectService.findSubjectByDepartment(aDepartment);
-                List<ScheduleEntity> tmpList = new ArrayList<>();
-                for (ScheduleEntity aSchedule : scheduleList) {
-                    for (SubjectEntity aSubject : subjectList) {
-                        if (aSubject.getId().equals(aSchedule.getCourseId().getSubjectCode())) {
-                            tmpList.add(aSchedule);
-                            continue;
-                        }
-                    }
-                }
-                scheduleList = new ArrayList<>(tmpList);
-            }
-
-            if (!params.get("dateTextbox").equals("")) {
-                DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-                List<ScheduleEntity> removeList = new ArrayList<>();
-                for (ScheduleEntity aSchedule : scheduleList) {
-                    Date aDate = format.parse(aSchedule.getDateId().getDate());
-                    if (aDate.before(format.parse(startDate)) || aDate.after(format.parse(endDate))) {
-                        removeList.add(aSchedule);
-                    }
-                }
-                scheduleList.removeAll(removeList);
-            }
-
-            Collections.sort(scheduleList, new Comparator<ScheduleEntity>() {
-                @Override
-                public int compare(ScheduleEntity o1, ScheduleEntity o2) {
-                    try {
-                        DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
-                        Date aDate = df.parse(o1.getDateId().getDate());
-                        Date aDate2 = df.parse(o2.getDateId().getDate());
-                        if (aDate.compareTo(aDate2) > 0) {
-                            return 1;
-                        }
-
-                        if (aDate.compareTo(aDate2) == 0) {
-                            String slot1 = o1.getDateId().getSlotId().getSlotName();
-                            String slot2 = o2.getDateId().getSlotId().getSlotName();
-
-                            if (slot1.compareTo(slot2) > 0) {
-                                return 1;
+                    List<SubjectEntity> subjectList = subjectService.findSubjectByDepartment(aDepartment);
+                    List<ScheduleEntity> tmpList = new ArrayList<>();
+                    for (ScheduleEntity aSchedule : scheduleList) {
+                        for (SubjectEntity aSubject : subjectList) {
+                            if (aSubject.getId().equals(aSchedule.getCourseId().getSubjectCode())) {
+                                tmpList.add(aSchedule);
+                                continue;
                             }
                         }
-                        return -1;
-                    } catch (Exception e) {
-                        e.printStackTrace();
                     }
-                    return 0;
-                }
-            });
-
-            for (ScheduleEntity schedule : scheduleList) {
-
-                List<String> dataList = new ArrayList<String>();
-
-                ScheduleEntity parentSchedule = scheduleService.findScheduleById(schedule.getParentScheduleId());
-                dataList.add(schedule.getId() + "");
-                if (schedule.getCourseId() != null) {
-                    dataList.add(schedule.getCourseId().getSubjectCode());
-
-                } else {
-                    dataList.add("");
+                    scheduleList = new ArrayList<>(tmpList);
                 }
 
-                if (schedule.getGroupName() != null) {
-                    dataList.add(schedule.getGroupName());
-                } else {
-                    dataList.add("");
+                if (!params.get("dateTextbox").equals("")) {
+                    DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+                    List<ScheduleEntity> removeList = new ArrayList<>();
+                    for (ScheduleEntity aSchedule : scheduleList) {
+                        Date aDate = format.parse(aSchedule.getDateId().getDate());
+                        if (aDate.before(format.parse(startDate)) || aDate.after(format.parse(endDate))) {
+                            removeList.add(aSchedule);
+                        }
+                    }
+                    scheduleList.removeAll(removeList);
                 }
 
-                if (schedule.getDateId() != null) {
-                    dataList.add(schedule.getDateId().getDate());
-                    dataList.add(schedule.getDateId().getSlotId().getSlotName());
-                } else {
-                    dataList.add("");
-                    dataList.add("");
-                }
+                Collections.sort(scheduleList, new Comparator<ScheduleEntity>() {
+                    @Override
+                    public int compare(ScheduleEntity o1, ScheduleEntity o2) {
+                        try {
+                            DateFormat df = new SimpleDateFormat("dd/MM/yyyy");
+                            Date aDate = df.parse(o1.getDateId().getDate());
+                            Date aDate2 = df.parse(o2.getDateId().getDate());
+                            if (aDate.compareTo(aDate2) > 0) {
+                                return 1;
+                            }
 
-                if (schedule.getRoomId() != null) {
-                    dataList.add(schedule.getRoomId().getName());
-                } else {
-                    dataList.add("");
-                }
+                            if (aDate.compareTo(aDate2) == 0) {
+                                String slot1 = o1.getDateId().getSlotId().getSlotName();
+                                String slot2 = o2.getDateId().getSlotId().getSlotName();
 
-                if (schedule.getEmpId() != null) {
-                    dataList.add(schedule.getEmpId().getEmailEDU().substring(0, schedule.getEmpId().getEmailEDU().indexOf("@")));
-                } else {
-                    dataList.add("");
-                }
+                                if (slot1.compareTo(slot2) > 0) {
+                                    return 1;
+                                }
+                            }
+                            return -1;
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        return 0;
+                    }
+                });
 
-                if (parentSchedule != null) {
-                    String slotName = "";
-                    String dateName = "";
-                    String empName = "";
+                for (ScheduleEntity schedule : scheduleList) {
 
-                    if (parentSchedule.getDateId() != null) {
-                        slotName = parentSchedule.getDateId().getSlotId().getSlotName();
-                        dateName = parentSchedule.getDateId().getDate();
+                    List<String> dataList = new ArrayList<String>();
+
+                    ScheduleEntity parentSchedule = scheduleService.findScheduleById(schedule.getParentScheduleId());
+                    dataList.add(schedule.getId() + "");
+                    if (schedule.getCourseId() != null) {
+                        dataList.add(schedule.getCourseId().getSubjectCode());
+
+                    } else {
+                        dataList.add("");
                     }
 
-                    if (parentSchedule.getEmpId() != null) {
-                        empName = parentSchedule.getEmpId().getEmailEDU().substring(0, parentSchedule.getEmpId().getEmailEDU().indexOf("@"));
+                    if (schedule.getGroupName() != null) {
+                        dataList.add(schedule.getGroupName());
+                    } else {
+                        dataList.add("");
                     }
-                    dataList.add(slotName + ", ngày " + dateName + ", " + empName);
 
-                } else {
-                    dataList.add("");
+                    if (schedule.getDateId() != null) {
+                        dataList.add(schedule.getDateId().getDate());
+                        dataList.add(schedule.getDateId().getSlotId().getSlotName());
+                    } else {
+                        dataList.add("");
+                        dataList.add("");
+                    }
+
+                    if (schedule.getRoomId() != null) {
+                        dataList.add(schedule.getRoomId().getName());
+                    } else {
+                        dataList.add("");
+                    }
+
+                    if (schedule.getEmpId() != null) {
+                        dataList.add(schedule.getEmpId().getEmailEDU().substring(0, schedule.getEmpId().getEmailEDU().indexOf("@")));
+                    } else {
+                        dataList.add("");
+                    }
+
+                    if (parentSchedule != null) {
+                        String slotName = "";
+                        String dateName = "";
+                        String empName = "";
+
+                        if (parentSchedule.getDateId() != null) {
+                            slotName = parentSchedule.getDateId().getSlotId().getSlotName();
+                            dateName = parentSchedule.getDateId().getDate();
+                        }
+
+                        if (parentSchedule.getEmpId() != null) {
+                            empName = parentSchedule.getEmpId().getEmailEDU().substring(0, parentSchedule.getEmpId().getEmailEDU().indexOf("@"));
+                        }
+                        dataList.add(slotName + ", ngày " + dateName + ", " + empName);
+
+                    } else {
+                        dataList.add("");
+                    }
+
+                    result.add(dataList);
                 }
-
-                result.add(dataList);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -1195,6 +1215,21 @@ public class ScheduleList {
         Ultilities.logUserAction("SyncFAPChangedSchedule");
         JsonObject jsonObj = new JsonObject();
         try {
+            syncChangedScheduleFapImpl();
+            jsonObj.addProperty("success", true);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.writeLog(e);
+            jsonObj.addProperty("fail", true);
+            jsonObj.addProperty("message", e.getMessage());
+        }
+
+        return jsonObj;
+    }
+
+    public void syncChangedScheduleFapImpl() {
+        try {
             EntityManagerFactory emf2 = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em2 = emf2.createEntityManager();
 
@@ -1392,19 +1427,10 @@ public class ScheduleList {
                     }
                 }
             }
-
-            jsonObj.addProperty("success", true);
-
         } catch (Exception e) {
             e.printStackTrace();
-            Logger.writeLog(e);
-            jsonObj.addProperty("fail", true);
-            jsonObj.addProperty("message", e.getMessage());
         }
-
-        return jsonObj;
     }
-
 
     @RequestMapping("/countAttendance")
     public ModelAndView countAttendancePage(HttpServletRequest request) {
@@ -1462,8 +1488,20 @@ public class ScheduleList {
             String startDateStr = format.format(startDate);
             String endDateStr = format.format(endDate);
 
-            Date now = new Date();
+            String startDateStr2 = params.get("startDate");
+            String endDateStr2 = params.get("endDate");
+
             DateFormat format2 = new SimpleDateFormat("yyyy-MM-dd");
+
+            if (!startDateStr2.equals("")) {
+                Date tmpStart = DateUtil.getDate(startDateStr2);
+                startDateStr2 = format2.format(tmpStart);
+
+                Date tmpEnd = DateUtil.getDate(endDateStr2);
+                endDateStr2 = format2.format(tmpEnd);
+            }
+
+            Date now = new Date();
             String nowStr = format2.format(now);
 
             for (ScheduleEntity aSchedule : scheduleLists) {
@@ -1495,7 +1533,7 @@ public class ScheduleList {
                         if (scheduleId != -1) {
                             //get schedule of course from FAP DB
                             String queryStringForAttendance = "SELECT 1 FROM Attendances s WHERE s.ScheduleID = " + scheduleId + " " +
-                                    " AND RecordTime >= '" + startDateStr + "' AND  RecordTime < '" + endDateStr + "' AND s.Status = 1";
+                                    " AND RecordTime >= '" + (startDateStr2.equals("") ? startDateStr : startDateStr2) + "' AND  RecordTime < '" + (endDateStr2.equals("") ? endDateStr : endDateStr2) + "' AND s.Status = 1";
                             Query queryForAttendances = em2.createNativeQuery(queryStringForAttendance);
                             List fapAttendanceList = queryForAttendances.getResultList();
 
@@ -1574,7 +1612,7 @@ public class ScheduleList {
             String subjectCode = params.get("subjectCode");
 
             if (subjectCode != null && !subjectCode.equals("")) {
-                List<ScheduleEntity> scheduleEntityList = scheduleService.findScheduleBySubjectCodeAndGroupNameBeforeNowTime(subjectCode,"");
+                List<ScheduleEntity> scheduleEntityList = scheduleService.findScheduleBySubjectCodeAndGroupNameBeforeNowTime(subjectCode, "");
 
                 for (ScheduleEntity aSchedule : scheduleEntityList) {
                     groupNameSet.add(aSchedule.getGroupName());
