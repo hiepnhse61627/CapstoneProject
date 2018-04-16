@@ -53,36 +53,49 @@
         </div>
 
         <div class="b-body">
-            <div class="form-group form-date-range">
-                <label for="scheduleDate">Ngày sẽ dạy:</label>
-                <input id="scheduleDate" type="text" class="form-control"/>
-                <i class="fa fa-calendar"></i>
-            </div>
 
-            <div class="form-group">
-                <label for="subject2">Môn học:</label>
-                <select id="subject2" class="select department2-select">
-                    <c:forEach var="aSubject" items="${subjects}">
-                        <option value="${aSubject.id}">${aSubject.id} - ${aSubject.name}</option>
-                    </c:forEach>
-                </select>
-            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group form-date-range">
+                        <label for="scheduleDate">Ngày sẽ dạy:</label>
+                        <input id="scheduleDate" type="text" class="form-control"/>
+                        <i class="fa fa-calendar"></i>
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <label for="aTime">Slot sẽ dạy:</label>
-                <select id="aTime" class="select aTime-select">
-                    <c:forEach var="aSlot" items="${slots}">
-                        <option value="${aSlot.slotName}">${aSlot.slotName}</option>
-                    </c:forEach>
-                </select>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="subject2">Môn học:</label>
+                        <select id="subject2" class="select department2-select">
+                            <c:forEach var="aSubject" items="${subjects}">
+                                <option value="${aSubject.id}">${aSubject.id} - ${aSubject.name}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </div>
             </div>
+            <div class="row" style="display: flex; position: relative;">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="aTime">Slot sẽ dạy:</label>
+                        <select id="aTime" class="select aTime-select">
+                            <c:forEach var="aSlot" items="${slots}">
+                                <option value="${aSlot.slotName}">${aSlot.slotName}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <button type="button" class="btn btn-success" onclick="RefreshTable()" id="searchBtn">Tìm kiếm</button>
-                <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa bộ lọc
-                </button>
+                <div class="col-md-6">
+                    <div class="form-group" style="width: 100%; bottom: 0; position: absolute;">
+                        <button type="button" class="btn btn-success" onclick="RefreshTable()" id="searchBtn">Tìm kiếm
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa
+                            bộ lọc
+                        </button>
+                    </div>
+                </div>
             </div>
-
             <div class="form-group">
                 <div class="row">
                     <div class="col-md-12">
@@ -134,8 +147,8 @@
                             <label for="lectureFrom">Giảng viên yêu cầu đổi:</label>
                             <select id="lectureFrom" class="select lecture-select">
                                 <%--<c:forEach var="emp" items="${employees}">--%>
-                                    <%--<option value="${emp.fullName}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}--%>
-                                        <%--- ${emp.fullName}</option>--%>
+                                <%--<option value="${emp.fullName}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}--%>
+                                <%--- ${emp.fullName}</option>--%>
                                 <%--</c:forEach>--%>
                             </select>
                         </div>
@@ -144,7 +157,7 @@
                             <label for="room">Phòng học sẽ dạy:</label>
                             <select id="room" class="select room-select">
                                 <%--<c:forEach var="room" items="${rooms}">--%>
-                                    <%--<option value="${room.name}">${room.name}</option>--%>
+                                <%--<option value="${room.name}">${room.name}</option>--%>
                                 <%--</c:forEach>--%>
                             </select>
                         </div>
@@ -338,7 +351,7 @@
 
                     $("#aTime2").val($('#aTime').val()).trigger('change');
 
-                    $('#aTime2').on("change", function(e) {
+                    $('#aTime2').on("change", function (e) {
                         getLectureByDateSlot();
                     });
 
@@ -375,9 +388,9 @@
                 {
                     "aTargets": [4],
                     "mRender": function (data, type, row) {
-                            return "<a class='btn btn-success tbl-btn' onclick='SendEmail(" + row[0] + ",\""
-                                + row[1] + "\",\"" + row[2] + "\",\"" + row[3] + "\")'>" +
-                                "<i class='glyphicon glyphicon-envelope'></i></a>";
+                        return "<a class='btn btn-success tbl-btn' onclick='SendEmail(" + row[0] + ",\""
+                            + row[1] + "\",\"" + row[2] + "\",\"" + row[3] + "\")'>" +
+                            "<i class='glyphicon glyphicon-envelope'></i></a>";
                     }
                 },
             ],
@@ -385,15 +398,15 @@
         }).fnSetFilteringDelay(1000);
     });
 
-    function getLectureByDateSlot(){
+    function getLectureByDateSlot() {
         $.ajax({
             type: "POST",
             url: "/getLectureByDateSlot",
             data: {
-                startDate : $('#scheduleDate2').data('daterangepicker').startDate.format('DD/MM/YYYY'),
-                endDate : $('#scheduleDate2').data('daterangepicker').endDate.format('DD/MM/YYYY'),
-                subject : $('#subject2').val(),
-                slot : $('#aTime2').val(),
+                startDate: $('#scheduleDate2').data('daterangepicker').startDate.format('DD/MM/YYYY'),
+                endDate: $('#scheduleDate2').data('daterangepicker').endDate.format('DD/MM/YYYY'),
+                subject: $('#subject2').val(),
+                slot: $('#aTime2').val(),
                 dayWillTeach: $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY'),
                 slotWillTeach: $('#aTime').val(),
             },
@@ -403,8 +416,8 @@
                 // $('#lectureFrom').html('').select2({data: [{id: null, text: null}]});
                 $('#lectureFrom').empty();
 
-                var fromLectureArr =[];
-                for (i = 0; i < json.fromLecture.length ; i++) {
+                var fromLectureArr = [];
+                for (i = 0; i < json.fromLecture.length; i++) {
                     fromLectureArr.push({
                         "id": json.fromLecture[i][0],
                         "text": json.fromLecture[i][1]
@@ -419,7 +432,7 @@
                 $("#lectureFrom").val("").trigger("change");
 
                 $('#room').empty();
-                var roomListObjArr=[];
+                var roomListObjArr = [];
 
                 $("#room").select2({
                     placeholder: '- Chọn phòng -',
@@ -579,19 +592,20 @@
                     data: {
                         // "email": 'longphse62094@fpt.edu.vn',
                         "email": $("#email").val(),
-                        "lectureFrom":  $("#lectureFrom").val(),
+                        "lectureFrom": $("#lectureFrom").val(),
                         "lectureTo": $("#lectureTo").val(),
                         "dateWillTeach": $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY'),
                         "subjectCode": $("#subject2").val(),
                         "slotWillTeach": $("#aTime").val(),
-                        "originalDate" : $('#scheduleDate2').data('daterangepicker').startDate.format('DD/MM/YYYY'),
-                        "originalSlot" : $('#aTime2').val(),
+                        "originalDate": $('#scheduleDate2').data('daterangepicker').startDate.format('DD/MM/YYYY'),
+                        "originalSlot": $('#aTime2').val(),
                         "noChangeRoom": $("#changeRoom").is(":checked"),
                         "room": $("#room").val(),
                         "token": token,
                         "username": username,
                         "name": name,
-                        "editor": $('#editor').val()},
+                        "editor": $('#editor').val()
+                    },
 
                     success: function (result) {
                         if (result.success) {

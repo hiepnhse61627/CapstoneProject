@@ -89,8 +89,8 @@
                 </div>
 
                 <div class="col-md-1">
-
                 </div>
+
                 <div class="col-md-3" style="text-align: right;">
                     <button type="button" class="btn btn-primary btn-with-icon" onclick="SyncChangedSchedule()">
                         <i class="glyphicon glyphicon-retweet"></i>
@@ -108,64 +108,85 @@
         </div>
 
         <div class="b-body">
-            <%--<div class="form-group form-date-range" style="display: none">--%>
-            <%--<label for="scheduleDate2">Ngày dạy:</label>--%>
-            <%--<input id="scheduleDate2" type="text" class="form-control"/>--%>
-            <%--<i class="fa fa-calendar"></i>--%>
+
+            <%--<div class="row">--%>
+                <%--<div class="col-md-6">--%>
+                    <%----%>
+                <%--</div>--%>
+
+                <%--<div class="col-md-6">--%>
+
+                <%--</div>--%>
             <%--</div>--%>
 
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group form-date-range">
+                        <label for="scheduleDate2">Ngày bắt đầu - kết thúc:</label>
+                        <input id="scheduleDate2" type="text" class="form-control"/>
+                        <i class="fa fa-calendar"></i>
+                    </div>
+                </div>
 
-            <div class="form-group form-date-range">
-                <label for="scheduleDate2">Ngày bắt đầu - kết thúc:</label>
-                <input id="scheduleDate2" type="text" class="form-control"/>
-                <i class="fa fa-calendar"></i>
-            </div>
-
-            <div class="form-group">
-                <label for="lecture2">Giảng viên:</label>
-                <select id="lecture2" class="select lecture2-select">
-                    <option value="-1">Tất cả</option>
-                    <c:forEach var="emp" items="${employees}">
-                        <option value="${emp.emailEDU}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}
-                            - ${emp.fullName}</option>
-                    </c:forEach>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="groupName2">Lớp:</label>
-                <%--<input id="groupName2" placeholder="- Tên lớp -" class="form-control"/>--%>
-
-                <select id="groupName2" class="select groupName2-select">
-                    <%--<option value="-1">Tất cả</option>--%>
-                </select>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="lecture2">Giảng viên:</label>
+                        <select id="lecture2" class="select lecture2-select">
+                            <option value="-1">Tất cả</option>
+                            <c:forEach var="emp" items="${employees}">
+                                <option value="${emp.emailEDU}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}
+                                    - ${emp.fullName}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </div>
             </div>
 
 
-            <div class="form-group">
-                <label for="subject2">Môn học:</label>
-                <select id="subject2" class="select department2-select">
-                    <option value="-1">Tất cả</option>
-                    <c:forEach var="aSubject" items="${subjects}">
-                        <option value="${aSubject.id}">${aSubject.id} - ${aSubject.name}</option>
-                    </c:forEach>
-                </select>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="groupName2">Lớp:</label>
+                        <select id="groupName2" class="select groupName2-select">
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="subject2">Môn học:</label>
+                        <select id="subject2" class="select department2-select">
+                            <option value="-1">Tất cả</option>
+                            <c:forEach var="aSubject" items="${subjects}">
+                                <option value="${aSubject.id}">${aSubject.id} - ${aSubject.name}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="aTime">Slot:</label>
-                <select id="aTime" class="select aTime-select">
-                    <option value="-1">Tất cả</option>
-                    <c:forEach var="aSlot" items="${slots}">
-                        <option value="${aSlot.slotName}">${aSlot.slotName}</option>
-                    </c:forEach>
-                </select>
-            </div>
+            <div class="row" style="display: flex; position: relative;">
+                <div class="col-md-6">
 
-            <div class="form-group">
-                <button type="button" class="btn btn-success" onclick="RefreshTable2()" id="searchBtn">Tìm kiếm</button>
-                <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa bộ lọc
-                </button>
+                    <div class="form-group">
+                        <label for="aTime">Slot:</label>
+                        <select id="aTime" class="select aTime-select">
+                            <option value="-1">Tất cả</option>
+                            <c:forEach var="aSlot" items="${slots}">
+                                <option value="${aSlot.slotName}">${aSlot.slotName}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group" style="width: 100%; bottom: 0; position: absolute;">
+                        <button type="button" class="btn btn-success" onclick="RefreshTable2()" id="searchBtn">Tìm kiếm</button>
+                        <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa bộ lọc
+                        </button>
+                    </div>
+                </div>
             </div>
 
 

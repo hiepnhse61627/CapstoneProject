@@ -242,31 +242,38 @@
                 <div class="row">
                     <div class="title">
                         <h4 class="text-left m-r-10 m-t-5">Lịch dạy</h4>
-                        <button class="btn btn-success text-left" style="margin-top: -3px" onclick="CreateSchedule()">
-                            Thêm lịch dạy
-                        </button>
                     </div>
 
                     <div class="my-content">
                         <div class="b-body">
                             <div class="row" style="display: flex; position: relative;">
-                                <div class="col-md-6">
+                                <div class="col-md-3">
                                     <div class="form-group form-date-range">
                                         <label for="scheduleDate2">Ngày bắt đầu - kết thúc:</label>
                                         <input id="scheduleDate2" type="text" class="form-control"/>
                                         <i class="fa fa-calendar"></i>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <div class="form-group" style="bottom: 0; position: absolute;">
+                                <div class="col-md-9">
+                                    <div class="form-group" style="width: 100%; bottom: 0; position: absolute;">
                                         <button type="button" class="btn btn-success" onclick="RefreshTable()"
                                                 id="searchBtn">Tìm kiếm
                                         </button>
                                         <button type="button" class="btn btn-primary" onclick="resetFilter()"
                                                 id="removeFilterBtn">Xóa bộ lọc
                                         </button>
+                                        <button class="btn btn-success text-right" onclick="CreateSchedule()"
+                                                style="margin-right: 30px;">
+                                            Thêm lịch dạy
+                                        </button>
                                     </div>
                                 </div>
+                                <%--<div class="col-md-3">--%>
+                                    <%--<div class="form-group">--%>
+                                        <%--<label for="addBtn"> &nbsp;</label>--%>
+                                        <%----%>
+                                    <%--</div>--%>
+                                <%--</div>--%>
 
                             </div>
 
@@ -1026,30 +1033,30 @@
                     "contract": $('#contract').val(),
                     "code": $('#code').val(),
                     "empCompetence": JSON.stringify($('#empCompetence').val())
-        },
-            success: function (result) {
-                if (result.success) {
-                    swal({
-                        title: 'Thành công',
-                        text: "Đã cập nhật giảng viên!",
-                        type: 'success'
-                    }).then(function () {
-                        oldPosition = $('#position').val();
-                        oldContract = $('#contract').val();
-                        oldEmailFE = $('#emailFE').val();
-                        oldEmailEDU = $('#emailEDU').val();
-                        oldEmailPersonal = $('#emailPersonal').val();
-                        oldPhone = $('#phone').val();
-                        oldAddress = $('#address').val();
-                        oldCode = $('#code').val();
-                        oldCompetence = $('#empCompetence').val();
-                        onCancel();
-                    });
-                } else {
-                    swal('', result.message, 'error');
+                },
+                success: function (result) {
+                    if (result.success) {
+                        swal({
+                            title: 'Thành công',
+                            text: "Đã cập nhật giảng viên!",
+                            type: 'success'
+                        }).then(function () {
+                            oldPosition = $('#position').val();
+                            oldContract = $('#contract').val();
+                            oldEmailFE = $('#emailFE').val();
+                            oldEmailEDU = $('#emailEDU').val();
+                            oldEmailPersonal = $('#emailPersonal').val();
+                            oldPhone = $('#phone').val();
+                            oldAddress = $('#address').val();
+                            oldCode = $('#code').val();
+                            oldCompetence = $('#empCompetence').val();
+                            onCancel();
+                        });
+                    } else {
+                        swal('', result.message, 'error');
+                    }
                 }
-            }
-        })
+            })
             ;
         });
     }
