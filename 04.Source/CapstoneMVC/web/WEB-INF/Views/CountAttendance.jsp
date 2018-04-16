@@ -54,6 +54,12 @@
 
         <div class="b-body">
 
+            <div class="form-group form-date-range">
+                <label for="scheduleDate2">Ngày bắt đầu - kết thúc:</label>
+                <input id="scheduleDate2" type="text" class="form-control"/>
+                <i class="fa fa-calendar"></i>
+            </div>
+
             <div class="form-group">
                 <label for="subject2">Môn học:</label>
                 <select id="subject2" class="select department2-select">
@@ -64,8 +70,8 @@
             </div>
 
             <%--<div class="form-group">--%>
-                <%--<label for="class">Lớp:</label>--%>
-                <%--<input id="class" type="text" class="form-control"/>--%>
+            <%--<label for="class">Lớp:</label>--%>
+            <%--<input id="class" type="text" class="form-control"/>--%>
             <%--</div>--%>
 
             <div class="form-group">
@@ -103,6 +109,8 @@
 
 <script>
     var table = null;
+    var startDate2;
+    var endDate2;
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -138,6 +146,28 @@
     };
 
     $(document).ready(function () {
+        startDate2 = endDate2 = "";
+        $('#scheduleDate2').daterangepicker({
+            autoUpdateInput: false,
+            maxDate: moment(),
+            locale: {
+                applyLabel: "Chọn",
+                cancelLabel: 'Xóa',
+                format: 'DD/MM/YYYY'
+            }
+        });
+
+        $('#scheduleDate2').on('apply.daterangepicker', function (ev, picker) {
+            startDate2 = picker.startDate.format('DD/MM/YYYY');
+            endDate2 = picker.endDate.format('DD/MM/YYYY');
+            $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
+        });
+
+        $('#scheduleDate2').on('cancel.daterangepicker', function (ev, picker) {
+            $(this).val('');
+        });
+
+
         $('#subject2').select2({
             placeholder: '- Chọn môn học -'
         });
@@ -145,8 +175,6 @@
         $('select').on('change', function (evt) {
             $('#select2-subject2-container').removeAttr('title');
         });
-
-
 
         $('#groupName2').select2({
             placeholder: '- Chọn lớp -'
@@ -168,7 +196,7 @@
                     });
                     // groupNameArr.push(json.groupNameList);
 
-                    for (i = 0; i < json.groupNameList.length ; i++) {
+                    for (i = 0; i < json.groupNameList.length; i++) {
                         groupNameArr.push({
                             "id": json.groupNameList[i],
                             "text": json.groupNameList[i]
@@ -201,8 +229,10 @@
             "bSort": false,
             "sAjaxSource": "/countAttendanceOfClass", // url getData.php etc
             "fnServerParams": function (aoData) {
-                    aoData.push({"name": "subject", "value": $('#subject2').val()}),
-                    aoData.push({"name": "groupName", "value": $('#groupName2').val()})
+                aoData.push({"name": "subject", "value": $('#subject2').val()}),
+                    aoData.push({"name": "groupName", "value": $('#groupName2').val()}),
+                    aoData.push({"name": "startDate", "value": startDate2}),
+                    aoData.push({"name": "endDate", "value": endDate2})
             },
             "oLanguage": {
                 "sSearchPlaceholder": "Nhập từ khóa",
@@ -248,7 +278,6 @@
         $("#groupName2").val('');
         $('#removeFilterBtn').attr('disabled', 'disabled');
     }
-
 
 
 </script>

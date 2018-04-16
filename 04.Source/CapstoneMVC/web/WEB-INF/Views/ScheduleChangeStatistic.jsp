@@ -132,6 +132,8 @@
 
 <script>
     var table = null;
+    var startDate;
+    var endDate;
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -190,7 +192,7 @@
             $(this).parent().find('input').click();
         });
 
-        startDate = endDate = moment().format('DD/MM/YYYY');
+        startDate = endDate = "";
         $('#scheduleDate').daterangepicker({
             autoUpdateInput: false,
             locale: {
@@ -220,8 +222,10 @@
             "bSort": false,
             "sAjaxSource": "/scheduleChangeStatistic/get", // url getData.php etc
             "fnServerParams": function (aoData) {
-                aoData.push({"name": "startDate", "value":  $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY')}),
-                    aoData.push({"name": "endDate", "value":  $('#scheduleDate').data('daterangepicker').endDate.format('DD/MM/YYYY')}),
+                // aoData.push({"name": "startDate", "value":  $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY')}),
+                //     aoData.push({"name": "endDate", "value":  $('#scheduleDate').data('daterangepicker').endDate.format('DD/MM/YYYY')}),
+                aoData.push({"name": "startDate", "value":  startDate}),
+                    aoData.push({"name": "endDate", "value":  endDate}),
                     aoData.push({"name": "department", "value": $('#department').val()}),
                     aoData.push({"name": "lecture", "value": $('#lecture').val()}),
                     aoData.push({"name": "dateTextbox", "value": $('#scheduleDate').val()})

@@ -4,6 +4,7 @@ import com.capstone.entities.*;
 import com.capstone.entities.fapEntities.StudentAvgMarks;
 import com.capstone.models.*;
 import com.capstone.services.*;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -201,9 +202,9 @@ public class MarkController {
 
     @RequestMapping("/importSynchronizeMarkFromFAP")
     @ResponseBody
-    public JsonObject getDataFromFapBySemester(@RequestParam Map<String, String> params, HttpServletRequest request,
-                                               @RequestParam("backup") boolean backup,
-                                               @RequestParam("semesterId") int semesterId) {
+    public JsonObject goSynchornizeMarksDataFromFapBySemester(@RequestParam Map<String, String> params, HttpServletRequest request,
+                                                              @RequestParam("backup") boolean backup,
+                                                              @RequestParam("semesterId") int semesterId) {
         JsonObject jsonObject = new JsonObject();
 
 //        if (!Ultilities.checkUserAuthorize2(request, "/markPage")) {
@@ -247,11 +248,11 @@ public class MarkController {
             jsonObject.addProperty("success", false);
             jsonObject.addProperty("message", "Đã xảy ra lỗi khi lấy dữ liệu từ FAP!");
             return jsonObject;
-        }else if (fapMarks.isEmpty()) {
+        } else if (fapMarks.isEmpty()) {
             jsonObject.addProperty("success", false);
             jsonObject.addProperty("message", "Điểm của " + semesterName + " bên FAP chưa có điểm");
             return jsonObject;
-        }else if(subjectCodes == null){
+        } else if (subjectCodes == null) {
             jsonObject.addProperty("success", false);
             jsonObject.addProperty("message", "Đã xảy ra lỗi khi lấy dữ liệu từ FAP");
             return jsonObject;
@@ -259,16 +260,17 @@ public class MarkController {
 
 
         try {
-            marksService.deleteMarksBySemesterAndSubjectCodes(semesterId, subjectCodes);
+            //delete all student marks by semesterId
+            marksService.deleteMarksBySemesterAndSubjectCodesAndStudentId(semesterId, subjectCodes, -1);
             List<StudentEntity> students = studentService.findStudentsBySemesterId(semesterId);
             //group by student rollnumber
             for (StudentAvgMarks item : fapMarks) {
-                if (tempMap.containsKey(item.getRollNumber())) {
-                    tempMap.get(item.getRollNumber()).add(item);
+                if (tempMap.containsKey(item.getRollNumber().toUpperCase())) {
+                    tempMap.get(item.getRollNumber().toUpperCase()).add(item);
                 } else {
                     List<StudentAvgMarks> marks = new ArrayList<>();
                     marks.add(item);
-                    tempMap.put(item.getRollNumber(), marks);
+                    tempMap.put(item.getRollNumber().toUpperCase(), marks);
                 }
             }
 
@@ -300,9 +302,9 @@ public class MarkController {
             for (StudentEntity studentEntity : map.keySet()) {
                 try {
                     System.out.println("process " + i + " - " + map.size());
-//                if (studentEntity.getRollNumber().equalsIgnoreCase("SE62849")) {
-////                    System.out.println("bug oi");
-////                }
+                    if (studentEntity.getRollNumber().equalsIgnoreCase("SE61428")) {
+                        System.out.println("bug oi");
+                    }
                     String rollNumber = studentEntity.getRollNumber();
                     int studentId = studentEntity.getId();
                     List<StudentStatusEntity> statuses = new ArrayList<>(studentEntity.getStudentStatusEntityList());
@@ -378,33 +380,15 @@ public class MarkController {
                                     q.isPassed() == true ? Enums.MarkStatus.PASSED.getValue() : Enums.MarkStatus.FAIL.getValue()))
                             .collect(Collectors.toList());
 
-                    List<MarksEntity> hasLearned = new ArrayList<>(studentEntity.getMarksEntityList());
-                    List<MarksEntity> hasLearnedThisSemester = hasLearned.stream()
-                            .filter(q -> q.getSemesterId().getId() == semesterId)
-                            .collect(Collectors.toList());
+
+//                    List<MarksEntity> hasLearned = marksService.getStudentMarksById(studentId);
+//                    List<MarksEntity> hasLearnedThisSemester = hasLearned.stream()
+//                            .filter(q -> q.getSemesterId().getId() == semesterId)
+//                            .collect(Collectors.toList());
 
 
-                    List<MarkModelExcel> notStartMarks = getNotStartMarks(studentEntity, semestersToPreCurrentSelected,
+                    List<MarkModelExcel> notStartMarks = getNotStartMarks(studentEntity, studentId, marksService, semestersToPreCurrentSelected,
                             semesterName, semesterId, studentFAPMarks, subjCodeList);
-
-////                    xóa điểm kì được chọn của sinh viên
-//                    for (MarksEntity item : hasLearnedThisSemester) {
-//                        int markId = -1;
-//                        try {
-//                            markId = item.getId();
-//                            marksService.deleteMark(markId);
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                            if (error.containsKey(rollNumber)) {
-//                                String err = error.get(rollNumber);
-//                                err += " " + markId + " - markId not exist";
-//                                error.put(rollNumber, err);
-//                            } else {
-//                                error.put(rollNumber, markId + " - markId not exist");
-//                            }
-//                        }
-//                    }
-
 
                     List<MarkModelExcel> importedMark = new ArrayList<>();
                     importedMark.addAll(markFAPThisSemester);
@@ -493,10 +477,11 @@ public class MarkController {
         return jsonObject;
     }
 
-    public List<MarkModelExcel> getNotStartMarks(StudentEntity studentEntity, List<Integer> semestersToPreCurrentSelected,
-                                                    String semesterName, int semesterId ,List<StudentAvgMarks> studentFAPMarks,
-                                                    List<String> subjCodeList){
-        List<MarksEntity> hasLearned = new ArrayList<>(studentEntity.getMarksEntityList());
+    public List<MarkModelExcel> getNotStartMarks(StudentEntity studentEntity, int studentId, MarksServiceImpl marksService, List<Integer> semestersToPreCurrentSelected,
+                                                 String semesterName, int semesterId, List<StudentAvgMarks> studentFAPMarks,
+                                                 List<String> subjCodeList) {
+//        List<MarksEntity> hasLearned = new ArrayList<>(studentEntity.getMarksEntityList());
+        List<MarksEntity> hasLearned = marksService.getAllMarksByStudent(studentId);
         List<MarksEntity> hasLearnedThisSemester = hasLearned.stream()
                 .filter(q -> q.getSemesterId().getId() == semesterId)
                 .collect(Collectors.toList());
@@ -544,6 +529,311 @@ public class MarkController {
         // <RollNumber, Error>
         HashMap<String, String> studentList = (HashMap<String, String>) request.getSession()
                 .getAttribute(Enums.SynchronizeFAP.ERROR_lIST.getValue());
+        String type = params.get("type");
+
+//        final String sSearch = params.get("sSearch");
+
+//        int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
+//        int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
+//        boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
+
+        try {
+            // RollNumber
+            List<List<String>> data = new ArrayList<>();
+            if (studentList != null) {
+                for (String rollNumber :
+                        studentList.keySet()) {
+                    List<String> tempData = new ArrayList<>();
+                    tempData.add(rollNumber);
+                    String error = studentList.get(rollNumber);
+                    tempData.add(error);
+                    data.add(tempData);
+                }
+            }
+
+            JsonArray aaData = (JsonArray) new Gson().toJsonTree(data);
+            obj.add("aaData", aaData);
+//            obj.addProperty("sEcho", params.get("sEcho"));
+        } catch (Exception e) {
+            e.printStackTrace();
+            Logger.writeLog(e);
+        }
+
+        return obj;
+    }
+
+
+    //đồng bộ điểm từ FAP cho 1 sinh viên (không tạo điểm notStart)
+    @RequestMapping("/importSynchronizeStudentMarksFromFAP")
+    @ResponseBody
+    public JsonObject getFAPStudentMarksSynchronize(@RequestParam Map<String, String> params, HttpServletRequest request,
+                                                    @RequestParam("studentId") int studentId) {
+        JsonObject jsonObject = new JsonObject();
+
+//        if (!Ultilities.checkUserAuthorize2(request, "/markPage")) {
+//            jsonObj.addProperty("success", false);
+//            jsonObj.addProperty("message", "Không đủ quyền hạn để thực hiện");
+//            return jsonObj;
+//        }
+
+        MarksServiceImpl marksService = new MarksServiceImpl();
+        Ultilities2ServiceImpl ult2 = new Ultilities2ServiceImpl();
+        StudentServiceImpl studentService = new StudentServiceImpl();
+        SubjectServiceImpl subjectService = new SubjectServiceImpl();
+        RealSemesterServiceImpl semesterService = new RealSemesterServiceImpl();
+        MarkComponentServiceImpl markComponentService = new MarkComponentServiceImpl();
+        SubjectCurriculumServiceImpl subjectCurriculumService = new SubjectCurriculumServiceImpl();
+        SubjectMarkComponentServiceImpl subjectMarkComponentService = new SubjectMarkComponentServiceImpl();
+        CourseServiceImpl courseService = new CourseServiceImpl();
+
+
+        //backup
+//        if (backup) {
+//            ult2.backupCapstoneDB();
+//        }
+
+        StudentEntity studentEntity = studentService.findStudentById(studentId);
+        if (studentEntity == null) {
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", "Sinh viên này không tồn tại!");
+            return jsonObject;
+        }
+        String studentRollNumber = studentEntity.getRollNumber();
+
+        HashMap<String, String> error = new HashMap<>();
+        HashMap<String, List<StudentAvgMarks>> tempMap = new HashMap<>();
+        HashMap<StudentEntity, List<StudentAvgMarks>> map = new HashMap<>();
+
+        List<StudentAvgMarks> fapMarks = ult2.getFAPMarksByStudentRollNumber(studentRollNumber);
+        List<SubjectEntity> allSubjects = subjectService.getAllSubjects();
+        String markComponentName = Enums.MarkComponent.AVERAGE.getValue();
+
+
+        List<MarksEntity> marksEntities = new ArrayList<MarksEntity>();
+
+
+
+
+        if (fapMarks == null) {
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", "Đã xảy ra lỗi khi lấy dữ liệu từ FAP!");
+            return jsonObject;
+        } else if (fapMarks.isEmpty()) {
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", "Điểm của " + studentRollNumber + " bên FAP không có điểm");
+            return jsonObject;
+        }
+
+        try {
+
+            //group by student rollnumber
+            for (StudentAvgMarks item : fapMarks) {
+                if (tempMap.containsKey(item.getRollNumber().toUpperCase())) {
+                    tempMap.get(item.getRollNumber().toUpperCase()).add(item);
+                } else {
+                    List<StudentAvgMarks> marks = new ArrayList<>();
+                    marks.add(item);
+                    tempMap.put(item.getRollNumber().toUpperCase(), marks);
+                }
+            }
+
+            //group mark by semestername
+            HashBasedTable<String, String, List<StudentAvgMarks>> table = HashBasedTable.create();
+
+            for (String itemRollNumber : tempMap.keySet()) {
+                if (itemRollNumber.equalsIgnoreCase(studentRollNumber)) {
+                    List<StudentAvgMarks> marks = tempMap.get(itemRollNumber);
+
+                    for (StudentAvgMarks mark : marks) {
+                        String semesterName = mark.getSemesterName();
+                        if (table.get(itemRollNumber, semesterName) == null) {
+                            List<StudentAvgMarks> newMarkList = new ArrayList<>();
+                            newMarkList.add(mark);
+
+                            table.put(itemRollNumber, semesterName, newMarkList);
+                        } else {
+                            table.get(itemRollNumber, semesterName).add(mark);
+                        }
+                    }
+                }
+            }
+
+            List<RealSemesterEntity> allSemester = Global.getSortedList();
+////            List<Integer> semestersToPreCurrentSelected = new ArrayList<>();
+////            for (RealSemesterEntity r : allSemester) {
+////                if (r.getId() == semesterId)
+////                    break;
+////                else
+////                    semestersToPreCurrentSelected.add(r.getId());
+////            }
+            int i = 1;
+            List<StudentAvgMarks> importedMark = new ArrayList<>();
+            for (String stuRollNumber : table.rowKeySet()) {
+                try {
+                    System.out.println(i++ + " - " + table.size()+ " semester");
+                    Map<String, List<StudentAvgMarks>> semesterGroups = table.row(stuRollNumber);
+                    for (String iSemester : semesterGroups.keySet()) {
+                        RealSemesterEntity semester = allSemester.stream().filter(q -> q.getSemester().equalsIgnoreCase(iSemester))
+                                .findFirst().orElse(null);
+                        if (semester == null) {
+                            if (error.containsKey(stuRollNumber)) {
+                                String errorMsg = error.get(stuRollNumber);
+                                errorMsg += "\n " + iSemester + " semester not exist";
+                            } else {
+                                error.put(stuRollNumber, iSemester + " semester not exist");
+                            }
+                        }
+                        int semesterId = semester.getId();
+                        List<StudentAvgMarks> semesterMark = semesterGroups.get(iSemester);
+                        List<String> subjCodes = semesterMark.stream().map(q -> q.getSubjectCode())
+                                .collect(Collectors.toList());
+
+                        //delete
+                        marksService.deleteMarksBySemesterAndSubjectCodesAndStudentId(semesterId, subjCodes, studentId);
+                        //import new mark
+                        importedMark.addAll(semesterMark);
+
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Logger.writeLog(e);
+                    error.put(stuRollNumber, e.getMessage());
+                }
+            }
+
+
+            i =1 ;
+            importedMarkLoop:
+            for (StudentAvgMarks item : importedMark) {
+                try {
+                    System.out.println(i++ + " - " + importedMark.size()+ " mark");
+                    SubjectEntity subjectEntity = allSubjects.stream()
+                            .filter(q -> q.getId().equalsIgnoreCase(item.getSubjectCode()))
+                            .findFirst().orElse(null);
+                    RealSemesterEntity semesterEntity = allSemester.stream()
+                            .filter(q -> q.getSemester().equalsIgnoreCase(item.getSemesterName()))
+                            .findFirst().orElse(null);
+
+                    if (semesterEntity == null) {
+                        if (error.containsKey(studentRollNumber)) {
+                            String errorMsg = error.get(studentRollNumber);
+                            errorMsg += "\n " + item.getSubjectCode() + " - subject not exist!";
+                        } else {
+                            error.put(studentRollNumber, item.getSubjectCode() + " - subject not exist!");
+                        }
+                        continue importedMarkLoop;
+                    }
+
+                    String semesterName = semesterEntity.getSemester();
+
+                    //kiểm tra xem subject có tồn tại không
+                    if (subjectEntity == null) {
+                        if (error.containsKey(studentRollNumber)) {
+                            String errorMsg = error.get(studentRollNumber);
+                            errorMsg += "\n " + item.getSubjectCode() + " - subject not exist!";
+                        } else {
+                            error.put(studentRollNumber, item.getSubjectCode() + " - subject not exist!");
+                        }
+                        continue importedMarkLoop;
+                    }
+                    //tạo Mark mới
+                    MarksEntity mark = new MarksEntity();
+
+                    MarkComponentEntity markComponentEntity =
+                            markComponentService.getMarkComponentByName(markComponentName);
+
+                    String subjectMarkComponentName = subjectEntity.getId() + "_" + markComponentName;
+                    SubjectMarkComponentEntity subjectMarkComponentEntity =
+                            subjectMarkComponentService.findSubjectMarkComponentByNameAndSubjectCd(markComponentName, subjectEntity.getId());
+
+                    //set subjectMarkComponent
+                    if (subjectMarkComponentEntity != null) {
+                        mark.setSubjectMarkComponentId(subjectMarkComponentEntity);
+                    } else {
+                        subjectMarkComponentEntity = new SubjectMarkComponentEntity();
+                        subjectMarkComponentEntity.setMarkComponentId(markComponentEntity);
+                        subjectMarkComponentEntity.setName(subjectMarkComponentName);
+                        subjectMarkComponentEntity.setPercentWeight(0.0);
+                        subjectMarkComponentEntity.setSubjectId(subjectEntity);
+                        subjectMarkComponentEntity = subjectMarkComponentService.createSubjectMarkComponent(subjectMarkComponentEntity);
+                        mark.setSubjectMarkComponentId(subjectMarkComponentEntity);
+                    }
+                    //set student
+                    mark.setStudentId(studentEntity);
+                    //set Semester
+                    mark.setSemesterId(semesterEntity);
+                    //set Course, tạo Course nếu chưa tồn tại
+
+                    CourseEntity courseEntity = courseService
+                            .findCourseBySemesterAndSubjectCode(semesterName, subjectEntity.getId());
+                    if (courseEntity != null) {
+                        mark.setCourseId(courseEntity);
+                    } else {
+                        courseEntity = new CourseEntity();
+                        courseEntity.setSemester(semesterName);
+                        courseEntity.setSubjectCode(subjectEntity.getId());
+                        courseEntity = courseService.createCourse(courseEntity);
+                        mark.setCourseId(courseEntity);
+                    }
+
+                    //set mark
+                    String passOrFail = item.isPassed() == true ?
+                            Enums.MarkStatus.PASSED.getValue() : Enums.MarkStatus.FAIL.getValue();
+                    mark.setAverageMark(item.getAvgMark());
+                    mark.setStatus(passOrFail);
+                    mark.setIsActivated(true);
+                    mark.setEnabled(true);
+
+                    //bỏ vào list để import
+                    marksEntities.add(mark);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Logger.writeLog(e);
+                }
+            }
+
+
+            //batch insert mark
+            marksService.createMarks(marksEntities);
+            request.getSession().setAttribute(Enums.SynchronizeFAP.SINGLE_STUDENT_ERROR_lIST.getValue(), error);
+            jsonObject.addProperty("success", true);
+            jsonObject.addProperty("message", "Đồng bộ hóa điểm sinh viên thành công !");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            jsonObject.addProperty("success", false);
+            jsonObject.addProperty("message", e.getMessage());
+        }
+
+        return jsonObject;
+    }
+
+
+    @RequestMapping(value = "/synchronizeMarkSingleStudentFromFAPPage")
+    public ModelAndView goSyncMarkSingleStudentFromFAPPage(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
+        ModelAndView mav = new ModelAndView("importMarks1StudentFromFAP");
+        mav.addObject("title", "Đồng bộ điểm từ FAP cho 1 sinh viên");
+
+        return mav;
+    }
+
+
+    //danh sách lỗi khi đồng bộ điểm từ FAP cho 1 sinh viên
+    @RequestMapping("/getFailSynchronizeMarksOfSingleStudentFromFAP")
+    @ResponseBody
+    public JsonObject getFailSynMarksSingleStudentFromFAP(@RequestParam Map<String, String> params, HttpServletRequest request) {
+        JsonObject obj = new JsonObject();
+
+        //lấy ra danh sách những sinh viên bị lỗi khi đẩy điểm từ bên FAP qua
+        // <RollNumber, Error>
+        HashMap<String, String> studentList = (HashMap<String, String>) request.getSession()
+                .getAttribute(Enums.SynchronizeFAP.SINGLE_STUDENT_ERROR_lIST.getValue());
         String type = params.get("type");
 
 //        final String sSearch = params.get("sSearch");

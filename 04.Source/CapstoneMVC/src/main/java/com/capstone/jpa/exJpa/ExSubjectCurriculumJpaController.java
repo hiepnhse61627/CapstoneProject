@@ -124,14 +124,25 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
 
     public void createCurriculumList(List<SubjectCurriculumEntity> subjectCurriculumEntityList) {
         EntityManager em = getEntityManager();
-        for (SubjectCurriculumEntity subjectCurriculumEntity : subjectCurriculumEntityList) {
-            try {
-                em.getTransaction().begin();
-                em.persist(subjectCurriculumEntity);
-                em.getTransaction().commit();
-            } catch (Exception e) {
-                e.printStackTrace();
+        int batchSize = 1000;
+        try {
+            em.getTransaction().begin();
+            for (int i = 0; i < subjectCurriculumEntityList.size(); i++) {
+                if (i > 0 && i % batchSize == 0) {
+                    em.flush();
+                    em.clear();
+                    em.getTransaction().commit();
+                    em.getTransaction().begin();
+                }
+                SubjectCurriculumEntity item = subjectCurriculumEntityList.get(i);
+                em.persist(item);
+                System.out.println("Insert - " + (i + 1));
             }
+            em.flush();
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            em.getTransaction().rollback();
+            e.printStackTrace();
         }
     }
 
@@ -204,7 +215,8 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
 
         return null;
     }
-    public List<SubjectCurriculumEntity> getSubjectCurriculumByStudent(int studentId){
+
+    public List<SubjectCurriculumEntity> getSubjectCurriculumByStudent(int studentId) {
         EntityManager em = getEntityManager();
         List<SubjectCurriculumEntity> subjectCurriculumEntityList = null;
         try {
@@ -218,8 +230,8 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
 
         } catch (Exception e) {
             e.printStackTrace();
-        }finally {
-            if(em != null){
+        } finally {
+            if (em != null) {
                 em.close();
             }
         }
@@ -227,7 +239,7 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
         return subjectCurriculumEntityList;
     }
 
-    public List<SubjectCurriculumEntity> getSubjectCurriculumByStudentByTerm(int studentId, int term){
+    public List<SubjectCurriculumEntity> getSubjectCurriculumByStudentByTerm(int studentId, int term) {
         EntityManager em = getEntityManager();
         List<SubjectCurriculumEntity> subjectCurriculumEntityList = null;
         try {
@@ -242,8 +254,8 @@ public class ExSubjectCurriculumJpaController extends SubjectCurriculumEntityJpa
 
         } catch (Exception e) {
             e.printStackTrace();
-        }finally {
-            if(em != null){
+        } finally {
+            if (em != null) {
                 em.close();
             }
         }

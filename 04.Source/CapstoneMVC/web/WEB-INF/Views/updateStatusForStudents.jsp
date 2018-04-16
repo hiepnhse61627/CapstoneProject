@@ -81,7 +81,7 @@
                         }
                     }
                 });
-                waitForTaskFinish(isRunning);
+                // waitForTaskFinish(isRunning);
             },
             allowOutsideClick: false
         });

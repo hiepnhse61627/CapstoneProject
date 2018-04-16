@@ -254,7 +254,7 @@ public class UploadController {
             XSSFSheet spreadsheet = workbook.getSheetAt(0);
 
             XSSFRow row;
-            int excelDataIndex = 3;
+            int excelDataIndex = 4;
             int rollNumberColIndex = 1;
             //xếp loại
             int gradeColIndex = 5;
@@ -285,8 +285,8 @@ public class UploadController {
                             rollNumberCell.getStringCellValue().trim().toUpperCase() : Integer.toString((int) rollNumberCell.getNumericCellValue()).trim().toUpperCase();
                     if (rollNumberCell != null) {
                         StudentEntity studentEntity = studentService.findStudentByRollNumber(rollNumber);
-                         int studentId = studentEntity.getId();
                         if (studentEntity != null) {
+                            int studentId = studentEntity.getId();
                             StudentStatusEntity studentStatusEntity = studentStatusService.getStudentStatusBySemesterIdAndStudentId(semesterId, studentEntity.getId());
                             if (studentStatusEntity != null) {
                                 // update status
@@ -324,12 +324,20 @@ public class UploadController {
 
                             String certificateValue = row.getCell(certificateCodeColIndex).getStringCellValue();
                             String graduateNumberValue = row.getCell(graduateDecisionNumberColIndex).getStringCellValue();
-                            String dateValue = row.getCell(dateColIndex).getStringCellValue();
+                            String dateValue = "";
+                            Cell dateCell = row.getCell(dateColIndex);
+//                            if (dateCell.getCellTypeEnum() == CellType.STRING) {
+//                                diplomaValue = diplomaCodeCell.getStringCellValue();
+//                            } else if (dateCell.getCellTypeEnum() == CellType.NUMERIC) {
+//                                dateValue = diplomaCodeCell.getNumericCellValue() + "";
+//                            }
 
-                            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                            Date date = sdf.parse(dateValue);
+
+                            SimpleDateFormat sdf = new SimpleDateFormat("YYYY/MM/dd");
+//                            Date date = sdf.parse(dateValue);
+                            Date date = dateCell.getDateCellValue();
                             GraduateDetailEntity graduateDetailEntity = graduateDetailService.findGraduateDetailEntity(studentId);
-                            if(graduateDetailEntity == null){
+                            if (graduateDetailEntity == null) {
                                 graduateDetailEntity = new GraduateDetailEntity();
                                 graduateDetailEntity.setStudentId(studentId);
                                 graduateDetailEntity.setDiplomaCode(diplomaValue);
@@ -340,7 +348,7 @@ public class UploadController {
                                 graduateDetailEntity.setGraded(gradeValue);
 
                                 graduateDetailService.create(graduateDetailEntity);
-                            }else{
+                            } else {
                                 graduateDetailEntity.setStudentId(studentId);
                                 graduateDetailEntity.setDiplomaCode(diplomaValue);
                                 graduateDetailEntity.setCertificateCode(certificateValue);
@@ -681,11 +689,44 @@ public class UploadController {
                                 String curriculumName = curriculumCell.getStringCellValue().trim();
                                 List<DocumentStudentEntity> docsStudent = new ArrayList<>(studentEntity.getDocumentStudentEntityList());
 
-                                CurriculumEntity exist = docsStudent.stream().filter(q -> q.getCurriculumId().getName().equalsIgnoreCase(curriculumName))
-                                        .map(q -> q.getCurriculumId())
-                                        .findFirst().orElse(null);
+                                boolean exist = docsStudent.stream()
+                                        .anyMatch(q -> q.getCurriculumId().getName().equalsIgnoreCase(curriculumName));
+
                                 //tạo docs student mới cho sinh viên (sinh viên chuyển qua chuyên ngành khác thì cần khung chương trình tương ứng)
-                                if (exist == null) {
+                                if (exist == false) {
+                                    //deactive Cn hẹp cũ của sinh viên ngành SE
+                                    if (curriculumName.contains("JS") || curriculumName.contains("ES") || curriculumName.contains("IS")) {
+                                        DocumentStudentEntity oldDocs = docsStudent.stream().filter(q -> (q.getCurriculumId().getName().contains("JS") ||
+                                                q.getCurriculumId().getName().contains("ES") || q.getCurriculumId().getName().contains("IS"))
+                                                && q.getIsActive()).findFirst().orElse(null);
+
+                                        if (oldDocs != null) {
+                                            oldDocs.setIsActive(false);
+                                            documentStudentService.editDocumentStudent(oldDocs);
+                                        }
+                                    }//deactive Cn hẹp cũ của sinh viên ngành FB
+                                    else if (curriculumName.contains("COB") || curriculumName.contains("COF")) {
+                                        DocumentStudentEntity oldDocs = docsStudent.stream().filter(q ->
+                                                (q.getCurriculumId().getName().contains("COB") ||
+                                                        q.getCurriculumId().getName().contains("COF"))
+                                                        && q.getIsActive()).findFirst().orElse(null);
+
+                                        if (oldDocs != null) {
+                                            oldDocs.setIsActive(false);
+                                            documentStudentService.editDocumentStudent(oldDocs);
+                                        }
+                                    } //deactive Cn hẹp cũ của sinh viên ngành BA
+                                    else if (curriculumName.contains("MKT") || curriculumName.contains("FIN")) {
+                                        DocumentStudentEntity oldDocs = docsStudent.stream().filter(q ->
+                                                (q.getCurriculumId().getName().contains("MKT") ||
+                                                        q.getCurriculumId().getName().contains("FIN"))
+                                                        && q.getIsActive()).findFirst().orElse(null);
+
+                                        if (oldDocs != null) {
+                                            oldDocs.setIsActive(false);
+                                            documentStudentService.editDocumentStudent(oldDocs);
+                                        }
+                                    }
 
                                     CurriculumEntity curriculumEntity = curriculumService.getCurriculumLikeName(curriculumName);
                                     if (curriculumEntity != null) {
@@ -694,6 +735,7 @@ public class UploadController {
                                         documentStudentEntity.setDocumentId(documentEntity);
                                         documentStudentEntity.setCurriculumId(curriculumEntity);
                                         documentStudentEntity.setCreatedDate(new Date());
+                                        documentStudentEntity.setIsActive(true);
                                         studentEntity.getDocumentStudentEntityList().add(documentStudentEntity);
                                     } else {
                                         cantImport.put(studentEntity, curriculumName + " curriculum not exist");
@@ -2362,7 +2404,7 @@ public class UploadController {
                         SubjectEntity subjectEntity = subjectService.findSubjectById(subjectCode);
                         DepartmentEntity departmentEntity = departmentList.get(0);
                         if (subjectEntity != null) {
-                            if(subjectEntity.getDepartmentId()== null){
+                            if (subjectEntity.getDepartmentId() == null) {
                                 subjectEntity.setDepartmentId(departmentEntity);
                                 EntityManagerFactory emf2 = Persistence.createEntityManagerFactory("CapstonePersistence");
                                 EntityManager em = emf2.createEntityManager();

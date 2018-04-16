@@ -12,7 +12,7 @@ public interface ISubjectCurriculumService {
     List<SubjectCurriculumEntity> getSubjectCurriculums(int curriculumId);
     SubjectCurriculumEntity getCurriculumById(int curId);
     SubjectCurriculumEntity getCurriculumByName(String name);
-    void createCurriculumList(List<SubjectCurriculumEntity> courseEntityList);
+    void createCurriculumList(List<SubjectCurriculumEntity> subjectCurriculumEntityList);
     SubjectCurriculumEntity createCurriculum(SubjectCurriculumEntity entity);
     void updateCurriculum(SubjectCurriculumEntity entity);
     void deleteCurriculum(int subjectCurriculumId);

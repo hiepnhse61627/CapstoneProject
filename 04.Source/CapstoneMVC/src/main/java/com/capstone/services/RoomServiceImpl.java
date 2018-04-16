@@ -5,6 +5,7 @@ import com.capstone.jpa.exJpa.ExRoomEntityJpaController;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.util.ArrayList;
 import java.util.List;
 
 public class RoomServiceImpl implements IRoomService {
@@ -21,7 +22,7 @@ public class RoomServiceImpl implements IRoomService {
     public RoomEntity findRoomById(int id) {
         return RoomEntityJpaController.findRoomEntity(id);
     }
-    
+
     @Override
     public List<RoomEntity> findRoomsByName(String searchValue) {
         return RoomEntityJpaController.findRoomsByName(searchValue);
@@ -38,7 +39,14 @@ public class RoomServiceImpl implements IRoomService {
     }
 
     public List<RoomEntity> findAllRooms() {
-        return RoomEntityJpaController.findRoomEntityEntities();
+        List<RoomEntity> result = new ArrayList<>();
+        List<RoomEntity> roomEntities = RoomEntityJpaController.findRoomEntityEntities();
+        for (RoomEntity aRoom : roomEntities) {
+            if (aRoom.getIsAvailable() == true) {
+                result.add(aRoom);
+            }
+        }
+        return result;
     }
 
     @Override
