@@ -707,7 +707,8 @@ public class StudentDetail {
 
         //get all subjectCurriculum of student for next semester
         List<SubjectCurriculumEntity> list = new ArrayList<>();
-        List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+        List<DocumentStudentEntity> docs = new ArrayList<>(student.getDocumentStudentEntityList());
+        docs = docs.stream().filter(q -> q.getIsActive()).collect(Collectors.toList());
         if (!docs.isEmpty()) {
             for (DocumentStudentEntity doc : docs) {
                 if (doc.getCurriculumId() != null) {

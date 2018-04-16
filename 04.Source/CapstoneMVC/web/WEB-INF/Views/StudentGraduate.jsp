@@ -760,10 +760,10 @@
         form.append('file', $('#thesisFile')[0].files[0]);
 
         swal({
-            title: 'Đang xử lý',
-            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
-            type: 'info',
-            onOpen: function () {
+                title: 'Đang xử lý',
+                html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!<div><div id='progress' class='form-group'></div>",
+                type: 'info',
+                onOpen: function () {
                 swal.showLoading();
                 $.ajax({
                     type: "POST",

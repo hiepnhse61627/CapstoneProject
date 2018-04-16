@@ -19,6 +19,16 @@ public class DocumentStudentServiceImpl implements IDocumentStudentService {
     }
 
     @Override
+    public void editDocumentStudent(DocumentStudentEntity entity) {
+        try {
+
+            controller.edit(entity);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public DocumentStudentEntity getLastestDocumentStudentById(int studentId) {
         return controller.getLastestDocumentStudentById(studentId);
     }

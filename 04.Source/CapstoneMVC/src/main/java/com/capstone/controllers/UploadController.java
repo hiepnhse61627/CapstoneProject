@@ -324,7 +324,7 @@ public class UploadController {
 
                             String certificateValue = row.getCell(certificateCodeColIndex).getStringCellValue();
                             String graduateNumberValue = row.getCell(graduateDecisionNumberColIndex).getStringCellValue();
-                            String dateValue ="";
+                            String dateValue = "";
                             Cell dateCell = row.getCell(dateColIndex);
 //                            if (dateCell.getCellTypeEnum() == CellType.STRING) {
 //                                diplomaValue = diplomaCodeCell.getStringCellValue();
@@ -689,11 +689,44 @@ public class UploadController {
                                 String curriculumName = curriculumCell.getStringCellValue().trim();
                                 List<DocumentStudentEntity> docsStudent = new ArrayList<>(studentEntity.getDocumentStudentEntityList());
 
-                                CurriculumEntity exist = docsStudent.stream().filter(q -> q.getCurriculumId().getName().equalsIgnoreCase(curriculumName))
-                                        .map(q -> q.getCurriculumId())
-                                        .findFirst().orElse(null);
+                                boolean exist = docsStudent.stream()
+                                        .anyMatch(q -> q.getCurriculumId().getName().equalsIgnoreCase(curriculumName));
+
                                 //tạo docs student mới cho sinh viên (sinh viên chuyển qua chuyên ngành khác thì cần khung chương trình tương ứng)
-                                if (exist == null) {
+                                if (exist == false) {
+                                    //deactive Cn hẹp cũ của sinh viên ngành SE
+                                    if (curriculumName.contains("JS") || curriculumName.contains("ES") || curriculumName.contains("IS")) {
+                                        DocumentStudentEntity oldDocs = docsStudent.stream().filter(q -> (q.getCurriculumId().getName().contains("JS") ||
+                                                q.getCurriculumId().getName().contains("ES") || q.getCurriculumId().getName().contains("IS"))
+                                                && q.getIsActive()).findFirst().orElse(null);
+
+                                        if (oldDocs != null) {
+                                            oldDocs.setIsActive(false);
+                                            documentStudentService.editDocumentStudent(oldDocs);
+                                        }
+                                    }//deactive Cn hẹp cũ của sinh viên ngành FB
+                                    else if (curriculumName.contains("COB") || curriculumName.contains("COF")) {
+                                        DocumentStudentEntity oldDocs = docsStudent.stream().filter(q ->
+                                                (q.getCurriculumId().getName().contains("COB") ||
+                                                        q.getCurriculumId().getName().contains("COF"))
+                                                        && q.getIsActive()).findFirst().orElse(null);
+
+                                        if (oldDocs != null) {
+                                            oldDocs.setIsActive(false);
+                                            documentStudentService.editDocumentStudent(oldDocs);
+                                        }
+                                    } //deactive Cn hẹp cũ của sinh viên ngành BA
+                                    else if (curriculumName.contains("MKT") || curriculumName.contains("FIN")) {
+                                        DocumentStudentEntity oldDocs = docsStudent.stream().filter(q ->
+                                                (q.getCurriculumId().getName().contains("MKT") ||
+                                                        q.getCurriculumId().getName().contains("FIN"))
+                                                        && q.getIsActive()).findFirst().orElse(null);
+
+                                        if (oldDocs != null) {
+                                            oldDocs.setIsActive(false);
+                                            documentStudentService.editDocumentStudent(oldDocs);
+                                        }
+                                    }
 
                                     CurriculumEntity curriculumEntity = curriculumService.getCurriculumLikeName(curriculumName);
                                     if (curriculumEntity != null) {
@@ -702,6 +735,7 @@ public class UploadController {
                                         documentStudentEntity.setDocumentId(documentEntity);
                                         documentStudentEntity.setCurriculumId(curriculumEntity);
                                         documentStudentEntity.setCreatedDate(new Date());
+                                        documentStudentEntity.setIsActive(true);
                                         studentEntity.getDocumentStudentEntityList().add(documentStudentEntity);
                                     } else {
                                         cantImport.put(studentEntity, curriculumName + " curriculum not exist");

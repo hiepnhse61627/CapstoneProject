@@ -289,11 +289,19 @@ public class StudentController {
 
                     dataList.add(mark);
                 } else {
-                    curMark.setSemester(m.getSemesterId().getSemester());
+                    if(curMark.getSemester().equalsIgnoreCase(m.getSemesterId().getSemester())){
+                        if( m.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue())){
+                            curMark.setStatus(m.getStatus());
+                            curMark.setAverageMark(m.getAverageMark());
+                            curMark.setRepeatingNumber(curMark.getRepeatingNumber() + 1);
+                        }
+                    }else{
+                        curMark.setSemester(m.getSemesterId().getSemester());
 //                    curMark.setClass1(m.getCourseId().getClass1());
-                    curMark.setStatus(m.getStatus());
-                    curMark.setAverageMark(m.getAverageMark());
-                    curMark.setRepeatingNumber(curMark.getRepeatingNumber() + 1);
+                        curMark.setStatus(m.getStatus());
+                        curMark.setAverageMark(m.getAverageMark());
+                        curMark.setRepeatingNumber(curMark.getRepeatingNumber() + 1);
+                    }
                 }
             }
 //            dataList = Ultilities.SortMarkModelBySemester(dataList);

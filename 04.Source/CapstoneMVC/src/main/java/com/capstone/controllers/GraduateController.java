@@ -297,7 +297,8 @@ public class GraduateController {
             List<MarksEntity> studentMarksList = allMarks.stream()
                     .filter(q -> q.getStudentId().getId() == student.getId())
                     .collect(Collectors.toList());
-            List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+            List<DocumentStudentEntity> docs = new ArrayList<>(student.getDocumentStudentEntityList());
+            docs = docs.stream().filter(q -> q.getIsActive()).collect(Collectors.toList());
             List<StudentEntity> uncheckable = new ArrayList<>();
 
             //tất cả các môn trong khung chương trình
@@ -1205,7 +1206,8 @@ public class GraduateController {
 //            }
 
             List<SubjectCurriculumEntity> subjects = new ArrayList<>();
-            List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+            List<DocumentStudentEntity> docs = new ArrayList<>(student.getDocumentStudentEntityList());
+            docs = docs.stream().filter(q -> q.getIsActive()).collect(Collectors.toList());
 
             SubjectEntity capstoneSubject = null;
             int capstoneTerm = Enums.SpecialTerm.CAPSTONETERM.getValue();
@@ -1672,7 +1674,8 @@ public class GraduateController {
         int i = 1;
         for (StudentEntity student : filteredStudents) {
             boolean failFlag = false;
-            List<DocumentStudentEntity> docs = student.getDocumentStudentEntityList();
+            List<DocumentStudentEntity> docs = new ArrayList<>(student.getDocumentStudentEntityList());
+            docs = docs.stream().filter(q -> q.getIsActive()).collect(Collectors.toList());
             List<MarksEntity> allMarks = new ArrayList<>(student.getMarksEntityList());
             List<MarkCreditTermModel> finalMarks = new ArrayList<>();
             List<SubjectCurriculumEntity> subjectCurriculumList = new ArrayList<>();
@@ -1828,6 +1831,8 @@ public class GraduateController {
 //        Ultilities.logUserAction("go to " + request.getRequestURI());
 
         ModelAndView view = new ModelAndView("GraduateCertificate");
+        view.addObject("title", "Chứng nhận sinh viên tốt nghiệp");
+
 
 
         return view;

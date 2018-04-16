@@ -396,7 +396,7 @@ public class SubjectController {
     }
 
 
-    @RequestMapping(value = "/subject/create")
+    @RequestMapping(value = "/subject/create", method = RequestMethod.POST)
     @ResponseBody
     public JsonObject CreateNewSubject(@RequestParam("sNewSubjectId") String subjectId, @RequestParam("sNewSubjectName") String subjectName,
                                        @RequestParam("sNewReplacement") String replacement,
@@ -432,14 +432,15 @@ public class SubjectController {
         return jsonObj;
     }
 
-    @RequestMapping(value = "/subject/edit")
+    @RequestMapping(value = "/subject/edit", method = RequestMethod.POST)
     @ResponseBody
-    public JsonObject EditNewSubject(@RequestParam("sNewSubjectId") String subjectId, @RequestParam("sNewSubjectName") String subjectName,
-                                       @RequestParam("sNewReplacement") String replacement,
-                                       @RequestParam("sNewPrerequisite") String prerequisite, @RequestParam("sNewEffectionSemester") String newEffectionSemester,
-                                       @RequestParam("sNewFailMark") String newFailMark) {
+    public JsonObject EditNewSubject(@RequestParam("sSubjectId") String subjectId, @RequestParam("sSubjectName") String subjectName,
+                                     @RequestParam("sReplacement") String replacement,
+                                     @RequestParam("sPrerequisite") String prerequisite,
+                                     @RequestParam("sEffectionSemester") String effectionSemester,
+                                     @RequestParam("sFailMark") String failMark) {
         JsonObject jsonObj = new JsonObject();
-        Ultilities.logUserAction("Create new subject - " + subjectId);
+        Ultilities.logUserAction("Edit subject - " + subjectId);
         try {
             EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
             EntityManager em = emf.createEntityManager();
@@ -449,8 +450,8 @@ public class SubjectController {
             model.setSubjectName(subjectName);
             model.setPrerequisiteSubject(prerequisite);
             model.setReplacementSubject(replacement);
-            model.setEffectionSemester(newEffectionSemester);
-            model.setFailMark(Integer.parseInt(newFailMark));
+            model.setEffectionSemester(effectionSemester);
+            model.setFailMark(Integer.parseInt(failMark));
             SubjectModel result = subjectService.updateSubject(model);
             if (!result.isResult()) {
                 jsonObj.addProperty("success", false);
@@ -501,7 +502,6 @@ public class SubjectController {
             int totalLine = lastRow - excelDataIndex + 1;
 
 
-
             int currentLine = 1;
 
             SubjectServiceImpl subjectService = new SubjectServiceImpl();
@@ -513,7 +513,7 @@ public class SubjectController {
                 //get student and check if student exists
                 row = spreadsheet.getRow(excelDataIndex);
 
-                 currentLine = 1;
+                currentLine = 1;
 
                 //get mark component name for later use
                 HashMap<String, List<String>> thesisName = new HashMap<>();
@@ -534,11 +534,11 @@ public class SubjectController {
                         String subjectCodeValue = subjectCodeCell.getStringCellValue().trim().toUpperCase();
                         String vietnameseNameValue = vietnameseNameCell.getStringCellValue().trim();
 
-                        if(!vietnameseNameValue.isEmpty()){
-                            SubjectEntity subject =  allSubject.stream().filter(q -> q.getId().equalsIgnoreCase(subjectCodeValue))
+                        if (!vietnameseNameValue.isEmpty()) {
+                            SubjectEntity subject = allSubject.stream().filter(q -> q.getId().equalsIgnoreCase(subjectCodeValue))
                                     .findFirst().orElse(null);
 
-                            if(subject != null){
+                            if (subject != null) {
                                 subject.setVnName(vietnameseNameValue);
                                 importList.add(subject);
                             }

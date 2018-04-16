@@ -40,6 +40,8 @@ public class DocumentStudentEntity implements Serializable {
     @Column(name = "CreatedDate")
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
+    @Column(name = "IsActive")
+    private Boolean isActive;
     @JoinColumn(name = "CurriculumId", referencedColumnName = "Id")
     @ManyToOne
     private CurriculumEntity curriculumId;
@@ -74,6 +76,14 @@ public class DocumentStudentEntity implements Serializable {
 
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 
     public CurriculumEntity getCurriculumId() {

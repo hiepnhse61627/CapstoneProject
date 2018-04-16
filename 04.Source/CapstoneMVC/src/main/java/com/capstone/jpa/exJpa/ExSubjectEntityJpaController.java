@@ -178,8 +178,12 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
 //            uSubject.setSubjectEntityList1(new ArrayList<SubjectEntity>());
             if (!subject.getEffectionSemester().equals("0")) {
                 uSubject.getPrequisiteEntity().setFailMark(uSubject.getPrequisiteEntity().getFailMark());
-                uSubject.getPrequisiteEntity().setPrequisiteSubs(uSubject.getPrequisiteEntity().getPrequisiteSubs());
-                uSubject.getPrequisiteEntity().setEffectionSemester(subject.getEffectionSemester());
+                if (!subject.getPrerequisiteSubject().isEmpty()) {
+                    uSubject.getPrequisiteEntity().setPrequisiteSubs(subject.getPrerequisiteSubject());
+                }
+                if (!subject.getEffectionSemester().isEmpty()) {
+                    uSubject.getPrequisiteEntity().setEffectionSemester(subject.getEffectionSemester());
+                }
                 uSubject.getPrequisiteEntity().setNewFailMark(subject.getFailMark());
                 uSubject.getPrequisiteEntity().setNewPrequisiteSubs(subject.getPrerequisiteSubject());
             } else {
@@ -187,7 +191,8 @@ public class ExSubjectEntityJpaController extends SubjectEntityJpaController {
                 uSubject.getPrequisiteEntity().setNewPrequisiteSubs(null);
                 uSubject.getPrequisiteEntity().setFailMark(subject.getFailMark());
                 uSubject.getPrequisiteEntity().setEffectionSemester(null);
-                uSubject.getPrequisiteEntity().setPrequisiteSubs(subject.getPrerequisiteSubject());
+                if (!subject.getPrerequisiteSubject().isEmpty())
+                    uSubject.getPrequisiteEntity().setPrequisiteSubs(subject.getPrerequisiteSubject());
             }
 
 
