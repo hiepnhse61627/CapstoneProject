@@ -2573,8 +2573,8 @@ public class StudentArrangementController {
             }
             this.process1 = true;
 
-            System.out.println("CSI101: " + countCSI101);
-            System.out.println("CSI102: " + countCSI102);
+//            System.out.println("CSI101: " + countCSI101);
+//            System.out.println("CSI102: " + countCSI102);
 
             // Create class for LAB
             int classNumber;
