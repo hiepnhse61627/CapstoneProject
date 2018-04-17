@@ -110,13 +110,13 @@
         <div class="b-body">
 
             <%--<div class="row">--%>
-                <%--<div class="col-md-6">--%>
-                    <%----%>
-                <%--</div>--%>
+            <%--<div class="col-md-6">--%>
+            <%----%>
+            <%--</div>--%>
 
-                <%--<div class="col-md-6">--%>
+            <%--<div class="col-md-6">--%>
 
-                <%--</div>--%>
+            <%--</div>--%>
             <%--</div>--%>
 
             <div class="row">
@@ -182,8 +182,11 @@
 
                 <div class="col-md-6">
                     <div class="form-group" style="width: 100%; bottom: 0; position: absolute;">
-                        <button type="button" class="btn btn-success" onclick="RefreshTable2()" id="searchBtn">Tìm kiếm</button>
-                        <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa bộ lọc
+                        <button type="button" class="btn btn-success" onclick="RefreshTable2()" id="searchBtn">Tìm
+                            kiếm
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa
+                            bộ lọc
                         </button>
                     </div>
                 </div>
@@ -203,7 +206,7 @@
                         <th>Giảng viên</th>
                         <th>Capacity</th>
                         <th>IsPast</th>
-                        <th>Chi tiết</th>
+                        <th>Thay đổi</th>
                         </thead>
                         <tbody></tbody>
                     </table>
@@ -927,21 +930,20 @@
                 isError = true;
             }
         } else if (type !== "create") {
-            if ($("#dayOfWeek").val() === "" || $("#dayOfWeek").val() === null) {
-                alert("Thứ trong tuần không được bỏ trống");
-                isError = true;
-            } else if ($("#slot").val() === "" || $("#slot").val() === null) {
-                alert("Slot không được bỏ trống2");
-
-                alert("Slot không được bỏ trống");
-                isError = true;
-            } else if ($("#capacity").val() === "" || $("#capacity").val() === null) {
-                alert("Số lượng không được bỏ trống");
-                isError = true;
-            } else if ($("#lecture").val() === "" || $("#lecture").val() === null) {
-                alert("Giảng viên không được bỏ trống");
-                isError = true;
-            }
+            // if ($("#dayOfWeek").val() === "" || $("#dayOfWeek").val() === null) {
+            //     alert("Thứ trong tuần không được bỏ trống");
+            //     isError = true;
+            // } else if ($("#slot").val() === "" || $("#slot").val() === null) {
+            //
+            //     alert("Slot không được bỏ trống");
+            //     isError = true;
+            // } else if ($("#capacity").val() === "" || $("#capacity").val() === null) {
+            //     alert("Số lượng không được bỏ trống");
+            //     isError = true;
+            // } else if ($("#lecture").val() === "" || $("#lecture").val() === null) {
+            //     alert("Giảng viên không được bỏ trống");
+            //     isError = true;
+            // }
         }
 
         return !isError;
@@ -993,11 +995,16 @@
     }
 
     function RefreshTable2() {
-        if (tblSchedule != null) {
-            tblSchedule._fnPageChange(0);
-            tblSchedule._fnAjaxUpdate();
+        if ($('#scheduleDate2').val() !== "") {
+            if (tblSchedule != null) {
+                tblSchedule._fnPageChange(0);
+                tblSchedule._fnAjaxUpdate();
+            }
+            $('#removeFilterBtn').removeAttr('disabled');
+        } else {
+            alert("Xin chọn khoảng thời gian muốn tìm kiếm.");
         }
-        $('#removeFilterBtn').removeAttr('disabled');
+
     }
 
     function resetFilter() {

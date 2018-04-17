@@ -286,11 +286,16 @@
 
 
     function RefreshTable() {
-        if (table != null) {
-            table._fnPageChange(0);
-            table._fnAjaxUpdate();
+
+        if ($('#scheduleDate').val() !== "") {
+            if (table != null) {
+                table._fnPageChange(0);
+                table._fnAjaxUpdate();
+            }
+            $('#removeFilterBtn').removeAttr('disabled');
+        } else {
+            alert("Xin chọn khoảng thời gian muốn tìm kiếm.");
         }
-        $('#removeFilterBtn').removeAttr('disabled');
 
     }
 

@@ -275,11 +275,15 @@
 
 
     function RefreshTable() {
-        if (table != null) {
-            table._fnPageChange(0);
-            table._fnAjaxUpdate();
+        if ($('#scheduleDate2').val() !== "" && ($('#subject2').val() !== null && $('#subject2').val() !== "")) {
+            if (table != null) {
+                table._fnPageChange(0);
+                table._fnAjaxUpdate();
+            }
+            $('#removeFilterBtn').removeAttr('disabled');
+        } else {
+            alert("Xin chọn khoảng thời gian và môn học muốn tìm kiếm.");
         }
-        $('#removeFilterBtn').removeAttr('disabled');
 
     }
 
