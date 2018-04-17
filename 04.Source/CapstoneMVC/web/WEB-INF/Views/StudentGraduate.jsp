@@ -199,7 +199,7 @@
                                 <label for="requiredDocumentsFile" hidden></label>
                                 <input type="file" accept=".xlsx, .xls" id="requiredDocumentsFile" name="file"/>
                                 <div class="">
-                                    Bấm vào <a class="link" href="/Resources/FileTemplates/Thong_tin_SV_TN.xlsx.xlsx">Template</a>
+                                    Bấm vào <a class="link" href="/Resources/FileTemplates/Thong_tin_SV_TN.xlsx">Template</a>
                                     để tải
                                     về bản mẫu
                                 </div>

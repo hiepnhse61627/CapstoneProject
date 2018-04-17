@@ -42,7 +42,7 @@ public class CustomServletContextListener implements ServletContextListener {
             }
         };
 
-        scheduler.scheduleAtFixedRate(runnable, 0, 3, TimeUnit.HOURS);
+//        scheduler.scheduleAtFixedRate(runnable, 0, 3, TimeUnit.HOURS);
     }
 
     @Override
