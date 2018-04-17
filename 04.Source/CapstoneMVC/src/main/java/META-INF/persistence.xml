@@ -33,6 +33,7 @@
         <class>com.capstone.entities.CredentialsRolesEntity</class>
         <class>com.capstone.entities.GraduateDetailEntity</class>
         <class>com.capstone.entities.GraduationConditionEntity</class>
+        <class>com.capstone.entities.SimulateDocumentStudentEntity</class>
 
         <exclude-unlisted-classes>false</exclude-unlisted-classes>
         <properties>

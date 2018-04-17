@@ -39,6 +39,8 @@ public class CurriculumEntity implements Serializable {
     @JoinColumn(name = "ProgramId", referencedColumnName = "Id", nullable = false)
     @ManyToOne(optional = false)
     private ProgramEntity programId;
+    @OneToMany(mappedBy = "curriculumId")
+    private List<SimulateDocumentStudentEntity> simulateDocumentStudentEntityList;
 
     public CurriculumEntity() {
     }
@@ -106,6 +108,14 @@ public class CurriculumEntity implements Serializable {
 
     public void setProgramId(ProgramEntity programId) {
         this.programId = programId;
+    }
+
+    public List<SimulateDocumentStudentEntity> getSimulateDocumentStudentEntityList() {
+        return simulateDocumentStudentEntityList;
+    }
+
+    public void setSimulateDocumentStudentEntityList(List<SimulateDocumentStudentEntity> simulateDocumentStudentEntityList) {
+        this.simulateDocumentStudentEntityList = simulateDocumentStudentEntityList;
     }
 
     @Override

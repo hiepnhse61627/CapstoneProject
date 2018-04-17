@@ -86,6 +86,9 @@ public class StudentEntity implements Serializable {
     @OneToMany(mappedBy = "studentId")
     @XmlTransient
     private List<CourseStudentEntity> courseStudentEntityList;
+    @OneToMany(mappedBy = "studentId")
+    @XmlTransient
+    private List<SimulateDocumentStudentEntity> simulateDocumentStudentEntityList;
 
     public StudentEntity() {
     }
@@ -241,6 +244,14 @@ public class StudentEntity implements Serializable {
 
     public void setCourseStudentEntityList(List<CourseStudentEntity> courseStudentEntityList) {
         this.courseStudentEntityList = courseStudentEntityList;
+    }
+
+    public List<SimulateDocumentStudentEntity> getSimulateDocumentStudentEntityList() {
+        return simulateDocumentStudentEntityList;
+    }
+
+    public void setSimulateDocumentStudentEntityList(List<SimulateDocumentStudentEntity> simulateDocumentStudentEntityList) {
+        this.simulateDocumentStudentEntityList = simulateDocumentStudentEntityList;
     }
 
     @Override

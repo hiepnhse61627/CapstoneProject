@@ -51,6 +51,8 @@ public class DocumentEntity implements Serializable {
     @JoinColumn(name = "DocParentId", referencedColumnName = "Id")
     @ManyToOne
     private DocumentEntity docParentId;
+    @OneToMany(mappedBy = "documentId")
+    private List<SimulateDocumentStudentEntity> simulateDocumentStudentEntityList;
 
     public DocumentEntity() {
     }
@@ -113,6 +115,14 @@ public class DocumentEntity implements Serializable {
 
     public void setDocParentId(DocumentEntity docParentId) {
         this.docParentId = docParentId;
+    }
+
+    public List<SimulateDocumentStudentEntity> getSimulateDocumentStudentEntityList() {
+        return simulateDocumentStudentEntityList;
+    }
+
+    public void setSimulateDocumentStudentEntityList(List<SimulateDocumentStudentEntity> simulateDocumentStudentEntityList) {
+        this.simulateDocumentStudentEntityList = simulateDocumentStudentEntityList;
     }
 
     @Override

@@ -13,8 +13,11 @@ import javax.persistence.criteria.Root;
 import com.capstone.entities.DocTypeEntity;
 import com.capstone.entities.DocumentEntity;
 import com.capstone.entities.DocumentStudentEntity;
+import com.capstone.entities.SimulateDocumentStudentEntity;
 import com.capstone.jpa.exceptions.IllegalOrphanException;
 import com.capstone.jpa.exceptions.NonexistentEntityException;
+import com.capstone.jpa.exceptions.PreexistingEntityException;
+
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -35,12 +38,15 @@ public class DocumentEntityJpaController implements Serializable {
         return emf.createEntityManager();
     }
 
-    public void create(DocumentEntity documentEntity) {
+    public void create(DocumentEntity documentEntity) throws PreexistingEntityException, Exception {
+        if (documentEntity.getDocumentEntityList() == null) {
+            documentEntity.setDocumentEntityList(new ArrayList<DocumentEntity>());
+        }
         if (documentEntity.getDocumentStudentEntityList() == null) {
             documentEntity.setDocumentStudentEntityList(new ArrayList<DocumentStudentEntity>());
         }
-        if (documentEntity.getDocumentEntityList() == null) {
-            documentEntity.setDocumentEntityList(new ArrayList<DocumentEntity>());
+        if (documentEntity.getSimulateDocumentStudentEntityList() == null) {
+            documentEntity.setSimulateDocumentStudentEntityList(new ArrayList<SimulateDocumentStudentEntity>());
         }
         EntityManager em = null;
         try {
@@ -56,18 +62,24 @@ public class DocumentEntityJpaController implements Serializable {
                 docParentId = em.getReference(docParentId.getClass(), docParentId.getId());
                 documentEntity.setDocParentId(docParentId);
             }
-            List<DocumentStudentEntity> attachedDocumentStudentEntityList = new ArrayList<DocumentStudentEntity>();
-            for (DocumentStudentEntity documentStudentEntityListDocumentStudentEntityToAttach : documentEntity.getDocumentStudentEntityList()) {
-                documentStudentEntityListDocumentStudentEntityToAttach = em.getReference(documentStudentEntityListDocumentStudentEntityToAttach.getClass(), documentStudentEntityListDocumentStudentEntityToAttach.getId());
-                attachedDocumentStudentEntityList.add(documentStudentEntityListDocumentStudentEntityToAttach);
-            }
-            documentEntity.setDocumentStudentEntityList(attachedDocumentStudentEntityList);
             List<DocumentEntity> attachedDocumentEntityList = new ArrayList<DocumentEntity>();
             for (DocumentEntity documentEntityListDocumentEntityToAttach : documentEntity.getDocumentEntityList()) {
                 documentEntityListDocumentEntityToAttach = em.getReference(documentEntityListDocumentEntityToAttach.getClass(), documentEntityListDocumentEntityToAttach.getId());
                 attachedDocumentEntityList.add(documentEntityListDocumentEntityToAttach);
             }
             documentEntity.setDocumentEntityList(attachedDocumentEntityList);
+            List<DocumentStudentEntity> attachedDocumentStudentEntityList = new ArrayList<DocumentStudentEntity>();
+            for (DocumentStudentEntity documentStudentEntityListDocumentStudentEntityToAttach : documentEntity.getDocumentStudentEntityList()) {
+                documentStudentEntityListDocumentStudentEntityToAttach = em.getReference(documentStudentEntityListDocumentStudentEntityToAttach.getClass(), documentStudentEntityListDocumentStudentEntityToAttach.getId());
+                attachedDocumentStudentEntityList.add(documentStudentEntityListDocumentStudentEntityToAttach);
+            }
+            documentEntity.setDocumentStudentEntityList(attachedDocumentStudentEntityList);
+            List<SimulateDocumentStudentEntity> attachedSimulateDocumentStudentEntityList = new ArrayList<SimulateDocumentStudentEntity>();
+            for (SimulateDocumentStudentEntity simulateDocumentStudentEntityListSimulateDocumentStudentEntityToAttach : documentEntity.getSimulateDocumentStudentEntityList()) {
+                simulateDocumentStudentEntityListSimulateDocumentStudentEntityToAttach = em.getReference(simulateDocumentStudentEntityListSimulateDocumentStudentEntityToAttach.getClass(), simulateDocumentStudentEntityListSimulateDocumentStudentEntityToAttach.getId());
+                attachedSimulateDocumentStudentEntityList.add(simulateDocumentStudentEntityListSimulateDocumentStudentEntityToAttach);
+            }
+            documentEntity.setSimulateDocumentStudentEntityList(attachedSimulateDocumentStudentEntityList);
             em.persist(documentEntity);
             if (docTypeId != null) {
                 docTypeId.getDocumentEntityList().add(documentEntity);
@@ -76,15 +88,6 @@ public class DocumentEntityJpaController implements Serializable {
             if (docParentId != null) {
                 docParentId.getDocumentEntityList().add(documentEntity);
                 docParentId = em.merge(docParentId);
-            }
-            for (DocumentStudentEntity documentStudentEntityListDocumentStudentEntity : documentEntity.getDocumentStudentEntityList()) {
-                DocumentEntity oldDocumentIdOfDocumentStudentEntityListDocumentStudentEntity = documentStudentEntityListDocumentStudentEntity.getDocumentId();
-                documentStudentEntityListDocumentStudentEntity.setDocumentId(documentEntity);
-                documentStudentEntityListDocumentStudentEntity = em.merge(documentStudentEntityListDocumentStudentEntity);
-                if (oldDocumentIdOfDocumentStudentEntityListDocumentStudentEntity != null) {
-                    oldDocumentIdOfDocumentStudentEntityListDocumentStudentEntity.getDocumentStudentEntityList().remove(documentStudentEntityListDocumentStudentEntity);
-                    oldDocumentIdOfDocumentStudentEntityListDocumentStudentEntity = em.merge(oldDocumentIdOfDocumentStudentEntityListDocumentStudentEntity);
-                }
             }
             for (DocumentEntity documentEntityListDocumentEntity : documentEntity.getDocumentEntityList()) {
                 DocumentEntity oldDocParentIdOfDocumentEntityListDocumentEntity = documentEntityListDocumentEntity.getDocParentId();
@@ -95,7 +98,30 @@ public class DocumentEntityJpaController implements Serializable {
                     oldDocParentIdOfDocumentEntityListDocumentEntity = em.merge(oldDocParentIdOfDocumentEntityListDocumentEntity);
                 }
             }
+            for (DocumentStudentEntity documentStudentEntityListDocumentStudentEntity : documentEntity.getDocumentStudentEntityList()) {
+                DocumentEntity oldDocumentIdOfDocumentStudentEntityListDocumentStudentEntity = documentStudentEntityListDocumentStudentEntity.getDocumentId();
+                documentStudentEntityListDocumentStudentEntity.setDocumentId(documentEntity);
+                documentStudentEntityListDocumentStudentEntity = em.merge(documentStudentEntityListDocumentStudentEntity);
+                if (oldDocumentIdOfDocumentStudentEntityListDocumentStudentEntity != null) {
+                    oldDocumentIdOfDocumentStudentEntityListDocumentStudentEntity.getDocumentStudentEntityList().remove(documentStudentEntityListDocumentStudentEntity);
+                    oldDocumentIdOfDocumentStudentEntityListDocumentStudentEntity = em.merge(oldDocumentIdOfDocumentStudentEntityListDocumentStudentEntity);
+                }
+            }
+            for (SimulateDocumentStudentEntity simulateDocumentStudentEntityListSimulateDocumentStudentEntity : documentEntity.getSimulateDocumentStudentEntityList()) {
+                DocumentEntity oldDocumentIdOfSimulateDocumentStudentEntityListSimulateDocumentStudentEntity = simulateDocumentStudentEntityListSimulateDocumentStudentEntity.getDocumentId();
+                simulateDocumentStudentEntityListSimulateDocumentStudentEntity.setDocumentId(documentEntity);
+                simulateDocumentStudentEntityListSimulateDocumentStudentEntity = em.merge(simulateDocumentStudentEntityListSimulateDocumentStudentEntity);
+                if (oldDocumentIdOfSimulateDocumentStudentEntityListSimulateDocumentStudentEntity != null) {
+                    oldDocumentIdOfSimulateDocumentStudentEntityListSimulateDocumentStudentEntity.getSimulateDocumentStudentEntityList().remove(simulateDocumentStudentEntityListSimulateDocumentStudentEntity);
+                    oldDocumentIdOfSimulateDocumentStudentEntityListSimulateDocumentStudentEntity = em.merge(oldDocumentIdOfSimulateDocumentStudentEntityListSimulateDocumentStudentEntity);
+                }
+            }
             em.getTransaction().commit();
+        } catch (Exception ex) {
+            if (findDocumentEntity(documentEntity.getId()) != null) {
+                throw new PreexistingEntityException("DocumentEntity " + documentEntity + " already exists.", ex);
+            }
+            throw ex;
         } finally {
             if (em != null) {
                 em.close();
@@ -113,10 +139,12 @@ public class DocumentEntityJpaController implements Serializable {
             DocTypeEntity docTypeIdNew = documentEntity.getDocTypeId();
             DocumentEntity docParentIdOld = persistentDocumentEntity.getDocParentId();
             DocumentEntity docParentIdNew = documentEntity.getDocParentId();
-            List<DocumentStudentEntity> documentStudentEntityListOld = persistentDocumentEntity.getDocumentStudentEntityList();
-            List<DocumentStudentEntity> documentStudentEntityListNew = documentEntity.getDocumentStudentEntityList();
             List<DocumentEntity> documentEntityListOld = persistentDocumentEntity.getDocumentEntityList();
             List<DocumentEntity> documentEntityListNew = documentEntity.getDocumentEntityList();
+            List<DocumentStudentEntity> documentStudentEntityListOld = persistentDocumentEntity.getDocumentStudentEntityList();
+            List<DocumentStudentEntity> documentStudentEntityListNew = documentEntity.getDocumentStudentEntityList();
+            List<SimulateDocumentStudentEntity> simulateDocumentStudentEntityListOld = persistentDocumentEntity.getSimulateDocumentStudentEntityList();
+            List<SimulateDocumentStudentEntity> simulateDocumentStudentEntityListNew = documentEntity.getSimulateDocumentStudentEntityList();
             List<String> illegalOrphanMessages = null;
             for (DocumentStudentEntity documentStudentEntityListOldDocumentStudentEntity : documentStudentEntityListOld) {
                 if (!documentStudentEntityListNew.contains(documentStudentEntityListOldDocumentStudentEntity)) {
@@ -137,13 +165,6 @@ public class DocumentEntityJpaController implements Serializable {
                 docParentIdNew = em.getReference(docParentIdNew.getClass(), docParentIdNew.getId());
                 documentEntity.setDocParentId(docParentIdNew);
             }
-            List<DocumentStudentEntity> attachedDocumentStudentEntityListNew = new ArrayList<DocumentStudentEntity>();
-            for (DocumentStudentEntity documentStudentEntityListNewDocumentStudentEntityToAttach : documentStudentEntityListNew) {
-                documentStudentEntityListNewDocumentStudentEntityToAttach = em.getReference(documentStudentEntityListNewDocumentStudentEntityToAttach.getClass(), documentStudentEntityListNewDocumentStudentEntityToAttach.getId());
-                attachedDocumentStudentEntityListNew.add(documentStudentEntityListNewDocumentStudentEntityToAttach);
-            }
-            documentStudentEntityListNew = attachedDocumentStudentEntityListNew;
-            documentEntity.setDocumentStudentEntityList(documentStudentEntityListNew);
             List<DocumentEntity> attachedDocumentEntityListNew = new ArrayList<DocumentEntity>();
             for (DocumentEntity documentEntityListNewDocumentEntityToAttach : documentEntityListNew) {
                 documentEntityListNewDocumentEntityToAttach = em.getReference(documentEntityListNewDocumentEntityToAttach.getClass(), documentEntityListNewDocumentEntityToAttach.getId());
@@ -151,6 +172,20 @@ public class DocumentEntityJpaController implements Serializable {
             }
             documentEntityListNew = attachedDocumentEntityListNew;
             documentEntity.setDocumentEntityList(documentEntityListNew);
+            List<DocumentStudentEntity> attachedDocumentStudentEntityListNew = new ArrayList<DocumentStudentEntity>();
+            for (DocumentStudentEntity documentStudentEntityListNewDocumentStudentEntityToAttach : documentStudentEntityListNew) {
+                documentStudentEntityListNewDocumentStudentEntityToAttach = em.getReference(documentStudentEntityListNewDocumentStudentEntityToAttach.getClass(), documentStudentEntityListNewDocumentStudentEntityToAttach.getId());
+                attachedDocumentStudentEntityListNew.add(documentStudentEntityListNewDocumentStudentEntityToAttach);
+            }
+            documentStudentEntityListNew = attachedDocumentStudentEntityListNew;
+            documentEntity.setDocumentStudentEntityList(documentStudentEntityListNew);
+            List<SimulateDocumentStudentEntity> attachedSimulateDocumentStudentEntityListNew = new ArrayList<SimulateDocumentStudentEntity>();
+            for (SimulateDocumentStudentEntity simulateDocumentStudentEntityListNewSimulateDocumentStudentEntityToAttach : simulateDocumentStudentEntityListNew) {
+                simulateDocumentStudentEntityListNewSimulateDocumentStudentEntityToAttach = em.getReference(simulateDocumentStudentEntityListNewSimulateDocumentStudentEntityToAttach.getClass(), simulateDocumentStudentEntityListNewSimulateDocumentStudentEntityToAttach.getId());
+                attachedSimulateDocumentStudentEntityListNew.add(simulateDocumentStudentEntityListNewSimulateDocumentStudentEntityToAttach);
+            }
+            simulateDocumentStudentEntityListNew = attachedSimulateDocumentStudentEntityListNew;
+            documentEntity.setSimulateDocumentStudentEntityList(simulateDocumentStudentEntityListNew);
             documentEntity = em.merge(documentEntity);
             if (docTypeIdOld != null && !docTypeIdOld.equals(docTypeIdNew)) {
                 docTypeIdOld.getDocumentEntityList().remove(documentEntity);
@@ -168,17 +203,6 @@ public class DocumentEntityJpaController implements Serializable {
                 docParentIdNew.getDocumentEntityList().add(documentEntity);
                 docParentIdNew = em.merge(docParentIdNew);
             }
-            for (DocumentStudentEntity documentStudentEntityListNewDocumentStudentEntity : documentStudentEntityListNew) {
-                if (!documentStudentEntityListOld.contains(documentStudentEntityListNewDocumentStudentEntity)) {
-                    DocumentEntity oldDocumentIdOfDocumentStudentEntityListNewDocumentStudentEntity = documentStudentEntityListNewDocumentStudentEntity.getDocumentId();
-                    documentStudentEntityListNewDocumentStudentEntity.setDocumentId(documentEntity);
-                    documentStudentEntityListNewDocumentStudentEntity = em.merge(documentStudentEntityListNewDocumentStudentEntity);
-                    if (oldDocumentIdOfDocumentStudentEntityListNewDocumentStudentEntity != null && !oldDocumentIdOfDocumentStudentEntityListNewDocumentStudentEntity.equals(documentEntity)) {
-                        oldDocumentIdOfDocumentStudentEntityListNewDocumentStudentEntity.getDocumentStudentEntityList().remove(documentStudentEntityListNewDocumentStudentEntity);
-                        oldDocumentIdOfDocumentStudentEntityListNewDocumentStudentEntity = em.merge(oldDocumentIdOfDocumentStudentEntityListNewDocumentStudentEntity);
-                    }
-                }
-            }
             for (DocumentEntity documentEntityListOldDocumentEntity : documentEntityListOld) {
                 if (!documentEntityListNew.contains(documentEntityListOldDocumentEntity)) {
                     documentEntityListOldDocumentEntity.setDocParentId(null);
@@ -193,6 +217,34 @@ public class DocumentEntityJpaController implements Serializable {
                     if (oldDocParentIdOfDocumentEntityListNewDocumentEntity != null && !oldDocParentIdOfDocumentEntityListNewDocumentEntity.equals(documentEntity)) {
                         oldDocParentIdOfDocumentEntityListNewDocumentEntity.getDocumentEntityList().remove(documentEntityListNewDocumentEntity);
                         oldDocParentIdOfDocumentEntityListNewDocumentEntity = em.merge(oldDocParentIdOfDocumentEntityListNewDocumentEntity);
+                    }
+                }
+            }
+            for (DocumentStudentEntity documentStudentEntityListNewDocumentStudentEntity : documentStudentEntityListNew) {
+                if (!documentStudentEntityListOld.contains(documentStudentEntityListNewDocumentStudentEntity)) {
+                    DocumentEntity oldDocumentIdOfDocumentStudentEntityListNewDocumentStudentEntity = documentStudentEntityListNewDocumentStudentEntity.getDocumentId();
+                    documentStudentEntityListNewDocumentStudentEntity.setDocumentId(documentEntity);
+                    documentStudentEntityListNewDocumentStudentEntity = em.merge(documentStudentEntityListNewDocumentStudentEntity);
+                    if (oldDocumentIdOfDocumentStudentEntityListNewDocumentStudentEntity != null && !oldDocumentIdOfDocumentStudentEntityListNewDocumentStudentEntity.equals(documentEntity)) {
+                        oldDocumentIdOfDocumentStudentEntityListNewDocumentStudentEntity.getDocumentStudentEntityList().remove(documentStudentEntityListNewDocumentStudentEntity);
+                        oldDocumentIdOfDocumentStudentEntityListNewDocumentStudentEntity = em.merge(oldDocumentIdOfDocumentStudentEntityListNewDocumentStudentEntity);
+                    }
+                }
+            }
+            for (SimulateDocumentStudentEntity simulateDocumentStudentEntityListOldSimulateDocumentStudentEntity : simulateDocumentStudentEntityListOld) {
+                if (!simulateDocumentStudentEntityListNew.contains(simulateDocumentStudentEntityListOldSimulateDocumentStudentEntity)) {
+                    simulateDocumentStudentEntityListOldSimulateDocumentStudentEntity.setDocumentId(null);
+                    simulateDocumentStudentEntityListOldSimulateDocumentStudentEntity = em.merge(simulateDocumentStudentEntityListOldSimulateDocumentStudentEntity);
+                }
+            }
+            for (SimulateDocumentStudentEntity simulateDocumentStudentEntityListNewSimulateDocumentStudentEntity : simulateDocumentStudentEntityListNew) {
+                if (!simulateDocumentStudentEntityListOld.contains(simulateDocumentStudentEntityListNewSimulateDocumentStudentEntity)) {
+                    DocumentEntity oldDocumentIdOfSimulateDocumentStudentEntityListNewSimulateDocumentStudentEntity = simulateDocumentStudentEntityListNewSimulateDocumentStudentEntity.getDocumentId();
+                    simulateDocumentStudentEntityListNewSimulateDocumentStudentEntity.setDocumentId(documentEntity);
+                    simulateDocumentStudentEntityListNewSimulateDocumentStudentEntity = em.merge(simulateDocumentStudentEntityListNewSimulateDocumentStudentEntity);
+                    if (oldDocumentIdOfSimulateDocumentStudentEntityListNewSimulateDocumentStudentEntity != null && !oldDocumentIdOfSimulateDocumentStudentEntityListNewSimulateDocumentStudentEntity.equals(documentEntity)) {
+                        oldDocumentIdOfSimulateDocumentStudentEntityListNewSimulateDocumentStudentEntity.getSimulateDocumentStudentEntityList().remove(simulateDocumentStudentEntityListNewSimulateDocumentStudentEntity);
+                        oldDocumentIdOfSimulateDocumentStudentEntityListNewSimulateDocumentStudentEntity = em.merge(oldDocumentIdOfSimulateDocumentStudentEntityListNewSimulateDocumentStudentEntity);
                     }
                 }
             }
@@ -251,6 +303,11 @@ public class DocumentEntityJpaController implements Serializable {
                 documentEntityListDocumentEntity.setDocParentId(null);
                 documentEntityListDocumentEntity = em.merge(documentEntityListDocumentEntity);
             }
+            List<SimulateDocumentStudentEntity> simulateDocumentStudentEntityList = documentEntity.getSimulateDocumentStudentEntityList();
+            for (SimulateDocumentStudentEntity simulateDocumentStudentEntityListSimulateDocumentStudentEntity : simulateDocumentStudentEntityList) {
+                simulateDocumentStudentEntityListSimulateDocumentStudentEntity.setDocumentId(null);
+                simulateDocumentStudentEntityListSimulateDocumentStudentEntity = em.merge(simulateDocumentStudentEntityListSimulateDocumentStudentEntity);
+            }
             em.remove(documentEntity);
             em.getTransaction().commit();
         } finally {
@@ -305,5 +362,5 @@ public class DocumentEntityJpaController implements Serializable {
             em.close();
         }
     }
-    
+
 }
