@@ -57,7 +57,7 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group form-date-range">
-                        <label for="scheduleDate">Ngày sẽ dạy:</label>
+                        <label for="scheduleDate">Ngày cần dạy thay:</label>
                         <input id="scheduleDate" type="text" class="form-control"/>
                         <i class="fa fa-calendar"></i>
                     </div>
@@ -77,7 +77,7 @@
             <div class="row" style="display: flex; position: relative;">
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label for="aTime">Slot sẽ dạy:</label>
+                        <label for="aTime">Slot cần dạy thay:</label>
                         <select id="aTime" class="select aTime-select">
                             <c:forEach var="aSlot" items="${slots}">
                                 <option value="${aSlot.slotName}">${aSlot.slotName}</option>
@@ -103,7 +103,7 @@
                             <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Tên</th>
+                                <th>GV có thể dạy thay</th>
                                 <th>SĐT</th>
                                 <th>Email</th>
                                 <th>Gửi mail</th>
@@ -455,11 +455,16 @@
     }
 
     function RefreshTable() {
-        if (table != null) {
-            table._fnPageChange(0);
-            table._fnAjaxUpdate();
+        if ($('#scheduleDate').val() !== "" && ($('#subject2').val() !== null && $('#subject2').val() !== "")
+            && ($('#aTime').val() !== null && $('#aTime').val() !== "")) {
+            if (table != null) {
+                table._fnPageChange(0);
+                table._fnAjaxUpdate();
+            }
+            $('#removeFilterBtn').removeAttr('disabled');
+        } else {
+            alert("Xin chọn khoảng thời gian và GV và slot muốn tìm kiếm.");
         }
-        $('#removeFilterBtn').removeAttr('disabled');
 
     }
 
@@ -623,7 +628,13 @@
 
 
     $("#btnSubmit").on("click", function () {
-        Authenticate();
+        console.log($("#lectureFrom").val());
+        if ($("#lectureFrom").val() !== null && $("#lectureFrom").val() !== "") {
+            Authenticate();
+
+        } else {
+            alert("Chọn GV yêu cầu đổi. Lưu ý chỉ gửi mail khi có GV đang dạy vào thời gian đã chọn.")
+        }
     });
 
 

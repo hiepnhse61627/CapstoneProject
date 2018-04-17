@@ -787,13 +787,16 @@
     }
 
     function RefreshTable() {
-        if (table != null) {
-            table._fnPageChange(0);
-            table._fnAjaxUpdate();
+
+        if ($('#scheduleDate2').val() !== "" && ($('#lecture2').val() !== null && $('#lecture2').val() !== "")) {
+            if (table != null) {
+                table._fnPageChange(0);
+                table._fnAjaxUpdate();
+            }
+            $('#removeFilterBtn').removeAttr('disabled');
+        } else {
+            alert("Xin chọn khoảng thời gian và GV muốn tìm kiếm.");
         }
-
-        $('#removeFilterBtn').removeAttr('disabled');
-
     }
 
     function resetFilter() {

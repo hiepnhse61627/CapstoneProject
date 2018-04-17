@@ -25,6 +25,7 @@ import java.lang.reflect.Type;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static com.capstone.models.Ultilities.sendNotification;
 import static com.capstone.services.DateUtil.formatDate;
@@ -889,6 +890,14 @@ public class ScheduleList {
             for (String aSlotString : slots) {
                 SlotEntity aSlot = slotService.findSlotsByName(aSlotString).get(0);
                 DaySlotEntity aDaySlot = daySlotService.findDaySlotByDateAndSlot(params.get("startDate"), aSlot);
+                if (aDaySlot == null) {
+                    aDaySlot = new DaySlotEntity();
+
+                    aDaySlot.setDate(params.get("startDate"));
+                    aDaySlot.setSlotId(aSlot);
+                    aDaySlot = daySlotService.createDateSlot(aDaySlot);
+                }
+
                 List<EmployeeEntity> lectures = employeeService.findEmployeesByFullName(params.get("lecture"));
                 List<RoomEntity> rooms = roomService.findRoomsByCapacity(Integer.parseInt(params.get("capacity")));
                 ScheduleEntity model = scheduleService.findScheduleById(Integer.parseInt(params.get("scheduleId")));
@@ -1030,6 +1039,7 @@ public class ScheduleList {
                                 tmpDaySlot = new DaySlotEntity();
                                 tmpDaySlot.setSlotId(aSlot);
                                 tmpDaySlot.setDate(aSchedule.getDateId().getDate());
+
                                 daySlotService.createDateSlot(tmpDaySlot);
                             }
                             aSchedule.setDateId(tmpDaySlot);
@@ -1110,6 +1120,28 @@ public class ScheduleList {
                         }
                     }
                 } else {
+                    String oldDateStr = model.getDateId().getDate();
+                    String newDateStr = aDaySlot.getDate();
+                    Date oldDate = DateUtil.getDate(oldDateStr);
+                    Date newDate = DateUtil.getDate(newDateStr);
+                    Calendar cOldDate = Calendar.getInstance();
+                    cOldDate.setTime(oldDate);
+                    Calendar cNewDate = Calendar.getInstance();
+                    cNewDate.setTime(newDate);
+
+                    long diff = oldDate.getTime() - newDate.getTime();
+                    float days = (diff / (1000 * 60 * 60 * 24));
+//                    if (cOldDate.after(cNewDate)) {
+                        days = days * -1;
+//                    }else
+
+//                    while (!c2.before(c1)) {
+//                        if ( == dayOfWeekType) {
+//                            dateList.add(formatDate(c1.getTime()));
+//                        }
+//                        c1.add(Calendar.DATE, 1);
+//                    }
+
 
                     //change status of current record
                     model.setActive(false);
@@ -1136,13 +1168,20 @@ public class ScheduleList {
                             aSchedule.setActive(false);
                             scheduleService.updateSchedule(aSchedule);
 
-                            DaySlotEntity tmpDaySlot = daySlotService.findDaySlotByDateAndSlot(aSchedule.getDateId().getDate(), aSlot);
+                            Date date1 = getDate(aSchedule.getDateId().getDate());
+                            Calendar c1 = Calendar.getInstance();
+                            c1.setTime(date1);
+                            c1.add(Calendar.DATE, (int) days);
+                            String tmpDate = DateUtil.formatDate(c1.getTime());
+
+                            DaySlotEntity tmpDaySlot = daySlotService.findDaySlotByDateAndSlot(tmpDate, aSlot);
                             if (tmpDaySlot == null) {
                                 tmpDaySlot = new DaySlotEntity();
                                 tmpDaySlot.setSlotId(aSlot);
-                                tmpDaySlot.setDate(aSchedule.getDateId().getDate());
+                                tmpDaySlot.setDate(tmpDate);
                                 daySlotService.createDateSlot(tmpDaySlot);
                             }
+
                             aSchedule.setDateId(tmpDaySlot);
 
                             if (lectures != null && lectures.size() > 0) {
@@ -1158,7 +1197,17 @@ public class ScheduleList {
                             aSchedule.setParentScheduleId(aSchedule.getId());
                             aSchedule.setId(0);
                             aSchedule.setActive(true);
-                            scheduleService.createSchedule(aSchedule);
+
+                            ScheduleEntity newSchedule = new ScheduleEntity();
+                            newSchedule.setRoomId(aSchedule.getRoomId());
+                            newSchedule.setEmpId(aSchedule.getEmpId());
+                            newSchedule.setDateId(aSchedule.getDateId());
+                            newSchedule.setCourseId(aSchedule.getCourseId());
+                            newSchedule.setGroupName(aSchedule.getGroupName());
+                            newSchedule.setActive(true);
+                            newSchedule.setParentScheduleId(aSchedule.getId());
+
+                            scheduleService.createSchedule(newSchedule);
                         }
                     }
 
@@ -1470,17 +1519,6 @@ public class ScheduleList {
                 groupName = params.get("groupName");
             }
 
-            List<ScheduleEntity> scheduleLists = scheduleService.findScheduleBySubjectCodeAndGroupNameBeforeNowTime(subjectCode, groupName);
-
-            Map<String, Integer> resultMap = new HashMap<>();
-            Map<String, String> totalSlotMap = new HashMap<>();
-
-            //initialize the result map
-            for (ScheduleEntity aSchedule : scheduleLists) {
-                resultMap.put(aSchedule.getGroupName(), 0);
-                totalSlotMap.put(aSchedule.getGroupName(), "");
-            }
-
             RealSemesterEntity currentSemester = Global.getCurrentSemester();
             Date startDate = DateUtil.getDate(currentSemester.getStartDate());
             Date endDate = DateUtil.getDate(currentSemester.getEndDate());
@@ -1500,6 +1538,29 @@ public class ScheduleList {
                 Date tmpEnd = DateUtil.getDate(endDateStr2);
                 endDateStr2 = format2.format(tmpEnd);
             }
+
+            List<ScheduleEntity> scheduleLists = scheduleService.findScheduleBySubjectCodeAndGroupNameBeforeNowTime(subjectCode, groupName);
+
+            DateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy");
+            List<ScheduleEntity> removeList = new ArrayList<>();
+            for (ScheduleEntity aSchedule : scheduleLists) {
+                Date aDate = formatDate.parse(aSchedule.getDateId().getDate());
+                if (aDate.before(format2.parse(startDateStr2)) || aDate.after(format2.parse(endDateStr2))) {
+                    removeList.add(aSchedule);
+                }
+            }
+            scheduleLists.removeAll(removeList);
+
+
+            Map<String, Integer> resultMap = new HashMap<>();
+            Map<String, String> totalSlotMap = new HashMap<>();
+
+            //initialize the result map
+            for (ScheduleEntity aSchedule : scheduleLists) {
+                resultMap.put(aSchedule.getGroupName(), 0);
+                totalSlotMap.put(aSchedule.getGroupName(), "");
+            }
+
 
             Date now = new Date();
             String nowStr = format2.format(now);
@@ -1532,8 +1593,8 @@ public class ScheduleList {
 
                         if (scheduleId != -1) {
                             //get schedule of course from FAP DB
-                            String queryStringForAttendance = "SELECT 1 FROM Attendances s WHERE s.ScheduleID = " + scheduleId + " " +
-                                    " AND RecordTime >= '" + (startDateStr2.equals("") ? startDateStr : startDateStr2) + "' AND  RecordTime < '" + (endDateStr2.equals("") ? endDateStr : endDateStr2) + "' AND s.Status = 1";
+                            String queryStringForAttendance = "SELECT 1 FROM Attendances s JOIN Schedules a ON a.ScheduleID=s.ScheduleID WHERE s.ScheduleID = " + scheduleId + " " +
+                                    " AND a.Date >= '" + (startDateStr2.equals("") ? startDateStr : startDateStr2) + "' AND  a.Date < '" + (endDateStr2.equals("") ? endDateStr : endDateStr2) + "' AND s.Status = 1";
                             Query queryForAttendances = em2.createNativeQuery(queryStringForAttendance);
                             List fapAttendanceList = queryForAttendances.getResultList();
 

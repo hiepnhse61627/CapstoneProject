@@ -189,7 +189,7 @@ public class ExportChangedScheduleImpl implements IExportObject {
                     aSheet.autoSizeColumn(6);
                 }
 
-                XSSFRow row = spreadsheet.createRow(--rowIndex);
+                XSSFRow row = spreadsheet.createRow(rowIndex);
 
                 CellStyle cellStyle2 = workbook.createCellStyle();
                 cellStyle2.setBorderBottom(BorderStyle.MEDIUM);
