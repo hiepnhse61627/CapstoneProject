@@ -59,8 +59,8 @@
                 </div>
                 <div class="col-md-3 text-right">
                     <%--<button type="button" class="btn btn-success btn-with-icon" onclick="CreateSchedule()">--%>
-                        <%--<i class="glyphicon glyphicon-plus"></i>--%>
-                        <%--<div>Thêm lịch học</div>--%>
+                    <%--<i class="glyphicon glyphicon-plus"></i>--%>
+                    <%--<div>Thêm lịch học</div>--%>
                     <%--</button>--%>
                 </div>
             </div>
@@ -72,16 +72,6 @@
                 <label for="scheduleDate2">Ngày dạy:</label>
                 <input id="scheduleDate2" type="text" class="form-control"/>
                 <i class="fa fa-calendar"></i>
-            </div>
-
-            <div class="form-group" >
-                <label for="lecture2">Giảng viên:</label>
-                <select id="lecture2" class="select lecture2-select">
-                    <option value="-1">Tất cả</option>
-                    <c:forEach var="emp" items="${employees}">
-                        <option value="${emp.id}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
-                    </c:forEach>
-                </select>
             </div>
 
             <div class="form-group" style="display: none">
@@ -108,13 +98,31 @@
                     </c:forEach>
                 </select>
             </div>
+            <div class="row" style="display: flex; position: relative;">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="lecture2">Giảng viên:</label>
+                        <select id="lecture2" class="select lecture2-select">
+                            <option value="-1">Tất cả</option>
+                            <c:forEach var="emp" items="${employees}">
+                                <option value="${emp.id}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}
+                                    - ${emp.fullName}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <button type="button" class="btn btn-success" onclick="RefreshTable2()" id="searchBtn">Tìm kiếm</button>
-                <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa bộ lọc
-                </button>
+                <div class="col-md-6">
+                    <div class="form-group" style="width: 100%; bottom: 0; position: absolute;">
+                        <button type="button" class="btn btn-success" onclick="RefreshTable2()" id="searchBtn">Tìm
+                            kiếm
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa
+                            bộ lọc
+                        </button>
+                    </div>
+                </div>
             </div>
-
 
             <div class="row">
                 <div class="col-md-12">
@@ -212,7 +220,7 @@
                             <label for="room">Phòng:</label>
                             <select id="room" class="select room-select">
                                 <%--<c:forEach var="room" items="${rooms}">--%>
-                                    <%--<option value="${room.name}">${room.name}</option>--%>
+                                <%--<option value="${room.name}">${room.name}</option>--%>
                                 <%--</c:forEach>--%>
                             </select>
                         </div>
@@ -237,7 +245,8 @@
                             <label for="lecture">Giảng viên:</label>
                             <select id="lecture" class="select lecture-select">
                                 <c:forEach var="emp" items="${employees}">
-                                    <option value="${emp.fullName}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
+                                    <option value="${emp.fullName}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}
+                                        - ${emp.fullName}</option>
                                 </c:forEach>
                             </select>
                         </div>
@@ -604,9 +613,9 @@
                         // if (isPast === "true") {
                         //     return "<div></div>";
                         // } else {
-                            return "<a class='btn btn-success tbl-btn' onclick='EditSchedule(" + row[0] + ",\""
-                                + row[1] + "\",\"" + row[2] + "\",\"" + row[3] + "\",\"" + row[4] + "\",\"" + row[5] + "\",\"" + row[6] + "\",\"" + row[7] + "\")'>" +
-                                "<i class='glyphicon glyphicon-pencil'></i></a>";
+                        return "<a class='btn btn-success tbl-btn' onclick='EditSchedule(" + row[0] + ",\""
+                            + row[1] + "\",\"" + row[2] + "\",\"" + row[3] + "\",\"" + row[4] + "\",\"" + row[5] + "\",\"" + row[6] + "\",\"" + row[7] + "\")'>" +
+                            "<i class='glyphicon glyphicon-pencil'></i></a>";
                         // }
 
                     }

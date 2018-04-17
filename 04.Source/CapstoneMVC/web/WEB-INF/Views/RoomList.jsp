@@ -42,19 +42,24 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Lịch dạy</h4>
+                <h4 class="modal-title">Phòng học</h4>
             </div>
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-12">
-                        <div class="form-group">
-                            <label for="name">Tên phòng:</label>
-                            <input id="name" type="text" class="form-control"/>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="capacity">Sức chứa:</label>
-                            <input id="capacity" type="number" class="form-control" min="0"/>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="name">Tên phòng:</label>
+                                    <input id="name" type="text" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="capacity">Sức chứa:</label>
+                                    <input id="capacity" type="number" class="form-control" min="0">
+                                </div>
+                            </div>
                         </div>
 
                         <div class="form-check" id="all-container">
@@ -178,7 +183,7 @@
         if ($("#name").val() === "") {
             alert("Tên phòng không được bỏ trống");
             isError = true;
-        } else if ($("#capacity").val() <10 ) {
+        } else if ($("#capacity").val() < 10) {
             alert("Sức chứa không được nhỏ hơn 10");
             isError = true;
         }
@@ -248,9 +253,9 @@
         $('#capacity').val(capacity);
         $('#note').val(note);
         console.log(isAvailable);
-        if(isAvailable=='true'){
+        if (isAvailable == 'true') {
             $('#isAvailable').prop('checked', true);
-        }else{
+        } else {
             $('#isAvailable').prop('checked', false);
         }
         $("#btnSubmit").html("Cập nhật");

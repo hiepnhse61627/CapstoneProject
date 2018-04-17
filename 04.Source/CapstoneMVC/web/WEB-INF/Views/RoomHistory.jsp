@@ -65,21 +65,29 @@
         </div>
 
         <div class="b-body">
-            <div class="form-group form-date-range">
-                <label for="scheduleDate">Ngày dạy:</label>
-                <input id="scheduleDate" type="text" class="form-control"/>
-                <i class="fa fa-calendar"></i>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group form-date-range">
+                        <label for="scheduleDate">Ngày dạy:</label>
+                        <input id="scheduleDate" type="text" class="form-control"/>
+                        <i class="fa fa-calendar"></i>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="room">Phòng học:</label>
+                        <select id="room" class="select room-select">
+                            <option value="-1">Tất cả</option>
+                            <c:forEach var="aRoom" items="${rooms}">
+                                <option value="${aRoom.id}">${aRoom.name}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="room">Phòng học:</label>
-                <select id="room" class="select room-select">
-                    <option value="-1">Tất cả</option>
-                    <c:forEach var="aRoom" items="${rooms}">
-                        <option value="${aRoom.id}">${aRoom.name}</option>
-                    </c:forEach>
-                </select>
-            </div>
 
             <div class="form-group">
                 <button type="button" class="btn btn-success" onclick="RefreshTable()" id="searchBtn">Tìm kiếm</button>
@@ -258,7 +266,7 @@
 
     }
 
-    function SyncChangedSchedule(){
+    function SyncChangedSchedule() {
 
         swal({
             title: 'Đang xử lý',

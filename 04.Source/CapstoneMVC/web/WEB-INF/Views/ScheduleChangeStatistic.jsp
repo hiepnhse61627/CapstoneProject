@@ -65,36 +65,54 @@
         </div>
 
         <div class="b-body">
-            <div class="form-group form-date-range">
-                <label for="scheduleDate">Ngày bắt đầu - kết thúc:</label>
-                <input id="scheduleDate" type="text" class="form-control"/>
-                <i class="fa fa-calendar"></i>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group form-date-range">
+                        <label for="scheduleDate">Ngày bắt đầu - kết thúc:</label>
+                        <input id="scheduleDate" type="text" class="form-control"/>
+                        <i class="fa fa-calendar"></i>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="lecture">Giảng viên yêu cầu đổi lịch:</label>
+                        <select id="lecture" class="select lecture-select">
+                            <option value="-1">Tất cả</option>
+                            <c:forEach var="emp" items="${employees}">
+                                <option value="${emp.id}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}
+                                    - ${emp.fullName}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="lecture">Giảng viên yêu cầu đổi lịch:</label>
-                <select id="lecture" class="select lecture-select">
-                    <option value="-1">Tất cả</option>
-                    <c:forEach var="emp" items="${employees}">
-                        <option value="${emp.id}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
-                    </c:forEach>
-                </select>
+
+            <div class="row" style="display: flex; position: relative;">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="department">Bộ môn:</label>
+                        <select id="department" class="select department-select">
+                            <option value="-1">Tất cả</option>
+                            <c:forEach var="department" items="${departments}">
+                                <option value="${department.deptId}">${department.deptName}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group" style="width: 100%; bottom: 0; position: absolute;">
+                        <button type="button" class="btn btn-success" onclick="RefreshTable()" id="searchBtn">Tìm kiếm
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa
+                            bộ lọc
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="department">Bộ môn:</label>
-                <select id="department" class="select department-select">
-                    <option value="-1">Tất cả</option>
-                    <c:forEach var="department" items="${departments}">
-                        <option value="${department.deptId}">${department.deptName}</option>
-                    </c:forEach>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <button type="button" class="btn btn-success" onclick="RefreshTable()" id="searchBtn">Tìm kiếm</button>
-                <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa bộ lọc</button>
-            </div>
 
             <div class="form-group">
                 <div class="row">
@@ -202,13 +220,13 @@
             }
         });
 
-        $('#scheduleDate').on('apply.daterangepicker', function(ev, picker) {
+        $('#scheduleDate').on('apply.daterangepicker', function (ev, picker) {
             startDate = picker.startDate.format('DD/MM/YYYY');
             endDate = picker.endDate.format('DD/MM/YYYY');
             $(this).val(picker.startDate.format('DD/MM/YYYY') + ' - ' + picker.endDate.format('DD/MM/YYYY'));
         });
 
-        $('#scheduleDate').on('cancel.daterangepicker', function(ev, picker) {
+        $('#scheduleDate').on('cancel.daterangepicker', function (ev, picker) {
             $(this).val('');
         });
 
@@ -224,8 +242,8 @@
             "fnServerParams": function (aoData) {
                 // aoData.push({"name": "startDate", "value":  $('#scheduleDate').data('daterangepicker').startDate.format('DD/MM/YYYY')}),
                 //     aoData.push({"name": "endDate", "value":  $('#scheduleDate').data('daterangepicker').endDate.format('DD/MM/YYYY')}),
-                aoData.push({"name": "startDate", "value":  startDate}),
-                    aoData.push({"name": "endDate", "value":  endDate}),
+                aoData.push({"name": "startDate", "value": startDate}),
+                    aoData.push({"name": "endDate", "value": endDate}),
                     aoData.push({"name": "department", "value": $('#department').val()}),
                     aoData.push({"name": "lecture", "value": $('#lecture').val()}),
                     aoData.push({"name": "dateTextbox", "value": $('#scheduleDate').val()})
@@ -276,18 +294,18 @@
 
     }
 
-    function resetFilter(){
+    function resetFilter() {
         $("#lecture").val('').trigger('change');
         $('#scheduleDate').data('daterangepicker').setStartDate(moment());
         $('#scheduleDate').data('daterangepicker').setEndDate(moment());
         $('#scheduleDate').val('');
         $("#department").val('').trigger('change');
 
-        $('#removeFilterBtn').attr('disabled','disabled');
+        $('#removeFilterBtn').attr('disabled', 'disabled');
 
     }
 
-    function SyncChangedSchedule(){
+    function SyncChangedSchedule() {
 
         swal({
             title: 'Đang xử lý',
@@ -358,7 +376,7 @@
                 if (result.running) {
                     setTimeout("Run()", 50);
                 } else {
-                    swal('', 'Download file thành công!', 'success').then(function() {
+                    swal('', 'Download file thành công!', 'success').then(function () {
                         location.reload();
                     });
                 }

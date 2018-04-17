@@ -54,39 +54,50 @@
 
         <div class="b-body">
 
-            <div class="form-group form-date-range">
-                <label for="scheduleDate2">Ngày bắt đầu - kết thúc:</label>
-                <input id="scheduleDate2" type="text" class="form-control"/>
-                <i class="fa fa-calendar"></i>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group form-date-range">
+                        <label for="scheduleDate2">Ngày bắt đầu - kết thúc:</label>
+                        <input id="scheduleDate2" type="text" class="form-control"/>
+                        <i class="fa fa-calendar"></i>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="subject2">Môn học:</label>
+                        <select id="subject2" class="select department2-select">
+                            <c:forEach var="aSubject" items="${subjects}">
+                                <option value="${aSubject.id}">${aSubject.id} - ${aSubject.name}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="subject2">Môn học:</label>
-                <select id="subject2" class="select department2-select">
-                    <c:forEach var="aSubject" items="${subjects}">
-                        <option value="${aSubject.id}">${aSubject.id} - ${aSubject.name}</option>
-                    </c:forEach>
-                </select>
-            </div>
 
-            <%--<div class="form-group">--%>
-            <%--<label for="class">Lớp:</label>--%>
-            <%--<input id="class" type="text" class="form-control"/>--%>
-            <%--</div>--%>
+            <div class="row" style="display: flex; position: relative;">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="groupName2">Lớp:</label>
+                        <%--<input id="groupName2" placeholder="- Tên lớp -" class="form-control"/>--%>
 
-            <div class="form-group">
-                <label for="groupName2">Lớp:</label>
-                <%--<input id="groupName2" placeholder="- Tên lớp -" class="form-control"/>--%>
+                        <select id="groupName2" class="select groupName2-select">
+                            <%--<option value="-1">Tất cả</option>--%>
+                        </select>
+                    </div>
+                </div>
 
-                <select id="groupName2" class="select groupName2-select">
-                    <%--<option value="-1">Tất cả</option>--%>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <button type="button" class="btn btn-success" onclick="RefreshTable()" id="searchBtn">Tìm kiếm</button>
-                <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa bộ lọc
-                </button>
+                <div class="col-md-6">
+                    <div class="form-group" style="width: 100%; bottom: 0; position: absolute;">
+                        <button type="button" class="btn btn-success" onclick="RefreshTable()" id="searchBtn">Tìm kiếm
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa
+                            bộ lọc
+                        </button>
+                    </div>
+                </div>
             </div>
 
             <div class="form-group">

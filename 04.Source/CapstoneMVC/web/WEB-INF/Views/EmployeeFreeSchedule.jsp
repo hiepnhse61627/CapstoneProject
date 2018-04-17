@@ -66,21 +66,29 @@
         </div>
 
         <div class="b-body">
-            <div class="form-group form-date-range range2">
-                <label for="scheduleDate2">Ngày bắt đầu - kết thúc:</label>
-                <input id="scheduleDate2" type="text" class="form-control"/>
-                <i class="fa fa-calendar"></i>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group form-date-range range2">
+                        <label for="scheduleDate2">Ngày bắt đầu - kết thúc:</label>
+                        <input id="scheduleDate2" type="text" class="form-control"/>
+                        <i class="fa fa-calendar"></i>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="lecture2">Giảng viên:</label>
+                        <select id="lecture2" class="select lecture2-select">
+                            <option value="-1">Tất cả</option>
+                            <c:forEach var="emp" items="${employees}">
+                                <option value="${emp.id}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}
+                                    - ${emp.fullName}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="lecture2">Giảng viên:</label>
-                <select id="lecture2" class="select lecture2-select">
-                    <option value="-1">Tất cả</option>
-                    <c:forEach var="emp" items="${employees}">
-                        <option value="${emp.id}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
-                    </c:forEach>
-                </select>
-            </div>
 
             <div class="form-group">
                 <button type="button" class="btn btn-success" onclick="RefreshTable()">Tìm kiếm</button>
@@ -90,7 +98,7 @@
 
             <div class="form-group" id="employeeComptence-container">
                 <label for="employeeComptence">Những môn có thể dạy:</label>
-                <span id="employeeComptence" />
+                <span id="employeeComptence"/>
             </div>
 
             <div class="form-group">
@@ -218,7 +226,8 @@
                             <label for="lecture">Giảng viên:</label>
                             <select id="lecture" class="select lecture-select">
                                 <c:forEach var="emp" items="${employees}">
-                                    <option value="${emp.fullName}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))} - ${emp.fullName}</option>
+                                    <option value="${emp.fullName}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}
+                                        - ${emp.fullName}</option>
                                 </c:forEach>
                             </select>
                         </div>
@@ -831,7 +840,7 @@
                 if (result.running) {
                     setTimeout("Run()", 50);
                 } else {
-                    swal('', 'Download file thành công!', 'success').then(function() {
+                    swal('', 'Download file thành công!', 'success').then(function () {
                         location.reload();
                     });
                 }
