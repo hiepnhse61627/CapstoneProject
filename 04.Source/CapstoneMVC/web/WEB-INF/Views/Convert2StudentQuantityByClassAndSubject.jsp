@@ -74,6 +74,11 @@
 </form>
 
 <script>
+
+    var table= null;
+    $(document).ready(function(){
+       CreateEmptyDataTable("#tbl-student");
+    });
     function Add() {
         var form = new FormData();
         form.append('file', $('#file')[0].files[0]);
@@ -93,7 +98,7 @@
                         type: 'success',
                         timer: 1500
                     });
-                    loadData4Table();
+                    RefreshTable();
                     $('#exportEXCEL').removeAttr('disabled');
                 } else {
                     swal('Đã xảy ra lỗi!', result.message, 'error');
@@ -115,7 +120,7 @@
 
     function loadData4Table() {
         //use new Datatable not legacy datatable
-        $('#tbl-student').DataTable({
+       table = $('#tbl-student').DataTable({
             "serverSide": false,
             "filter": true,
             "retrieve": true,
@@ -192,6 +197,16 @@
     function ExportExcelInfo() {
         $("input[name='objectType']").val(22);
         $('#export-excel-info').submit();
+    }
+
+    function RefreshTable() {
+        if (table != null) {
+            table.ajax().reload();
+        } else {
+            //destroy empty table
+            $('#table').DataTable().fnDestroy();
+            loadData4Table();
+        }
     }
 
 

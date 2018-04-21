@@ -860,7 +860,7 @@ public class AdminController {
             if (!newAthority.isEmpty()) {
                 for (Integer itemMenuId : newAthority) {
                     RolesAuthorityEntity newRolesAuthority = new RolesAuthorityEntity();
-                    DynamicMenuEntity menuEntity = allMenus.stream().filter(q -> q.getId() == itemMenuId)
+                    DynamicMenuEntity menuEntity = allMenus.stream().filter(q -> q.getId() == itemMenuId.intValue())
                             .findFirst().orElse(null);
                     if (menuEntity != null) {
                         //set attribute

@@ -353,7 +353,7 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
         return result;
     }
 
-    public List<Object[]> getSubjectMarkComByStudent(StudentEntity studentEntity) {
+    public List<Object[]> getSubjectMarkComByStudentWithoutNotStart(StudentEntity studentEntity) {
         EntityManager em = getEntityManager();
         List<Object[]> result = null;
 
@@ -363,7 +363,8 @@ public class ExStudentEntityJpaController extends StudentEntityJpaController {
                     "On m.SubjectMarkComponentId = sm.Id " +
                     "Inner Join RealSemester r " +
                     "On m.SemesterId = r.Id " +
-                    "AND m.StudentId = ?";
+                    "AND m.StudentId = ? "+
+                    "WHERE m.Status != 'NotStart'";
             Query query = em.createNativeQuery(queryStr);
             query.setParameter(1, studentEntity.getId());
             result = query.getResultList();

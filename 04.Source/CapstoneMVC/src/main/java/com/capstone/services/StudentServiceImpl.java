@@ -111,9 +111,12 @@ public class StudentServiceImpl implements IStudentService {
         for (Object[] i : replaceSubjectList) replaceSubjects.put(i[0].toString(), i[1].toString());
         try {
             for (StudentEntity student : students) {
+                if(student.getRollNumber().equals("FB60177")){
+                    System.out.println();
+                }
                 int failedCredit = 0;
 //                List<MarksEntity> markList = student.getMarksEntityList();
-                List<Object[]> subjectMarkCompList = studentEntityJpaController.getSubjectMarkComByStudent(student).stream().collect(Collectors.toList());
+                List<Object[]> subjectMarkCompList = studentEntityJpaController.getSubjectMarkComByStudentWithoutNotStart(student).stream().collect(Collectors.toList());
 //            List<String> subjectIdList = subjectMarkCompList.stream().map(x-> x.getSubjectId().getId()).collect(Collectors.toList());
                 HashMap<String, FailedSubject> FailedSubjects = new HashMap<>();
 
@@ -201,16 +204,19 @@ public class StudentServiceImpl implements IStudentService {
                                                     failedCredit += Integer.parseInt(subjectCredit[1].toString());
                                                     //In cac mon chuyen nganh failed
                                                     failedSub += entry.getKey();
+                                                    break;
                                                 }
                                             } else {
                                                 failedCredit += Integer.parseInt(subjectCredit[1].toString());
                                                 //In cac mon chuyen nganh failed
                                                 failedSub += entry.getKey();
+                                                break;
                                             }
                                         } else {
                                             failedCredit += Integer.parseInt(subjectCredit[1].toString());
                                             //In cac mon chuyen nganh failed
                                             failedSub += entry.getKey();
+                                            break;
                                         }
                                     }
                                 }
@@ -227,16 +233,19 @@ public class StudentServiceImpl implements IStudentService {
                                                     failedCredit += Integer.parseInt(subjectCredit[1].toString());
                                                     //In cac mon chuyen nganh failed
                                                     failedSub += ", " + entry.getKey();
+                                                    break;
                                                 }
                                             } else {
                                                 failedCredit += Integer.parseInt(subjectCredit[1].toString());
                                                 //In cac mon chuyen nganh failed
                                                 failedSub += ", " + entry.getKey();
+                                                break;
                                             }
                                         } else {
                                             failedCredit += Integer.parseInt(subjectCredit[1].toString());
                                             //In cac mon chuyen nganh failed
                                             failedSub += ", " + entry.getKey();
+                                            break;
                                         }
                                     }
                                 }
@@ -251,6 +260,7 @@ public class StudentServiceImpl implements IStudentService {
                                     if (entry.getKey().equals(subjectCredit[0].toString())) {
                                         //In cac mon chuyen nganh hoc lai
                                         relearnSub += entry.getKey();
+                                        break;
                                     }
                                 }
                                 //In tat ca cac mon hoc lai
@@ -261,6 +271,7 @@ public class StudentServiceImpl implements IStudentService {
                                         if (entry.getKey().equals(subjectCredit[0].toString())) {
                                             //In cac mon chuyen nganh hoc lai
                                             relearnSub += ", " + entry.getKey();
+                                            break;
                                         }
                                     }
                                     //In tat ca cac mon hoc lai
@@ -392,7 +403,7 @@ public class StudentServiceImpl implements IStudentService {
         for (Object[] i : replaceSubjectList) replaceSubjects.put(i[0].toString(), i[1].toString());
         try {
             for (StudentEntity student : students) {
-                List<Object[]> subjectMarkCompList = studentEntityJpaController.getSubjectMarkComByStudent(student).stream().collect(Collectors.toList());
+                List<Object[]> subjectMarkCompList = studentEntityJpaController.getSubjectMarkComByStudentWithoutNotStart(student).stream().collect(Collectors.toList());
                 Map<String, FailedSubject> FailedSubjects = new ConcurrentHashMap<String, FailedSubject>();
 
                 List<Object[]> studentSubjectCredits = studentEntityJpaController.getSubjectsWithCreditsByStudent(student.getId()).stream().collect(Collectors.toList());
@@ -506,7 +517,7 @@ public class StudentServiceImpl implements IStudentService {
         for (Object[] i : replaceSubjectList) replaceSubjects.put(i[0].toString(), i[1].toString());
         try {
             for (StudentEntity student : students) {
-                List<Object[]> subjectMarkCompList = studentEntityJpaController.getSubjectMarkComByStudent(student).stream().collect(Collectors.toList());
+                List<Object[]> subjectMarkCompList = studentEntityJpaController.getSubjectMarkComByStudentWithoutNotStart(student).stream().collect(Collectors.toList());
                 Map<String, FailedSubject> FailedSubjects = new ConcurrentHashMap<String, FailedSubject>();
 
                 List<Object[]> studentSubjectCredits = studentEntityJpaController.getSubjectsWithCreditsByStudent(student.getId()).stream().collect(Collectors.toList());
