@@ -287,101 +287,113 @@ public class RoomList {
         try {
             String employeeId = "";
             String startDate = params.get("startDate");
-
+            String slotName = "";
             if (!params.get("employeeId").equals("") && !params.get("employeeId").equals("-1")) {
                 employeeId = params.get("employeeId");
             }
 
-            List<DaySlotEntity> daySlotEntityList = daySlotService.findDaySlotByDate(startDate);
-            if (daySlotEntityList != null && daySlotEntityList.size() > 0) {
-                //find all schedule in the selected time
-                for (DaySlotEntity aDaySlot : daySlotEntityList) {
-                    List<ScheduleEntity> schedules = scheduleService.findScheduleByDateSlot(aDaySlot);
-                    scheduleList.addAll(schedules);
-                }
+            if (!params.get("slot").equals("")) {
+                slotName = params.get("slot");
             }
 
-            //find slot belong to an employee
-            if (!employeeId.equals("")) {
-                List<ScheduleEntity> newScheduleList = new ArrayList<>();
-                for (ScheduleEntity schedule : scheduleList) {
-                    if (schedule.getEmpId().getId() == Integer.parseInt(employeeId)) {
-                        newScheduleList.add(schedule);
+            if(!slotName.equals("")){
+                List<SlotEntity> slotEntities = slotService.findSlotsByName(slotName);
+
+                if (slotEntities != null && slotEntities.size() > 0) {
+                    DaySlotEntity aDaySlot = daySlotService.findDaySlotByDateAndSlot(startDate, slotEntities.get(0));
+                    if (aDaySlot != null) {
+                        //find all schedule in the selected time
+//                    for (DaySlotEntity aDaySlot : daySlotEntityList) {
+                        List<ScheduleEntity> schedules = scheduleService.findScheduleByDateSlot(aDaySlot);
+                        scheduleList.addAll(schedules);
+//                    }
                     }
+
+                    //find slot belong to an employee
+                    if (!employeeId.equals("")) {
+                        List<ScheduleEntity> newScheduleList = new ArrayList<>();
+                        for (ScheduleEntity schedule : scheduleList) {
+                            if (schedule.getEmpId().getId() == Integer.parseInt(employeeId)) {
+                                newScheduleList.add(schedule);
+                            }
+                        }
+                        scheduleList = new ArrayList<>(newScheduleList);
+                    }
+
+                    for (ScheduleEntity schedule : scheduleList) {
+
+                        //add room is currently in use
+                        removeRoomList.add(schedule.getRoomId().getName());
+
+                        List<String> dataList = new ArrayList<String>();
+
+                        dataList.add(schedule.getId() + "");
+                        dataList.add(schedule.getCourseId().getSubjectCode());
+
+                        if (schedule.getGroupName() != null) {
+                            dataList.add(schedule.getGroupName());
+                        } else {
+                            dataList.add("");
+                        }
+
+                        if (schedule.getDateId() != null) {
+                            dataList.add(schedule.getDateId().getDate());
+                            dataList.add(schedule.getDateId().getSlotId().getSlotName());
+                        } else {
+                            dataList.add("");
+                            dataList.add("");
+                        }
+
+                        if (schedule.getRoomId() != null) {
+                            dataList.add(schedule.getRoomId().getName());
+                        } else {
+                            dataList.add("");
+                        }
+
+                        if (schedule.getEmpId() != null) {
+                            dataList.add(schedule.getEmpId().getFullName());
+                        } else {
+                            dataList.add("");
+                        }
+
+                        if (schedule.getRoomId() != null) {
+                            dataList.add(schedule.getRoomId().getCapacity() + "");
+                        } else {
+                            dataList.add("");
+                        }
+
+                        Date date1 = getDate(schedule.getDateId().getDate());
+                        Date now = new Date();
+
+                        Calendar c1 = Calendar.getInstance();
+                        c1.setTime(date1);
+                        Calendar now1 = Calendar.getInstance();
+                        now1.setTime(now);
+                        now1.set(Calendar.HOUR_OF_DAY, 0);
+                        now1.set(Calendar.MINUTE, 0);
+                        now1.set(Calendar.SECOND, 0);
+                        now1.set(Calendar.MILLISECOND, 0);
+
+                        if (c1.after(now1) || c1.equals(now1)) {
+                            dataList.add("false");
+                        } else {
+                            dataList.add("true");
+                        }
+
+                        result.add(dataList);
+                    }
+
+
+                    List<RoomEntity> allRooms = roomService.findAllRooms();
+                    for (RoomEntity aRoom : allRooms) {
+                        freeRoomList.add(aRoom.getName());
+                    }
+                    //get rooms not in use by removing rooms in use in all room list
+                    freeRoomList.removeAll(removeRoomList);
                 }
-                scheduleList = new ArrayList<>(newScheduleList);
+
             }
 
-            for (ScheduleEntity schedule : scheduleList) {
-
-                //add room is currently in use
-                removeRoomList.add(schedule.getRoomId().getName());
-
-                List<String> dataList = new ArrayList<String>();
-
-                dataList.add(schedule.getId() + "");
-                dataList.add(schedule.getCourseId().getSubjectCode());
-
-                if (schedule.getGroupName() != null) {
-                    dataList.add(schedule.getGroupName());
-                } else {
-                    dataList.add("");
-                }
-
-                if (schedule.getDateId() != null) {
-                    dataList.add(schedule.getDateId().getDate());
-                    dataList.add(schedule.getDateId().getSlotId().getSlotName());
-                } else {
-                    dataList.add("");
-                    dataList.add("");
-                }
-
-                if (schedule.getRoomId() != null) {
-                    dataList.add(schedule.getRoomId().getName());
-                } else {
-                    dataList.add("");
-                }
-
-                if (schedule.getEmpId() != null) {
-                    dataList.add(schedule.getEmpId().getFullName());
-                } else {
-                    dataList.add("");
-                }
-
-                if (schedule.getRoomId() != null) {
-                    dataList.add(schedule.getRoomId().getCapacity() + "");
-                } else {
-                    dataList.add("");
-                }
-
-                Date date1 = getDate(schedule.getDateId().getDate());
-                Date now = new Date();
-
-                Calendar c1 = Calendar.getInstance();
-                c1.setTime(date1);
-                Calendar now1 = Calendar.getInstance();
-                now1.setTime(now);
-                now1.set(Calendar.HOUR_OF_DAY, 0);
-                now1.set(Calendar.MINUTE, 0);
-                now1.set(Calendar.SECOND, 0);
-                now1.set(Calendar.MILLISECOND, 0);
-
-                if (c1.after(now1) || c1.equals(now1)) {
-                    dataList.add("false");
-                } else {
-                    dataList.add("true");
-                }
-
-                result.add(dataList);
-            }
-
-
-            List<RoomEntity> allRooms = roomService.findAllRooms();
-            for (RoomEntity aRoom : allRooms) {
-                freeRoomList.add(aRoom.getName());
-            }
-            //get rooms not in use by removing rooms in use in all room list
-            freeRoomList.removeAll(removeRoomList);
 
         } catch (Exception e) {
             e.printStackTrace();

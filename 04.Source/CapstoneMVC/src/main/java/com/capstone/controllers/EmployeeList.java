@@ -589,6 +589,40 @@ public class EmployeeList {
         return obj;
     }
 
+    @RequestMapping(value = "/getEmployeeInfoByEmail", method = RequestMethod.POST)
+    @ResponseBody
+    public JsonObject getEmployeeInfoByEmail(@RequestBody String body) {
+        JsonParser parser = new JsonParser();
+        JsonObject obj = (JsonObject) parser.parse(body);
+        String email = obj.get("email").getAsString();
+        try {
+            EntityManagerFactory emf = Persistence.createEntityManagerFactory("CapstonePersistence");
+            EntityManager em = emf.createEntityManager();
+
+            String queryStr = "SELECT s FROM EmployeeEntity s" +
+                    " WHERE s.emailEDU LIKE :email OR s.emailFE LIKE :email";
+            Query query = em.createQuery(queryStr);
+            query.setParameter("email", "%" + email + "%");
+
+            EmployeeEntity emp = (EmployeeEntity) query.getSingleResult();
+
+            Gson gson = new Gson();
+            obj = new JsonObject();
+
+            MobileUserModel user = new MobileUserModel();
+            user.setCode(emp.getCode());
+            user.setId(emp.getId());
+            user.setName(emp.getFullName());
+            user.setEmailEDU(emp.getEmailEDU());
+            user.setPosition(emp.getPosition());
+
+            obj.add("user", parser.parse(gson.toJson(user)));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return obj;
+    }
 
     @RequestMapping(value = "/requestLecture/get")
     @ResponseBody
@@ -707,6 +741,8 @@ public class EmployeeList {
         jsonObj.add("aaData", array);
         return jsonObj;
     }
+
+
 
 
     @RequestMapping(value = "/getLectureByDateSlot")
