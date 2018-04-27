@@ -1131,17 +1131,7 @@ public class ScheduleList {
 
                     long diff = oldDate.getTime() - newDate.getTime();
                     float days = (diff / (1000 * 60 * 60 * 24));
-//                    if (cOldDate.after(cNewDate)) {
-                        days = days * -1;
-//                    }else
-
-//                    while (!c2.before(c1)) {
-//                        if ( == dayOfWeekType) {
-//                            dateList.add(formatDate(c1.getTime()));
-//                        }
-//                        c1.add(Calendar.DATE, 1);
-//                    }
-
+                    days = days * -1;
 
                     //change status of current record
                     model.setActive(false);
@@ -1570,7 +1560,7 @@ public class ScheduleList {
             for (ScheduleEntity aSchedule : scheduleLists) {
                 groupNameSet.add(aSchedule.getGroupName());
             }
-            for(String aGroupName : groupNameSet){
+            for (String aGroupName : groupNameSet) {
                 //get subject id from FAP DB
                 String queryStringForSubject = "SELECT * FROM Subjects WHERE SubjectCode LIKE '" + subjectCode + "'";
                 Query queryForSubject = em2.createNativeQuery(queryStringForSubject, Subjects.class);
@@ -1595,21 +1585,21 @@ public class ScheduleList {
                         Query queryForSchedule = em2.createNativeQuery(queryStringForSchedule, SchedulesEntity.class);
                         List<SchedulesEntity> fapScheduleList = queryForSchedule.getResultList();
 
-                        for(SchedulesEntity theSchedule : fapScheduleList){
+                        for (SchedulesEntity theSchedule : fapScheduleList) {
 
                             int scheduleId = theSchedule.getScheduleID();
 //                            if (scheduleId != -1) {
-                                //get schedule of course from FAP DB
-                                String queryStringForAttendance = "SELECT 1 FROM Attendances s JOIN Schedules a ON a.ScheduleID=s.ScheduleID WHERE s.ScheduleID = " + scheduleId + " " +
-                                        " AND a.Date >= '" + (startDateStr2.equals("") ? startDateStr : startDateStr2) + "' AND  a.Date < '" + (endDateStr2.equals("") ? endDateStr : endDateStr2) + "' AND s.Status = 1";
-                                Query queryForAttendances = em2.createNativeQuery(queryStringForAttendance);
-                                List fapAttendanceList = queryForAttendances.getResultList();
+                            //get schedule of course from FAP DB
+                            String queryStringForAttendance = "SELECT 1 FROM Attendances s JOIN Schedules a ON a.ScheduleID=s.ScheduleID WHERE s.ScheduleID = " + scheduleId + " " +
+                                    " AND a.Date >= '" + (startDateStr2.equals("") ? startDateStr : startDateStr2) + "' AND  a.Date < '" + (endDateStr2.equals("") ? endDateStr : endDateStr2) + "' AND s.Status = 1";
+                            Query queryForAttendances = em2.createNativeQuery(queryStringForAttendance);
+                            List fapAttendanceList = queryForAttendances.getResultList();
 
-                                if (fapAttendanceList != null && fapAttendanceList.size() > 0) {
-                                    int countAttendance = resultMap.get(aGroupName);
-                                    ++countAttendance;
-                                    resultMap.put(aGroupName, countAttendance);
-                                }
+                            if (fapAttendanceList != null && fapAttendanceList.size() > 0) {
+                                int countAttendance = resultMap.get(aGroupName);
+                                ++countAttendance;
+                                resultMap.put(aGroupName, countAttendance);
+                            }
 //                            }
                         }
 

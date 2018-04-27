@@ -21,20 +21,19 @@ import javax.persistence.*;
         @NamedQuery(name = "EmployeeEntity.findByCode", query = "SELECT e FROM EmployeeEntity e WHERE e.code = :code"),
         @NamedQuery(name = "EmployeeEntity.findByFullName", query = "SELECT e FROM EmployeeEntity e WHERE e.fullName = :fullName"),
         @NamedQuery(name = "EmployeeEntity.findByPosition", query = "SELECT e FROM EmployeeEntity e WHERE e.position = :position"),
+        @NamedQuery(name = "EmployeeEntity.findByContract", query = "SELECT e FROM EmployeeEntity e WHERE e.contract = :contract"),
         @NamedQuery(name = "EmployeeEntity.findByEmailEDU", query = "SELECT e FROM EmployeeEntity e WHERE e.emailEDU = :emailEDU"),
         @NamedQuery(name = "EmployeeEntity.findByEmailFE", query = "SELECT e FROM EmployeeEntity e WHERE e.emailFE = :emailFE"),
         @NamedQuery(name = "EmployeeEntity.findByPersonalEmail", query = "SELECT e FROM EmployeeEntity e WHERE e.personalEmail = :personalEmail"),
         @NamedQuery(name = "EmployeeEntity.findByGender", query = "SELECT e FROM EmployeeEntity e WHERE e.gender = :gender"),
         @NamedQuery(name = "EmployeeEntity.findByDateOfBirth", query = "SELECT e FROM EmployeeEntity e WHERE e.dateOfBirth = :dateOfBirth"),
         @NamedQuery(name = "EmployeeEntity.findByPhone", query = "SELECT e FROM EmployeeEntity e WHERE e.phone = :phone"),
-        @NamedQuery(name = "EmployeeEntity.findByAddress", query = "SELECT e FROM EmployeeEntity e WHERE e.address = :address"),
-        @NamedQuery(name = "EmployeeEntity.findByContract", query = "SELECT e FROM EmployeeEntity e WHERE e.contract = :contract")})
+        @NamedQuery(name = "EmployeeEntity.findByAddress", query = "SELECT e FROM EmployeeEntity e WHERE e.address = :address")})
 public class EmployeeEntity implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
     @Column(name = "Id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     @Column(name = "Code")
     private String code;
@@ -42,6 +41,8 @@ public class EmployeeEntity implements Serializable {
     private String fullName;
     @Column(name = "Position")
     private String position;
+    @Column(name = "Contract")
+    private String contract;
     @Column(name = "EmailEDU")
     private String emailEDU;
     @Column(name = "EmailFE")
@@ -54,12 +55,13 @@ public class EmployeeEntity implements Serializable {
     private String dateOfBirth;
     @Column(name = "Phone")
     private String phone;
-    @Column(name = "Contract")
-    private String contract;
     @Column(name = "Address")
     private String address;
     @OneToMany(mappedBy = "employeeId")
     private List<EmpCompetenceEntity> empCompetenceEntityList;
+    @JoinColumn(name = "DeptId", referencedColumnName = "DeptId")
+    @ManyToOne
+    private DepartmentEntity deptId;
     @OneToMany(mappedBy = "empId")
     private List<ScheduleEntity> scheduleEntityList;
 
@@ -100,6 +102,14 @@ public class EmployeeEntity implements Serializable {
 
     public void setPosition(String position) {
         this.position = position;
+    }
+
+    public String getContract() {
+        return contract;
+    }
+
+    public void setContract(String contract) {
+        this.contract = contract;
     }
 
     public String getEmailEDU() {
@@ -150,14 +160,6 @@ public class EmployeeEntity implements Serializable {
         this.phone = phone;
     }
 
-    public String getContract() {
-        return contract;
-    }
-
-    public void setContract(String contract) {
-        this.contract = contract;
-    }
-
     public String getAddress() {
         return address;
     }
@@ -165,12 +167,21 @@ public class EmployeeEntity implements Serializable {
     public void setAddress(String address) {
         this.address = address;
     }
+
     public List<EmpCompetenceEntity> getEmpCompetenceEntityList() {
         return empCompetenceEntityList;
     }
 
     public void setEmpCompetenceEntityList(List<EmpCompetenceEntity> empCompetenceEntityList) {
         this.empCompetenceEntityList = empCompetenceEntityList;
+    }
+
+    public DepartmentEntity getDeptId() {
+        return deptId;
+    }
+
+    public void setDeptId(DepartmentEntity deptId) {
+        this.deptId = deptId;
     }
 
     public List<ScheduleEntity> getScheduleEntityList() {
@@ -203,7 +214,7 @@ public class EmployeeEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "javaapplication91.EmployeeEntity[ id=" + id + " ]";
+        return "javaapplication111.EmployeeEntity[ id=" + id + " ]";
     }
 
 }

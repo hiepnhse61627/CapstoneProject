@@ -5,6 +5,7 @@
  */
 package com.capstone.jpa;
 
+import com.capstone.entities.DepartmentEntity;
 import com.capstone.entities.EmpCompetenceEntity;
 import com.capstone.entities.EmployeeEntity;
 import com.capstone.entities.ScheduleEntity;
@@ -50,6 +51,11 @@ public class EmployeeEntityJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
+            DepartmentEntity deptId = employeeEntity.getDeptId();
+            if (deptId != null) {
+                deptId = em.getReference(deptId.getClass(), deptId.getDeptId());
+                employeeEntity.setDeptId(deptId);
+            }
             List<EmpCompetenceEntity> attachedEmpCompetenceEntityList = new ArrayList<EmpCompetenceEntity>();
             for (EmpCompetenceEntity empCompetenceEntityListEmpCompetenceEntityToAttach : employeeEntity.getEmpCompetenceEntityList()) {
                 empCompetenceEntityListEmpCompetenceEntityToAttach = em.getReference(empCompetenceEntityListEmpCompetenceEntityToAttach.getClass(), empCompetenceEntityListEmpCompetenceEntityToAttach.getId());
@@ -63,6 +69,10 @@ public class EmployeeEntityJpaController implements Serializable {
             }
             employeeEntity.setScheduleEntityList(attachedScheduleEntityList);
             em.persist(employeeEntity);
+            if (deptId != null) {
+                deptId.getEmployeeEntityList().add(employeeEntity);
+                deptId = em.merge(deptId);
+            }
             for (EmpCompetenceEntity empCompetenceEntityListEmpCompetenceEntity : employeeEntity.getEmpCompetenceEntityList()) {
                 EmployeeEntity oldEmployeeIdOfEmpCompetenceEntityListEmpCompetenceEntity = empCompetenceEntityListEmpCompetenceEntity.getEmployeeId();
                 empCompetenceEntityListEmpCompetenceEntity.setEmployeeId(employeeEntity);
@@ -100,10 +110,16 @@ public class EmployeeEntityJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             EmployeeEntity persistentEmployeeEntity = em.find(EmployeeEntity.class, employeeEntity.getId());
+            DepartmentEntity deptIdOld = persistentEmployeeEntity.getDeptId();
+            DepartmentEntity deptIdNew = employeeEntity.getDeptId();
             List<EmpCompetenceEntity> empCompetenceEntityListOld = persistentEmployeeEntity.getEmpCompetenceEntityList();
             List<EmpCompetenceEntity> empCompetenceEntityListNew = employeeEntity.getEmpCompetenceEntityList();
             List<ScheduleEntity> scheduleEntityListOld = persistentEmployeeEntity.getScheduleEntityList();
             List<ScheduleEntity> scheduleEntityListNew = employeeEntity.getScheduleEntityList();
+            if (deptIdNew != null) {
+                deptIdNew = em.getReference(deptIdNew.getClass(), deptIdNew.getDeptId());
+                employeeEntity.setDeptId(deptIdNew);
+            }
             List<EmpCompetenceEntity> attachedEmpCompetenceEntityListNew = new ArrayList<EmpCompetenceEntity>();
             for (EmpCompetenceEntity empCompetenceEntityListNewEmpCompetenceEntityToAttach : empCompetenceEntityListNew) {
                 empCompetenceEntityListNewEmpCompetenceEntityToAttach = em.getReference(empCompetenceEntityListNewEmpCompetenceEntityToAttach.getClass(), empCompetenceEntityListNewEmpCompetenceEntityToAttach.getId());
@@ -119,6 +135,14 @@ public class EmployeeEntityJpaController implements Serializable {
             scheduleEntityListNew = attachedScheduleEntityListNew;
             employeeEntity.setScheduleEntityList(scheduleEntityListNew);
             employeeEntity = em.merge(employeeEntity);
+            if (deptIdOld != null && !deptIdOld.equals(deptIdNew)) {
+                deptIdOld.getEmployeeEntityList().remove(employeeEntity);
+                deptIdOld = em.merge(deptIdOld);
+            }
+            if (deptIdNew != null && !deptIdNew.equals(deptIdOld)) {
+                deptIdNew.getEmployeeEntityList().add(employeeEntity);
+                deptIdNew = em.merge(deptIdNew);
+            }
             for (EmpCompetenceEntity empCompetenceEntityListOldEmpCompetenceEntity : empCompetenceEntityListOld) {
                 if (!empCompetenceEntityListNew.contains(empCompetenceEntityListOldEmpCompetenceEntity)) {
                     empCompetenceEntityListOldEmpCompetenceEntity.setEmployeeId(null);
@@ -181,6 +205,11 @@ public class EmployeeEntityJpaController implements Serializable {
                 employeeEntity.getId();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The employeeEntity with id " + id + " no longer exists.", enfe);
+            }
+            DepartmentEntity deptId = employeeEntity.getDeptId();
+            if (deptId != null) {
+                deptId.getEmployeeEntityList().remove(employeeEntity);
+                deptId = em.merge(deptId);
             }
             List<EmpCompetenceEntity> empCompetenceEntityList = employeeEntity.getEmpCompetenceEntityList();
             for (EmpCompetenceEntity empCompetenceEntityListEmpCompetenceEntity : empCompetenceEntityList) {
@@ -248,4 +277,3 @@ public class EmployeeEntityJpaController implements Serializable {
     }
 
 }
-
