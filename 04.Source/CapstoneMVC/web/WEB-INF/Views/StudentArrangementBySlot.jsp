@@ -87,9 +87,9 @@
 
                 <div class="form-group">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <div class="title">
-                                <h4>Nhập danh sách kế hoạch dự kiến:</h4>
+                                <h4>Nhập danh sách kế hoạch dự kiến (6 tuần):</h4>
                             </div>
                             <div class="my-content">
                                 <div class="col-md-12">
@@ -107,25 +107,25 @@
                             </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <div class="title">
-                                <h4>Nhập danh sách kế hoạch bổ sung:</h4>
-                            </div>
-                            <div class="my-content">
-                                <div class="col-md-12">
-                                    <label for="file-suggestion" hidden></label>
-                                    <input type="file" accept=".xlsx, .xls" id="additional-file-suggestion"/>
-                                </div>
-                                <div class="col-md-12 m-t-5">
-                                    Bấm vào <a class="link" href="/Resources/FileTemplates/Kehoachhocdihoclai.xlsx">Template</a>
-                                    để tải
-                                    về bản mẫu
-                                </div>
-                                <div class="my-input-group">
-                                    <button type="button" onclick="ImportAdditionalFile()" class="btn btn-success">Import</button>
-                                </div>
-                            </div>
-                        </div>
+                        <%--<div class="col-md-6">--%>
+                            <%--<div class="title">--%>
+                                <%--<h4>Nhập danh sách kế hoạch bổ sung:</h4>--%>
+                            <%--</div>--%>
+                            <%--<div class="my-content">--%>
+                                <%--<div class="col-md-12">--%>
+                                    <%--<label for="file-suggestion" hidden></label>--%>
+                                    <%--<input type="file" accept=".xlsx, .xls" id="additional-file-suggestion"/>--%>
+                                <%--</div>--%>
+                                <%--<div class="col-md-12 m-t-5">--%>
+                                    <%--Bấm vào <a class="link" href="/Resources/FileTemplates/Kehoachhocdihoclai.xlsx">Template</a>--%>
+                                    <%--để tải--%>
+                                    <%--về bản mẫu--%>
+                                <%--</div>--%>
+                                <%--<div class="my-input-group">--%>
+                                    <%--<button type="button" onclick="ImportAdditionalFile()" class="btn btn-success">Import</button>--%>
+                                <%--</div>--%>
+                            <%--</div>--%>
+                        <%--</div>--%>
                     </div>
                 </div>
 
@@ -135,12 +135,12 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="title">
-                                <h4>Nhập danh sách kế hoạch học lại dự kiến:</h4>
+                                <h4>Nhập danh sách kế hoạch dự kiến (10 tuần):</h4>
                             </div>
                             <div class="my-content">
                                 <div class="col-md-12">
-                                    <label for="file-suggestion" hidden></label>
-                                    <input type="file" accept=".xlsx, .xls" id="relearn-file-suggestion"/>
+                                    <label for="file-suggestion-2" hidden></label>
+                                    <input type="file" accept=".xlsx, .xls" id="file-suggestion-2"/>
                                 </div>
                                 <div class="col-md-12 m-t-5">
                                     Bấm vào <a class="link" href="/Resources/FileTemplates/Kehoachhocdihoclai.xlsx">Template</a>
@@ -148,7 +148,7 @@
                                     về bản mẫu
                                 </div>
                                 <div class="my-input-group">
-                                    <button type="button" onclick="ImportRelearnFile()" class="btn btn-success">Import</button>
+                                    <button type="button" onclick="ImportFile2()" class="btn btn-success">Import</button>
                                 </div>
                             </div>
                         </div>
@@ -299,7 +299,48 @@
                         if (result.success) {
                             swal({
                                 title: 'Thành công',
-                                text: "Đã import curriculum!",
+                                text: "Đã hoàn thành sắp xếp lớp!",
+                                type: 'success'
+                            }).then(function () {
+                                RefreshTable();
+                            });
+                        } else {
+                            swal('Đã xảy ra lỗi!', result.message, 'error');
+                        }
+                    }
+                });
+                updateProgress(isRunning);
+
+            },
+            allowOutsideClick: false
+        });
+    }
+
+    function ImportFile2() {
+        var form = new FormData();
+        form.append('file-suggestion-2', $('#file-suggestion-2')[0].files[0]);
+        form.append('is-relearn', "false");
+        form.append('is-addition', "false");
+
+        swal({
+            title: 'Đang xử lý',
+            html: "<div class='form-group'>Tiến trình có thể kéo dài vài phút!</div><div id='progress-file-1' class='form-group'></div><div id='process1' class='form-group'></div><div id='process2' class='form-group'></div>",
+            type: 'info',
+            onOpen: function () {
+                swal.showLoading();
+                isRunning = true;
+                $.ajax({
+                    type: "POST",
+                    url: "/studentArrangementBySlot/import2",
+                    processData: false,
+                    contentType: false,
+                    data: form,
+                    success: function (result) {
+                        isRunning = false;
+                        if (result.success) {
+                            swal({
+                                title: 'Thành công',
+                                text: "Đã hoàn thành sắp xếp lớp!",
                                 type: 'success'
                             }).then(function () {
                                 RefreshTable();
@@ -341,7 +382,7 @@
                         if (result.success) {
                             swal({
                                 title: 'Thành công',
-                                text: "Đã import curriculum!",
+                                text: "Đã hoàn thành sắp xếp lớp!",
                                 type: 'success'
                             }).then(function () {
                                 RefreshTable();
@@ -382,7 +423,7 @@
                         if (result.success) {
                             swal({
                                 title: 'Thành công',
-                                text: "Đã import curriculum!",
+                                text: "Đã hoàn thành sắp xếp lớp!",
                                 type: 'success'
                             }).then(function () {
                                 RefreshTable();
