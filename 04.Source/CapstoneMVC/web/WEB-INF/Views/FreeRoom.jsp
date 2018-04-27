@@ -89,17 +89,8 @@
                 </select>
             </div>
 
-            <div class="form-group" style="display: none">
-                <label for="aTime">Slot:</label>
-                <select id="aTime" class="select aTime-select">
-                    <option value="-1">Tất cả</option>
-                    <c:forEach var="aSlot" items="${slots}">
-                        <option value="${aSlot.slotName}">${aSlot.slotName}</option>
-                    </c:forEach>
-                </select>
-            </div>
             <div class="row" style="display: flex; position: relative;">
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <div class="form-group">
                         <label for="lecture2">Giảng viên:</label>
                         <select id="lecture2" class="select lecture2-select">
@@ -112,9 +103,20 @@
                     </div>
                 </div>
 
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="aTime">Slot:</label>
+                        <select id="aTime" class="select aTime-select">
+                            <c:forEach var="aSlot" items="${slots}">
+                                <option value="${aSlot.slotName}">${aSlot.slotName}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="col-md-6">
                     <div class="form-group" style="width: 100%; bottom: 0; position: absolute;">
-                        <button type="button" class="btn btn-success" onclick="RefreshTable2()" id="searchBtn">Tìm
+                        <button type="button" class="btn btn-success" onclick="RefreshTable()" id="searchBtn">Tìm
                             kiếm
                         </button>
                         <button type="button" class="btn btn-primary" onclick="resetFilter()" id="removeFilterBtn">Xóa
@@ -544,6 +546,7 @@
                     d.startDate = $('#scheduleDate2').data('daterangepicker').startDate.format('DD/MM/YYYY');
                     // d.startDate = '24/03/2018';
                     d.employeeId = $('#lecture2').val();
+                    d.slot = $('#aTime').val();
                 },
                 "dataSrc": function (json) {
                     // var roomListObjArr=[];
@@ -867,9 +870,14 @@
     }
 
     function RefreshTable() {
-        if (tblSchedule != null) {
-            // tblSchedule._fnPageChange(0);
-            tblSchedule._fnAjaxUpdate();
+        if (($('#lecture2').val() !== null && $('#lecture2').val() !== "")
+            && ($('#aTime').val() !== null && $('#aTime').val() !== "")) {
+            if (tblSchedule != null) {
+                tblSchedule._fnAjaxUpdate();
+            }
+            $('#removeFilterBtn').removeAttr('disabled');
+        } else {
+            alert("Xin chọn khoảng GV và slot trong ngày hôm nay muốn tìm kiếm.");
         }
 
     }
