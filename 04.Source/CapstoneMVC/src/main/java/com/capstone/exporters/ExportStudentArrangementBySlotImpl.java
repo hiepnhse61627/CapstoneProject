@@ -16,6 +16,7 @@ import java.util.Map;
 public class ExportStudentArrangementBySlotImpl implements IExportObject {
     private String fileName = "DSSV lop mon theo slot.xlsx";
     private String fileNameUpdated = "DSSV lop mon theo slot cap nhat.xlsx";
+    private boolean is10Weeks = false;
 
     private CellStyle titleStyle;
     private CellStyle tableHeaderStyle;
@@ -43,8 +44,13 @@ public class ExportStudentArrangementBySlotImpl implements IExportObject {
     @Override
     public void writeData(OutputStream os, Map<String, String> params, HttpServletRequest request) throws Exception {
         // Mã môn, Tên môn, MSSV, Tên sinh viên, Lớp, Buổi
-        List<List<String>> studentList = (List<List<String>>) request.getSession().getAttribute("STUDENT_ARRANGEMENT_BY_SLOT_LIST");
+        List<List<String>> studentList = (List<List<String>>) request.getSession().getAttribute("STUDENT_ARRANGEMENT_BY_SLOT_LIST_6WEEKS");
         if (studentList == null) {
+            studentList = (List<List<String>>) request.getSession().getAttribute("STUDENT_ARRANGEMENT_BY_SLOT_LIST_10WEEKS");
+            is10Weeks = true;
+        }
+
+        if(studentList == null) {
             return;
         }
         studentList = new ArrayList<>(studentList);
@@ -162,18 +168,21 @@ public class ExportStudentArrangementBySlotImpl implements IExportObject {
             spreadsheet.setColumnWidth(31, 4200);
 
             List<String> slotList = new ArrayList<>();
-//            slotList.add("S21");
-//            slotList.add("S22");
-//            slotList.add("S23");
-//            slotList.add("S31");
-//            slotList.add("S32");
-//            slotList.add("S33");
-            slotList.add("S11");
-            slotList.add("S12");
-            slotList.add("S13");
-            slotList.add("S21");
-            slotList.add("S22");
-            slotList.add("S23");
+            if(!is10Weeks) {
+                slotList.add("S11");
+                slotList.add("S12");
+                slotList.add("S13");
+                slotList.add("S21");
+                slotList.add("S22");
+                slotList.add("S23");
+            } else {
+                slotList.add("S21");
+                slotList.add("S22");
+                slotList.add("S23");
+                slotList.add("S31");
+                slotList.add("S32");
+                slotList.add("S33");
+            }
 
             int ordinalNumber = 1;
             int currentRow = 3;
