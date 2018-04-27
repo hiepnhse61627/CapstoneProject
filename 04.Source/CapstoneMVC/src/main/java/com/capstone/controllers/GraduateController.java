@@ -429,7 +429,7 @@ public class GraduateController {
         return data;
     }
 
-    public int getGraduateSpecializeCredits(String startCourse, StudentEntity student, List<GraduationConditionEntity> graduationConditions){
+    public int getGraduateSpecializeCredits(String startCourse, StudentEntity student, List<GraduationConditionEntity> graduationConditions) {
         int specializedCredits = 0;
         String tmpStartCourse = startCourse;
         GraduationConditionEntity gc = graduationConditions.stream().filter(q -> q.getProgramId().getId() == student.getProgramId().getId()
@@ -1196,14 +1196,13 @@ public class GraduateController {
         List<GraduationConditionEntity> graduateConditons = graduationConditionService.findAllGraduationCondition();
         List<StudentEntity> uncheckable = new ArrayList<>();
 
+
         int i = 1;
         loopStudents:
         for (StudentEntity student : students) {
 
             System.out.println(i + " - " + students.size());
-//            if (student.getRollNumber().equalsIgnoreCase("SE61822")) {
-//                System.out.println("bug");
-//            }
+
 
             List<SubjectCurriculumEntity> subjects = new ArrayList<>();
             List<DocumentStudentEntity> docs = new ArrayList<>(student.getDocumentStudentEntityList());
@@ -1236,9 +1235,9 @@ public class GraduateController {
                         }
                     }
                     List<SubjectCurriculumEntity> list = curriculum.getSubjectCurriculumEntityList();
-                    //chỉ lấy những subject không nằm trong kì chung với kì làm capstone
+
                     for (SubjectCurriculumEntity s : list) {
-                        if (!subjects.contains(s) && s.getTermNumber() < capstoneTerm) {
+                        if (!subjects.contains(s)) {
                             subjects.add(s);
                             if (s.getSubjectId().getType() == SubjectTypeEnum.OJT.getId()) {
                                 ojtCredits = s.getSubjectCredits();
@@ -1260,6 +1259,10 @@ public class GraduateController {
                 req = true;
             }
 
+            if (student.getRollNumber().equalsIgnoreCase("SE62109")) {
+                System.out.println("bug");
+            }
+
             if (!req) {
                 int percent = student.getProgramId().getCapstone();
                 List<MarksEntity> studentMarks = totalMarks.stream()
@@ -1273,30 +1276,61 @@ public class GraduateController {
                     SubjectEntity itemSubject = subjectCurriculum.getSubjectId();
 
                     //exclude vovinam subject out
-                    if (!itemSubject.getId().contains("vov") && subjectCurriculum.getTermNumber() < capstoneTerm) {
+                    if (!itemSubject.getId().contains("vov")) {
+                        if (itemSubject.getId().equalsIgnoreCase("SSC102")) {
+                            System.out.println("bug");
+                        }
 
-                        //contains main subject and all of it replace subject
-                        List<SubjectEntity> checkList = Ultilities.findBackAndForwardReplacementSubject(itemSubject);
 
-                        //lấy hết tất cả điểm của môn chính và môn thay thế của nó để kiểm tra xem đã pass chưa
-                        List<MarksEntity> marks = studentMarks.stream().filter(q -> checkList.stream()
-                                .anyMatch(c -> c.getId().equalsIgnoreCase(q.getSubjectMarkComponentId().getSubjectId().getId())))
+                        //lấy hết tất cả điểm của môn chính
+                        List<MarksEntity> marks1 = studentMarks.stream()
+                                .filter(q -> q.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(itemSubject.getId()))
                                 .collect(Collectors.toList());
-
                         //sort by semester
-                        marks = Ultilities.SortSemestersByMarks(marks);
+                        marks1 = Ultilities.SortSemestersByMarks(marks1);
 
-                        if (!marks.isEmpty()) {
-                            MarksEntity latestMark = marks.get(marks.size() - 1);
-                            boolean isFail = Ultilities.isLatestMarkFailOrNotVer2(latestMark, marks);
+                        //kiểm tra môn chính, nếu thấy fail, kiểm tra điểm môn thay thế
+                        boolean checkPrerequesite = false;
+
+                        if (!marks1.isEmpty()) {
+                            MarksEntity latestMark = marks1.get(marks1.size() - 1);
+                            boolean isFail = Ultilities.isLatestMarkFailOrNotVer2(latestMark, marks1);
                             if (!isFail) {
                                 tongtinchi += subjectCurriculum.getSubjectCredits();
+                                checkPrerequesite = false;
+                            } else {
+                                checkPrerequesite = true;
+                            }
+                        } else {
+                            checkPrerequesite = true;
+                        }
+
+                        //check môn thay thế
+                        if(checkPrerequesite){
+                            //contains main subject and all of it replace subject
+                            List<SubjectEntity> checkList = Ultilities.findBackAndForwardReplacementSubject(itemSubject);
+
+                            //lấy hết tất cả điểm của môn chính và môn thay thế của nó để kiểm tra xem đã pass chưa
+                            List<MarksEntity> marks = studentMarks.stream().filter(q -> checkList.stream()
+                                    .anyMatch(c -> c.getId().equalsIgnoreCase(q.getSubjectMarkComponentId().getSubjectId().getId())))
+                                    .collect(Collectors.toList());
+
+                            //sort by semester
+                            marks = Ultilities.SortSemestersByMarks(marks);
+
+                            if (!marks.isEmpty()) {
+                                MarksEntity latestMark = marks.get(marks.size() - 1);
+                                boolean isFail = Ultilities.isLatestMarkFailOrNotVer2(latestMark, marks);
+                                if (!isFail) {
+                                    tongtinchi += subjectCurriculum.getSubjectCredits();
+                                } else {
+                                    failSubjs.add(itemSubject);
+                                }
                             } else {
                                 failSubjs.add(itemSubject);
                             }
-                        } else {
-                            failSubjs.add(itemSubject);
                         }
+
                     }
                 }
 
@@ -1308,6 +1342,10 @@ public class GraduateController {
                 boolean hasLearnedOjt = false;
                 if (hasOJT.stream().anyMatch(c -> c.getId() == student.getId())) {
                     hasLearnedOjt = true;
+                }
+
+                if (student.getRollNumber().equalsIgnoreCase("SE62109")) {
+                    System.out.println("bug");
                 }
 
                 List<String> t = new ArrayList<>();
@@ -1336,6 +1374,7 @@ public class GraduateController {
                                     data.add(t);
                                 }
                             } else {
+                                uncheckable.add(student);
                                 System.out.println("khong check dc do an => cho vao` de sau nay tinh");
                             }
                         }
@@ -1834,7 +1873,6 @@ public class GraduateController {
         view.addObject("title", "Chứng nhận sinh viên tốt nghiệp");
 
 
-
         return view;
     }
 
@@ -1856,14 +1894,14 @@ public class GraduateController {
             StudentStatusEntity graduateStatus = statuses.stream().filter(q -> q.getStatus()
                     .equalsIgnoreCase(Enums.StudentStatus.Graduated.getValue()))
                     .findFirst().orElse(null);
-            if(graduateStatus == null){
+            if (graduateStatus == null) {
                 data.addProperty("success", false);
                 data.addProperty("message", "Sinh viên này chưa tốt nghiệp!");
                 return data;
             }
 
             GraduateDetailEntity certificate = graduateDetailService.findGraduateDetailEntity(studentId);
-            if(certificate == null){
+            if (certificate == null) {
                 data.addProperty("success", false);
                 data.addProperty("message", "Sinh viên này chưa có dữ liệu về chứng chỉ cấp bằng!");
                 return data;
@@ -1892,7 +1930,7 @@ public class GraduateController {
     }
 
 
-    public class StudentGraduateModel{
+    public class StudentGraduateModel {
         private String rollNumber;
         private String dateOfBirth;
         private String fullName;

@@ -901,6 +901,25 @@ public class Ultilities {
         return result;
     }
 
+    public static MarksEntity isLatestMarkFailOrNotVer3(MarksEntity latestMark, List<MarksEntity> sortedList) {
+        RealSemesterEntity tmpSemester = latestMark.getSemesterId();
+        //check xem trong một kì có học môn đó 2 lần không (trả nợ ngay trong kì)
+        List<MarksEntity> reLearnInSameSemester = sortedList.stream()
+                .filter(q -> q.getSemesterId().getId() == tmpSemester.getId())
+                .collect(Collectors.toList());
+
+        //nếu trong kì có 2 record, pass, fail --> hs đó pass (không được học cải thiện ngay trong kì)
+        // nếu có 2 fail --> fail; nếu có 1 pass, 1 fail -> pass
+        MarksEntity checkPass = reLearnInSameSemester.stream()
+                .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.PASSED.getValue()))
+                .findFirst().orElse(null);
+        if (checkPass != null) {
+            return checkPass;
+        } else {
+            return null;
+        }
+    }
+
     //
     public static boolean isSubjectFailedPrerequisite(SubjectEntity subject, List<RealSemesterEntity> sortedSemester
             , List<SubjectEntity> allSubjects, List<MarksEntity> allMarks, RealSemesterEntity selectedSemester
@@ -1314,7 +1333,7 @@ public class Ultilities {
             //nếu k trùng thì add B vào mảng
             if (!duplicate) {
                 //add B
-                checkSubjects.add(sub);
+//                checkSubjects.add(sub);
                 //lấy ra môn thay thế của B, trong đó có A, C -> kiếm C để add
                 List<SubjectEntity> replacements = sub.getSubjectEntityList();
                 for (SubjectEntity reSubj : replacements) {

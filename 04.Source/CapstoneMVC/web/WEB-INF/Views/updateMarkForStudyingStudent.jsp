@@ -54,6 +54,10 @@
 <script>
     var isRunning;
 
+    $(document).ready(function(){
+        $(".select").select2();
+    })
+
     function Update() {
         var form = new FormData();
         form.append('updateFile', $('#updateFile')[0].files[0]);
@@ -153,7 +157,7 @@
                 $('#progress').html(
                     "<div>(" + result.updateStudentCurrentLine + "/" + result.updateStudentTotalLine + ")</div>");
                 if (running) {
-                    setTimeout("UpdateStudentCreditsProgress(isrunning)", 50);
+                    setTimeout("UpdateStudentCreditsProgress(isrunning)", 2000);
                 }
             }
         });

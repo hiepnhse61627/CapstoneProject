@@ -32,6 +32,7 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
     IStudentService studentService = new StudentServiceImpl();
     StudentStatusServiceImpl studentStatusService = new StudentStatusServiceImpl();
     GraduationConditionServiceImpl graduationConditionService = new GraduationConditionServiceImpl();
+    GraduateDetailServiceImpl graduateDetailService = new GraduateDetailServiceImpl();
 
     private String fileName = "Graduated-Students.xlsx";
 
@@ -72,6 +73,7 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
         try {
 
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+            SimpleDateFormat monthfirstFromat = new SimpleDateFormat("MMMM dd, yyyy");
             // style
             CellStyle cellStyle = workbook.createCellStyle();
             cellStyle.setBorderBottom(BorderStyle.THIN);
@@ -115,13 +117,40 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
             ExportStatusReport.StatusStudentDetailExport = "Đang khởi tạo file";
             int myIndex = 1;
             for (StudentAndMark entry : dataMap) {
+                ExportStatusReport.StatusStudentDetailExport = "Đang khởi tạo file " + myIndex + " - " + dataMap.size();
                 StudentEntity student = entry.getStudent();
                 sheet = workbook.cloneSheet(0, student.getRollNumber());
                 XSSFRow row = sheet.getRow(11);
                 row.getCell(2).setCellValue(student.getFullName());
                 row.getCell(6).setCellValue(student.getRollNumber());
+
+                //Date of birth
+                Date dateOfBirth = student.getDateOfBirth();
                 row = sheet.getRow(13);
-                row.getCell(2).setCellValue(sdf.format(student.getDateOfBirth()));
+                row.getCell(2).setCellValue(sdf.format(dateOfBirth));
+                row = sheet.getRow(14);
+                row.getCell(2).setCellValue(monthfirstFromat.format(dateOfBirth));
+
+                //Diploma Code
+                GraduateDetailEntity graduateDetailEntity = graduateDetailService.findGraduateDetailEntity(student.getId());
+                if (graduateDetailEntity != null) {
+                    try {
+                        String diplomaCode = graduateDetailEntity.getDiplomaCode();
+                        String notformatGraduateDate = graduateDetailEntity.getDate();
+
+
+                        SimpleDateFormat gradateFormat = new SimpleDateFormat("yyyy-MM-dd");
+                        String graduateDate = monthfirstFromat.format(gradateFormat.parse(notformatGraduateDate));
+                        row = sheet.getRow(8);
+                        row.getCell(1).setCellValue("(Kèm theo văn bằng tốt nghiệp số "
+                                + diplomaCode + ", cấp ngày " + graduateDate + ")");
+                        row = sheet.getRow(9);
+                        row.getCell(1)
+                                .setCellValue("(Attached to diploma No." + diplomaCode + ", issued on " + graduateDate + ")");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
 
                 //ngành , chuyên ngành
                 row = sheet.getRow(15);
@@ -218,7 +247,12 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
                     markCell.setCellStyle(cellStyle);
                     //làm tròn 2 chữ số
                     double round2Decimal = Math.round(marksEntity.getAverageMark() * 100.0) / 100.0;
-                    markCell.setCellValue(round2Decimal == 0 ? "Pass" : round2Decimal + "");
+                    if (round2Decimal == 0) {
+                        markCell.setCellValue("Pass");
+                    } else {
+                        markCell.setCellValue(round2Decimal);
+                    }
+//                    markCell.setCellValue(round2Decimal == 0 ? "Pass" : round2Decimal + "");
                     // grade
                     XSSFCell gradeCell = row.createCell(8);
                     gradeCell.setCellStyle(cellStyle);
@@ -267,7 +301,7 @@ public class ExportExcelGraduatedStudentsImpl implements IExportObject {
             if (!dataMap.isEmpty())
                 workbook.removeSheetAt(0);
             ExportStatusReport.StatusStudentDetailExport = "Hoàn tất tạo file";
-            ExportStatusReport.StatusExportStudentDetailRunning = false;
+//            ExportStatusReport.StatusExportStudentDetailRunning = false;
             ExportStatusReport.StopExporting = false;
         } catch (Exception e) {
             e.printStackTrace();

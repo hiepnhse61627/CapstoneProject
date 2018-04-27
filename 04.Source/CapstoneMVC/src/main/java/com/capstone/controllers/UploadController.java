@@ -1986,6 +1986,7 @@ public class UploadController {
                         .collect(Collectors.toList());
 
                 List<MarkModelExcel> excelMarks = dataExcel.get(studentEntity);
+                List<MarkModelExcel> copyExMarks = new ArrayList<>(excelMarks);
 
 //                //chứa điểm học vượt, điểm trả nợ, chứa những điểm không có trong khung chương trình kì hiện tại của sinh viên
 //                List<MarkModelExcel> markNotInCurriculums = excelMarks.stream()
@@ -1994,6 +1995,14 @@ public class UploadController {
                 //chứa những điểm học trong khung chương trình hiện tại theo kỳ hiện tại của sinh viên
                 List<MarkModelExcel> markInCurriculums = excelMarks.stream()
                         .filter(q -> subjectList.contains(q.getSubjectId())).collect(Collectors.toList());
+                List<MarksEntity> stuAllMarks = marksService.getAllMarksByStudent(studentEntity.getId());
+                //lấy những môn đang học
+                List<MarksEntity> currentStudying = stuAllMarks.stream()
+                        .filter(q -> q.getSemesterId().getId() == semesterId
+                                && q.getStatus().equalsIgnoreCase(Enums.MarkStatus.STUDYING.getValue()))
+                        .collect(Collectors.toList());
+
+
 
                 //chứa những môn chậm tiến độ
                 List<MarkModelExcel> notStartMarks = subjectList.stream()
@@ -2016,6 +2025,18 @@ public class UploadController {
                     }
                     if (alreadyLearned)
                         notStartMarks.remove(mark);
+                }
+
+                //không import những môn đang học
+                for (MarkModelExcel mItem: copyExMarks) {
+                    String subjId = mItem.getSubjectId();
+                    MarksEntity mark = currentStudying.stream()
+                            .filter(q -> q.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(subjId))
+                            .findFirst().orElse(null);
+                    if(mark != null){
+                        currentStudying.remove(mark);
+                        excelMarks.remove(mItem);
+                    }
                 }
 
 //                for (MarkModelExcel mark : removedMarks) {
@@ -2990,27 +3011,40 @@ public class UploadController {
 
                     int totalPassCredits = 0;
                     int totalPassFailCredits = 0;
+                    int averageMarkCredits = 0;
 
-                    double sumPassFailMark = 0;
-                    double sumPassFailCredits = 0;
+//                    double sumPassFailMark = 0;
+//                    double sumPassFailCredits = 0;
+                    double sumMark = 0;
 
                     List<MarksEntity> marks = marksService.getStudentMarksById(student.getId());
                     marks = marks.stream().filter(c -> c.getIsActivated()).collect(Collectors.toList());
                     marks = Ultilities.SortSemestersByMarks(marks);
 
-                    List<SubjectCurriculumEntity> stuSubs = Ultilities.StudentCurriculumSubjects(student);
+                    List<SubjectCurriculumEntity> tmpSubjectCurriculums = Ultilities.StudentCurriculumSubjects(student);
+                    List<SubjectCurriculumEntity> stuSubs = new ArrayList<>();
+                    for (SubjectCurriculumEntity scItem : tmpSubjectCurriculums) {
+                        boolean exist = stuSubs.stream()
+                                .anyMatch(q -> q.getSubjectId().getId().equalsIgnoreCase(scItem.getSubjectId().getId()));
+                        if (!exist) {
+                            stuSubs.add(scItem);
+                        }
+                    }
 
 //                    List<String> dacongList = new ArrayList<>();
-
+                    List<String> t = stuSubs.stream().map(q -> q.getSubjectId().getId()).collect(Collectors.toList());
                     for (SubjectCurriculumEntity sub : stuSubs) {
-                        if (!sub.getSubjectId().getId().toLowerCase().contains("vov")) {
+                        if (!sub.getSubjectId().getId().toLowerCase().contains("vov")
+                                && sub.getSubjectId().getType() != Enums.SubjectType.OJT.getValue()) {
 
                             List<MarksEntity> subMarks = marks
                                     .stream()
                                     .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub.getSubjectId().getId()))
                                     .collect(Collectors.toList());
-                            if (subMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-                                    c.getStatus().toLowerCase().contains("exempt"))) {
+                            MarksEntity mark4 = subMarks.stream().filter(c -> c.getStatus().toLowerCase().contains("pass") ||
+                                    c.getStatus().toLowerCase().contains("exempt"))
+                                    .findFirst().orElse(null);
+                            if (mark4 != null) {
 
 //                                if (!dacongList.stream().anyMatch(c -> c.equals(sub.getSubjectId().getId()))) {
 //                                    totalPassCredits += sub.getSubjectCredits();
@@ -3019,6 +3053,10 @@ public class UploadController {
 //                                    System.out.println(totalPassCredits + " - " + sub.getSubjectId().getId() + " - " + sub.getSubjectCredits());
 //                                }
                                 totalPassCredits += sub.getSubjectCredits();
+                                if (!sub.getSubjectId().getId().toLowerCase().contains("lab")) {
+                                    averageMarkCredits += sub.getSubjectCredits();
+                                    sumMark += mark4.getAverageMark()*sub.getSubjectCredits();
+                                }
 
                             } else {
                                 boolean dacong = false;
@@ -3029,8 +3067,10 @@ public class UploadController {
                                             .stream()
                                             .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
                                             .collect(Collectors.toList());
-                                    if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-                                            c.getStatus().toLowerCase().contains("exempt"))) {
+                                    MarksEntity mark3 = replaceMarks.stream().filter(c -> c.getStatus().toLowerCase().contains("pass") ||
+                                            c.getStatus().toLowerCase().contains("exempt"))
+                                            .findFirst().orElse(null);
+                                    if (mark3 != null) {
 
 //                                        if (!dacongList.stream().anyMatch(c -> c.equals(replacer.getId()))) {
 //                                            totalPassCredits += sub.getSubjectCredits();
@@ -3040,6 +3080,10 @@ public class UploadController {
 //                                        }
 
                                         totalPassCredits += sub.getSubjectCredits();
+                                        if (!sub.getSubjectId().getId().toLowerCase().contains("lab")) {
+                                            averageMarkCredits += sub.getSubjectCredits();
+                                            sumMark += mark3.getAverageMark()*sub.getSubjectCredits();
+                                        }
                                         dacong = true;
                                         break;
                                     }
@@ -3051,8 +3095,10 @@ public class UploadController {
                                                 .stream()
                                                 .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(repls.getId()))
                                                 .collect(Collectors.toList());
-                                        if (replaceMarks.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-                                                c.getStatus().toLowerCase().contains("exempt"))) {
+                                        MarksEntity mark1 = replaceMarks.stream().filter(c -> c.getStatus().toLowerCase().contains("pass") ||
+                                                c.getStatus().toLowerCase().contains("exempt"))
+                                                .findFirst().orElse(null);
+                                        if (mark1 != null) {
 
 //                                            if (!dacongList.stream().anyMatch(c -> c.equals(repls.getId()))) {
 //                                                totalPassCredits += sub.getSubjectCredits();
@@ -3061,6 +3107,10 @@ public class UploadController {
 //                                                System.out.println(totalPassCredits + " - " + sub.getSubjectId().getId() + " - " + repls.getId() + " - " + sub.getSubjectCredits());
 //                                            }
                                             totalPassCredits += sub.getSubjectCredits();
+                                            if (!sub.getSubjectId().getId().toLowerCase().contains("lab")) {
+                                                averageMarkCredits += sub.getSubjectCredits();
+                                                sumMark += mark1.getAverageMark()*sub.getSubjectCredits();
+                                            }
 
                                             break;
                                         } else {
@@ -3070,8 +3120,10 @@ public class UploadController {
                                                         .stream()
                                                         .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(replacer.getId()))
                                                         .collect(Collectors.toList());
-                                                if (replaceMarks2.stream().anyMatch(c -> c.getStatus().toLowerCase().contains("pass") ||
-                                                        c.getStatus().toLowerCase().contains("exempt"))) {
+                                               MarksEntity mark2 = replaceMarks2.stream().filter(c -> c.getStatus().toLowerCase().contains("pass") ||
+                                                        c.getStatus().toLowerCase().contains("exempt"))
+                                                        .findFirst().orElse(null);
+                                                if (mark2 != null) {
 
 //                                                    if (!dacongList.stream().anyMatch(c -> c.equals(replacer.getId()))) {
 //                                                        totalPassCredits += sub.getSubjectCredits();
@@ -3081,6 +3133,10 @@ public class UploadController {
 //                                                    }
 
                                                     totalPassCredits += sub.getSubjectCredits();
+                                                    if (!sub.getSubjectId().getId().toLowerCase().contains("lab")) {
+                                                        averageMarkCredits += sub.getSubjectCredits();
+                                                        sumMark += mark2.getAverageMark()*sub.getSubjectCredits();
+                                                    }
 
                                                     break;
                                                 }
@@ -3097,20 +3153,6 @@ public class UploadController {
                             if (!m.isEmpty()) {
                                 totalPassFailCredits += sub.getSubjectCredits();
                             }
-                        }
-
-                        // tính dtb
-                        MarksEntity latestEntry = marks
-                                .stream()
-                                .filter(c -> !c.getSubjectMarkComponentId().getSubjectId().getId().toLowerCase().contains("lab") &&
-                                        !c.getSubjectMarkComponentId().getSubjectId().getId().toLowerCase().contains("oj") &&
-                                        !c.getSubjectMarkComponentId().getSubjectId().getId().toLowerCase().contains("syb"))
-                                .filter(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equals(sub.getSubjectId().getId()))
-                                .reduce((first, second) -> second)
-                                .orElse(null);
-                        if (latestEntry != null) {
-                            sumPassFailMark += latestEntry.getAverageMark() * sub.getSubjectCredits();
-                            sumPassFailCredits += sub.getSubjectCredits();
                         }
                     }
 
@@ -3136,11 +3178,11 @@ public class UploadController {
 //                        }
 //                    }
 
-                    double passFailAverageMark = Math.round(sumPassFailMark / sumPassFailCredits * 100.0) / 100.0;
+                    double averageMark = Math.round(sumMark / averageMarkCredits * 100.0) / 100.0;
 
                     student.setPassCredits(totalPassCredits);
                     student.setPassFailCredits(totalPassFailCredits);
-                    student.setPassFailAverageMark(passFailAverageMark);
+                    student.setPassFailAverageMark(averageMark);
 
                     studentService.updateStudent(student);
                     ++currentLine1;

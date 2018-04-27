@@ -276,7 +276,7 @@
                                             <xsl:when test="$mHighschoolGraduate = 'True'">
                                                 &#x2713;
                                             </xsl:when>
-                                            <xsl:otherwise></xsl:otherwise>
+                                            <xsl:otherwise>Chưa nộp</xsl:otherwise>
                                         </xsl:choose>
                                     </td>
                                     <td  style="padding:6px 8px;text-align:center;border: 1px solid #ddd;">
@@ -288,7 +288,7 @@
                                             <xsl:when test="$mIdCard = 'True'">
                                                 &#x2713;
                                             </xsl:when>
-                                            <xsl:otherwise></xsl:otherwise>
+                                            <xsl:otherwise>Chưa nộp</xsl:otherwise>
                                         </xsl:choose>
                                     </td>
                                     <td  style="padding:6px 8px;text-align:center;border: 1px solid #ddd;">
@@ -300,7 +300,7 @@
                                             <xsl:when test="$mBirthRecords = 'True'">
                                                 &#x2713;
                                             </xsl:when>
-                                            <xsl:otherwise></xsl:otherwise>
+                                            <xsl:otherwise>Chưa nộp</xsl:otherwise>
                                         </xsl:choose>
                                     </td>
                                 </tr>

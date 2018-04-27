@@ -852,7 +852,6 @@ public class SubjectCurriculumController {
                         CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumName);
                         ProgramEntity programEntity = programService.getProgramByName(programName);
 
-
                         SubjectEntity subjectEntity = allSubjects.stream()
                                 .filter(q -> q.getId().equalsIgnoreCase(subjectCode)).findFirst().orElse(null);
                         //những curriculum lỗi sẽ không được import
@@ -862,17 +861,27 @@ public class SubjectCurriculumController {
                                 //kiểm tra xem mapData đã tồn tại curriculum chưa
                                 if (mapData.containsKey(curriculumEntity)) {
 
+                                    //tìm môn thay thế, những môn tương đương môn đang được xét
+                                    List<SubjectEntity> inDB = Ultilities.findBackAndForwardReplacementSubject(subjectEntity);
+                                    //môn đã có dưới DB
                                     List<SubjectCurriculumEntity> subjcurrList =
                                             new ArrayList<>(curriculumEntity.getSubjectCurriculumEntityList());
 
-                                    boolean exist = subjcurrList.stream()
+                                    //môn đã có trong mảng chuẩn bị import
+                                    List<SubjectCurriculumEntity> subjectCurriculumList = mapData.get(curriculumEntity);
+
+
+                                    boolean existInDB = subjcurrList.stream()
+                                            .anyMatch(q -> inDB.stream().anyMatch(c -> c.getId().equalsIgnoreCase(q.getSubjectId().getId())));
+
+                                    boolean existInImportArray = subjectCurriculumList.stream()
                                             .anyMatch(q -> q.getSubjectId().getId().equalsIgnoreCase(subjectCode));
-                                    if (exist) {
+                                    if (existInDB || existInImportArray) {
                                         continue dataLoop;
                                     } else {
                                         // create Subject Curriculumn
                                         Integer ordinal = -1;
-                                        List<SubjectCurriculumEntity> subjectCurriculumList = mapData.get(curriculumEntity);
+
                                         Map<Integer, Integer> termOrdinal = ordinalTrack.get(curriculumName);
 
                                         ordinal = termOrdinal.get((int) termNo);
@@ -904,9 +913,14 @@ public class SubjectCurriculumController {
                                     List<SubjectCurriculumEntity> subjcurrList =
                                             new ArrayList<>(curriculumEntity.getSubjectCurriculumEntityList());
 
-                                    boolean exist = subjcurrList.stream()
-                                            .anyMatch(q -> q.getSubjectId().getId().equalsIgnoreCase(subjectCode));
-                                    if (exist) {
+
+                                    //tìm môn thay thế, những môn tương đương môn đang được xét
+                                    List<SubjectEntity> inDB = Ultilities.findBackAndForwardReplacementSubject(subjectEntity);
+
+                                    boolean existInDB = subjcurrList.stream()
+                                            .anyMatch(q -> inDB.stream().anyMatch(c -> c.getId().equalsIgnoreCase(q.getSubjectId().getId())));
+
+                                    if (existInDB) {
                                         continue dataLoop;
                                     } else {
                                         // create Subject Curriculumn
@@ -991,7 +1005,13 @@ public class SubjectCurriculumController {
             List<SubjectCurriculumEntity> importSC = new ArrayList<>();
             for (CurriculumEntity item : mapData.keySet()) {
                 List<SubjectCurriculumEntity> list = mapData.get(item);
-                int totalCredits = item.getSpecializedCredits();
+                int totalCredits = 0;
+                List<SubjectCurriculumEntity> tempSC=  item.getSubjectCurriculumEntityList();
+                if(tempSC != null){
+                    for (SubjectCurriculumEntity scItem : tempSC) {
+                        totalCredits += scItem.getSubjectCredits();
+                    }
+                }
                 boolean putOjtTerm = true;
                 for (SubjectCurriculumEntity scItem : list) {
                     int type = scItem.getSubjectId().getType();
@@ -1004,7 +1024,7 @@ public class SubjectCurriculumController {
                 if (putOjtTerm) {
                     item.setOjtTerm(ojtTerm);
                 }
-                if(item.getName().equalsIgnoreCase("BA_13B")){
+                if (item.getName().equalsIgnoreCase("JS_11A")) {
                     System.out.println("bug");
                 }
                 item = curriculumService.getCurriculumByName(item.getName());
