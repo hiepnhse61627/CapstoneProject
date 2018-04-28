@@ -749,6 +749,39 @@ public class ScheduleList {
                                         ", phòng " + existingSchedule.getRoomId().getName());
                                 return jsonObj;
                             }
+
+
+                            List<CourseStudentEntity> courseStudentEntities = courseStudentService.findCourseStudentByGroupNameAndCourse(originalSchedule.getGroupName(), originalSchedule.getCourseId());
+                            List<StudentEntity> listOfStudent = new ArrayList<>();
+                            for (CourseStudentEntity courseStudentEntity : courseStudentEntities) {
+                                listOfStudent.add(courseStudentEntity.getStudentId());
+                            }
+
+                            for (StudentEntity aStudent : listOfStudent) {
+                                HashSet<String> groupNameListOfStudent = new HashSet<>();
+
+                                List<CourseStudentEntity> courseStudentEntitiesOfOneStudent = courseStudentService.findCourseStudentByStudent(aStudent);
+
+                                for (CourseStudentEntity courseStudentEntity : courseStudentEntitiesOfOneStudent) {
+                                    groupNameListOfStudent.add(courseStudentEntity.getGroupName());
+                                }
+
+                                for (String groupName : groupNameListOfStudent) {
+                                    ScheduleEntity existingSchedule1 = scheduleService.findScheduleByDateSlotAndGroupName(aDaySlot, groupName);
+                                    if (existingSchedule1 != null) {
+                                        if (!existingSchedule1.getId().toString().equals(params.get("scheduleId"))) {
+                                            jsonObj.addProperty("fail", true);
+                                            jsonObj.addProperty("message", "Sinh viên " + aStudent.getRollNumber() + " của slot hiện tại đã có lịch học vào " +
+                                                    "" + existingSchedule1.getDateId().getSlotId().getSlotName() +
+                                                    ", ngày " + existingSchedule1.getDateId().getDate() + ", giảng viên " +
+                                                    (existingSchedule1.getEmpId() == null ? "" : existingSchedule1.getEmpId().getFullName()) +
+                                                    ", môn " + existingSchedule1.getCourseId().getSubjectCode() +
+                                                    ", lớp " + groupName + ", phòng " + existingSchedule1.getRoomId().getName());
+                                            return jsonObj;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -900,12 +933,12 @@ public class ScheduleList {
 
                 List<EmployeeEntity> lectures = employeeService.findEmployeesByFullName(params.get("lecture"));
                 List<RoomEntity> rooms = roomService.findRoomsByCapacity(Integer.parseInt(params.get("capacity")));
-                ScheduleEntity model = scheduleService.findScheduleById(Integer.parseInt(params.get("scheduleId")));
+                ScheduleEntity originalSchedule = scheduleService.findScheduleById(Integer.parseInt(params.get("scheduleId")));
                 String roomName = params.get("room");
 
-                if (model.getDateId().getDate().equals(aDaySlot.getDate())
-                        && model.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())
-                        && model.getEmpId().equals(lectures.get(0))) {
+                if (originalSchedule.getDateId().getDate().equals(aDaySlot.getDate())
+                        && originalSchedule.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())
+                        && originalSchedule.getEmpId().equals(lectures.get(0))) {
 
                 } else {
                     if (aDaySlot == null) {
@@ -938,6 +971,40 @@ public class ScheduleList {
                                 }
                             }
                         }
+
+                        List<CourseStudentEntity> courseStudentEntities = courseStudentService.findCourseStudentByGroupNameAndCourse(originalSchedule.getGroupName(), originalSchedule.getCourseId());
+                        List<StudentEntity> listOfStudent = new ArrayList<>();
+                        for (CourseStudentEntity courseStudentEntity : courseStudentEntities) {
+                            listOfStudent.add(courseStudentEntity.getStudentId());
+                        }
+
+                        for (StudentEntity aStudent : listOfStudent) {
+                            HashSet<String> groupNameListOfStudent = new HashSet<>();
+
+                            List<CourseStudentEntity> courseStudentEntitiesOfOneStudent = courseStudentService.findCourseStudentByStudent(aStudent);
+
+                            for (CourseStudentEntity courseStudentEntity : courseStudentEntitiesOfOneStudent) {
+                                groupNameListOfStudent.add(courseStudentEntity.getGroupName());
+                            }
+
+                            for (String groupName : groupNameListOfStudent) {
+                                ScheduleEntity existingSchedule1 = scheduleService.findScheduleByDateSlotAndGroupName(aDaySlot, groupName);
+                                if (existingSchedule1 != null) {
+                                    if (!existingSchedule1.getId().toString().equals(params.get("scheduleId"))) {
+                                        jsonObj.addProperty("fail", true);
+                                        jsonObj.addProperty("message", "SV " + aStudent.getRollNumber() + " của slot hiện tại đã có lịch học vào " +
+                                                "" + existingSchedule1.getDateId().getSlotId().getSlotName() +
+                                                ", ngày " + existingSchedule1.getDateId().getDate() + ", giảng viên " +
+                                                (existingSchedule1.getEmpId() == null ? "" : existingSchedule1.getEmpId().getFullName()) +
+                                                ", môn " + existingSchedule1.getCourseId().getSubjectCode() +
+                                                ", lớp " + groupName + ", phòng " + existingSchedule1.getRoomId().getName());
+                                        return jsonObj;
+                                    }
+                                }
+                            }
+
+                        }
+
                     }
                 }
 
@@ -945,14 +1012,14 @@ public class ScheduleList {
                 List<ScheduleEntity> sameScheduleList = new ArrayList<>();
 
                 if (params.get("all").equals("true")) {
-                    List<ScheduleEntity> tmpList = scheduleService.findScheduleByGroupnameAndCourseAndLecture(model.getCourseId(), model.getGroupName(), lectures.get(0));
+                    List<ScheduleEntity> tmpList = scheduleService.findScheduleByGroupnameAndCourseAndLecture(originalSchedule.getCourseId(), originalSchedule.getGroupName(), lectures.get(0));
                     for (ScheduleEntity aSchedule : tmpList) {
-                        if (aSchedule.getDateId().getSlotId().getSlotName().equals(model.getDateId().getSlotId().getSlotName())
-                                && isWeekDayEqual(aSchedule.getDateId().getDate(), model.getDateId().getDate())) {
+                        if (aSchedule.getDateId().getSlotId().getSlotName().equals(originalSchedule.getDateId().getSlotId().getSlotName())
+                                && isWeekDayEqual(aSchedule.getDateId().getDate(), originalSchedule.getDateId().getDate())) {
                             sameScheduleList.add(aSchedule);
                         }
                     }
-                    sameScheduleList.remove(model);
+                    sameScheduleList.remove(originalSchedule);
                 }
 
 
@@ -960,27 +1027,27 @@ public class ScheduleList {
 
                 //find new room
                 if (params.get("changeRoom").equals("true")) {
-                    if (params.get("changeRoom").equals("true") || !model.getDateId().getDate().equals(aDaySlot.getDate())
-                            || !model.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())) {
+                    if (params.get("changeRoom").equals("true") || !originalSchedule.getDateId().getDate().equals(aDaySlot.getDate())
+                            || !originalSchedule.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())) {
                         if (rooms != null && rooms.size() > 0) {
                             for (RoomEntity aRoom : rooms) {
                                 ScheduleEntity existingSchedule = scheduleService.findScheduleByDateSlotAndRoom(aDaySlot, aRoom);
                                 if (existingSchedule == null) {
-                                    if (model.getCourseId().getSubjectCode().contains("VOV")) {
+                                    if (originalSchedule.getCourseId().getSubjectCode().contains("VOV")) {
                                         if (aRoom.getName().contains("VOV")) {
                                             selectedRoom = aRoom;
                                             break;
                                         }
                                     }
 
-                                    if (model.getCourseId().getSubjectCode().contains("LAB")) {
+                                    if (originalSchedule.getCourseId().getSubjectCode().contains("LAB")) {
                                         if (aRoom.getNote().toLowerCase().contains("thực hành")) {
                                             selectedRoom = aRoom;
                                             break;
                                         }
                                     }
 
-                                    if (!model.getCourseId().getSubjectCode().contains("LAB") && !model.getCourseId().getSubjectCode().contains("VOV")) {
+                                    if (!originalSchedule.getCourseId().getSubjectCode().contains("LAB") && !originalSchedule.getCourseId().getSubjectCode().contains("VOV")) {
                                         if (!aRoom.getName().contains("VOV") && !aRoom.getNote().toLowerCase().contains("thực hành")) {
                                             selectedRoom = aRoom;
                                             break;
@@ -991,7 +1058,7 @@ public class ScheduleList {
                         }
 
                         if (selectedRoom != null) {
-                            model.setRoomId(selectedRoom);
+                            originalSchedule.setRoomId(selectedRoom);
                         } else {
                             jsonObj.addProperty("fail", true);
                             jsonObj.addProperty("message", "Không có phòng trống vào " + aDaySlot.getSlotId().getSlotName() + ",ngày " + aDaySlot.getDate());
@@ -999,9 +1066,9 @@ public class ScheduleList {
                         }
                     }
                 } else {
-                    if (!roomName.equals(model.getRoomId().getName()) ||
-                            !model.getDateId().getDate().equals(aDaySlot.getDate())
-                            || !model.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())) {
+                    if (!roomName.equals(originalSchedule.getRoomId().getName()) ||
+                            !originalSchedule.getDateId().getDate().equals(aDaySlot.getDate())
+                            || !originalSchedule.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())) {
                         RoomEntity foundRoom = roomService.findRoomsByExactName(roomName);
                         //room exist
                         if (foundRoom != null) {
@@ -1015,7 +1082,7 @@ public class ScheduleList {
                                         ", lớp " + existingSchedule.getGroupName());
                                 return jsonObj;
                             } else {
-                                model.setRoomId(foundRoom);
+                                originalSchedule.setRoomId(foundRoom);
                             }
                         } else {
                             jsonObj.addProperty("fail", true);
@@ -1026,11 +1093,11 @@ public class ScheduleList {
                 }
 
                 //only change room
-                if (model.getDateId().getDate().equals(aDaySlot.getDate())
-                        && model.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())
-                        && model.getEmpId().equals(lectures.get(0))) {
+                if (originalSchedule.getDateId().getDate().equals(aDaySlot.getDate())
+                        && originalSchedule.getDateId().getSlotId().getSlotName().equals(aDaySlot.getSlotId().getSlotName())
+                        && originalSchedule.getEmpId().equals(lectures.get(0))) {
 
-                    scheduleService.updateSchedule(model);
+                    scheduleService.updateSchedule(originalSchedule);
 
                     if (params.get("all").equals("true")) {
                         for (ScheduleEntity aSchedule : sameScheduleList) {
@@ -1060,21 +1127,21 @@ public class ScheduleList {
                                     for (RoomEntity aRoom : rooms) {
                                         ScheduleEntity existingSchedule = scheduleService.findScheduleByDateSlotAndRoom(aSchedule.getDateId(), aRoom);
                                         if (existingSchedule == null) {
-                                            if (model.getCourseId().getSubjectCode().contains("VOV")) {
+                                            if (originalSchedule.getCourseId().getSubjectCode().contains("VOV")) {
                                                 if (aRoom.getName().contains("VOV")) {
                                                     selectedRoom2 = aRoom;
                                                     break;
                                                 }
                                             }
 
-                                            if (model.getCourseId().getSubjectCode().contains("LAB")) {
+                                            if (originalSchedule.getCourseId().getSubjectCode().contains("LAB")) {
                                                 if (aRoom.getNote().toLowerCase().contains("thực hành")) {
                                                     selectedRoom2 = aRoom;
                                                     break;
                                                 }
                                             }
 
-                                            if (!model.getCourseId().getSubjectCode().contains("LAB") && !model.getCourseId().getSubjectCode().contains("VOV")) {
+                                            if (!originalSchedule.getCourseId().getSubjectCode().contains("LAB") && !originalSchedule.getCourseId().getSubjectCode().contains("VOV")) {
                                                 if (!aRoom.getName().contains("VOV") && !aRoom.getNote().toLowerCase().contains("thực hành")) {
                                                     selectedRoom2 = aRoom;
                                                     break;
@@ -1120,7 +1187,7 @@ public class ScheduleList {
                         }
                     }
                 } else {
-                    String oldDateStr = model.getDateId().getDate();
+                    String oldDateStr = originalSchedule.getDateId().getDate();
                     String newDateStr = aDaySlot.getDate();
                     Date oldDate = DateUtil.getDate(oldDateStr);
                     Date newDate = DateUtil.getDate(newDateStr);
@@ -1134,23 +1201,23 @@ public class ScheduleList {
                     days = days * -1;
 
                     //change status of current record
-                    model.setActive(false);
-                    scheduleService.updateSchedule(model);
+                    originalSchedule.setActive(false);
+                    scheduleService.updateSchedule(originalSchedule);
 
                     //add new record
-                    model.setDateId(aDaySlot);
+                    originalSchedule.setDateId(aDaySlot);
 
                     if (lectures != null && lectures.size() > 0) {
-                        model.setEmpId(lectures.get(0));
+                        originalSchedule.setEmpId(lectures.get(0));
                     } else {
                         jsonObj.addProperty("fail", true);
                         jsonObj.addProperty("message", "Không có giảng viên này");
                         return jsonObj;
                     }
-                    model.setParentScheduleId(model.getId());
-                    model.setId(0);
-                    model.setActive(true);
-                    scheduleService.createSchedule(model);
+                    originalSchedule.setParentScheduleId(originalSchedule.getId());
+                    originalSchedule.setId(0);
+                    originalSchedule.setActive(true);
+                    scheduleService.createSchedule(originalSchedule);
 
                     if (params.get("all").equals("true")) {
                         for (ScheduleEntity aSchedule : sameScheduleList) {
@@ -1182,7 +1249,7 @@ public class ScheduleList {
                                 return jsonObj;
                             }
 
-                            aSchedule.setRoomId(model.getRoomId());
+                            aSchedule.setRoomId(originalSchedule.getRoomId());
 
                             aSchedule.setParentScheduleId(aSchedule.getId());
                             aSchedule.setId(0);
@@ -1210,10 +1277,10 @@ public class ScheduleList {
 
                 }
                 List<ScheduleEntity> scheduleEntities = new ArrayList<>();
-                scheduleEntities.add(model);
+                scheduleEntities.add(originalSchedule);
 
                 List<StudentEntity> studentList = new ArrayList<>();
-                List<CourseStudentEntity> courseStudentEntityList = courseStudentService.findCourseStudentByGroupNameAndCourse(model.getGroupName(), model.getCourseId());
+                List<CourseStudentEntity> courseStudentEntityList = courseStudentService.findCourseStudentByGroupNameAndCourse(originalSchedule.getGroupName(), originalSchedule.getCourseId());
                 if (courseStudentEntityList != null) {
                     for (CourseStudentEntity courseStudentEntity : courseStudentEntityList) {
                         StudentEntity aStudent = courseStudentEntity.getStudentId();
@@ -1226,14 +1293,14 @@ public class ScheduleList {
                     sendNotification("Your schedule has been changed", aStudent.getEmail().substring(0, aStudent.getEmail().indexOf("@")), scheduleEntities, androidPushNotificationsService, "edit");
                 }
 
-                Ultilities.sendNotification("Your schedule has been changed", model.getEmpId().getEmailEDU().substring(0, model.getEmpId().getEmailEDU().indexOf("@")), scheduleEntities, androidPushNotificationsService, "edit");
+                Ultilities.sendNotification("Your schedule has been changed", originalSchedule.getEmpId().getEmailEDU().substring(0, originalSchedule.getEmpId().getEmailEDU().indexOf("@")), scheduleEntities, androidPushNotificationsService, "edit");
 
                 if (params.get("all").equals("true")) {
                     for (StudentEntity aStudent : studentList) {
                         sendNotification("Your schedule has been changed", aStudent.getEmail().substring(0, aStudent.getEmail().indexOf("@")), sameScheduleList, androidPushNotificationsService, "edit");
                     }
 
-                    Ultilities.sendNotification("Your schedule has been changed", model.getEmpId().getEmailEDU().substring(0, model.getEmpId().getEmailEDU().indexOf("@")), sameScheduleList, androidPushNotificationsService, "edit");
+                    Ultilities.sendNotification("Your schedule has been changed", originalSchedule.getEmpId().getEmailEDU().substring(0, originalSchedule.getEmpId().getEmailEDU().indexOf("@")), sameScheduleList, androidPushNotificationsService, "edit");
 
                 }
             }
@@ -1644,10 +1711,12 @@ public class ScheduleList {
 
             if (empEmailEDU != null && !empEmailEDU.equals("")) {
                 EmployeeEntity emp = employeeService.findEmployeeByEmail(empEmailEDU);
-                List<ScheduleEntity> scheduleEntityList = scheduleService.findScheduleByLecture(emp.getId());
+                if (emp != null) {
+                    List<ScheduleEntity> scheduleEntityList = scheduleService.findScheduleByLecture(emp.getId());
 
-                for (ScheduleEntity aSchedule : scheduleEntityList) {
-                    groupNameSet.add(aSchedule.getGroupName());
+                    for (ScheduleEntity aSchedule : scheduleEntityList) {
+                        groupNameSet.add(aSchedule.getGroupName());
+                    }
                 }
             }
 

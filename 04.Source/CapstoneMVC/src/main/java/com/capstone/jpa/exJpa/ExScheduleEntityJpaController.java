@@ -483,4 +483,25 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
         }
     }
 
+    public List<ScheduleEntity> findScheduleByGroupNameAndCourse(String groupName, CourseEntity course) {
+        EntityManager em = getEntityManager();
+        try {
+            String sqlString = "SELECT c FROM ScheduleEntity c " +
+                    "WHERE (c.courseId = :course) AND (c.groupName = :groupname) AND (c.isActive IS NULL OR c.isActive = 'true')";
+            Query query = em.createQuery(sqlString);
+            query.setParameter("course", course);
+            query.setParameter("groupname", groupName);
+
+            List<ScheduleEntity> std = query.getResultList();
+            return std;
+
+        } catch (Exception nrEx) {
+            return null;
+        } finally {
+            if (em != null) {
+                em.close();
+            }
+        }
+    }
+
 }

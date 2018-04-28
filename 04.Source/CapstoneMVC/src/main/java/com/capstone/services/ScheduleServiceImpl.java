@@ -48,6 +48,11 @@ public class ScheduleServiceImpl implements IScheduleService {
     }
 
     @Override
+    public List<ScheduleEntity> findScheduleByGroupNameAndCourse(String groupName, CourseEntity course) {
+        return ScheduleEntityJpaController.findScheduleByGroupNameAndCourse(groupName, course);
+    }
+
+    @Override
     public List<ScheduleEntity> findScheduleByLectureHaveParentSchedule(Integer lectureId) {
         return ScheduleEntityJpaController.findScheduleByLectureHaveParentSchedule(lectureId);
     }
