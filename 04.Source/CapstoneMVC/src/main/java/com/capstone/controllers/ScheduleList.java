@@ -698,7 +698,7 @@ public class ScheduleList {
             String startDate = params.get("startDate");
             String endDate = params.get("endDate");
             Map<String, List<String>> daySlotMap = new HashMap<>();
-
+            String className = params.get("clazz");
             Gson gson = new Gson();
 
             //Size of slots array and day of week array always equal
@@ -720,10 +720,24 @@ public class ScheduleList {
 
             for (String aDate : daySlotMap.keySet()) {
                 for (String aSlotString : daySlotMap.get(aDate)) {
+                    ScheduleEntity model = new ScheduleEntity();
+
                     SlotEntity aSlot = slotService.findSlotsByName(aSlotString).get(0);
                     DaySlotEntity aDaySlot = daySlotService.findDaySlotByDateAndSlot(aDate, aSlot);
                     List<EmployeeEntity> lectures = employeeService.findEmployeesByFullName(params.get("lecture"));
                     List<RoomEntity> rooms = roomService.findRoomsByCapacity(Integer.parseInt(params.get("capacity")));
+
+                    CourseEntity aCourse = courseService.findCourseBySemesterAndSubjectCode(params.get("semester"), params.get("subject"));
+                    if (aCourse != null) {
+                        model.setCourseId(aCourse);
+                    } else {
+                        CourseEntity newCourse = new CourseEntity();
+                        newCourse.setSemester(params.get("semester"));
+                        newCourse.setSubjectCode(params.get("subject"));
+                        courseService.createCourse(newCourse);
+                        aCourse = courseService.findCourseBySubjectCode(params.get("subject"));
+                        model.setCourseId(aCourse);
+                    }
 
                     if (aDaySlot == null) {
                         aDaySlot = new DaySlotEntity();
@@ -751,7 +765,7 @@ public class ScheduleList {
                             }
 
 
-                            List<CourseStudentEntity> courseStudentEntities = courseStudentService.findCourseStudentByGroupNameAndCourse(originalSchedule.getGroupName(), originalSchedule.getCourseId());
+                            List<CourseStudentEntity> courseStudentEntities = courseStudentService.findCourseStudentByGroupNameAndCourse(className, aCourse);
                             List<StudentEntity> listOfStudent = new ArrayList<>();
                             for (CourseStudentEntity courseStudentEntity : courseStudentEntities) {
                                 listOfStudent.add(courseStudentEntity.getStudentId());
@@ -785,27 +799,11 @@ public class ScheduleList {
                         }
                     }
 
-                    ScheduleEntity model = new ScheduleEntity();
-                    model.setGroupName(params.get("clazz"));
+
+                    model.setGroupName(className);
                     model.setDateId(aDaySlot);
 
                     RoomEntity selectedRoom = null;
-                    CourseEntity aCourse = courseService.findCourseBySemesterAndSubjectCode(params.get("semester"), params.get("subject"));
-
-                    if (aCourse != null) {
-                        model.setCourseId(aCourse);
-                    } else {
-                        CourseEntity newCourse = new CourseEntity();
-                        newCourse.setSemester(params.get("semester"));
-                        newCourse.setSubjectCode(params.get("subject"));
-                        courseService.createCourse(newCourse);
-                        aCourse = courseService.findCourseBySubjectCode(params.get("subject"));
-                        model.setCourseId(aCourse);
-
-//                        jsonObj.addProperty("fail", true);
-//                        jsonObj.addProperty("message", "Không có môn này trong kì đang chọn");
-//                        return jsonObj;
-                    }
 
                     if (rooms != null && rooms.size() > 0) {
                         for (RoomEntity aRoom : rooms) {
