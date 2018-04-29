@@ -25,6 +25,8 @@ public class DepartmentEntity implements Serializable {
     private String deptName;
     @Column(name = "DeptShortName")
     private String deptShortName;
+    @OneToMany(mappedBy = "deptId")
+    private List<EmployeeEntity> employeeEntityList;
     @OneToMany(mappedBy = "departmentId")
     private List<SubjectEntity> subjectEntityList;
 
@@ -59,6 +61,13 @@ public class DepartmentEntity implements Serializable {
         this.deptShortName = deptShortName;
     }
 
+    public List<EmployeeEntity> getEmployeeEntityList() {
+        return employeeEntityList;
+    }
+
+    public void setEmployeeEntityList(List<EmployeeEntity> employeeEntityList) {
+        this.employeeEntityList = employeeEntityList;
+    }
 
     public List<SubjectEntity> getSubjectEntityList() {
         return subjectEntityList;
@@ -90,7 +99,7 @@ public class DepartmentEntity implements Serializable {
 
     @Override
     public String toString() {
-        return "javaapplication108.DepartmentEntity[ deptId=" + deptId + " ]";
+        return "javaapplication111.DepartmentEntity[ deptId=" + deptId + " ]";
     }
 
 }

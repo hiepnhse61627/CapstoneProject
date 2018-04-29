@@ -69,14 +69,22 @@ public class CourseStudentController {
             obj = new JsonObject();
 
             HashSet<String> groupNameList = new HashSet();
+            HashMap<CourseEntity, String>courseAndGroupNameMap = new HashMap<>();
+
 
             if(courseStudentEntities!=null && courseStudentEntities.size()>0){
                 for(CourseStudentEntity courseStudent : courseStudentEntities){
-                    groupNameList.add(courseStudent.getGroupName());
+//                    groupNameList.add(courseStudent.getGroupName());
+                    courseAndGroupNameMap.put(courseStudent.getCourseId(),courseStudent.getGroupName());
                 }
 
-                for(String groupName : groupNameList){
-                    List<ScheduleEntity> courseScheduleEntityList = scheduleService.findScheduleByGroupName(groupName);
+//                for(String groupName : groupNameList){
+//                    List<ScheduleEntity> courseScheduleEntityList = scheduleService.findScheduleByGroupName(groupName);
+//                    allScheduleList.addAll(courseScheduleEntityList);
+//                }
+
+                for(CourseEntity aCourse : courseAndGroupNameMap.keySet()){
+                    List<ScheduleEntity> courseScheduleEntityList = scheduleService.findScheduleByGroupNameAndCourse(courseAndGroupNameMap.get(aCourse), aCourse);
                     allScheduleList.addAll(courseScheduleEntityList);
                 }
             }
