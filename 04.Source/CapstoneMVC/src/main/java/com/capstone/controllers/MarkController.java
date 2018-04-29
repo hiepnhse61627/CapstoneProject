@@ -478,33 +478,57 @@ public class MarkController {
         return jsonObject;
     }
 
-    public List<MarkModelExcel> getNotStartMarks(StudentEntity studentEntity, int studentId, MarksServiceImpl marksService, List<Integer> semestersToPreCurrentSelected,
+    public List<MarkModelExcel> getNotStartMarks(StudentEntity studentEntity, int studentId, MarksServiceImpl marksService,
+                                                 List<Integer> semestersToPreCurrentSelected,
                                                  String semesterName, int semesterId, List<StudentAvgMarks> studentFAPMarks,
                                                  List<String> subjCodeList) {
 //        List<MarksEntity> hasLearned = new ArrayList<>(studentEntity.getMarksEntityList());
+        //lấy = service lên để tránh tình trạng catch data
         List<MarksEntity> hasLearned = marksService.getAllMarksByStudent(studentId);
         List<MarksEntity> hasLearnedThisSemester = hasLearned.stream()
                 .filter(q -> q.getSemesterId().getId() == semesterId)
                 .collect(Collectors.toList());
 
+        //not start this semester
+        List<MarksEntity> nsThisSemester = hasLearnedThisSemester.stream()
+                .filter(q -> q.getStatus().equalsIgnoreCase(Enums.MarkStatus.NOT_START.getValue()))
+                .collect(Collectors.toList());
+
         //chứa những môn chậm tiến độ
         List<MarkModelExcel> notStartMarks = subjCodeList.stream()
                 .filter(q -> !studentFAPMarks.stream().anyMatch(c -> c.getSubjectCode().equalsIgnoreCase(q))
-                        && !hasLearnedThisSemester.stream().anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(q)))
+                        && !hasLearnedThisSemester.stream()
+                        .anyMatch(c -> c.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(q)))
                 .map(q -> new MarkModelExcel(-1.0, semesterName, q, Enums.MarkStatus.NOT_START.getValue()))
                 .collect(Collectors.toList());
 
-        //xóa những môn notStart mà sinh viên đã học rồi(sử dụng trong trường hợp sinh viên đã học trước môn của kì tới)
-        List<MarkModelExcel> removedMarks = new ArrayList<>(notStartMarks);
-//                    List<MarksEntity> hasLearned = marksService.getMarkByConditions(semesterId, null,studentId);
-
+        //chứa những môn của những điểm đã học từ trước đến trước kì hiện tại, bao gồm (pass, fail, studying, notstart)
         List<String> hasLearnedToPreSemester = hasLearned.stream()
                 .filter(q -> semestersToPreCurrentSelected.contains(q.getSemesterId().getId()))
                 .map(q -> q.getSubjectMarkComponentId().getSubjectId().getId())
                 .collect(Collectors.toList());
-        if (studentEntity.getRollNumber().equalsIgnoreCase("SE61525")) {
-            System.out.println("bug");
+
+        //xóa những điểm notstart bị duplicate của kì hiện tại
+        for (MarksEntity mItem : nsThisSemester) {
+            try{
+                String iSubjCode = mItem.getSubjectMarkComponentId().getSubjectId().getId();
+                String markExist = hasLearnedToPreSemester.stream().filter(q -> q.equalsIgnoreCase(iSubjCode)).findFirst().orElse(null);
+                if (markExist != null) {
+                    marksService.deleteMark(mItem.getId());
+                }
+            }catch(Exception e){
+                e.printStackTrace();
+                Logger.writeLog(e);
+            }
         }
+
+        //xóa những môn notStart mà sinh viên đã có(sử dụng trong trường hợp sinh viên đã học trước môn của kì tới)
+        List<MarkModelExcel> removedMarks = new ArrayList<>(notStartMarks);
+
+        //use for debug
+//        if (studentEntity.getRollNumber().equalsIgnoreCase("SE61525")) {
+//            System.out.println("bug");
+//        }
         for (int j = 0; j < removedMarks.size(); j++) {
             boolean alreadyLearned = false;
             MarkModelExcel mark = removedMarks.get(j);
@@ -532,11 +556,6 @@ public class MarkController {
                 .getAttribute(Enums.SynchronizeFAP.ERROR_lIST.getValue());
         String type = params.get("type");
 
-//        final String sSearch = params.get("sSearch");
-
-//        int iDisplayStart = Integer.parseInt(params.get("iDisplayStart"));
-//        int iDisplayLength = Integer.parseInt(params.get("iDisplayLength"));
-//        boolean isGraduate = Boolean.parseBoolean(params.get("boolean"));
 
         try {
             // RollNumber
@@ -554,7 +573,6 @@ public class MarkController {
 
             JsonArray aaData = (JsonArray) new Gson().toJsonTree(data);
             obj.add("aaData", aaData);
-//            obj.addProperty("sEcho", params.get("sEcho"));
         } catch (Exception e) {
             e.printStackTrace();
             Logger.writeLog(e);
@@ -1065,15 +1083,15 @@ public class MarkController {
                         MarksEntity m = hasLearnedThisSemester.stream()
                                 .filter(q -> q.getSubjectMarkComponentId().getSubjectId().getId().equalsIgnoreCase(subjectCode))
                                 .findFirst().orElse(null);
-                        if(m != null){
-                            if(m.getStatus().equalsIgnoreCase(Enums.MarkStatus.NOT_START.getValue())){
+                        if (m != null) {
+                            if (m.getStatus().equalsIgnoreCase(Enums.MarkStatus.NOT_START.getValue())) {
                                 m.setStatus(Enums.MarkStatus.STUDYING.getValue());
                                 updateList.add(m);
                                 marksService.updateMark(m);
 
                                 hasLearnedThisSemester.remove(m);
                             }
-                        }else{
+                        } else {
                             //nếu kiếm không thấy thì import là studying
                             MarkModelExcel markModelExcel = new MarkModelExcel(-1, semesterName, subjectCode, Enums.MarkStatus.STUDYING.getValue());
                             markFAPThisSemester.add(markModelExcel);
