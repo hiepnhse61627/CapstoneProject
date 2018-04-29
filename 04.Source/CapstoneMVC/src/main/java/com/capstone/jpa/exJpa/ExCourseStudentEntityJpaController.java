@@ -5,6 +5,7 @@ import com.capstone.jpa.CourseStudentEntityJpaController;
 import com.capstone.models.Logger;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ExCourseStudentEntityJpaController extends CourseStudentEntityJpaController {
@@ -105,6 +106,7 @@ public class ExCourseStudentEntityJpaController extends CourseStudentEntityJpaCo
 
     public List<CourseStudentEntity> findCourseStudentByGroupNameAndCourse(String groupName, CourseEntity course) {
         EntityManager em = getEntityManager();
+        List<CourseStudentEntity> std = new ArrayList<>();
         try {
             String sqlString = "SELECT c FROM CourseStudentEntity c " +
                     "WHERE (c.groupName= :groupName)" +
@@ -113,12 +115,12 @@ public class ExCourseStudentEntityJpaController extends CourseStudentEntityJpaCo
             query.setParameter("groupName", groupName);
             query.setParameter("course", course);
 
-            List<CourseStudentEntity> std  = query.getResultList();
+           std  = query.getResultList();
 
             return std;
 
         } catch (NoResultException nrEx) {
-            return null;
+            return std;
         } finally {
             if (em != null) {
                 em.close();
@@ -189,17 +191,18 @@ public class ExCourseStudentEntityJpaController extends CourseStudentEntityJpaCo
 
     public List<CourseStudentEntity> findCourseStudentByStudent(StudentEntity studentEntity) {
         EntityManager em = getEntityManager();
+        List<CourseStudentEntity> std = new ArrayList<>();
         try {
             String sqlString = "SELECT c FROM CourseStudentEntity c " +
                     "WHERE (c.studentId = :student)";
             Query query = em.createQuery(sqlString);
             query.setParameter("student", studentEntity);
 
-            List<CourseStudentEntity> std  = query.getResultList();
+             std = query.getResultList();
 
             return std;
         } catch (NoResultException nrEx) {
-            return null;
+            return std;
         } finally {
             if (em != null) {
                 em.close();
