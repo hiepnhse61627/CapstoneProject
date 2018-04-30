@@ -16,7 +16,14 @@
     .overflowHidden {
         overflow: hidden;
     }
+    .ui-dialog-title{
+        font-size: 110% !important;
+        color: #FFFFFF !important;
+        background: #000000 !important;
+    }
 </style>
+
+
 
 <section class="content">
     <div class="box">
@@ -26,12 +33,12 @@
                     <h1>Danh sách sinh viên được xét tốt nghiệp</h1>
                 </div>
                 <div class="col-md-5 text-right">
-                    <button type="button" class="btn btn-success" onclick="ExportExcel()">Xuất dữ liệu</button>
-                    <button type="button" class="btn btn-warning" onclick="ExportExcelPDF()">Xuất danh sách sinh viên
-                        tốt nghiệp (PDF)
-                    </button>
-                    <button type="button" class="btn btn-success btn-lg" data-toggle="modal"
-                            data-target="#preExportExcel">Xuất danh sách sinh viên tốt nghiệp (Excel)
+                    <button type="button" class="btn btn-success" onclick="ExportExcel()"> <i class="fa fa-download"></i> Xuất dữ liệu</button>
+                    <%--<button type="button" class="btn btn-warning" onclick="ExportExcelPDF()">Xuất danh sách sinh viên--%>
+                        <%--tốt nghiệp (PDF)--%>
+                    <%--</button>--%>
+                    <button type="button" class="btn btn-warning" data-toggle="modal"
+                            data-target="#preExportExcel"> <i class="fa fa-download"></i> Xuất danh sách sinh viên tốt nghiệp (Excel)
                     </button>
                 </div>
             </div>
@@ -186,7 +193,7 @@
                         <br/>
                         <button type="button" onclick="UploadThesisName()" class="btn btn-success"
                                 title="dùng để upload, gán tên đề tài vào bảng điểm cho học sinh tốt nghiệp">
-                            Upload Tên đề tài
+                            <i class="fa fa-upload"></i> Upload Tên đề tài
                         </button>
                     </div>
                     <div class="title">
@@ -207,8 +214,8 @@
                         </div>
                         <br/>
                         <button type="button" onclick="UploadRequiredDocuments()" class="btn btn-success"
-                                title="dùng để upload, gán tên đề tài vào bảng điểm cho học sinh tốt nghiệp">
-                            Upload thông tin tốt nghiệp
+                                title="dùng để upload thông tin cho học sinh tốt nghiệp">
+                            <i class="fa fa-upload"></i> Upload thông tin tốt nghiệp
                         </button>
                     </div>
                     <div class="">
@@ -218,18 +225,19 @@
                                     <h4>Danh sách sinh viên được đề xuất: </h4>
                                 </div>
                                 <div class="form-group">
-                                    <div class="col-md-6">
+                                    <div class="col-md-3">
                                         <button type="button" class="btn btn-info btn-collapse-group"
                                                 data-toggle="collapse"
                                                 data-target="#suggestStudent">
                                             <i class="glyphicon glyphicon-plus"></i></button>
                                         <span>Sinh viên được đề xuất</span>
                                     </div>
-                                    <div class="col-md-6">
+                                    <div class="col-md-9">
                                         <button type="button" class="btn btn-info"
                                                 onclick="loadGraduateStudentSuggest()"
-                                                title="Tìm sinh viên đủ điều kiện tốt nghiệp">
+                                                >
                                             <i class="glyphicon glyphicon-refresh"></i></button>
+                                        <span>Tìm sinh viên đủ điều kiện tốt nghiệp</span>
                                     </div>
                                 </div>
                                 <div class="form-group">
@@ -247,36 +255,7 @@
                                             <br/>
                                             <div class="form-group">
                                                 <div class="" id="suggestStudentData">
-                                                    <div class="pretty p-icon p-round p-jelly checkbox-custom col-md-3">
-                                                        <input class="chkbox-Menu" type="checkbox"
-                                                               name="modal-transaction-filter"
-                                                               value="SE61822"
-                                                        />
-                                                        <div class="state p-primary overflowHidden">
-                                                            <i class="icon mdi mdi-check"></i>
-                                                            <label>SE61822</label>
-                                                        </div>
-                                                    </div>
-                                                    <div class="pretty p-icon p-round p-jelly checkbox-custom col-md-3">
-                                                        <input class="chkbox-Menu" type="checkbox"
-                                                               name="modal-transaction-filter"
-                                                               value="SE61824"
-                                                        />
-                                                        <div class="state p-primary overflowHidden">
-                                                            <i class="icon mdi mdi-check"></i>
-                                                            <label>SE61824</label>
-                                                        </div>
-                                                    </div>
-                                                    <div class="pretty p-icon p-round p-jelly checkbox-custom col-md-3">
-                                                        <input class="chkbox-Menu" type="checkbox"
-                                                               name="modal-transaction-filter"
-                                                               value="SE61823"
-                                                        />
-                                                        <div class="state p-primary overflowHidden">
-                                                            <i class="icon mdi mdi-check"></i>
-                                                            <label>SE61823</label>
-                                                        </div>
-                                                    </div>
+
                                                 </div>
                                             </div>
                                         </div>
@@ -294,11 +273,11 @@
                 <div class="form-group">
                     <button type="button" onclick="ExportExcelGraduateStudent()"
                             title="Xuất ra danh sách học sinh tốt nghiệp của kì được chọn" class="btn btn-success">
-                        Export Excel
+                        <i class="fa fa-download"></i> Export Excel
                     </button>
                     <button type="button" onclick="Authenticate()"
                             title="Gửi mail danh sách học sinh tốt nghiệp của kì được chọn" class="btn btn-success">
-                        Send Email
+                        <i class="fa fa-envelope-o"></i> Send Email
                     </button>
                 </div>
             </div>
@@ -331,6 +310,7 @@
     var table = null;
     var tableMarkDetail = null;
     var timeOut = 0;
+
 
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -369,6 +349,10 @@
     $(document).ready(function () {
         $('.select').select2();
 
+        $('.select2-selection__rendered').removeAttr('title');
+        $('select').on('change', function (evt) {
+            $('.select2-selection__rendered').removeAttr('title');
+        });
         CreateEmptyDataTable('#table');
 
 //        $('#credit').on("input", function () {
