@@ -16,6 +16,9 @@ import javax.xml.bind.annotation.*;
  */
 @Entity
 @Table(name = "Subject")
+@XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "subject", propOrder = {"name", "vnName"})
+@XmlRootElement
 @NamedQueries({
         @NamedQuery(name = "SubjectEntity.findAll", query = "SELECT s FROM SubjectEntity s"),
         @NamedQuery(name = "SubjectEntity.findById", query = "SELECT s FROM SubjectEntity s WHERE s.id = :id"),
@@ -29,34 +32,47 @@ public class SubjectEntity implements Serializable {
     @Id
     @Basic(optional = false)
     @Column(name = "Id")
+    @XmlTransient
     private String id;
     @Column(name = "Name")
+    @XmlElement(required = true)
     private String name;
     @Column(name = "Abbreviation")
+    @XmlTransient
     private String abbreviation;
     @Column(name = "IsSpecialized")
+    @XmlTransient
     private Boolean isSpecialized;
     @Column(name = "Type")
+    @XmlTransient
     private Integer type;
     @Column(name = "VnName")
+    @XmlElement(required = false)
     private String vnName;
     @JoinTable(name = "Replacement_Subject", joinColumns = {
             @JoinColumn(name = "SubjectId", referencedColumnName = "Id")}, inverseJoinColumns = {
             @JoinColumn(name = "ReplacementId", referencedColumnName = "Id")})
     @ManyToMany
+    @XmlTransient
     private List<SubjectEntity> subjectEntityList;
     @ManyToMany(mappedBy = "subjectEntityList")
+    @XmlTransient
     private List<SubjectEntity> subjectEntityList1;
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "subjectEntity")
+    @XmlTransient
     private PrequisiteEntity prequisiteEntity;
     @OneToMany(mappedBy = "subjectId")
+    @XmlTransient
     private List<EmpCompetenceEntity> empCompetenceEntityList;
     @OneToMany(mappedBy = "subjectId")
+    @XmlTransient
     private List<SubjectCurriculumEntity> subjectCurriculumEntityList;
     @OneToMany(mappedBy = "subjectId")
+    @XmlTransient
     private List<SubjectMarkComponentEntity> subjectMarkComponentEntityList;
     @JoinColumn(name = "DepartmentId", referencedColumnName = "DeptId")
     @ManyToOne
+    @XmlTransient
     private DepartmentEntity departmentId;
 
     public SubjectEntity() {
