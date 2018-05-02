@@ -418,7 +418,11 @@ public class EmployeeList {
                                 break;
                         }
                         dataList.add(formatDate(key));
-                        dataList.add(totalSlot.substring(0, totalSlot.lastIndexOf(", ")));
+                        if(totalSlot.lastIndexOf(", ") != -1){
+                            dataList.add(totalSlot.substring(0, totalSlot.lastIndexOf(", ")));
+                        }else{
+                            dataList.add(totalSlot);
+                        }
                         result.add(dataList);
                     }
 
@@ -790,7 +794,7 @@ public class EmployeeList {
 
                 //if lecture have schedule in selected time then all that lecture to remove list
                 for (ScheduleEntity aSchedule : scheduleList) {
-                    if (aSchedule.getEmpId() != null) {
+                    if (aSchedule.getEmpId() != null && aSchedule.getCourseId() != null) {
                         if (aSchedule.getCourseId().getSubjectCode().equals(subjectCode)) {
                             fromLecture.add(aSchedule.getEmpId());
                         }

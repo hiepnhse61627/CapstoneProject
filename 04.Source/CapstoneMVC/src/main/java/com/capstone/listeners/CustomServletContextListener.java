@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class CustomServletContextListener implements ServletContextListener {
     private ScheduledExecutorService scheduler;
@@ -25,7 +26,9 @@ public class CustomServletContextListener implements ServletContextListener {
 //        List<RealSemesterEntity> sortedList = Ultilities.SortSemesters(list);
 
         List<RealSemesterEntity> sortedList =  Global.getSortedList();
-        RealSemesterEntity current = sortedList.get(sortedList.size() - 1);
+       List<RealSemesterEntity> activeList = sortedList.stream().filter(q -> q.isActive() == true)
+               .collect(Collectors.toList());
+        RealSemesterEntity current = activeList.get(activeList.size() - 1);
         Global.setCurrentSemester(current);
         Global.setTemporarySemester(current);
         System.out.println("Current Semester is " + current.getSemester());
@@ -42,7 +45,7 @@ public class CustomServletContextListener implements ServletContextListener {
             }
         };
 
-//        scheduler.scheduleAtFixedRate(runnable, 0, 3, TimeUnit.HOURS);
+        scheduler.scheduleAtFixedRate(runnable, 0, 3, TimeUnit.HOURS);
     }
 
     @Override
