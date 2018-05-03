@@ -1377,184 +1377,185 @@ public class ScheduleList {
             List<ChangedScheduleEntity> scheduleList = latestDate == null ? query.getResultList() : query.setParameter("date", latestDate).getResultList();
 //            List<ChangedScheduleEntity> scheduleList = query.getResultList();
 
-            List<RealSemesterEntity> realSemesterEntityList = realSemesterService.getAllSemester();
+//            List<RealSemesterEntity> realSemesterEntityList = realSemesterService.getAllSemester();
 
             List<EmployeeEntity> employeeEntityList = employeeService.findAllEmployees();
 
-            for (RealSemesterEntity aSemester : realSemesterEntityList) {
-                if (aSemester.getStartDate() != null && aSemester.getEndDate() != null) {
-                    Date startDate = getDate(aSemester.getStartDate());
-                    Date endDate = getDate(aSemester.getEndDate());
+//            for (RealSemesterEntity aSemester : realSemesterEntityList) {
+//                if (aSemester.getStartDate() != null && aSemester.getEndDate() != null) {
+//                    Date startDate = getDate(aSemester.getStartDate());
+//                    Date endDate = getDate(aSemester.getEndDate());
+//
+//                    Calendar startCalendar = Calendar.getInstance();
+//                    startCalendar.setTime(startDate);
+//                    Calendar endCalendar = Calendar.getInstance();
+//                    endCalendar.setTime(endDate);
 
-                    Calendar startCalendar = Calendar.getInstance();
-                    startCalendar.setTime(startDate);
-                    Calendar endCalendar = Calendar.getInstance();
-                    endCalendar.setTime(endDate);
+            DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            for (ChangedScheduleEntity changedSchedule : scheduleList) {
+                Date scheduleFromDate = format.parse(changedSchedule.getFromDate());
+                String formatedFromDate = formatDate(scheduleFromDate);
+//                        if (!(scheduleFromDate.before(startDate) || scheduleFromDate.after(endDate))) {
+                //find original course
+//                            if (changedSchedule.getSubjectCode().equals("JLT301")) {
+//                                System.out.println("");
+//                            }
+                RealSemesterEntity currentSemester = Global.getCurrentSemester();
+                CourseEntity course = courseService.findCourseBySemesterAndSubjectCode(currentSemester.getSemester(), changedSchedule.getSubjectCode());
 
-                    DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-                    for (ChangedScheduleEntity changedSchedule : scheduleList) {
-                        Date scheduleFromDate = format.parse(changedSchedule.getFromDate());
-                        String formatedFromDate = formatDate(scheduleFromDate);
-                        if (!(scheduleFromDate.before(startDate) || scheduleFromDate.after(endDate))) {
-                            //find original course
-                            if (changedSchedule.getSubjectCode().equals("JLT301")) {
-                                System.out.println("");
-                            }
-                            CourseEntity course = courseService.findCourseBySemesterAndSubjectCode(aSemester.getSemester(), changedSchedule.getSubjectCode());
+                if (course != null) {
+                    //find original lecture
+                    EmployeeEntity emp = null;
+                    for (EmployeeEntity aEmployee : employeeEntityList) {
+                        if (aEmployee.getEmailFE().toLowerCase().substring(0, aEmployee.getEmailFE().indexOf("@")).equals(changedSchedule.getFromLecturer().toLowerCase())
+                                || aEmployee.getEmailEDU().toLowerCase().substring(0, aEmployee.getEmailEDU().indexOf("@")).equals(changedSchedule.getFromLecturer().toLowerCase())) {
+                            emp = aEmployee;
+                        }
+                    }
 
-                            if (course != null) {
-                                //find original lecture
-                                EmployeeEntity emp = null;
-                                for (EmployeeEntity aEmployee : employeeEntityList) {
-                                    if (aEmployee.getEmailFE().toLowerCase().substring(0, aEmployee.getEmailFE().indexOf("@")).equals(changedSchedule.getFromLecturer().toLowerCase())
-                                            || aEmployee.getEmailEDU().toLowerCase().substring(0, aEmployee.getEmailEDU().indexOf("@")).equals(changedSchedule.getFromLecturer().toLowerCase())) {
-                                        emp = aEmployee;
-                                    }
-                                }
+                    //find original slot
+                    SlotEntity slot = slotService.findSlotsByName("Slot " + changedSchedule.getFromSlot()).get(0);
 
-                                //find original slot
-                                SlotEntity slot = slotService.findSlotsByName("Slot " + changedSchedule.getFromSlot()).get(0);
+                    //find original DaySlot
+                    DaySlotEntity daySlot = daySlotService.findDaySlotByDateAndSlot(formatedFromDate, slot);
 
-                                //find original DaySlot
-                                DaySlotEntity daySlot = daySlotService.findDaySlotByDateAndSlot(formatedFromDate, slot);
+                    if (daySlot == null) {
+                        DaySlotEntity tmpDaySlot = new DaySlotEntity();
+                        tmpDaySlot.setDate(formatedFromDate);
+                        tmpDaySlot.setSlotId(slot);
+                        daySlot = daySlotService.createDateSlot(tmpDaySlot);
+                    }
 
-                                if (daySlot == null) {
-                                    DaySlotEntity tmpDaySlot = new DaySlotEntity();
-                                    tmpDaySlot.setDate(formatedFromDate);
-                                    tmpDaySlot.setSlotId(slot);
-                                    daySlot = daySlotService.createDateSlot(tmpDaySlot);
-                                }
+                    //find original room
+                    RoomEntity room = roomService.findRoomsByExactName(changedSchedule.getFromRoomNo());
 
-                                //find original room
-                                RoomEntity room = roomService.findRoomsByExactName(changedSchedule.getFromRoomNo());
+                    //find original schedule with isActive
+                    ScheduleEntity scheduleEntity = scheduleService.findScheduleByDateSlotAndLectureAndRoomAndCourse(daySlot, emp, room, course);
 
-                                //find original schedule with isActive
-                                ScheduleEntity scheduleEntity = scheduleService.findScheduleByDateSlotAndLectureAndRoomAndCourse(daySlot, emp, room, course);
+                    if (scheduleEntity != null) {
+                        scheduleEntity.setActive(false);
+                        scheduleEntity.setChangedDate(changedSchedule.getChangedScheduleEntityPK().getChangedDate());
+                        scheduleService.updateSchedule(scheduleEntity);
+                    } else {
+                        scheduleEntity = scheduleService.findScheduleByDateSlotAndLectureAndRoomAndCourseDontCareIsActive(daySlot, emp, room, course);
 
-                                if (scheduleEntity != null) {
-                                    scheduleEntity.setActive(false);
-                                    scheduleEntity.setChangedDate(changedSchedule.getChangedScheduleEntityPK().getChangedDate());
-                                    scheduleService.updateSchedule(scheduleEntity);
-                                } else {
-                                    scheduleEntity = scheduleService.findScheduleByDateSlotAndLectureAndRoomAndCourseDontCareIsActive(daySlot, emp, room, course);
-
-                                    if (scheduleEntity == null) {
-                                        scheduleEntity = scheduleService.findScheduleByDateSlotAndLectureAndCourseDontCareIsActive(daySlot, emp, course);
-                                        if (scheduleEntity == null) {
-                                            scheduleEntity = new ScheduleEntity();
-                                            scheduleEntity.setCourseId(course);
-                                            scheduleEntity.setRoomId(room);
-                                            scheduleEntity.setDateId(daySlot);
-                                            scheduleEntity.setEmpId(emp);
-                                            scheduleEntity.setGroupName(changedSchedule.getClassName());
-                                            scheduleEntity.setParentScheduleId(null);
-                                            scheduleEntity.setActive(false);
-                                            scheduleEntity.setId(0);
-                                            scheduleEntity.setChangedDate(changedSchedule.getChangedScheduleEntityPK().getChangedDate());
-                                            scheduleEntity = scheduleService.createSchedule(scheduleEntity);
-                                        } else {
-                                            scheduleEntity.setActive(false);
-                                            scheduleEntity.setChangedDate(changedSchedule.getChangedScheduleEntityPK().getChangedDate());
-                                            scheduleEntity.setRoomId(room);
-                                            scheduleService.updateSchedule(scheduleEntity);
-                                        }
-
-                                    }
-
-
-                                }
-
-                                EmployeeEntity emp2 = null;
-                                //find changed lecture
-                                if (changedSchedule.getToLecturer() != null) {
-                                    for (EmployeeEntity aEmployee : employeeEntityList) {
-                                        if (aEmployee.getEmailFE().toLowerCase().substring(0, aEmployee.getEmailFE().indexOf("@")).equals(changedSchedule.getToLecturer().toLowerCase())
-                                                || aEmployee.getEmailEDU().toLowerCase().substring(0, aEmployee.getEmailEDU().indexOf("@")).equals(changedSchedule.getToLecturer().toLowerCase())) {
-                                            emp2 = aEmployee;
-                                        }
-                                    }
-                                } else {
-                                    //dont change lecture
-                                    emp2 = emp;
-                                }
-
-                                SlotEntity slot2 = null;
-                                //find changed slot
-                                if (changedSchedule.getToSlot() != null) {
-                                    slot2 = slotService.findSlotsByName("Slot " + changedSchedule.getToSlot()).get(0);
-                                } else {
-                                    //dont change slot
-                                    slot2 = slot;
-                                }
-
-                                DaySlotEntity daySlot2 = null;
-                                //find changed DaySlot
-                                if (changedSchedule.getToDate() != null) {
-                                    Date scheduleToDate = format.parse(changedSchedule.getToDate());
-                                    String formatedToDate = formatDate(scheduleToDate);
-                                    daySlot2 = daySlotService.findDaySlotByDateAndSlot(formatedToDate, slot2);
-                                    if (daySlot2 == null) {
-                                        DaySlotEntity tmpDaySlot = new DaySlotEntity();
-                                        tmpDaySlot.setDate(formatedToDate);
-                                        tmpDaySlot.setSlotId(slot2);
-                                        daySlot2 = daySlotService.createDateSlot(tmpDaySlot);
-                                    }
-                                } else {
-                                    //dont change date
-                                    daySlot2 = daySlotService.findDaySlotByDateAndSlot(formatedFromDate, slot2);
-                                    if (daySlot2 == null) {
-                                        DaySlotEntity tmpDaySlot = new DaySlotEntity();
-                                        tmpDaySlot.setDate(formatedFromDate);
-                                        tmpDaySlot.setSlotId(slot2);
-                                        daySlot2 = daySlotService.createDateSlot(tmpDaySlot);
-                                    }
-                                }
-
-                                RoomEntity room2 = null;
-                                //find changed room
-                                if (changedSchedule.getToRoomNo() != null) {
-                                    room2 = roomService.findRoomsByExactName(changedSchedule.getToRoomNo());
-                                } else {
-                                    //dont change room
-                                    room2 = room;
-                                }
-
-                                if (changedSchedule.getReason().equals("_ChangeRoom")) {
-                                    scheduleEntity.setActive(true);
-                                    scheduleEntity.setRoomId(room2);
-                                    scheduleEntity.setChangedDate(changedSchedule.getChangedScheduleEntityPK().getChangedDate());
-                                    scheduleService.updateSchedule(scheduleEntity);
-                                } else {
-                                    //find changed schedule exist or not
-                                    ScheduleEntity scheduleEntity2 = scheduleService.findScheduleByDateSlotAndLectureAndRoomAndCourse(daySlot2, emp2, room2, course);
-                                    if (scheduleEntity2 != null) {
-                                        //changed schedule already exist in DB, only run this code once when import DB first time
-                                        if (scheduleEntity2.getParentScheduleId() == null) {
-                                            scheduleEntity2.setParentScheduleId(scheduleEntity.getId());
-                                            scheduleEntity2.setChangedDate(changedSchedule.getChangedScheduleEntityPK().getChangedDate());
-                                            scheduleService.updateSchedule(scheduleEntity2);
-                                        }
-                                    } else {
-                                        //change others and not exist
-                                        scheduleEntity2 = new ScheduleEntity();
-                                        scheduleEntity2.setCourseId(course);
-                                        scheduleEntity2.setRoomId(room2);
-                                        scheduleEntity2.setDateId(daySlot2);
-                                        scheduleEntity2.setEmpId(emp2);
-                                        scheduleEntity2.setGroupName(scheduleEntity.getGroupName());
-                                        scheduleEntity2.setParentScheduleId(scheduleEntity.getId());
-                                        scheduleEntity2.setActive(true);
-                                        scheduleEntity2.setId(0);
-                                        scheduleEntity2.setChangedDate(changedSchedule.getChangedScheduleEntityPK().getChangedDate());
-                                        scheduleService.createSchedule(scheduleEntity2);
-                                    }
-                                }
+                        if (scheduleEntity == null) {
+                            scheduleEntity = scheduleService.findScheduleByDateSlotAndLectureAndCourseDontCareIsActive(daySlot, emp, course);
+                            if (scheduleEntity == null) {
+                                scheduleEntity = new ScheduleEntity();
+                                scheduleEntity.setCourseId(course);
+                                scheduleEntity.setRoomId(room);
+                                scheduleEntity.setDateId(daySlot);
+                                scheduleEntity.setEmpId(emp);
+                                scheduleEntity.setGroupName(changedSchedule.getClassName());
+                                scheduleEntity.setParentScheduleId(null);
+                                scheduleEntity.setActive(false);
+                                scheduleEntity.setId(0);
+                                scheduleEntity.setChangedDate(changedSchedule.getChangedScheduleEntityPK().getChangedDate());
+                                scheduleEntity = scheduleService.createSchedule(scheduleEntity);
+                            } else {
+                                scheduleEntity.setActive(false);
+                                scheduleEntity.setChangedDate(changedSchedule.getChangedScheduleEntityPK().getChangedDate());
+                                scheduleEntity.setRoomId(room);
+                                scheduleService.updateSchedule(scheduleEntity);
                             }
 
                         }
+
+
+                    }
+
+                    EmployeeEntity emp2 = null;
+                    //find changed lecture
+                    if (changedSchedule.getToLecturer() != null) {
+                        for (EmployeeEntity aEmployee : employeeEntityList) {
+                            if (aEmployee.getEmailFE().toLowerCase().substring(0, aEmployee.getEmailFE().indexOf("@")).equals(changedSchedule.getToLecturer().toLowerCase())
+                                    || aEmployee.getEmailEDU().toLowerCase().substring(0, aEmployee.getEmailEDU().indexOf("@")).equals(changedSchedule.getToLecturer().toLowerCase())) {
+                                emp2 = aEmployee;
+                            }
+                        }
+                    } else {
+                        //dont change lecture
+                        emp2 = emp;
+                    }
+
+                    SlotEntity slot2 = null;
+                    //find changed slot
+                    if (changedSchedule.getToSlot() != null) {
+                        slot2 = slotService.findSlotsByName("Slot " + changedSchedule.getToSlot()).get(0);
+                    } else {
+                        //dont change slot
+                        slot2 = slot;
+                    }
+
+                    DaySlotEntity daySlot2 = null;
+                    //find changed DaySlot
+                    if (changedSchedule.getToDate() != null) {
+                        Date scheduleToDate = format.parse(changedSchedule.getToDate());
+                        String formatedToDate = formatDate(scheduleToDate);
+                        daySlot2 = daySlotService.findDaySlotByDateAndSlot(formatedToDate, slot2);
+                        if (daySlot2 == null) {
+                            DaySlotEntity tmpDaySlot = new DaySlotEntity();
+                            tmpDaySlot.setDate(formatedToDate);
+                            tmpDaySlot.setSlotId(slot2);
+                            daySlot2 = daySlotService.createDateSlot(tmpDaySlot);
+                        }
+                    } else {
+                        //dont change date
+                        daySlot2 = daySlotService.findDaySlotByDateAndSlot(formatedFromDate, slot2);
+                        if (daySlot2 == null) {
+                            DaySlotEntity tmpDaySlot = new DaySlotEntity();
+                            tmpDaySlot.setDate(formatedFromDate);
+                            tmpDaySlot.setSlotId(slot2);
+                            daySlot2 = daySlotService.createDateSlot(tmpDaySlot);
+                        }
+                    }
+
+                    RoomEntity room2 = null;
+                    //find changed room
+                    if (changedSchedule.getToRoomNo() != null) {
+                        room2 = roomService.findRoomsByExactName(changedSchedule.getToRoomNo());
+                    } else {
+                        //dont change room
+                        room2 = room;
+                    }
+
+                    if (changedSchedule.getReason().equals("_ChangeRoom")) {
+                        scheduleEntity.setActive(true);
+                        scheduleEntity.setRoomId(room2);
+                        scheduleEntity.setChangedDate(changedSchedule.getChangedScheduleEntityPK().getChangedDate());
+                        scheduleService.updateSchedule(scheduleEntity);
+                    } else {
+                        //find changed schedule exist or not
+                        ScheduleEntity scheduleEntity2 = scheduleService.findScheduleByDateSlotAndLectureAndRoomAndCourse(daySlot2, emp2, room2, course);
+                        if (scheduleEntity2 != null) {
+                            //changed schedule already exist in DB, only run this code once when import DB first time
+                            if (scheduleEntity2.getParentScheduleId() == null) {
+                                scheduleEntity2.setParentScheduleId(scheduleEntity.getId());
+                                scheduleEntity2.setChangedDate(changedSchedule.getChangedScheduleEntityPK().getChangedDate());
+                                scheduleService.updateSchedule(scheduleEntity2);
+                            }
+                        } else {
+                            //change others and not exist
+                            scheduleEntity2 = new ScheduleEntity();
+                            scheduleEntity2.setCourseId(course);
+                            scheduleEntity2.setRoomId(room2);
+                            scheduleEntity2.setDateId(daySlot2);
+                            scheduleEntity2.setEmpId(emp2);
+                            scheduleEntity2.setGroupName(scheduleEntity.getGroupName());
+                            scheduleEntity2.setParentScheduleId(scheduleEntity.getId());
+                            scheduleEntity2.setActive(true);
+                            scheduleEntity2.setId(0);
+                            scheduleEntity2.setChangedDate(changedSchedule.getChangedScheduleEntityPK().getChangedDate());
+                            scheduleService.createSchedule(scheduleEntity2);
+                        }
                     }
                 }
+
+//                        }
             }
+//                }
+//            }
         } catch (Exception e) {
             e.printStackTrace();
         }

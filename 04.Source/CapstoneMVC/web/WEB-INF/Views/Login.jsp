@@ -15,10 +15,13 @@
     <title>Trang đăng nhập</title>
     <script>
 
-        // if(window.location.href.indexOf(".xip.io") === -1){
-        //        //     window.location.replace("http://10.82.3.47.xip.io:8780");
-        //        //     console.log(window.location);
-        //        // }
+        if (window.location.href.indexOf(".xip.io") === -1 && window.location.href.indexOf("localhost") === -1) {
+            var url = window.location+"";
+            var index = url.lastIndexOf(':');
+            url = url.substr(0, index) + '.xip.io:' + url.substr(index + 1);
+            window.location.replace(url);
+            console.log(url);
+        }
 
     </script>
     <!-- Tell the browser to be responsive to screen width -->
@@ -134,7 +137,7 @@
     //     console.log(url);
     //
     // });
-    $(document).ready(function() {
+    $(document).ready(function () {
         $('input').iCheck({
             checkboxClass: 'icheckbox_square-blue',
             radioClass: 'iradio_square-blue',

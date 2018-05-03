@@ -202,6 +202,7 @@
     var table = null;
     var startDate2;
     var endDate2;
+    var fromLectureArr = [];
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
 
@@ -332,17 +333,18 @@
                         }
                     });
 
-                    $('#scheduleDate2').on('apply.daterangepicker', function (ev, picker) {
-                        startDate2 = picker.startDate.format('DD/MM/YYYY');
-                        endDate2 = picker.endDate.format('DD/MM/YYYY');
-                        $(this).val(picker.startDate.format('DD/MM/YYYY'));
-                        getLectureByDateSlot();
+                    // $('#scheduleDate2').on('apply.daterangepicker', function (ev, picker) {
+                    //     startDate2 = picker.startDate.format('DD/MM/YYYY');
+                    //     endDate2 = picker.endDate.format('DD/MM/YYYY');
+                    //     $(this).val(picker.startDate.format('DD/MM/YYYY'));
+                    //     getLectureByDateSlot();
+                    //     console.log('xxx')
+                    //
+                    // });
 
-                    });
-
-                    $('#scheduleDate2').on('cancel.daterangepicker', function (ev, picker) {
-                        $(this).val('');
-                    });
+                    // $('#scheduleDate2').on('cancel.daterangepicker', function (ev, picker) {
+                    //     $(this).val('');
+                    // });
 
 
                     $('#aTime2').select2({
@@ -351,9 +353,13 @@
 
                     $("#aTime2").val($('#aTime').val()).trigger('change');
 
-                    $('#aTime2').on("change", function (e) {
-                        getLectureByDateSlot();
-                    });
+                    $("#aTime2").attr('disabled', 'disabled');
+                    $('#scheduleDate2').attr('disabled', 'disabled');
+
+                    // $('#aTime2').on("change", function (e) {
+                    //     getLectureByDateSlot();
+                    //     console.log('aaaa')
+                    // });
 
                     getLectureByDateSlot();
 
@@ -388,9 +394,12 @@
                 {
                     "aTargets": [4],
                     "mRender": function (data, type, row) {
-                        return "<a class='btn btn-success tbl-btn' onclick='SendEmail(" + row[0] + ",\""
+
+                        var sendEmailBtn = "<a class='btn btn-success tbl-btn btn-email' onclick='SendEmail(" + row[0] + ",\""
                             + row[1] + "\",\"" + row[2] + "\",\"" + row[3] + "\")'>" +
                             "<i class='glyphicon glyphicon-envelope'></i></a>";
+
+                        return sendEmailBtn;
                     }
                 },
             ],
@@ -416,7 +425,7 @@
                 // $('#lectureFrom').html('').select2({data: [{id: null, text: null}]});
                 $('#lectureFrom').empty();
 
-                var fromLectureArr = [];
+                fromLectureArr = [];
                 for (i = 0; i < json.fromLecture.length; i++) {
                     fromLectureArr.push({
                         "id": json.fromLecture[i][0],
@@ -449,6 +458,14 @@
                     $('#select2-aTime2-container').removeAttr('title');
                     $('#select2-room-container').removeAttr('title');
                 });
+
+                if(fromLectureArr.length ==0 && $('#subject2').val() !== null){
+                    $( ".btn-email" ).each(function() {
+                        $( this ).hide();
+                    });
+
+                    alert("Thời gian được chọn không có GV nào dạy môn này. Không thể yêu cầu thay thế.")
+                }
 
             }
         });
