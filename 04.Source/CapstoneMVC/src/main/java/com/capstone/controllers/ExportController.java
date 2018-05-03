@@ -156,7 +156,8 @@ public class ExportController {
                 "com.capstone.exporters.ExportConvert2StudentQuantityByClassAndSubject", //22
 				"com.capstone.exporters.ExportBestStudentImpl", // 23 = Best student in subjects in semester
                 "com.capstone.exporters.ExportChangedScheduleImpl", // 24 = Changed schedule
-                "com.capstone.exporters.ExportFreeScheduleImpl" // 25 = Free schedule
+                "com.capstone.exporters.ExportFreeScheduleImpl", // 25 = Free schedule
+                "com.capstone.exporters.ExportGraduatedConfirmation" // 26
 
         };
 

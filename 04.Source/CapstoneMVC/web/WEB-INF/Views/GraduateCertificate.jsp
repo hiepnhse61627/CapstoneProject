@@ -98,10 +98,9 @@
     </div>
 </section>
 
-<form id="export-excel-2" action="/exportExcel" hidden>
+<form id="export-excel" action="/exportExcel" hidden>
     <input name="objectType"/>
-    <input name="programId"/>
-    <input name="semesterId"/>
+    <input name="studentId"/>
 </form>
 
 <script>
@@ -215,7 +214,7 @@
     }
 
     function ExportGraduationCertification() {
-        ExportExcelPDF2();
+        ExportExcel();
         var sId = $("#cb-student").val();
         if (sId.length == 0) {
             swal({
@@ -265,11 +264,11 @@
         });
     }
 
-    function ExportExcelPDF2() {
-        $("input[name='objectType']").val();
+    function ExportExcel() {
+        $("input[name='objectType']").val(26);
         $("input[name='studentId']").val($("#cb-student").val());
 
-        $('#export-excel-2').submit();
+        $('#export-excel').submit();
     }
 
 

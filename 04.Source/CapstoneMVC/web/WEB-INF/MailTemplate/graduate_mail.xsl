@@ -440,7 +440,15 @@
                                 </td>
                                 <td class="txt-center"
                                     style="text-align: center;padding:8px 10px;box-sizing: content-box;">
-                                    <xsl:value-of select="./mark/averageMark"/>
+                                    <xsl:variable name="printMark" select="./mark/averageMark"/>
+                                    <xsl:choose>
+                                        <xsl:when test="$printMark > 0">
+                                            <xsl:value-of select="$printMark"/>
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            PASSED
+                                        </xsl:otherwise>
+                                    </xsl:choose>
                                 </td>
                                 <td class="txt-center"
                                     style="text-align: left;padding:8px 10px;box-sizing: content-box;">
