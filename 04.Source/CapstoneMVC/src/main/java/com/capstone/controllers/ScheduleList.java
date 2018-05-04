@@ -98,6 +98,9 @@ public class ScheduleList {
         List<SubjectEntity> subjects = subjectService.getAllSubjects();
         view.addObject("subjects", subjects);
 
+        List<DepartmentEntity> depts = departmentService.findAllDepartments();
+        view.addObject("departments", depts);
+
         List<RoomEntity> rooms = roomService.findAllRooms();
         view.addObject("rooms", rooms);
 
@@ -117,6 +120,8 @@ public class ScheduleList {
         semesters = Ultilities.SortSemesters(semesters);
 
         view.addObject("semesters", semesters);
+
+
 
         return view;
     }
@@ -162,6 +167,9 @@ public class ScheduleList {
             String groupName = "";
             String startDate = params.get("startDate");
             String endDate = params.get("endDate");
+            Integer departmentId = null;
+
+            List<ScheduleEntity> scheduleList = new ArrayList<>();
 
             if (!startDate.equals("")) {
                 DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -186,6 +194,10 @@ public class ScheduleList {
 
             if (!params.get("groupName").equals("") && !params.get("groupName").equals("-1")) {
                 groupName = params.get("groupName");
+            }
+
+            if (!params.get("departmentId").equals("") && !params.get("departmentId").equals("-1")) {
+                departmentId = Integer.parseInt(params.get("departmentId"));
             }
 
             if (!(lecture.equals("") && subjectCode.equals("") && slot.equals("") && groupName.equals("") && startDate.equals(""))) {
@@ -246,8 +258,23 @@ public class ScheduleList {
                 query.setFirstResult(iDisplayStart);
                 query.setMaxResults(iDisplayLength);
 
-                List<ScheduleEntity> scheduleList = query.getResultList();
+                scheduleList = query.getResultList();
 
+
+                if (departmentId != null) {
+                    DepartmentEntity aDepartment = departmentService.findDepartmentById(departmentId);
+                    List<SubjectEntity> subjectList = subjectService.findSubjectByDepartment(aDepartment);
+                    List<ScheduleEntity> tmpList = new ArrayList<>();
+                    for (ScheduleEntity aSchedule : scheduleList) {
+                        for (SubjectEntity aSubject : subjectList) {
+                            if (aSubject.getId().equals(aSchedule.getCourseId().getSubjectCode())) {
+                                tmpList.add(aSchedule);
+                                continue;
+                            }
+                        }
+                    }
+                    scheduleList = new ArrayList<>(tmpList);
+                }
 
                 for (ScheduleEntity schedule : scheduleList) {
                     List<String> dataList = new ArrayList<String>();
@@ -316,7 +343,14 @@ public class ScheduleList {
 
             }
             jsonObj.addProperty("iTotalRecords", iTotalRecords);
-            jsonObj.addProperty("iTotalDisplayRecords", iTotalDisplayRecords);
+
+            if (departmentId != null) {
+                jsonObj.addProperty("iTotalDisplayRecords", scheduleList.size());
+
+            }else{
+                jsonObj.addProperty("iTotalDisplayRecords", iTotalDisplayRecords);
+
+            }
             jsonObj.addProperty("sEcho", params.get("sEcho"));
             JsonArray aaData = (JsonArray) new Gson()
                     .toJsonTree(result, new TypeToken<List<List<String>>>() {

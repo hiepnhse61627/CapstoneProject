@@ -76,6 +76,17 @@
             </div>
             <div class="row" style="display: flex; position: relative;">
                 <div class="col-md-6">
+                <div class="form-group">
+                    <label for="lectureFrom">Giảng viên yêu cầu đổi:</label>
+                    <select id="lectureFrom" class="select lecture-select">
+                        <c:forEach var="emp" items="${employees}">
+                        <option value="${emp.fullName}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}
+                        - ${emp.fullName}</option>
+                        </c:forEach>
+                    </select>
+                </div>
+                </div>
+                <div class="col-md-3">
                     <div class="form-group">
                         <label for="aTime">Slot cần dạy thay:</label>
                         <select id="aTime" class="select aTime-select">
@@ -85,8 +96,7 @@
                         </select>
                     </div>
                 </div>
-
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <div class="form-group" style="width: 100%; bottom: 0; position: absolute;">
                         <button type="button" class="btn btn-success" onclick="RefreshTable()" id="searchBtn">Tìm kiếm
                         </button>
@@ -143,15 +153,15 @@
                             </select>
                         </div>
 
-                        <div class="form-group">
-                            <label for="lectureFrom">Giảng viên yêu cầu đổi:</label>
-                            <select id="lectureFrom" class="select lecture-select">
-                                <%--<c:forEach var="emp" items="${employees}">--%>
-                                <%--<option value="${emp.fullName}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}--%>
-                                <%--- ${emp.fullName}</option>--%>
-                                <%--</c:forEach>--%>
-                            </select>
-                        </div>
+                        <%--<div class="form-group">--%>
+                            <%--<label for="lectureFrom">Giảng viên yêu cầu đổi:</label>--%>
+                            <%--<select id="lectureFrom" class="select lecture-select">--%>
+                                <%--&lt;%&ndash;<c:forEach var="emp" items="${employees}">&ndash;%&gt;--%>
+                                <%--&lt;%&ndash;<option value="${emp.fullName}">${fn:substring(emp.emailEDU, 0, fn:indexOf(emp.emailEDU, "@"))}&ndash;%&gt;--%>
+                                <%--&lt;%&ndash;- ${emp.fullName}</option>&ndash;%&gt;--%>
+                                <%--&lt;%&ndash;</c:forEach>&ndash;%&gt;--%>
+                            <%--</select>--%>
+                        <%--</div>--%>
 
                         <div class="form-group" id="room-container">
                             <label for="room">Phòng học sẽ dạy:</label>
@@ -243,6 +253,11 @@
 
         $('#room').select2({
             placeholder: '- Chọn phòng -'
+        });
+
+        $("#lectureFrom").select2({
+            placeholder: '- Chọn GV -',
+            data: fromLectureArr,
         });
 
         $('#aTime').select2({
@@ -361,7 +376,7 @@
                     //     console.log('aaaa')
                     // });
 
-                    getLectureByDateSlot();
+                    // getLectureByDateSlot();
 
                     return json.aaData;
                 },
