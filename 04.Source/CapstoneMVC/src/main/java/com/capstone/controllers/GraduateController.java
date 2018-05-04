@@ -1573,11 +1573,13 @@ public class GraduateController {
                     for (StudentAndMark item : data) {
                         StudentEntity student = item.getStudent();
                         RequiredDocuments rd = requiredDocuments.get(student.getRollNumber());
-                        item.setHighschoolGraduate(rd.hasHighschoolGraduate());
-                        item.setBirthRecords(rd.hasBirthRecords());
-                        item.setIdCard(rd.hasIdCard());
-                        item.setDueDate(item.getDueDate());
-                        item.setGraduateTime(item.getGraduateTime());
+                        if(rd != null){
+                            item.setHighschoolGraduate(rd.hasHighschoolGraduate());
+                            item.setBirthRecords(rd.hasBirthRecords());
+                            item.setIdCard(rd.hasIdCard());
+                            item.setDueDate(item.getDueDate());
+                            item.setGraduateTime(item.getGraduateTime());
+                        }
                     }
                 }
 

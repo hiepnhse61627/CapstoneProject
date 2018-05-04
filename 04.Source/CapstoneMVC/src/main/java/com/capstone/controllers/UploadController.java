@@ -686,11 +686,11 @@ public class UploadController {
                             DocumentEntity documentEntity = documentService.getAllDocuments().get(0);
 
                             if (curriculumCell != null && curriculumCell.getCellTypeEnum() != CellType.BLANK) {
-                                String curriculumName = curriculumCell.getStringCellValue().trim();
+                                String curriculumName = curriculumCell.toString().trim().toUpperCase();
                                 List<DocumentStudentEntity> docsStudent = new ArrayList<>(studentEntity.getDocumentStudentEntityList());
 
                                 boolean exist = docsStudent.stream()
-                                        .anyMatch(q -> q.getCurriculumId().getName().equalsIgnoreCase(curriculumName));
+                                        .anyMatch(q -> q.getCurriculumId().getName().trim().equalsIgnoreCase(curriculumName));
 
                                 //tạo docs student mới cho sinh viên (sinh viên chuyển qua chuyên ngành khác thì cần khung chương trình tương ứng)
                                 if (exist == false) {
@@ -728,7 +728,9 @@ public class UploadController {
                                         }
                                     }
 
-                                    CurriculumEntity curriculumEntity = curriculumService.getCurriculumLikeName(curriculumName);
+
+                                    //fixed (lấy đúng tên curriculum thay vì lấy gần giống)
+                                    CurriculumEntity curriculumEntity = curriculumService.getCurriculumByName(curriculumName);
                                     if (curriculumEntity != null) {
                                         DocumentStudentEntity documentStudentEntity = new DocumentStudentEntity();
                                         documentStudentEntity.setStudentId(studentEntity);
