@@ -1306,7 +1306,7 @@ public class GraduateController {
                         }
 
                         //check môn thay thế
-                        if(checkPrerequesite){
+                        if (checkPrerequesite) {
                             //contains main subject and all of it replace subject
                             List<SubjectEntity> checkList = Ultilities.findBackAndForwardReplacementSubject(itemSubject);
 
@@ -1573,13 +1573,14 @@ public class GraduateController {
                     for (StudentAndMark item : data) {
                         StudentEntity student = item.getStudent();
                         RequiredDocuments rd = requiredDocuments.get(student.getRollNumber());
-                        if(rd != null){
+                        if (rd != null) {
                             item.setHighschoolGraduate(rd.hasHighschoolGraduate());
                             item.setBirthRecords(rd.hasBirthRecords());
                             item.setIdCard(rd.hasIdCard());
                             item.setDueDate(item.getDueDate());
                             item.setGraduateTime(item.getGraduateTime());
                         }
+
                     }
                 }
 

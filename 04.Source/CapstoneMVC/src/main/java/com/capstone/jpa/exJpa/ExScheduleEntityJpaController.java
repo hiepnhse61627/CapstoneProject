@@ -194,10 +194,14 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
             List<ScheduleEntity> aList = query.getResultList();
 
             if (aList.size() > 1) {
-                System.out.println("");
+//                System.out.println("");
+                aList.get(0).setActive(false);
+                saveSchedule(aList.get(0));
+
+                ScheduleEntity = aList.get(1);
+            }else{
+                ScheduleEntity = (ScheduleEntity) query.getSingleResult();
             }
-            ScheduleEntity = (ScheduleEntity) query.getSingleResult();
-//            ScheduleEntity = aList.size()>1?aList.get(1):aList.get(0);
 
             return ScheduleEntity;
         } catch (NoResultException nrEx) {
@@ -222,7 +226,17 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
             query.setParameter("room", room);
             query.setParameter("course", course);
 
-            ScheduleEntity = (ScheduleEntity) query.getSingleResult();
+            List<ScheduleEntity> aList = query.getResultList();
+
+            if (aList.size() > 1) {
+                aList.get(0).setActive(false);
+                saveSchedule(aList.get(0));
+
+                ScheduleEntity = aList.get(1);
+            }else{
+                ScheduleEntity = (ScheduleEntity) query.getSingleResult();
+            }
+
 
             return ScheduleEntity;
         } catch (NoResultException nrEx) {
