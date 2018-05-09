@@ -166,8 +166,20 @@
             </div>
 
             <div class="row" style="display: flex; position: relative;">
-                <div class="col-md-6">
 
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="department">Bộ môn:</label>
+                        <select id="department" class="select department-select">
+                            <option value="-1">Tất cả</option>
+                            <c:forEach var="department" items="${departments}">
+                                <option value="${department.deptId}">${department.deptName}</option>
+                            </c:forEach>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
                     <div class="form-group">
                         <label for="aTime">Slot:</label>
                         <select id="aTime" class="select aTime-select">
@@ -180,7 +192,7 @@
 
                 </div>
 
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <div class="form-group" style="width: 100%; bottom: 0; position: absolute;">
                         <button type="button" class="btn btn-success" onclick="RefreshTable2()" id="searchBtn">Tìm
                             kiếm
@@ -588,6 +600,10 @@
             placeholder: '- Chọn môn học -'
         });
 
+        $('#department').select2({
+            placeholder: '- Chọn bộ môn -'
+        });
+
         // $('#groupName2').select2({
         //     placeholder: '- Chọn lớp -'
         // });
@@ -607,7 +623,7 @@
         $("#lecture2").val('').trigger('change');
 
         $("#subject2").val('').trigger('change');
-
+        $("#department").val('').trigger('change');
         $("#aTime").val('').trigger('change');
         $("#groupName2").val('');
 
@@ -668,6 +684,7 @@
             "sAjaxSource": "/loadScheduleList",
             "fnServerParams": function (aoData) {
                 aoData.push({"name": "subject", "value": $('#subject2').val()}),
+                    aoData.push({"name": "departmentId", "value": $('#department').val()}),
                     aoData.push({"name": "lecture", "value": $('#lecture2').val()}),
                     aoData.push({"name": "slot", "value": $('#aTime').val()}),
                     aoData.push({"name": "groupName", "value": $('#groupName2').val()}),
@@ -1013,6 +1030,8 @@
         $('#scheduleDate2').data('daterangepicker').setEndDate(moment());
         $('#scheduleDate2').val('');
         $("#subject2").val('').trigger('change');
+        $("#department").val('').trigger('change');
+
         $("#aTime").val('').trigger('change');
         $("#groupName2").val('').trigger('change');
 
