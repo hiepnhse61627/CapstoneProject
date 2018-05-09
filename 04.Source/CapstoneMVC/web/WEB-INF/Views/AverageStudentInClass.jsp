@@ -121,7 +121,7 @@
             }
         });
 
-        CreateTable();
+        CreateEmptyDataTable('#tbl-average-student');
     });
 
     function CreateTable() {
@@ -178,6 +178,9 @@
         if (tblAverageStudent != null) {
             tblAverageStudent._fnPageChange(0);
             tblAverageStudent._fnAjaxUpdate();
+        }else{
+            $('#tbl-average-student').dataTable().fnDestroy();
+            CreateTable();
         }
     }
 

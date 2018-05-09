@@ -117,7 +117,7 @@
             RefreshTable();
         });
 
-        LoadGoodStudent();
+        CreateEmptyDataTable("#tbl-student");
     });
 
     function LoadGoodStudent() {
@@ -165,6 +165,9 @@
         if (tblStudent != null) {
             tblStudent._fnPageChange(0);
             tblStudent._fnAjaxUpdate();
+        }else{
+            $("#tbl-student").dataTable().fnDestroy();
+            LoadGoodStudent();
         }
     }
 

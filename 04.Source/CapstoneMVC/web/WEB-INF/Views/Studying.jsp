@@ -19,7 +19,8 @@
                             <select id="sub" class="select form-control">
                                 <option value="0">- Tất cả -</option>
                                 <c:forEach var="subject" items="${list}">
-                                    <option value="${subject.id}">${subject.id} - ${subject.abbreviation} - ${subject.name}</option>
+                                    <option value="${subject.id}">${subject.id} - ${subject.abbreviation}
+                                        - ${subject.name}</option>
                                 </c:forEach>
                             </select>
                         </div>
@@ -36,14 +37,14 @@
                     <div class="col-md-12">
                         <table id="table">
                             <thead>
-                                <tr>
-                                    <th>MSSV</th>
-                                    <th>Tên SV</th>
-                                    <th>Môn học</th>
-                                    <th>Học kỳ</th>
-                                    <th>Điểm TB</th>
-                                    <th>Status</th>
-                                </tr>
+                            <tr>
+                                <th>MSSV</th>
+                                <th>Tên SV</th>
+                                <th>Môn học</th>
+                                <th>Học kỳ</th>
+                                <th>Điểm TB</th>
+                                <th>Status</th>
+                            </tr>
                             </thead>
                         </table>
                     </div>
@@ -91,7 +92,12 @@
 
     $(document).ready(function () {
         $('.select').select2();
+        CreateEmptyDataTable('#table');
 
+    });
+
+
+    function CreateMainTable() {
         table = $('#table').dataTable({
             "bServerSide": true,
             "bFilter": true,
@@ -128,12 +134,15 @@
             ],
             "bAutoWidth": false,
         }).fnSetFilteringDelay(1000);
-    });
+    }
 
     function RefreshTable() {
         if (table != null) {
             table._fnPageChange(0);
             table._fnAjaxUpdate();
+        }else{
+            $('#table').dataTable().fnDestroy();
+            CreateMainTable();
         }
     }
 </script>

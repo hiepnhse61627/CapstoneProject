@@ -43,7 +43,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <button type="button" onclick="GetResult()" class="btn btn-success">Tìm kiếm</button>
+                <button type="button" onclick="RefreshTable()" class="btn btn-success">Tìm kiếm</button>
                 <%--<button type="button" class="btn btn-success" onclick="ExportExcel()">Xuất dữ liệu</button>--%>
             </div>
 
@@ -71,12 +71,9 @@
 <%--</form>--%>
 <script>
     $(document).ready(function () {
-        // GetResult();
-
+        CreateEmptyDataTable("#table");
+        $(".select").select2();
     });
-    // $('#semester').on('change',function () {
-    //     GetResult();
-    // });
     var table = null;
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -178,5 +175,16 @@
                 },
             ]
         });
+    }
+
+    function RefreshTable() {
+        if (table != null) {
+            table._fnPageChange(0);
+            table._fnAjaxUpdate();
+        } else {
+            //destroy empty table
+            $('#table').dataTable().fnDestroy();
+            GetResult();
+        }
     }
 </script>

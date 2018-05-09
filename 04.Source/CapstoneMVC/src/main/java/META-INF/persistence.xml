@@ -92,7 +92,7 @@
             <property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://10.23.0.77;databaseName=AP_HCM"/>
             <property name="javax.persistence.jdbc.user" value="aphcm"/>
             <property name="javax.persistence.jdbc.driver" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
-            <property name="javax.persistence.jdbc.password" value="Kh@nhKT123456&amp;"/>
+            <property name="javax.persistence.jdbc.password" value="Kh@nhKT123456"/>
         </properties>
         <!--<properties>-->
         <!--<property name="javax.persistence.jdbc.url" value="jdbc:sqlserver://116.193.67.20;databaseName=AP_HCM"/>-->

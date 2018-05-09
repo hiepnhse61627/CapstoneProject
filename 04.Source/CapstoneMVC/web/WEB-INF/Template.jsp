@@ -77,6 +77,7 @@
         background: white;
         border: none;
     }
+
     .ui-tooltip {
         padding: 10px 20px;
         color: black;
@@ -85,6 +86,7 @@
         /*text-transform: uppercase;*/
         box-shadow: 0 0 7px black;
     }
+
     .arrow {
         width: 70px;
         height: 16px;
@@ -94,13 +96,16 @@
         margin-left: -35px;
         bottom: -16px;
     }
+
     .arrow.top {
         top: -16px;
         bottom: auto;
     }
+
     .arrow.left {
         left: 20%;
     }
+
     .arrow:after {
         content: "";
         position: absolute;
@@ -113,6 +118,7 @@
         -ms-transform: rotate(45deg);
         transform: rotate(45deg);
     }
+
     .arrow.top:after {
         bottom: -20px;
         top: auto;
@@ -277,6 +283,7 @@
                 list[i].style.display = 'none';
         }
     }
+
 
 </script>
 

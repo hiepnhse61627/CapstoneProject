@@ -63,6 +63,7 @@
     var table = null;
 
     $(document).ready(function(){
+        $(".select").select2();
         CreateEmptyDataTable('#table');
     });
 

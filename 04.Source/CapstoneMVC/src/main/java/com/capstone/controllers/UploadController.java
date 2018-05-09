@@ -262,10 +262,10 @@ public class UploadController {
             int formColIndex = 6;
             //số hiệu văn vằng
             int diplomaCodeColIndex = 7;
-            //vào sổ cấp văn bằng, chứng chỉ số
-            int certificateCodeColIndex = 8;
             //số quyết định tốt nghiệp
-            int graduateDecisionNumberColIndex = 9;
+            int graduateDecisionNumberColIndex = 8;
+            //vào sổ cấp văn bằng, chứng chỉ số
+            int certificateCodeColIndex = 9;
             //ngày quyết định
             int dateColIndex = 10;
 

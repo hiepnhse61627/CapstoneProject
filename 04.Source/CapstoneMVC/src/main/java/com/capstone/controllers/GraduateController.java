@@ -1915,14 +1915,31 @@ public class GraduateController {
             String birthDate = sdf.format(student.getDateOfBirth());
             String fullName = student.getFullName();
             String program = student.getProgramId().getFullName();
+
+            //format Year graduate
+            SimpleDateFormat grFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String graduateDateStr = certificate.getDate();
+            Date graduateDate = grFormat.parse(graduateDateStr);
+            SimpleDateFormat yearFormat = new SimpleDateFormat("yyyy");
+            String yearStr = yearFormat.format(graduateDate);
+
+            String diplomaCode = certificate.getDiplomaCode();
+            String form = certificate.getForm();
+            String decisionNumber = certificate.getGraduateDecisionNumber();
+            String certificateCode = certificate.getCertificateCode();
+
+
+
+            GraduateConfirmationModel confirmationModel = new GraduateConfirmationModel(fullName, rollNumber,
+                    birthDate, program,form, yearStr,diplomaCode,certificateCode,decisionNumber );
+
             StudentGraduateModel model = new StudentGraduateModel(rollNumber, birthDate, fullName, program);
 
-
-            JsonObject certiData = (JsonObject) new Gson().toJsonTree(certificate);
-            JsonObject studentData = (JsonObject) new Gson().toJsonTree(model, StudentGraduateModel.class);
+//            JsonObject certiData = (JsonObject) new Gson().toJsonTree(certificate);
+            JsonObject studentData = (JsonObject) new Gson().toJsonTree(confirmationModel, GraduateConfirmationModel.class);
             data.addProperty("success", true);
             data.addProperty("message", "Tìm thành công");
-            data.add("certificate", certiData);
+//            data.add("certificate", certiData);
             data.add("student", studentData);
         } catch (Exception e) {
             e.printStackTrace();

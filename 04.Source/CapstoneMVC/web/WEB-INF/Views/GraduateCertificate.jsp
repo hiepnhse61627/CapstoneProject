@@ -172,10 +172,10 @@
                                 '                            <u><i><b>Trường Đại học FPT xác nhận:</b></i></u>\n' +
                                 '                        </div>\n' +
                                 '                        <div class="col-md-6">\n' +
-                                '                            Sinh viên: '+student.fullName +' \n' +
+                                '                            Sinh viên: '+student.studentName +' \n' +
                                 '                        </div>\n' +
                                 '                        <div class="col-md-6">\n' +
-                                '                            Sinh ngày: '+ student.dateOfBirth +'\n' +
+                                '                            Sinh ngày: '+ student.birthDate +'\n' +
                                 '                        </div>\n' +
                                 '                        <div class="col-md-6">\n' +
                                 '                            Mã số sinh viên: '+student.rollNumber+'\n' +
@@ -184,15 +184,15 @@
                                 '                            Ngành học: '+student.program+'\n' +
                                 '                        </div>\n' +
                                 '                        <div class="col-md-6">\n' +
-                                '                            Hệ: '+certificate.form+'\n' +
+                                '                            Hệ: '+student.form+'\n' +
                                 '                        </div>\n' +
                                 '                        <div class="col-md-12">\n' +
                                 '                            Tình trạng tốt nghiệp:\n' +
                                 '                            <ul class="custom">\n' +
-                                '                                <li>Tốt nghiệp năm '+certificate.date+'</li>\n' +
-                                '                                <li>Số hiệu văn bằng: '+certificate.diplomaCode +'</li>\n' +
-                                '                                <li>Số vào sổ cấp văn bằng: '+certificate.certificateCode+'</li>\n' +
-                                '                                <li>Quyết định: ngày ' + certificate.date+'</li>\n' +
+                                '                                <li>Tốt nghiệp năm '+student.graduateYear+'</li>\n' +
+                                '                                <li>Số hiệu văn bằng: '+student.diplomaCode +'</li>\n' +
+                                '                                <li>Số vào sổ cấp văn bằng: '+student.certificateCode+'</li>\n' +
+                                '                                <li>Quyết định: ngày ' + student.decisionNumber+'</li>\n' +
                                 '                            </ul>\n' +
                                 '                        </div>\n' +
                                 '                        <div class="col-md-6">\n' +

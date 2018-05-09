@@ -72,12 +72,9 @@
 <%--</form>--%>
 <script>
     $(document).ready(function () {
-        // GetResult();
-
+        CreateEmptyDataTable("#table");
+        $(".select").select2();
     });
-    // $('#semester').on('change',function () {
-    //     GetResult();
-    // });
     var table = null;
     jQuery.fn.dataTableExt.oApi.fnSetFilteringDelay = function (oSettings, iDelay) {
         var _that = this;
@@ -179,5 +176,15 @@
                 },
             ]
         });
+    }
+    function RefreshTable() {
+        if (table != null) {
+            table._fnPageChange(0);
+            table._fnAjaxUpdate();
+        } else {
+            //destroy empty table
+            $('#table').dataTable().fnDestroy();
+            GetResult();
+        }
     }
 </script>

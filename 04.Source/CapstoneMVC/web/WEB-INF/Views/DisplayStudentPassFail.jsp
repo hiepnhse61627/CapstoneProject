@@ -161,6 +161,12 @@
 
         var studentDistinctNumber = 0;
 
+        CreateEmptyDataTable('#table');
+
+
+    });
+
+    function CreateMainTable(){
         table = $('#table').dataTable({
             "bServerSide": true,
             "bFilter": true,
@@ -214,25 +220,25 @@
                 sInfo()
             }
         }).fnSetFilteringDelay(1000);
+    }
 
-        function sInfo() {
-            $.ajax({
-                type : 'GET',
-                url: '/getstudents/studentsDistinct',
-                data: {
-                    "semesterId" : $('#semester').val(),
-                    "subjectId" : $('#subject').val()
-                },
-                success: function (result) {
-                    if (result) {
-                        studentDistinctNumber = result.studentSize;
-                        return $('#studentsNumber').html('<h4>_Số sinh viên đang nợ ' + studentDistinctNumber + '</h4>');
-                        alert(studentDistinctNumber);
-                    }
+    function sInfo() {
+        $.ajax({
+            type : 'GET',
+            url: '/getstudents/studentsDistinct',
+            data: {
+                "semesterId" : $('#semester').val(),
+                "subjectId" : $('#subject').val()
+            },
+            success: function (result) {
+                if (result) {
+                    studentDistinctNumber = result.studentSize;
+                    return $('#studentsNumber').html('<h4>_Số sinh viên đang nợ ' + studentDistinctNumber + '</h4>');
+                    alert(studentDistinctNumber);
                 }
-            });
-        }
-    });
+            }
+        });
+    }
 
     function GetAllStudentMarks(studentId) {
         var form = new FormData();
@@ -318,6 +324,9 @@
         if (table != null) {
             table._fnPageChange(0);
             table._fnAjaxUpdate();
+        }else{
+            $('#table').dataTable().fnDestroy();
+            CreateMainTable();
         }
     }
 </script>

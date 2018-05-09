@@ -132,7 +132,10 @@
 
     $(document).ready(function () {
         $('.select').select2();
+        CreateEmptyDataTable('#table');
+    });
 
+    function CreateMainTable(){
         table = $('#table').dataTable({
             "bServerSide": true,
             "bFilter": true,
@@ -170,12 +173,15 @@
             ],
             "bAutoWidth": false,
         }).fnSetFilteringDelay(1000);
-    });
+    }
 
     function RefreshTable() {
         if (table != null) {
             table._fnPageChange(0);
             table._fnAjaxUpdate();
+        }else{
+            $('#table').dataTable().fnDestroy();
+            CreateMainTable();
         }
     }
 </script>
