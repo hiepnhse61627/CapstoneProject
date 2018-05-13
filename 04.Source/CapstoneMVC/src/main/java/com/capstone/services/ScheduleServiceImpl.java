@@ -88,9 +88,6 @@ public class ScheduleServiceImpl implements IScheduleService {
         return ScheduleEntityJpaController.createSchedule(ScheduleEntity);
     }
 
-    public List<ScheduleEntity> findAllSchedules() {
-        return ScheduleEntityJpaController.findScheduleEntityEntities();
-    }
 
     @Override
     public void updateSchedule(ScheduleEntity entity) {
@@ -126,5 +123,10 @@ public class ScheduleServiceImpl implements IScheduleService {
     @Override
     public int getTotalLine() {
         return ScheduleEntityJpaController.getTotalLine();
+    }
+
+    @Override
+    public List<ScheduleEntity> findAllSchedules() {
+        return ScheduleEntityJpaController.findAllSchedules();
     }
 }

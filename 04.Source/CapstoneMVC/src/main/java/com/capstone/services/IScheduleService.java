@@ -7,6 +7,7 @@ import java.util.List;
 public interface IScheduleService {
     int getCurrentLine();
     int getTotalLine();
+    List<ScheduleEntity> findAllSchedules();
     void createScheduleList(List<ScheduleEntity> ScheduleEntityList);
     ScheduleEntity findScheduleById(int id);
     ScheduleEntity findScheduleByDateSlotAndRoom(DaySlotEntity dateSlot, RoomEntity room);

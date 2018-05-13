@@ -51,7 +51,7 @@
                 <div class="col-md-2 text-right">
                     <button type="button" class="btn btn-primary btn-with-icon" onclick="SyncChangedSchedule()">
                         <i class="glyphicon glyphicon-retweet"></i>
-                        <div>Đồng bộ với FAP</div>
+                        <div>Đồng bộ lịch học thay đổi</div>
                     </button>
                 </div>
                 <div class="col-md-3 text-right">

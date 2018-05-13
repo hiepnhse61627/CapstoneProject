@@ -559,6 +559,7 @@
         });
 
         $('#lecture2').on('change', function (evt) {
+            console.log('test');
             $.ajax({
                 type: "POST",
                 url: "/getGroupNameByLecture",

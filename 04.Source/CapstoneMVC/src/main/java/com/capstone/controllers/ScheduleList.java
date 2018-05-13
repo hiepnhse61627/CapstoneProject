@@ -122,7 +122,6 @@ public class ScheduleList {
         view.addObject("semesters", semesters);
 
 
-
         return view;
     }
 
@@ -347,7 +346,7 @@ public class ScheduleList {
             if (departmentId != null) {
                 jsonObj.addProperty("iTotalDisplayRecords", scheduleList.size());
 
-            }else{
+            } else {
                 jsonObj.addProperty("iTotalDisplayRecords", iTotalDisplayRecords);
 
             }
@@ -1773,8 +1772,12 @@ public class ScheduleList {
                         groupNameSet.add(aSchedule.getGroupName());
                     }
                 }
+            } else {
+                List<ScheduleEntity> scheduleEntityList = scheduleService.findAllSchedules();
+                for (ScheduleEntity aSchedule : scheduleEntityList) {
+                    groupNameSet.add(aSchedule.getGroupName());
+                }
             }
-
 
         } catch (Exception e) {
             e.printStackTrace();
