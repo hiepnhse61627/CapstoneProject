@@ -29,6 +29,12 @@ public class ExScheduleEntityJpaController extends ScheduleEntityJpaController {
         return totalLine;
     }
 
+    public List<ScheduleEntity> findAllSchedules() {
+        EntityManager em = getEntityManager();
+        TypedQuery<ScheduleEntity> query = em.createQuery("SELECT a FROM ScheduleEntity a WHERE (a.isActive IS NULL OR a.isActive = 'true')", ScheduleEntity.class);
+        return query.getResultList();
+    }
+
     public void saveSchedule(ScheduleEntity Schedule) {
         try {
             EntityManager manager = getEntityManager();
