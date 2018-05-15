@@ -17,6 +17,7 @@
         <class>com.capstone.entities.StudentEntity</class>
         <class>com.capstone.entities.CourseEntity</class>
         <class>com.capstone.entities.MarksEntity</class>
+        <class>com.capstone.entities.MarkComponentEntity</class>
         <class>com.capstone.entities.CredentialsEntity</class>
         <class>com.capstone.entities.SubjectMarkComponentEntity</class>
         <class>com.capstone.entities.ProgramEntity</class>
