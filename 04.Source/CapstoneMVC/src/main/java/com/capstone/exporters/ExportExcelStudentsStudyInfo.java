@@ -19,6 +19,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ExportExcelStudentsStudyInfo implements IExportObject {
     private String EXCEL_TEMPLATE = "template/My-template-list-student-Study-info.xlsx";
@@ -64,7 +65,13 @@ public class ExportExcelStudentsStudyInfo implements IExportObject {
         cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
 
         int semesterId = Integer.parseInt(params.get("semesterId"));
-        List<StudentEntity> listStudents = studentService.findStudentsBySemesterId(semesterId);
+        int programId = Integer.parseInt(params.get("programId"));
+        List<StudentEntity>  listStudents = studentService.findStudentsBySemesterId(semesterId);
+
+        if(programId > -1){
+            listStudents = listStudents.stream().filter(q -> q.getProgramId().getId() == programId)
+                    .collect(Collectors.toList());
+        }
 
         //use lambda sort all students by program then by rollnumber
         listStudents.sort((p1, p2) -> {
@@ -80,7 +87,9 @@ public class ExportExcelStudentsStudyInfo implements IExportObject {
         int rowIndex = 1;
         int markSize = listStudents.size();
         XSSFRow row = null;
+
         for (StudentEntity student : listStudents) {
+            ExportStatusReport.StatusStudentDetailExport = "Đang lấy thông tin " + rowIndex + " - " + (listStudents.size()+1);
             row = sheet.createRow(rowIndex);
             // ordinal number
             XSSFCell ordinalNumberCell = row.createCell(0);

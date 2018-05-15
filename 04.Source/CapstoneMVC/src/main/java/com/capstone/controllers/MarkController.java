@@ -1254,4 +1254,31 @@ public class MarkController {
     }
 
 
+    @RequestMapping(value = "/exportMarkBySemester")
+    public ModelAndView goExportMarkBySemester(HttpServletRequest request) {
+        if (!Ultilities.checkUserAuthorize(request)) {
+            return Ultilities.returnDeniedPage();
+        }
+        //logging user action
+        Ultilities.logUserAction("go to " + request.getRequestURI());
+
+        ModelAndView mav = new ModelAndView("ExportAcademicTranscriptBySemester");
+        mav.addObject("title", "Xuất bảng điểm theo học kỳ");
+
+        RealSemesterServiceImpl semesterService = new RealSemesterServiceImpl();
+        ProgramServiceImpl programService = new ProgramServiceImpl();
+
+        List<ProgramEntity> programList = programService.getAllPrograms();
+
+        List<RealSemesterEntity> semesters = semesterService.getAllSemester();
+        semesters = Ultilities.SortSemesters(semesters);
+        semesters = semesters.stream().filter(s -> !s.getSemester().contains("N/A")).collect(Collectors.toList());
+        semesters = Lists.reverse(semesters);
+
+        mav.addObject("semesters", semesters);
+        mav.addObject("programList", programList);
+
+        return mav;
+    }
+
 }
